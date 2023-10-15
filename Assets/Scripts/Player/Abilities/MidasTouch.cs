@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Player.Abilities
 {
-    public class WeightOfCrown : ActiveAbilityBase
+    public class MidasTouch : ActiveAbilityBase
     {
         public override void Activate()
         {

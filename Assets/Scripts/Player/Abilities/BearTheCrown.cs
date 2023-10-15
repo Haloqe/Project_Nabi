@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Player.Abilities
 {
-    public class DangolSonim : PassiveAbilityBase
+    public class BearTheCrown : ActiveAbilityBase
     {
         public override void Activate()
         {
