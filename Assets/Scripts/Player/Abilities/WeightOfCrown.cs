@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Player.Abilities
 {
-    public class TemplateActiveAbility : ActiveAbilityBase
+    public class WeightOfCrown : ActiveAbilityBase
     {
         public override void Activate()
         {

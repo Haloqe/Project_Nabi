@@ -10,8 +10,6 @@ namespace Player.Abilities
         public override void Activate()
         {
             base.Activate();
-
-            Debug.Log(Name_EN + " (p)");
         }
     }
 }
