@@ -33,9 +33,18 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "Cast_1",
+                    "name": "Cast_0",
                     "type": "Value",
                     "id": "8009339c-d1fc-49e1-beb3-5d3df21f7a96",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "Cast_1",
+                    "type": "Value",
+                    "id": "76cc2dc5-5abe-43c3-b769-7ae69bc89e98",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -69,12 +78,12 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "Cast_5",
-                    "type": "Value",
-                    "id": "76cc2dc5-5abe-43c3-b769-7ae69bc89e98",
+                    "name": "TestAction",
+                    "type": "Button",
+                    "id": "ca4e1fd7-c717-450e-bd1d-1b7255d39886",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": "",
+                    "interactions": "Tap",
                     "initialStateCheck": true
                 }
             ],
@@ -159,18 +168,18 @@
                 {
                     "name": "",
                     "id": "80d96885-9b02-4abd-9a71-11cb29aaf0aa",
-                    "path": "<Keyboard>/q",
+                    "path": "<Keyboard>/1",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "Cast_1",
+                    "action": "Cast_0",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
                 {
                     "name": "",
                     "id": "ae28da6a-123c-42d4-a2e5-06548892fe61",
-                    "path": "<Keyboard>/w",
+                    "path": "<Keyboard>/3",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
@@ -181,7 +190,7 @@
                 {
                     "name": "",
                     "id": "2b55ef72-17d5-42de-9535-a8812c19fc02",
-                    "path": "<Keyboard>/e",
+                    "path": "<Keyboard>/4",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
@@ -192,7 +201,7 @@
                 {
                     "name": "",
                     "id": "c67e2483-51c2-4ad5-9ebc-3538b6dedb63",
-                    "path": "<Keyboard>/r",
+                    "path": "<Keyboard>/t",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
@@ -202,12 +211,23 @@
                 },
                 {
                     "name": "",
-                    "id": "8089d78e-103c-4cfa-8861-42a321619872",
+                    "id": "4c2cbd26-3128-4dbd-93d4-eb74ffef6671",
                     "path": "<Keyboard>/t",
                     "interactions": "",
                     "processors": "",
+                    "groups": "",
+                    "action": "TestAction",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "8089d78e-103c-4cfa-8861-42a321619872",
+                    "path": "<Keyboard>/2",
+                    "interactions": "",
+                    "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "Cast_5",
+                    "action": "Cast_1",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

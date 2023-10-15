@@ -6,13 +6,13 @@ namespace Enums.PlayerEnums
     {
         Copper,
         Gold,
-        Undefined,
+        None,
     }
     public enum EAbilityType // AbilityTypeÀÌ Á» ¸ğÈ£ÇÑµíµµ ÇÑµ¥ ±¦ÂúÀº ÀÌ¸§ ÀÖÀ¸¸é ¹Ù²ãÁà.. ±¦ÂúÀ¸¸é ³ÀµÎ°í.
     {
         Passive,
         Active,
-        Undefined,
+        None,
     }
     public enum EAbilityState
     {
@@ -20,5 +20,11 @@ namespace Enums.PlayerEnums
         Active,
         Cooldown,
     } 
+    public enum EInteraction
+    {
+        Press,
+        Hold,
+        None,
+    }
     #endregion Ability
 }

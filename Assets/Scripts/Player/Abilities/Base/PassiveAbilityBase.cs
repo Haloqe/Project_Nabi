@@ -6,11 +6,14 @@ namespace Player.Abilities.Base
 {
     public abstract class PassiveAbilityBase : AbilityBase
     {
-        public new EAbilityType Type = EAbilityType.Passive;
+        private void Start()
+        {
+            Activate();
+        }
 
         public override void Activate()
         {
-
+            base.Activate();
         }
     }
 }
