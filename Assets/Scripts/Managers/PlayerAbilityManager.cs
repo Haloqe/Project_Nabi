@@ -19,9 +19,14 @@ namespace Managers
         private GameObject _abilityContainer;
         private PlayerInput _playerInput;
         private Dictionary<int, SAbilityData> _abilities;
-        private Dictionary<int, SAbilityData>[] _abilitiesByMetals;
+        private static Dictionary<int, SAbilityData>[] _abilitiesByMetals;
         private ActiveAbilityBase[] _activeAbilities = new ActiveAbilityBase[5];
         private PassiveAbilityBase[] _passiveAbilities = new PassiveAbilityBase[3];
+        
+        public static Dictionary<int, SAbilityData>[] GetAbilitiesByMetals(EAbilityMetalType metalType)
+        {
+            return _abilitiesByMetals;
+        }
 
         protected override void Awake()
         {
