@@ -3,13 +3,10 @@ using Player.Abilities.Base;
 using System.Collections;
 using UnityEngine;
 
-namespace Player.Abilities
+public class TemplateActiveAbility : ActiveAbilityBase
 {
-    public class TemplateActiveAbility : ActiveAbilityBase
+    public override void Activate()
     {
-        public override void Activate()
-        {
-            base.Activate();
-        }
+        base.Activate();
     }
 }
