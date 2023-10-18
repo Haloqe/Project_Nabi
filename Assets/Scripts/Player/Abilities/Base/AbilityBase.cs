@@ -1,16 +1,16 @@
-using Enums.PlayerEnums;
-using Structs.PlayerStructs;
 using UnityEngine;
 
 namespace Player.Abilities.Base
 {
     public abstract class AbilityBase : MonoBehaviour
     {
+        protected PlayerCombat _owner;
         public SAbilityData _data { get; set; }
         protected EAbilityState _state;
 
-        public virtual void Init()
+        protected virtual void Start()
         {
+            _owner = FindObjectOfType<PlayerCombat>();
             _state = EAbilityState.Ready;
         }
 
@@ -23,6 +23,16 @@ namespace Player.Abilities.Base
             }
             Debug.Log("[" + _data.Name_EN + "] activated");
             _state = EAbilityState.Active;
+        }
+
+        protected virtual void TogglePrefab(bool isActive)
+        {
+            gameObject.SetActive(isActive);
+
+            if (isActive && !_data.IsAttached)
+            {
+                gameObject.transform.position = _owner.transform.position;
+            }
         }
     }
 }

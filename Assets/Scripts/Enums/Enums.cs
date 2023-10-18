@@ -1,0 +1,48 @@
+using System;
+
+#region Common
+public enum EDamageType
+{
+    Base,
+    Light,
+    Fire,
+}
+
+public enum EStatusEffect
+{
+    None,
+    Blind,
+    Stun,
+    Slow,
+    Airborne,
+    Silence,
+    Root,
+}
+#endregion Common
+
+#region Ability
+public enum EAbilityMetalType
+{
+    Copper,
+    Gold,
+    None,
+}
+public enum EAbilityType // AbilityType¿Ã ¡ª ∏»£«—µÌµµ «—µ• ±¶¬˙¿∫ ¿Ã∏ß ¿÷¿∏∏È πŸ≤„¡‡.. ±¶¬˙¿∏∏È ≥¿µŒ∞Ì.
+{
+    Passive,
+    Active,
+    None,
+}
+public enum EAbilityState
+{
+    Ready,
+    Active,
+    Cooldown,
+} 
+public enum EInteraction
+{
+    Press,
+    Hold,
+    None,
+}
+#endregion Ability

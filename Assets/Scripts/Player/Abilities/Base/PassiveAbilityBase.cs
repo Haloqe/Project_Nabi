@@ -1,19 +1,16 @@
-﻿using Enums.PlayerEnums;
+﻿using Player.Abilities.Base;
 using System.Collections;
 using UnityEngine;
 
-namespace Player.Abilities.Base
+public abstract class PassiveAbilityBase : AbilityBase
 {
-    public abstract class PassiveAbilityBase : AbilityBase
+    protected override void Start()
     {
-        private void Start()
-        {
-            Activate();
-        }
+        Activate();
+    }
 
-        public override void Activate()
-        {
-            base.Activate();
-        }
+    public override void Activate()
+    {
+        
     }
 }
