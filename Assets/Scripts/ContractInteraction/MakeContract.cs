@@ -1,3 +1,4 @@
+//MakeContract
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,75 +7,55 @@ using Structs.PlayerStructs;
 using Player.Abilities.Base;
 using UnityEngine.InputSystem;
 using System;
-using Random = UnityEngine.Random;
 using TMPro;
 using Managers;
 using Enums.PlayerEnums;
 
+//This class opens the Skill Selection UI when player presses F within a range set by sphere 2D collider (temporary collider for testing purpose).
 public class MakeContract : MonoBehaviour
 {
     public GameObject skillSelectionUI;
-    public Text skillDescriptionText;
-    public string[] skillDescription;
-    
+
+    // This variable checks if the player is close enough, i.e., triggering the sphere 2D collider
     public bool playerIsClose;
-    public float wordSpeed = 0.2f;
-    //public static Dictionary<int, SAbilityData>[] abilities = PlayerAbilityManager.GetAbilitiesByMetals(EAbilityMetalType.Gold);
+
+    //When the player is close and pressed F, set Active skill Selection UI.
     void Update()
     {
-        if(Input.GetKeyDown(KeyCode.F) && playerIsClose)
+        if (Input.GetKeyDown(KeyCode.S) && playerIsClose)
         {
-            if(skillSelectionUI.activeInHierarchy)
+            if (skillSelectionUI.activeInHierarchy)
             {
-                InitDescription();
+                ZeroDescription();
             }
             else
             {
                 skillSelectionUI.SetActive(true);
-                DisplayDescription();
             }
         }
     }
 
-    public void InitDescription()
+    public void ZeroDescription()
     {
         skillSelectionUI.SetActive(false);
     }
-    private void OnTriggerEnter2D(Collider2D other){
-        if(other.tag == "Player")
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.CompareTag("Player"))
         {
             playerIsClose = true;
         }
     }
-    private void OnTriggerExit2D(Collider2D other){
-        if(other.tag == "Player")
+
+    //You can exit the Skill Selection UI if you move far away from the Game Object Contractor or press F again.
+    private void OnTriggerExit2D(Collider2D other)
+    {
+        if (other.CompareTag("Player"))
         {
             playerIsClose = false;
-            InitDescription();
+            ZeroDescription();
         }
     }
 
-    IEnumerator DisplayDescription()
-    {
-        int skillToDisplay = RandomSkill();
-
-        Dictionary<int, SAbilityData>[] abilities = PlayerAbilityManager.GetAbilitiesByMetals(EAbilityMetalType.Gold);
-        foreach (Dictionary<int, SAbilityData> abilityDict in abilities)
-        {
-            if (abilityDict.TryGetValue(skillToDisplay, out SAbilityData ability))
-            {
-                foreach (char letter in ability.Des_EN.ToCharArray())
-                {
-                    skillDescriptionText.text += letter;
-                    yield return new WaitForSeconds(wordSpeed);
-                }
-            }
-        }
-    }
-
-    public int RandomSkill()
-    {
-        int randomIndex = Random.Range(1,8);
-        return randomIndex;
-    }
 }
