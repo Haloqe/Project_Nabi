@@ -11,9 +11,10 @@ using UnityEngine;
 
 public class SkillDescriptionDisplay : MonoBehaviour
 {
-    Dictionary<int, SAbilityData>[] _abilitiesByMetals;
+    Dictionary<int, SAbilityData> _abilitiesByMetal;
     [SerializeField] GameObject[] selectionButtons;
-    [SerializeField] int[] generatedNumbers = new int[5];
+    //[SerializeField] int[] generatedNumbers = new int[5];
+    List<int> generatedNumbers = new List<int>();
 
     void Start()
     {
@@ -24,61 +25,37 @@ public class SkillDescriptionDisplay : MonoBehaviour
     void Init()
     {
         //it is called EAbilityMetalType.Gold for now but it will later change depending on which metalContractor you encoutnered.
-        _abilitiesByMetals = PlayerAbilityManager.GetAbilitiesByMetals(EAbilityMetalType.Gold);
+        //_abilitiesByMetals = PlayerAbilityManager.GetAbilitiesByMetals(EAbilityMetalType.Gold);
+        _abilitiesByMetal = PlayerAbilityManager.Instance.GetAbilitiesByMetals(EAbilityMetalType.Gold);
     }
 
     public void DisplayDescription()
     {
         
-        foreach (Dictionary<int, SAbilityData> abilityDict in _abilitiesByMetals)
+        RandomSkill(_abilitiesByMetal.Count);
+
+        for (int i=0; i<3; i++)
         {
-            RandomSkill(abilityDict.Count);
-
-            //The Name_EN will change to Des_EN when the description is ready.
-            if (abilityDict.TryGetValue(RandomSkill(abilityDict.Count), out SAbilityData ability1))
-            {
-                TextMeshProUGUI skillDescriptionText = selectionButtons[0].GetComponentInChildren<TextMeshProUGUI>();
-                skillDescriptionText.text = ability1.Name_EN;
-            }
-
-            if (abilityDict.TryGetValue(RandomSkill(abilityDict.Count), out SAbilityData ability2))
-            {
-                TextMeshProUGUI skillDescriptionText = selectionButtons[1].GetComponentInChildren<TextMeshProUGUI>();
-                skillDescriptionText.text = ability2.Name_EN;
-            }
-
-            if (abilityDict.TryGetValue(RandomSkill(abilityDict.Count), out SAbilityData ability3))
-            {
-                TextMeshProUGUI skillDescriptionText = selectionButtons[2].GetComponentInChildren<TextMeshProUGUI>();
-                skillDescriptionText.text = ability3.Name_EN;
-            }
-            
-
+            TextMeshProUGUI skillDescriptionText = selectionButtons[i].GetComponentInChildren<TextMeshProUGUI>();
+            skillDescriptionText.text = _abilitiesByMetal[generatedNumbers[i]].Name_EN;
         }
     }
     
-    int RandomSkill(int numberOfSkills)
+    void RandomSkill(int numberOfSkills)
     {
-        int randomNumber = UnityEngine.Random.Range(1, numberOfSkills + 1);
 
-        return randomNumber;
-
-        /*
-        for (int i = 0; i < 3; i++)
+        
+        while (generatedNumbers.Count <= 3)
         {
-            int randomNumber = UnityEngine.Random.Range(1, numberOfSkills + 1);
-
+            int randomNumber = UnityEngine.Random.Range(1, numberOfSkills);
             
-            // Check if the generated number already exists in the array
-            while (Array.IndexOf(generatedNumbers, randomNumber) != -1)
+            while (generatedNumbers.Contains(randomNumber))
             {
-                randomNumber = UnityEngine.Random.Range(1, numberOfSkills + 1);
+                randomNumber = UnityEngine.Random.Range(1, numberOfSkills);
             }
 
-            Debug.Log(randomNumber);
-            generatedNumbers.Append(randomNumber);
-            Debug.Log("randomNumber : " + generatedNumbers[i]);
-        }*/
+            generatedNumbers.Add(randomNumber);
+        }
 
     }
 }
