@@ -22,7 +22,7 @@ public class MakeContract : MonoBehaviour
     //When the player is close and pressed F, set Active skill Selection UI.
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.S) && playerIsClose)
+        if (Input.GetKeyDown(KeyCode.F) && playerIsClose)
         {
             if (skillSelectionUI.activeInHierarchy)
             {
