@@ -28,7 +28,6 @@ namespace Player.Abilities.Base
         protected virtual void TogglePrefab(bool isActive)
         {
             gameObject.SetActive(isActive);
-
             if (isActive && !_data.IsAttached)
             {
                 gameObject.transform.position = _owner.transform.position;
