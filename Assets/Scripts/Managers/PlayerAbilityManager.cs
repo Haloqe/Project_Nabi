@@ -16,7 +16,7 @@ public class PlayerAbilityManager : Singleton<PlayerAbilityManager>
     private Dictionary<int, SAbilityData> _abilities;
     private Dictionary<int, SAbilityData>[] _abilitiesByMetals;
     private ActiveAbilityBase[] _activeAbilities = new ActiveAbilityBase[5];
-    //private PassiveAbilityBase[] _passiveAbilities = new PassiveAbilityBase[3];
+    private PassiveAbilityBase[] _passiveAbilities = new PassiveAbilityBase[3];
     private List<ActiveAbilityBase> _manualUpdateAbilities = new List<ActiveAbilityBase>();
 
     protected override void Awake()
@@ -189,6 +189,20 @@ public class PlayerAbilityManager : Singleton<PlayerAbilityManager>
     }
 
     //------------------------------------------------------------------------------------
+    
+    public bool CheckbilityAlreadyBound(int abilityIdx)
+    {
+        foreach (var ability in _activeAbilities) 
+        {
+            if (ability._data.Id == abilityIdx) return false;
+        }
+        foreach (var ability in _passiveAbilities)
+        {
+            if (ability._data.Id == abilityIdx) return false;
+        }
+        return true;
+    }
+    
     private AbilityBase InitiateAbility(int abilityIdx)
     {
         SAbilityData data = _abilities[abilityIdx];

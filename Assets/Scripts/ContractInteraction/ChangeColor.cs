@@ -12,7 +12,6 @@ public class ChangeColor : MonoBehaviour
     void Start()
     {   
         spriteRenderer = GetComponent<SpriteRenderer>();
-        
     }
 
     // Update is called once per frame

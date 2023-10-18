@@ -1,15 +1,5 @@
 //MakeContract
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-using Structs.PlayerStructs;
-using Player.Abilities.Base;
-using UnityEngine.InputSystem;
-using System;
-using TMPro;
-using Managers;
-using Enums.PlayerEnums;
 
 //This class opens the Skill Selection UI when player presses F within a range set by sphere 2D collider (temporary collider for testing purpose).
 public class MakeContract : MonoBehaviour
