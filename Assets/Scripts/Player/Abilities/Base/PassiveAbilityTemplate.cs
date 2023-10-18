@@ -1,15 +1,11 @@
-using Enums.PlayerEnums;
 using Player.Abilities.Base;
 using System.Collections;
 using UnityEngine;
 
-namespace Player.Abilities
+public class TemplatePassiveAbility : PassiveAbilityBase
 {
-    public class TemplatePassiveAbility : PassiveAbilityBase
+    public override void Activate()
     {
-        public override void Activate()
-        {
-            base.Activate();
-        }
+        base.Activate();
     }
 }
