@@ -1,9 +1,7 @@
-using Structs.EnemyStructs;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using UnityEngine;
-
 
 public class EnemyManager : Singleton<EnemyManager>
 {

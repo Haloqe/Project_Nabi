@@ -1,5 +1,3 @@
-using Enums.PlayerEnums;
-using Structs.PlayerStructs;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -7,20 +5,23 @@ using System.Linq;
 using UnityEngine.InputSystem;
 using UnityEngine;
 using System;
+using Unity.VisualScripting;
+using Player.Abilities.Base;
 
 public class PlayerAbilityManager : Singleton<PlayerAbilityManager>
 {
-    private GameObject _abilityContainer;
+    private GameObject _attachedAbilityContainer;
+    private GameObject _detachedAbilityContainer;
     private PlayerInput _playerInput;
     private Dictionary<int, SAbilityData> _abilities;
     private Dictionary<int, SAbilityData>[] _abilitiesByMetals;
     private ActiveAbilityBase[] _activeAbilities = new ActiveAbilityBase[5];
-    private PassiveAbilityBase[] _passiveAbilities = new PassiveAbilityBase[3];
+    //private PassiveAbilityBase[] _passiveAbilities = new PassiveAbilityBase[3];
+    private List<ActiveAbilityBase> _manualUpdateAbilities = new List<ActiveAbilityBase>();
 
     protected override void Awake()
     {
-        base.Awake();   // singleton
-        
+        base.Awake();
         _playerInput = FindObjectOfType<PlayerInput>();
         _abilities = new Dictionary<int, SAbilityData>();
         _abilitiesByMetals = new[]
@@ -32,10 +33,15 @@ public class PlayerAbilityManager : Singleton<PlayerAbilityManager>
 
     private void Start()
     {
-        _abilityContainer = PlayerController.Instance.transform.Find("Abilities").gameObject;
+        _attachedAbilityContainer = PlayerController.Instance.transform.Find("Abilities").gameObject;
+        _detachedAbilityContainer = GameObject.Find("DetachedAbilities");
     }
 
-    // csvHelper에 곧장 클래스에 데이터 넣어주는 기능도 있지만 여기선 직접 넣는 방법 사용
+    private void Update()
+    {
+        UpdateAbilities();
+    }
+
     // NOTE THERE IS NO ERROR CHECKING OF THE DATA !!!!
     // The field names and data types must be correct and reasonable
     public void Init(string dataPath)
@@ -50,11 +56,11 @@ public class PlayerAbilityManager : Singleton<PlayerAbilityManager>
             csv.ReadHeader();
             while (csv.Read())
             {
-                bool shouldOverride = bool.Parse(csv.GetField("ShouldOverride"));
-                if (!shouldOverride) continue;
-
+                // Fill ability info
                 SAbilityData data = new SAbilityData
                 {
+                    ShouldOverride = bool.Parse(csv.GetField("ShouldOverride")), // TEMP
+
                     Id           = int.Parse(csv.GetField("Id")),
                     ClassName    = csv.GetField("ClassName"),
                     Name_EN      = csv.GetField("Name_EN"),
@@ -70,17 +76,59 @@ public class PlayerAbilityManager : Singleton<PlayerAbilityManager>
                     CoolDownTime = float.Parse(csv.GetField("CoolDownTime")),
                     LifeTime     = float.Parse(csv.GetField("LifeTime"))
                 };
-     
+
+                // Fill damage info
+                SDamageInfo damageInfo = new SDamageInfo();
+                damageInfo.AbilityMetalType = data.MetalType;
+                string[] damages = csv.GetField("Damages").Split('|');
+                string[] statusEffects = csv.GetField("StatusEffects").Split('|');
+
+                if (data.Type == EAbilityType.Active)
+                {
+                    // Damage type & amount data
+                    if (damages.Length % 3 == 0)
+                    {
+                        damageInfo.Damages = new List<SDamage>();
+                        for (int i = 0; i < damages.Length; i += 3)
+                        {
+                            SDamage temp = new SDamage
+                            {
+                                Type = (EDamageType)Enum.Parse(typeof(EDamageType), damages[i]),
+                                Amount = float.Parse(damages[i+1]),
+                                Duration = float.Parse(damages[i+2]),
+                            };
+                            damageInfo.Damages.Add(temp);
+                        }
+                    }
+
+                    // Status effect data
+                    if (statusEffects.Length % 3 == 0)
+                    {
+                        damageInfo.StatusEffects = new List<SStatusEffect>();
+                        for (int i = 0; i < statusEffects.Length; i += 3)
+                        {
+                            SStatusEffect temp = new SStatusEffect
+                            {
+                                Effect = (EStatusEffect)Enum.Parse(typeof(EStatusEffect), statusEffects[i]),
+                                Strength = float.Parse(statusEffects[i + 1]),
+                                Duration = float.Parse(statusEffects[i + 2]),
+                            };
+                            damageInfo.StatusEffects.Add(temp);
+                        }
+                    }
+                }
+                data.DamageInfo = damageInfo;
+
                 _abilities.Add(data.Id, data);
                 _abilitiesByMetals[(int)data.MetalType].Add(data.Id, data);
                 Debug.Log("Ability [" + data.Name_EN + "][" + data.Id + "] added to the dictionary.");
             }
         }
-
+#if UNITY_EDITOR
         CreateAbilityScripts();
+#endif
     }
 
-    // TODO 배포시 첫 실행에서만 하도록 변경 (현재는 매 플레이 실행)
     private void CreateAbilityScripts()
     {
         if (_abilities.Count == 0)
@@ -114,6 +162,8 @@ public class PlayerAbilityManager : Singleton<PlayerAbilityManager>
         // NOTE this does not consider ability types other than PASSIVE / ACTIVE
         foreach (var ability in _abilities)
         {
+            if (!ability.Value.ShouldOverride) continue;
+
             string temp = string.Empty;
             string ability_name = ability.Value.ClassName;
             //string ability_name = String.Concat(ability.Value.Name_EN.Where(c => !Char.IsWhiteSpace(c)));
@@ -139,6 +189,28 @@ public class PlayerAbilityManager : Singleton<PlayerAbilityManager>
     }
 
     //------------------------------------------------------------------------------------
+    private AbilityBase InitiateAbility(int abilityIdx)
+    {
+        SAbilityData data = _abilities[abilityIdx];
+        UnityEngine.Object prefabObj = null;
+        UnityEngine.Object prefab = Utility.LoadObjectFromFile("Prefabs/PlayerAbilities/" + data.PrefabPath);
+        Debug.Assert(prefab);
+
+        if (data.IsAttached)
+        {
+            prefabObj = Instantiate(prefab, _attachedAbilityContainer.transform);
+        }
+        else
+        {
+            prefabObj = Instantiate(prefab, _detachedAbilityContainer.transform);
+        }
+
+        Component abilityObj = prefabObj.GameObject().GetComponent(data.ClassName);
+        Debug.Assert(abilityObj);
+
+        return (AbilityBase)abilityObj;
+    }
+    
     // NOTE currently does not consider if the same ability is bound to another key
     public void BindActiveAbility(int actionIdx, int abilityIdx)
     {
@@ -158,12 +230,10 @@ public class PlayerAbilityManager : Singleton<PlayerAbilityManager>
         ChangeActionBinding(actionIdx, null, _abilities[abilityIdx].Interaction.ToString());
 
         // Add the ability to the ability list
-        Type t = Type.GetType("Player.Abilities." + _abilities[abilityIdx].ClassName);
-        _activeAbilities[actionIdx] = (ActiveAbilityBase)_abilityContainer.AddComponent(t);
+        _activeAbilities[actionIdx] = (ActiveAbilityBase)InitiateAbility(abilityIdx);
 
         // Set variables of the ability
         _activeAbilities[actionIdx]._data = _abilities[abilityIdx];
-        _activeAbilities[actionIdx].Init();
 
         // Register callbacks
         // TODO Later pass context as parameter if needed
@@ -198,9 +268,23 @@ public class PlayerAbilityManager : Singleton<PlayerAbilityManager>
 
         // Remove ability component
         _activeAbilities[actionIdx].CleanUpAbility();
-        Type abilityType = Type.GetType("Player.Abilities." + 
-            _abilities[_activeAbilities[actionIdx]._data.Id].ClassName);
-        Destroy(_abilityContainer.GetComponent(abilityType));
         _activeAbilities[actionIdx] = null;
+    }
+
+    private void UpdateAbilities()
+    {
+        foreach (var ability in _manualUpdateAbilities.ToList())
+        {
+            ability.Update();
+            if (ability.CanActivate())
+            {
+                _manualUpdateAbilities.Remove(ability);
+            }
+        }
+    }
+
+    public void RequestManualUpdate(ActiveAbilityBase ability)
+    {
+        _manualUpdateAbilities.Add(ability);
     }
 }

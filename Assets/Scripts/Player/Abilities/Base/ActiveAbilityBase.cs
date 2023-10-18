@@ -1,15 +1,19 @@
-﻿using Enums.PlayerEnums;
-using Player.Abilities.Base;
+﻿using Player.Abilities.Base;
 using Unity.VisualScripting;
 using UnityEngine;
 
 public abstract class ActiveAbilityBase : AbilityBase, IDamageDealer
 {
-    private Object prefabObj = null;
     protected float _elapsedActiveTime = 0.0f;
     protected float _elapsedCoolTime = 0.0f;
 
-    protected void Update()
+    protected override void Start()
+    {
+        base.Start();
+        TogglePrefab(false);
+    }
+
+    public void Update()
     {
         if (_data.LifeTime == 0.0f) return;
 
@@ -34,43 +38,32 @@ public abstract class ActiveAbilityBase : AbilityBase, IDamageDealer
                 _elapsedCoolTime += Time.deltaTime;
                 if (_elapsedCoolTime >= _data.CoolDownTime)
                 {
-                        _state = EAbilityState.Ready;
-                        _elapsedCoolTime = 0.0f;
+                    _state = EAbilityState.Ready;
+                    _elapsedCoolTime = 0.0f;
                 }
                 break;
         }
     }
 
-    public override void Init()
+    public virtual bool CanActivate()
     {
-        base.Init();
-
-        if (_data.PrefabPath != "None")
+        if (_state != EAbilityState.Ready)
         {
-            Object prefab = Utility.LoadObjectFromFile("Prefabs/PlayerAbilities/" + _data.PrefabPath);
-            if (_data.IsAttached)
-            {
-                prefabObj = Instantiate(prefab, PlayerController.Instance.transform);
-            }
-            else
-            {
-                prefabObj = Instantiate(prefab, PlayerController.Instance.transform.position, Quaternion.identity);
-            }
-            prefabObj.GameObject().SetActive(false);
-            Debug.Log("[" + _data.Name_EN + "] Prefab found and instantiated");
+            //Debug.Log("[" + _data.Name_EN + "] under cooldown");
+            return false;
         }
+        return true;
     }
 
     public override void Activate()
     {
-        if (_state != EAbilityState.Ready)
-        {
-            Debug.Log("[" + _data.Name_EN + "] under cooldown");
-            return;
-        }
-        base.Activate();
-        if (prefabObj != null) TogglePrefab(true);
+        if (!CanActivate()) return;
+        _state = EAbilityState.Active;
+        TogglePrefab(true);
+        Initialise();
     }
+
+    protected abstract void Initialise();
 
     public virtual void OnPerformed()
     {
@@ -90,30 +83,12 @@ public abstract class ActiveAbilityBase : AbilityBase, IDamageDealer
     public virtual void OnFinished()
     {
         Debug.Log("[" + _data.Name_EN + "] finished");
-        if (prefabObj != null) TogglePrefab(false);
+        PlayerAbilityManager.Instance.RequestManualUpdate(this);
+        TogglePrefab(false);
     }
 
-    protected virtual void TogglePrefab(bool shouldTurnOn)
+    public virtual void CleanUpAbility()
     {
-        // TODO check if need manual activation upon re-enable
-        prefabObj.GameObject().SetActive(shouldTurnOn);
-
-        // TODO disable/enable colliders 
-        //ParticleSystem[] particleSystems = prefabObj.GameObject().GetComponentsInChildren<ParticleSystem>();
-        //AudioSource[] audioSources = prefabObj.GameObject().GetComponentsInChildren<AudioSource>();
-        //foreach (ParticleSystem particleSystem in particleSystems)
-        //{
-        //    particleSystem.Play();
-        //}
-        //foreach (AudioSource audioSource in audioSources)
-        //{
-        //    audioSource.Play();
-        //}
-    }
-
-    public void CleanUpAbility()
-    {
-        if (prefabObj) Destroy(prefabObj);
-        prefabObj = null;
+        Destroy(gameObject);
     }
 }

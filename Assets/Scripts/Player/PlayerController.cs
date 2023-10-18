@@ -6,6 +6,7 @@ public class PlayerController : MonoBehaviour
     static public PlayerController Instance { get; set; }
     private PlayerInput _playerInput;
     private PlayerMovement _playerMovement;
+    private PlayerCombat _playerCombat;
     static int _testNumCalls = 0;
 
     private void Awake()
@@ -13,6 +14,7 @@ public class PlayerController : MonoBehaviour
         Instance = this;
         _playerInput = GetComponent<PlayerInput>();
         _playerMovement = GetComponent<PlayerMovement>();
+        _playerCombat = GetComponent<PlayerCombat>();
     }
 
     void OnMove(InputValue value)

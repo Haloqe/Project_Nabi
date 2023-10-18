@@ -9,7 +9,7 @@ public class DataManager : Singleton<DataManager>
 
     protected override void Awake()
     {
-        base.Awake();   // singleton
+        base.Awake();
 
         // Awake에서 호출하는게 위험하지 않은지 확인 필요 (relative order of initialisations matter)
         _playerAbilityManager = GetComponent<PlayerAbilityManager>();
