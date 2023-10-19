@@ -27,22 +27,27 @@ public static class Utility
     public static void PrintDamageInfo(string receiver, SDamageInfo damageInfo)
     {
         string damages = System.String.Empty;
-        foreach (var damage in damageInfo.Damages)
+        if (damageInfo.Damages != null) 
         {
-            damages += damage.Type.ToString() + " (" + damage.Duration +
-                "s, " + damage.Amount + ")";
+            foreach (var damage in damageInfo.Damages)
+            {
+                damages += damage.Type.ToString() + " (" + damage.Duration +
+                    "s, " + damage.Amount + ")";
+            }
         }
+        
         string statusEffects = System.String.Empty;
-        foreach (var effect in damageInfo.StatusEffects)
+        if (damageInfo.StatusEffects != null)
         {
-            statusEffects += effect.Effect.ToString() + " (" + effect.Duration +
-                "s, " + effect.Strength + ")";
+            foreach (var effect in damageInfo.StatusEffects)
+            {
+                statusEffects += effect.Effect.ToString() + " (" + effect.Duration +
+                    "s, " + effect.Strength + ")";
+            }
         }
 
         Debug.Log("[Dealer ID] " + damageInfo.DamageSource +
-            " [Receiver] " + receiver +
-            "\n[Metal Type] " + damageInfo.AbilityMetalType.ToString() +
-            " [Damage Types] " + damages +
-            "\n[Status Effects] " + statusEffects);
+            " [Receiver] " + receiver + "[Metal Type] " + damageInfo.AbilityMetalType.ToString() +
+            " [Damage Types] " + damages + "[Status Effects] " + statusEffects);
     }
 }

@@ -1,8 +1,8 @@
-﻿using Player.Abilities.Base;
+using Player.Abilities.Base;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public abstract class ActiveAbilityBase : AbilityBase, IDamageDealer
+public abstract class ActiveAbilityBase : AbilityBase
 {
     protected float _elapsedActiveTime = 0.0f;
     protected float _elapsedCoolTime = 0.0f;
