@@ -190,16 +190,21 @@ public class PlayerAbilityManager : Singleton<PlayerAbilityManager>
 
     //------------------------------------------------------------------------------------
     
-    public bool CheckbilityAlreadyBound(int abilityIdx)
+    //return true if the abilityIdx is not already bound
+    //reutrn false if the abilityIdx already bound
+    public bool CheckabilityAlreadyBound(int abilityIdx)
     {
-        foreach (var ability in _activeAbilities) 
+        Dictionary<int, SAbilityData> _abilitiesByMetalForCheck;
+        _abilitiesByMetalForCheck = GetAbilitiesByMetal(EAbilityMetalType.Gold);
+
+        for (int i = 1; i <= _abilitiesByMetalForCheck.Count; i++)
         {
-            if (ability._data.Id == abilityIdx) return false;
+            if(_abilitiesByMetalForCheck[i].Id == abilityIdx)
+            {
+                return false;
+            }
         }
-        foreach (var ability in _passiveAbilities)
-        {
-            if (ability._data.Id == abilityIdx) return false;
-        }
+
         return true;
     }
     
