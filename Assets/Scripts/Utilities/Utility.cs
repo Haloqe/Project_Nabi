@@ -47,7 +47,7 @@ public static class Utility
         }
 
         Debug.Log("[Dealer ID] " + damageInfo.DamageSource +
-            " [Receiver] " + receiver + "[Metal Type] " + damageInfo.AbilityMetalType.ToString() +
-            " [Damage Types] " + damages + "[Status Effects] " + statusEffects);
+            " [Receiver] " + receiver + " [Metal Type] " + damageInfo.AbilityMetalType.ToString() +
+            " [Damage Types] " + damages + " [Status Effects] " + statusEffects);
     }
 }
