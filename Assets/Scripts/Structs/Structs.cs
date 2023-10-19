@@ -5,7 +5,7 @@ public struct SStatusEffect
 {
     public EStatusEffect Effect;
     public float Strength;
-    public float Duration; // zero if continuous, auto-removed skill (e.g. ÀåÆÇ½ºÅ³)
+    public float Duration; // zero if continuous, auto-removed skill (e.g. ì¥íŒìŠ¤í‚¬)
 }
 
 public struct SDamage
@@ -13,7 +13,20 @@ public struct SDamage
     public EDamageType Type;
     public float Amount;
     public float Duration; // zero if one-shot damage
-    // public float Interval; // ³Ê¹« º¹ÀâÇØÁ®¼­ µµÆ®µ©Àº 0.5ÃÊ tickÀ¸·Î ÅëÀÏ
+    // public float Interval; // ë„ˆë¬´ ë³µì¡í•´ì ¸ì„œ ë„íŠ¸ë€ì€ 0.5ì´ˆ tickìœ¼ë¡œ í†µì¼
+
+    public SDamage(EDamageType type, float amount)
+    {
+        Type = type;
+        Amount = amount;
+        Duration = 0;
+    }
+    public SDamage(EDamageType type, float amount, float duration)
+    {
+        Type = type;
+        Amount = amount;
+        Duration = duration;
+    }
 }
 
 public struct SDamageInfo
@@ -39,7 +52,7 @@ public struct SAbilityData
     public string IconPath;
     public string PrefabPath;
     public bool IsAttached;
-    public EInteraction Interaction; // ÀÌÈÄ slowtap duration, hold duration µî ÇÊ¿äÇØÁö¸é string ¶Ç´Â separated field º¯°æ
+    public EInteraction Interaction; // ì´í›„ slowtap duration, hold duration ë“± í•„ìš”í•´ì§€ë©´ string ë˜ëŠ” separated field ë³€ê²½
 
     public EAbilityType Type;
     public EAbilityMetalType MetalType;

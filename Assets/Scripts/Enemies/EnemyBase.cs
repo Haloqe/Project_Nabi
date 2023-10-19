@@ -12,10 +12,19 @@ public abstract class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     {
         _rigidbody2D = GetComponent<Rigidbody2D>();
         _animator = GetComponent<Animator>();
+        Initialise();
     }
+
+    protected abstract void Initialise();
 
     public void TakeDamage(SDamageInfo damageInfo)
     {
         Utility.PrintDamageInfo(gameObject.name, damageInfo);
+    }
+
+    public virtual void DealDamage(IDamageable target, SDamageInfo damageInfo)
+    {
+        damageInfo.DamageSource = gameObject.GetInstanceID();
+        target.TakeDamage(damageInfo);
     }
 }

@@ -6,9 +6,5 @@ public interface IDamageDealer
 {
     GameObject gameObject { get; }
 
-    public virtual void DealDamage(IDamageable target, SDamageInfo damageInfo)
-    {
-        damageInfo.DamageSource = gameObject.GetInstanceID();
-        target.TakeDamage(damageInfo);
-    }
+    public abstract void DealDamage(IDamageable target, SDamageInfo damageInfo);
 }
