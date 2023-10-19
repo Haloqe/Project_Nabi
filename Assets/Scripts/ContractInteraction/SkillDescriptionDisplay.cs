@@ -51,7 +51,7 @@ public class SkillDescriptionDisplay : MonoBehaviour
         
         //bind on key 0 by default for now
         //PlayerAbilitymanager.Instance.BindActiveAbility (some operation to get key, generatedNumbers[index]);
-        PlayerAbilityManager.Instance.BindActiveAbility(0, 1);
+        PlayerAbilityManager.Instance.BindActiveAbility(0, 6);
         
     }
 
