@@ -10,13 +10,13 @@ public enum EDamageType
 
 public enum EStatusEffect
 {
-    None,
     Blind,
     Stun,
     Slow,
     Airborne,
     Silence,
     Root,
+    MAX,
 }
 #endregion Common
 
@@ -27,7 +27,7 @@ public enum EAbilityMetalType
     Gold,
     None,
 }
-public enum EAbilityType // AbilityTypeÀÌ Á» ¸ğÈ£ÇÑµíµµ ÇÑµ¥ ±¦ÂúÀº ÀÌ¸§ ÀÖÀ¸¸é ¹Ù²ãÁà.. ±¦ÂúÀ¸¸é ³ÀµÎ°í.
+public enum EAbilityType // AbilityTypeì´ ì¢€ ëª¨í˜¸í•œë“¯ë„ í•œë° ê´œì°®ì€ ì´ë¦„ ìˆìœ¼ë©´ ë°”ê¿”ì¤˜.. ê´œì°®ìœ¼ë©´ ëƒ…ë‘ê³ .
 {
     Passive,
     Active,

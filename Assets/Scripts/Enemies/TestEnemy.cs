@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
 
 public class TestEnemy : EnemyBase
 {
@@ -11,6 +10,10 @@ public class TestEnemy : EnemyBase
     private Transform _target = null;
     private float _skillLifeTime = 1f;
     [SerializeField] float AttackInterval = 5;
+    [SerializeField] bool ShouldAttack = false;
+    [SerializeField] public EStatusEffect statusEffect;
+    [SerializeField] public float effectStrength;
+    [SerializeField] public float effectDuration;
     private GameObject _attacker;
     private int _attackCount = 0;
     private SDamageInfo _damageInfo;
@@ -23,10 +26,11 @@ public class TestEnemy : EnemyBase
         _damageInfo = new SDamageInfo
         {
             DamageSource = gameObject.GetInstanceID(),
-            Damages = new List<SDamage>() { new SDamage(EDamageType.Base, 5, 0) },
+            //Damages = new List<SDamage>() { new SDamage(EDamageType.Base, 5, 0) },
+            StatusEffects = new List<SStatusEffect> { new SStatusEffect(statusEffect, effectStrength, effectDuration) }
         };
         StartCoroutine(ChaseRoutine());
-        StartCoroutine(AttackRoutine());
+        if (ShouldAttack) StartCoroutine(AttackRoutine());
     }
 
     private void Update()

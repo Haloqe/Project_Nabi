@@ -6,16 +6,19 @@ public abstract class ActiveAbilityBase : AbilityBase
 {
     protected float _elapsedActiveTime = 0.0f;
     protected float _elapsedCoolTime = 0.0f;
+    protected float _lifeTime = 0.0f;
 
     protected override void Start()
     {
         base.Start();
-        TogglePrefab(false);
+        _lifeTime = _data.LifeTime == 0.0f ? 
+            Utility.GetLongestParticleDuration(gameObject) + 0.05f : _data.LifeTime;
+        TogglePrefab(false);        
     }
 
     public void Update()
     {
-        if (_data.LifeTime == 0.0f) return;
+        if (_lifeTime == 0.0f) return;
 
         switch (_state)
         {
@@ -25,7 +28,7 @@ public abstract class ActiveAbilityBase : AbilityBase
 
             case EAbilityState.Active:
                 _elapsedActiveTime += Time.deltaTime;
-                if (_elapsedActiveTime >= _data.LifeTime)
+                if (_elapsedActiveTime >= _lifeTime)
                 {
                     _state = EAbilityState.Cooldown;
                     _elapsedCoolTime = _elapsedActiveTime;
@@ -58,12 +61,13 @@ public abstract class ActiveAbilityBase : AbilityBase
     public override void Activate()
     {
         if (!CanActivate()) return;
-        _state = EAbilityState.Active;
+        Debug.Log("[" + _data.Name_EN + "] activated");
         TogglePrefab(true);
-        Initialise();
+        _state = EAbilityState.Active;
+        ActivateAbility();
     }
 
-    protected abstract void Initialise();
+    protected abstract void ActivateAbility();
 
     public virtual void OnPerformed()
     {

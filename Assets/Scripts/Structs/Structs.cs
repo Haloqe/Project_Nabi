@@ -6,6 +6,25 @@ public struct SStatusEffect
     public EStatusEffect Effect;
     public float Strength;
     public float Duration; // zero if continuous, auto-removed skill (e.g. 장판스킬)
+
+    public SStatusEffect(EStatusEffect type)
+    {
+        Effect = type;
+        Strength = 1;
+        Duration = 0;
+    }
+    public SStatusEffect(EStatusEffect type, float strength)
+    {
+        Effect = type;
+        Strength = strength;
+        Duration = 0;
+    }
+    public SStatusEffect(EStatusEffect type, float strength, float duration)
+    {
+        Effect = type;
+        Strength = strength;
+        Duration = duration;
+    }
 }
 
 public struct SDamage

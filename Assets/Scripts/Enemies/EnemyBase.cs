@@ -17,14 +17,19 @@ public abstract class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
     protected abstract void Initialise();
 
-    public void TakeDamage(SDamageInfo damageInfo)
-    {
-        Utility.PrintDamageInfo(gameObject.name, damageInfo);
-    }
 
     public virtual void DealDamage(IDamageable target, SDamageInfo damageInfo)
     {
         damageInfo.DamageSource = gameObject.GetInstanceID();
         target.TakeDamage(damageInfo);
     }
+
+    //-------------------------------------------------------------
+    // Received Damage Handling
+    public void TakeDamage(SDamageInfo damageInfo)
+    {
+        Utility.PrintDamageInfo(gameObject.name, damageInfo);
+    }
+
+
 }
