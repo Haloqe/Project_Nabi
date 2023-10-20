@@ -7,7 +7,7 @@ public class MansaMusa : ActiveAbilityBase
     private List<int> _affectedEnemies = new List<int>();
     private int _maxTargetNum = 5;
 
-    protected override void Initialise()
+    protected override void ActivateAbility()
     {
         _affectedEnemies.Clear();
     }

@@ -50,4 +50,23 @@ public static class Utility
             " [Receiver] " + receiver + " [Metal Type] " + damageInfo.AbilityMetalType.ToString() +
             " [Damage Types] " + damages + " [Status Effects] " + statusEffects);
     }
+
+    public static float GetLongestParticleDuration(GameObject obj)
+    {
+        if (obj == null) return 0;
+
+        // Try get particle systems
+        var particleSystems = obj.GetComponents<ParticleSystem>();
+        if (particleSystems.Length == 0) return 0;
+
+        // Find the longest duration
+        float duration = 0.0f;
+        foreach (var particle in particleSystems)
+        {
+            if (particle.main.loop) continue;
+            duration = Mathf.Max(duration, particle.main.duration + particle.main.startLifetime.constant);
+        }
+
+        return duration;
+    }
 }

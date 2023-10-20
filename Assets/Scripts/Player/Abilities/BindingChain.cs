@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class BindingChain : ActiveAbilityBase
 {
-    protected override void Initialise()
+    protected override void ActivateAbility()
     {
         // Called upon activation of skill
         // Do initialisation here

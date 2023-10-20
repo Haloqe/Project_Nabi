@@ -4,9 +4,11 @@ using UnityEngine;
 
 public class PerfectPurification : ActiveAbilityBase
 {
-    protected override void Initialise()
+    // remove all debuffs
+    // increase movement speed by 1.3 for 1.5 seconds
+    protected override void ActivateAbility()
     {
-        // Called upon activation of skill
-        // Do initialisation here
+        _owner.RemoveAllDebuffs();
+        FindObjectOfType<PlayerMovement>().SetMoveSpeedForDuration(3f, 1.5f);
     }
 }

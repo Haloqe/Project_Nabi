@@ -9,6 +9,8 @@ public class PlayerController : MonoBehaviour
     private PlayerCombat _playerCombat;
     static int _testNumCalls = 0;
 
+    // TEMP TEST
+
     private void Awake()
     {
         Instance = this;
@@ -31,17 +33,8 @@ public class PlayerController : MonoBehaviour
     {
         if (_testNumCalls == 0)
         {
-            PlayerAbilityManager.Instance.BindActiveAbility(0, 1); // bind ability id [1] to key [0]
-        }
-        else if (_testNumCalls == 1)
-        {
-            PlayerAbilityManager.Instance.BindActiveAbility(0, 2); // bind ability id [2] to key [0]
-        }
-        else
-        {
-            PlayerAbilityManager.Instance.BindActiveAbility(0, 1); // bind ability id [1] to key [0]
-            PlayerAbilityManager.Instance.BindActiveAbility(1, 2); // bind ability id [2] to key [1]
-        }
-        _testNumCalls++;            
+            PlayerAbilityManager.Instance.BindActiveAbility(1, 7);
+            _testNumCalls++;
+        }        
     }
 }
