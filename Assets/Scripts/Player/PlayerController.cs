@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
@@ -8,8 +9,7 @@ public class PlayerController : MonoBehaviour
     private PlayerMovement _playerMovement;
     private PlayerCombat _playerCombat;
     static int _testNumCalls = 0;
-
-    // TEMP TEST
+    private bool _isNYScene;
 
     private void Awake()
     {
@@ -17,6 +17,12 @@ public class PlayerController : MonoBehaviour
         _playerInput = GetComponent<PlayerInput>();
         _playerMovement = GetComponent<PlayerMovement>();
         _playerCombat = GetComponent<PlayerCombat>();
+    }
+
+    private void Start()
+    {
+        // TEMP for debug
+        _isNYScene = SceneManager.GetActiveScene().name == "Scene_NY";
     }
 
     void OnMove(InputValue value)
@@ -31,10 +37,22 @@ public class PlayerController : MonoBehaviour
 
     void OnTestAction(InputValue value)
     {
+        if (_isNYScene) OnTestAction_NY(value);
+        else OnTestAction_SOOA(value);
+    }
+
+    private void OnTestAction_NY(InputValue value)
+    {
+
+    }
+
+    private void OnTestAction_SOOA(InputValue value)
+    {
         if (_testNumCalls == 0)
         {
-            PlayerAbilityManager.Instance.BindActiveAbility(1, 7);
+            PlayerAbilityManager.Instance.BindActiveAbility(0, 1); // Mansa Musa
+            PlayerAbilityManager.Instance.BindActiveAbility(1, 7); // Perfect Purification
             _testNumCalls++;
-        }        
+        }
     }
 }
