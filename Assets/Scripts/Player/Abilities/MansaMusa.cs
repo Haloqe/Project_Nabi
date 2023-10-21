@@ -4,8 +4,14 @@ using UnityEngine;
 
 public class MansaMusa : ActiveAbilityBase
 {
-    private List<int> _affectedEnemies = new List<int>();
-    private int _maxTargetNum = 5;
+    private List<int> _affectedEnemies;
+    private int _maxTargetNum;
+
+    protected override void Initialise()
+    {
+        _affectedEnemies = new List<int>();
+        _maxTargetNum = 5;
+    }
 
     protected override void ActivateAbility()
     {

@@ -4,6 +4,7 @@ using UnityEngine;
 
 public abstract class ActiveAbilityBase : AbilityBase
 {
+    protected bool _isCleanseAbility = false;
     protected float _elapsedActiveTime = 0.0f;
     protected float _elapsedCoolTime = 0.0f;
     protected float _lifeTime = 0.0f;
@@ -13,8 +14,11 @@ public abstract class ActiveAbilityBase : AbilityBase
         base.Start();
         _lifeTime = _data.LifeTime == 0.0f ? 
             Utility.GetLongestParticleDuration(gameObject) + 0.05f : _data.LifeTime;
-        TogglePrefab(false);        
+        TogglePrefab(false);
+        Initialise();
     }
+
+    protected abstract void Initialise();
 
     public void Update()
     {
@@ -50,6 +54,17 @@ public abstract class ActiveAbilityBase : AbilityBase
 
     public virtual bool CanActivate()
     {
+        if (_owner.IsSilenced)
+        {
+            Debug.Log("Silenced!");
+            return false;
+        }
+        else if (_owner.IsSilencedExceptCleanse && !_isCleanseAbility)
+        {
+            Debug.Log("Silenced except cleanse!");
+            return false;
+        }
+
         if (_state != EAbilityState.Ready)
         {
             //Debug.Log("[" + _data.Name_EN + "] under cooldown");

@@ -11,8 +11,9 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
     private int health = 15;
 
     // status effect attributes
-    [NamedArray(typeof(EStatusEffect))]
-    public GameObject[] DebuffEffects;
+    public bool IsSilenced { get; private set; }
+    public bool IsSilencedExceptCleanse { get; private set; }
+    [NamedArray(typeof(EStatusEffect))] public GameObject[] DebuffEffects;
     private float[] _effectRemainingTimes;
     private SortedDictionary<float, float> _slowRemainingTimes; // str,time
 
@@ -33,7 +34,6 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
 
     private void UpdateStatusEffectTimes()
     {
-        bool shouldEnableMovement = false;
         float deltaTime = Time.deltaTime;
 
         for (int i = 0; i < _effectRemainingTimes.Length; i++)
@@ -46,18 +46,30 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
 
             // update remaining time
             _effectRemainingTimes[i] -= deltaTime;
+            EStatusEffect currEffect = (EStatusEffect)i;
             if (_effectRemainingTimes[i] <= 0)
             {
                 SetVFXActive(i, false);
                 _effectRemainingTimes[i] = 0.0f;
-                if (i == (int)EStatusEffect.Root || i == (int)EStatusEffect.Airborne || i == (int)EStatusEffect.Stun)
+
+                if (i == (int)EStatusEffect.Silence)
                 {
-                    shouldEnableMovement = true;
+                    IsSilenced = false;
+                }
+                else if (i == (int)EStatusEffect.Airborne)
+                {
+                    IsSilencedExceptCleanse = false;
                 }
             }
         }
 
-        if (shouldEnableMovement) _playerMovement.EnableDisableMovement(true);
+        // Check if need to change attributes
+        if (_effectRemainingTimes[(int)EStatusEffect.Root] == 0.0f &&
+            _effectRemainingTimes[(int)EStatusEffect.Airborne] == 0.0f &&
+            _effectRemainingTimes[(int)EStatusEffect.Stun] == 0.0f)
+        {
+            _playerMovement.EnableDisableMovement(true);
+        }   
         UpdateSlowTimes();
     }
 
@@ -134,7 +146,6 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
     {
         if (statusEffects.Count == 0) return;
         bool shouldDisableMovement = false;
-        bool shouldDisableSkills = false;
 
         foreach (var statusEffect in statusEffects)
         {
@@ -157,7 +168,7 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
 
                 case EStatusEffect.Stun: // disable movement + skill
                     shouldDisableMovement = true;
-                    shouldDisableSkills = true;
+                    IsSilencedExceptCleanse = true;
                     break;
 
                 case EStatusEffect.Root: // disable movement
@@ -166,12 +177,12 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
 
                 case EStatusEffect.Airborne: // disable movement + skill, airborne
                     shouldDisableMovement = true;
-                    shouldDisableSkills = true;
+                    IsSilencedExceptCleanse = true;
                     // TODO airborne
                     break;
 
                 case EStatusEffect.Silence: // disable skill
-                    shouldDisableSkills = true;
+                    IsSilenced = true;
                     break;
             }
         }
@@ -179,10 +190,6 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
         if (shouldDisableMovement)
         {
             _playerMovement.EnableDisableMovement(false);
-        }
-        if (shouldDisableSkills)
-        {
-            // TODO
         }
     }
 
@@ -246,10 +253,14 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
         DebuffEffects[effectIdx].SetActive(setActive);
     }
 
+    /// <summary>
+    ///  현재는 isSliencedExceptCleanse 포함해서 제거함. Silenced는 유지.
+    /// </summary>
     public void RemoveAllDebuffs()
     {
         for (int i = 0; i < (int)EStatusEffect.MAX; i++)
         {
+            if (i == (int)EStatusEffect.Silence) continue;
             SetVFXActive(i, false);
             _effectRemainingTimes[i] = 0.0f;
         }
