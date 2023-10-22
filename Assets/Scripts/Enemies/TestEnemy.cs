@@ -11,6 +11,7 @@ public class TestEnemy : EnemyBase
     private float _skillLifeTime = 1f;
     [SerializeField] float AttackInterval = 5;
     [SerializeField] bool ShouldAttack = false;
+    [SerializeField] float DamageAmount = 3;
     [SerializeField] public EStatusEffect statusEffect;
     [SerializeField] public float effectStrength;
     [SerializeField] public float effectDuration;
@@ -26,7 +27,7 @@ public class TestEnemy : EnemyBase
         _damageInfo = new SDamageInfo
         {
             DamageSource = gameObject.GetInstanceID(),
-            //Damages = new List<SDamage>() { new SDamage(EDamageType.Base, 5, 0) },
+            Damages = new List<SDamage>() { new SDamage(EDamageType.Base, DamageAmount, 0) },
             StatusEffects = new List<SStatusEffect> { new SStatusEffect(statusEffect, effectStrength, effectDuration) }
         };
         StartCoroutine(ChaseRoutine());

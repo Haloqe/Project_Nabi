@@ -298,6 +298,7 @@ public class PlayerAbilityManager : Singleton<PlayerAbilityManager>
             if (ability.CanActivate())
             {
                 _manualUpdateAbilities.Remove(ability);
+                ability.IsUnderManualUpdate = false;
             }
         }
     }
@@ -305,6 +306,7 @@ public class PlayerAbilityManager : Singleton<PlayerAbilityManager>
     public void RequestManualUpdate(ActiveAbilityBase ability)
     {
         _manualUpdateAbilities.Add(ability);
+        ability.IsUnderManualUpdate = true;
     }
 
     public Dictionary<int, SAbilityData> GetAbilitiesByMetal(EAbilityMetalType metalType)

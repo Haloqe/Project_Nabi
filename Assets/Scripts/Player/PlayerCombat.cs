@@ -35,6 +35,8 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
     private void UpdateStatusEffectTimes()
     {
         float deltaTime = Time.deltaTime;
+        bool shouldCheckUpdateMovement = false;
+        bool shouldCheckUpdateSilenceEx = false;
 
         for (int i = 0; i < _effectRemainingTimes.Length; i++)
         {
@@ -56,20 +58,38 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
                 {
                     IsSilenced = false;
                 }
-                else if (i == (int)EStatusEffect.Airborne)
+                if (!shouldCheckUpdateMovement && 
+                    (currEffect == EStatusEffect.Root || currEffect == EStatusEffect.Airborne || currEffect == EStatusEffect.Stun))
                 {
-                    IsSilencedExceptCleanse = false;
+                    shouldCheckUpdateMovement = true;
+                }
+                if (!shouldCheckUpdateSilenceEx && 
+                    (currEffect == EStatusEffect.Airborne || currEffect == EStatusEffect.Stun))
+                {
+                    shouldCheckUpdateSilenceEx = true;
                 }
             }
         }
 
         // Check if need to change attributes
-        if (_effectRemainingTimes[(int)EStatusEffect.Root] == 0.0f &&
-            _effectRemainingTimes[(int)EStatusEffect.Airborne] == 0.0f &&
-            _effectRemainingTimes[(int)EStatusEffect.Stun] == 0.0f)
+        if (shouldCheckUpdateMovement)
         {
-            _playerMovement.EnableDisableMovement(true);
-        }   
+            if (_effectRemainingTimes[(int)EStatusEffect.Root] == 0.0f &&
+                _effectRemainingTimes[(int)EStatusEffect.Airborne] == 0.0f &&
+                _effectRemainingTimes[(int)EStatusEffect.Stun] == 0.0f)
+            {
+                _playerMovement.EnableDisableMovement(true);
+            }
+        }
+        if (shouldCheckUpdateSilenceEx)
+        {
+            if (_effectRemainingTimes[(int)EStatusEffect.Stun] == 0.0f &&
+                _effectRemainingTimes[(int)EStatusEffect.Airborne] == 0.0f)
+            {
+                IsSilencedExceptCleanse = false;
+            }
+        }
+
         UpdateSlowTimes();
     }
 

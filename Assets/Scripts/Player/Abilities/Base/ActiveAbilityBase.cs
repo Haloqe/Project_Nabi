@@ -8,6 +8,7 @@ public abstract class ActiveAbilityBase : AbilityBase
     protected float _elapsedActiveTime = 0.0f;
     protected float _elapsedCoolTime = 0.0f;
     protected float _lifeTime = 0.0f;
+    public bool IsUnderManualUpdate = false;
 
     protected override void Start()
     {
@@ -56,18 +57,18 @@ public abstract class ActiveAbilityBase : AbilityBase
     {
         if (_owner.IsSilenced)
         {
-            Debug.Log("Silenced!");
+            if (!IsUnderManualUpdate) Debug.Log("Silenced!");
             return false;
         }
         else if (_owner.IsSilencedExceptCleanse && !_isCleanseAbility)
         {
-            Debug.Log("Silenced except cleanse!");
+            if (!IsUnderManualUpdate) Debug.Log("Silenced except cleanse!");
             return false;
         }
 
         if (_state != EAbilityState.Ready)
         {
-            //Debug.Log("[" + _data.Name_EN + "] under cooldown");
+            if (!IsUnderManualUpdate) Debug.Log("[" + _data.Name_EN + "] under cooldown");
             return false;
         }
         return true;
@@ -103,6 +104,7 @@ public abstract class ActiveAbilityBase : AbilityBase
     {
         Debug.Log("[" + _data.Name_EN + "] finished");
         PlayerAbilityManager.Instance.RequestManualUpdate(this);
+
         TogglePrefab(false);
     }
 

@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
-    static public PlayerController Instance { get; set; }
+    static public PlayerController Instance { get; private set; }
     private PlayerInput _playerInput;
     private PlayerMovement _playerMovement;
     private PlayerCombat _playerCombat;
