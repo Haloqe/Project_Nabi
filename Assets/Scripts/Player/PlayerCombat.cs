@@ -17,6 +17,9 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
     private float[] _effectRemainingTimes;
     private SortedDictionary<float, float> _slowRemainingTimes; // str,time
 
+    // TEMP VAR
+    [SerializeField] GameObject DeadCanvas;
+
     private void Start()
     {
         _playerMovement = GetComponent<PlayerMovement>();
@@ -155,6 +158,7 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
         // TEMP CODE
         Debug.Log("Player died.");
         // should save info somewhere, do progressive updates
+        DeadCanvas.SetActive(true);
         Destroy(gameObject);
     }
     #endregion Damage Dealing and Receiving

@@ -26,6 +26,7 @@ public class PlayerMovement : MonoBehaviour
         _rigidbody2D = GetComponent<Rigidbody2D>();
         _moveSpeed = DefaultMoveSpeed;
         _jumpForce = DefaultJumpForce;
+        _isJumping = true;
     }
 
     private void FixedUpdate()
@@ -48,10 +49,14 @@ public class PlayerMovement : MonoBehaviour
     public void ChangeSpeedByPercentage(float percentage, bool isSlowerThanNow = false, bool onlySpeed = false)
     {
         float newSpeed = DefaultMoveSpeed * percentage;
-        if (_moveSpeed > DefaultMoveSpeed) // if has buff
-            newSpeed = _moveSpeed * percentage;
 
-        if (_moveSpeed > newSpeed || !isSlowerThanNow)
+        // if has buff
+        if (_moveSpeed > DefaultMoveSpeed)
+        {
+            newSpeed = _moveSpeed * percentage;
+        }
+            
+        if (!isSlowerThanNow || _moveSpeed > newSpeed)
         {
             _moveSpeed = newSpeed;
             if (!onlySpeed) _jumpForce = DefaultJumpForce * percentage;
@@ -74,6 +79,7 @@ public class PlayerMovement : MonoBehaviour
     public void ResetMoveSpeed()
     {
         _moveSpeed = DefaultMoveSpeed;
+        _jumpForce = DefaultJumpForce;
     }
 
     public void SetMoveDirection(Vector2 value)
