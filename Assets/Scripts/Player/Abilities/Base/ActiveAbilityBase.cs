@@ -1,5 +1,4 @@
 using Player.Abilities.Base;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public abstract class ActiveAbilityBase : AbilityBase
@@ -8,7 +7,6 @@ public abstract class ActiveAbilityBase : AbilityBase
     protected float _elapsedActiveTime = 0.0f;
     protected float _elapsedCoolTime = 0.0f;
     protected float _lifeTime = 0.0f;
-    public bool IsUnderManualUpdate = false;
 
     protected override void Start()
     {
@@ -48,6 +46,7 @@ public abstract class ActiveAbilityBase : AbilityBase
                 {
                     _state = EAbilityState.Ready;
                     _elapsedCoolTime = 0.0f;
+                    PlayerAbilityManager.Instance.RequestCancelManualUpdate(this);
                 }
                 break;
         }
@@ -57,18 +56,18 @@ public abstract class ActiveAbilityBase : AbilityBase
     {
         if (_owner.IsSilenced)
         {
-            if (!IsUnderManualUpdate) Debug.Log("Silenced!");
+            Debug.Log("Silenced!");
             return false;
         }
         else if (_owner.IsSilencedExceptCleanse && !_isCleanseAbility)
         {
-            if (!IsUnderManualUpdate) Debug.Log("Silenced except cleanse!");
+            Debug.Log("Silenced except cleanse!");
             return false;
         }
 
         if (_state != EAbilityState.Ready)
         {
-            if (!IsUnderManualUpdate) Debug.Log("[" + _data.Name_EN + "] under cooldown");
+            Debug.Log("[" + _data.Name_EN + "] under cooldown");
             return false;
         }
         return true;
@@ -104,7 +103,6 @@ public abstract class ActiveAbilityBase : AbilityBase
     {
         Debug.Log("[" + _data.Name_EN + "] finished");
         PlayerAbilityManager.Instance.RequestManualUpdate(this);
-
         TogglePrefab(false);
     }
 

@@ -295,18 +295,16 @@ public class PlayerAbilityManager : Singleton<PlayerAbilityManager>
         foreach (var ability in _manualUpdateAbilities.ToList())
         {
             ability.Update();
-            if (ability.CanActivate())
-            {
-                _manualUpdateAbilities.Remove(ability);
-                ability.IsUnderManualUpdate = false;
-            }
         }
     }
 
     public void RequestManualUpdate(ActiveAbilityBase ability)
     {
         _manualUpdateAbilities.Add(ability);
-        ability.IsUnderManualUpdate = true;
+    }
+    public void RequestCancelManualUpdate(ActiveAbilityBase ability)
+    {
+        _manualUpdateAbilities.Remove(ability);
     }
 
     public Dictionary<int, SAbilityData> GetAbilitiesByMetal(EAbilityMetalType metalType)
