@@ -35,6 +35,7 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
         UpdateStatusEffectTimes();
     }
 
+    //updates the remaining time of various status effects
     private void UpdateStatusEffectTimes()
     {
         float deltaTime = Time.deltaTime;
@@ -49,7 +50,7 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
             // skip if nothing to update
             if (_effectRemainingTimes[i] == 0.0f) continue;
 
-            // update remaining time
+            // update remaining time for the specific status effect
             _effectRemainingTimes[i] -= deltaTime;
             EStatusEffect currEffect = (EStatusEffect)i;
             if (_effectRemainingTimes[i] <= 0)

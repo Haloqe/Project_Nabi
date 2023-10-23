@@ -32,7 +32,7 @@ public class EnemyManager : Singleton<EnemyManager>
                     Name_KO = csv.GetField("Name_KO"),
                     PrefabPath = csv.GetField("Prefab"),
                     MaxHealth = float.Parse(csv.GetField("MaxHealth")),
-                    MoveSpeed = float.Parse(csv.GetField("MoveSpeed"))
+                    DefaultMoveSpeed = float.Parse(csv.GetField("DefaultMoveSpeed"))
                 };
 
                 _enemies.Add(data.Id, data);

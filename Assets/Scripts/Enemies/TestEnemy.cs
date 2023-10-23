@@ -30,7 +30,7 @@ public class TestEnemy : EnemyBase
             Damages = new List<SDamage>() { new SDamage(EDamageType.Base, DamageAmount, 0) },
             StatusEffects = new List<SStatusEffect> { new SStatusEffect(StatusEffect, EffectStrength, EffectDuration) }
         };
-        StartCoroutine(ChaseRoutine());
+        //StartCoroutine(ChaseRoutine());
         if (ShouldAttack) StartCoroutine(AttackRoutine());
     }
 
