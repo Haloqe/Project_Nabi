@@ -47,19 +47,19 @@ public class PiercingChain : ActiveAbilityBase
         _affectedEnemies.Add(collision.gameObject.GetInstanceID());
 
         halvedDamageInfo = _data.DamageInfo;
-        specificDamage = _data.DamageInfo.Damages[7];
+        specificDamage = _data.DamageInfo.Damages[0];
 
         //change to half amount
         specificDamage.Amount = specificDamage.Amount / 2;
-        halvedDamageInfo.Damages[7] = specificDamage;
+        halvedDamageInfo.Damages[0] = specificDamage;
 
-        //first Hit 
+        //first Hit - get the first half of the damage
         _owner.DealDamage(target, halvedDamageInfo);
 
         //After the first hit, give the enemy stun status effect
         //TO-DO: Enemybases에서 enemy가 받을 stun 정의하고 바꾸기
 
-        //second Hit
+        //second Hit - get the second half of the damage
         _owner.DealDamage(target, halvedDamageInfo);
 
 
