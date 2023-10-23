@@ -12,9 +12,9 @@ public class TestEnemy : EnemyBase
     [SerializeField] float AttackInterval = 5;
     [SerializeField] bool ShouldAttack = false;
     [SerializeField] float DamageAmount = 3;
-    [SerializeField] public EStatusEffect statusEffect;
-    [SerializeField] public float effectStrength;
-    [SerializeField] public float effectDuration;
+    [SerializeField] public EStatusEffect StatusEffect;
+    [SerializeField] public float EffectStrength;
+    [SerializeField] public float EffectDuration;
     private GameObject _attacker;
     private int _attackCount = 0;
     private SDamageInfo _damageInfo;
@@ -28,7 +28,7 @@ public class TestEnemy : EnemyBase
         {
             DamageSource = gameObject.GetInstanceID(),
             Damages = new List<SDamage>() { new SDamage(EDamageType.Base, DamageAmount, 0) },
-            StatusEffects = new List<SStatusEffect> { new SStatusEffect(statusEffect, effectStrength, effectDuration) }
+            StatusEffects = new List<SStatusEffect> { new SStatusEffect(StatusEffect, EffectStrength, EffectDuration) }
         };
         StartCoroutine(ChaseRoutine());
         if (ShouldAttack) StartCoroutine(AttackRoutine());

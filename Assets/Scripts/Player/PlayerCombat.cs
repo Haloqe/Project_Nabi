@@ -7,8 +7,8 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
     // reference to other components
     private PlayerMovement _playerMovement;
 
-    // heatlh attributes
-    private int health = 15;
+    // TEMP heatlh attributes
+    private int _health = 15;
 
     // status effect attributes
     public bool IsSilenced { get; private set; }
@@ -148,9 +148,9 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
     private void HandleNewDamages(List<SDamage> damages)
     {
         int damage = (int)IDamageable.CalculateRoughDamage(damages);
-        health -= damage;
-        Debug.Log("Damaged by " + damage + " | Current health: " + health);
-        if (health <= 0) Die();
+        _health -= damage;
+        Debug.Log("Player: Current health: " + _health + "(-" + damage +")");
+        if (_health <= 0) Die();
     }
 
     private void Die()
@@ -226,11 +226,16 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
         if (_effectRemainingTimes[effectIdx] == 0)
         {
             SetVFXActive(effectIdx, true);
+            Debug.Log("New " + effect.ToString() + " time: " + duration.ToString("0.0000"));
         }
-        // increment effect time
-        duration = Mathf.Clamp(duration - _effectRemainingTimes[effectIdx], 0, float.MaxValue);
+        // or increment effect time
+        else
+        {
+            duration = Mathf.Clamp(duration - _effectRemainingTimes[effectIdx], 0, float.MaxValue);
+            Debug.Log("Previous " + effect.ToString() + " time: " + _effectRemainingTimes[effectIdx] + 
+                " Updated time: " + (_effectRemainingTimes[effectIdx] + duration).ToString("0.0000"));
+        }
         _effectRemainingTimes[effectIdx] += duration;
-        Debug.Log("Status time for " + effect.ToString() + " now " + _effectRemainingTimes[effectIdx]);
     }
 
     private void ApplySlow(float strength, float duration)
@@ -241,10 +246,7 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
         // check if this is the first slow
         if (_slowRemainingTimes.Count == 0)
         {
-            _playerMovement.ChangeSpeedByPercentage(strength);
-            _slowRemainingTimes.Add(strength, duration);
             SetVFXActive(EStatusEffect.Slow, true);
-            return;
         }
 
         // increment duration if the same strength slow already exists
@@ -252,6 +254,8 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
         {
             duration = Mathf.Clamp(duration - remainingTime, 0, float.MaxValue);
             _slowRemainingTimes[strength] += duration;
+            Debug.Log("Previous slow (" + strength + ") time: " + remainingTime +
+                " Updated time: " + (_slowRemainingTimes[strength]).ToString("0.0000"));
             return;
         }
 
@@ -261,12 +265,13 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
             // no need to add new slow if there is a more effective slow 
             if (slowStat.Key > strength && slowStat.Value >= duration) return;
             // remove existing slow if it is less effective
-            if (slowStat.Key < strength && slowStat.Value < duration) _slowRemainingTimes.Remove(slowStat.Key);
+            if (slowStat.Key < strength && slowStat.Value <= duration) _slowRemainingTimes.Remove(slowStat.Key);
         }
 
         // else, add new slow
         _playerMovement.ChangeSpeedByPercentage(strength, true);
         _slowRemainingTimes.Add(strength, duration);
+        Debug.Log("New slow (" + strength + ") time: " + duration.ToString("0.0000"));
     }
 
     private void SetVFXActive(EStatusEffect effect, bool setActive)
