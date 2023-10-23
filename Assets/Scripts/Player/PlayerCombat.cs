@@ -228,7 +228,9 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
             SetVFXActive(effectIdx, true);
         }
         // increment effect time
+        duration = Mathf.Clamp(duration - _effectRemainingTimes[effectIdx], 0, float.MaxValue);
         _effectRemainingTimes[effectIdx] += duration;
+        Debug.Log("Status time for " + effect.ToString() + " now " + _effectRemainingTimes[effectIdx]);
     }
 
     private void ApplySlow(float strength, float duration)
@@ -248,6 +250,7 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
         // increment duration if the same strength slow already exists
         if (_slowRemainingTimes.TryGetValue(strength, out float remainingTime))
         {
+            duration = Mathf.Clamp(duration - remainingTime, 0, float.MaxValue);
             _slowRemainingTimes[strength] += duration;
             return;
         }
