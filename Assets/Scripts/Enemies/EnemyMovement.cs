@@ -6,58 +6,81 @@ using UnityEngine.UIElements;
 
 public class EnemyMovement : MonoBehaviour
 {
-    public GameObject leftEnd;
-    public GameObject rightEnd;
-    //speed at which enemy will move
-    [SerializeField] float moveSpeed = 1f;
+    //적이 패트롤링 (순찰) 하는 포인트의 왼쪽 끝과 오른쪽 끝 선언, 유니티 에디터에서 드래그해서 넣어주세요
+    public GameObject LeftEnd;
+    public GameObject RightEnd;
+
+    //speed at which an enemy will move
+    [SerializeField] float DefaultMoveSpeed = 1f;
+    private float _moveSpeed;
+    private bool _isRooted = false;
+
     //rigid body component of enemy
-    private Rigidbody2D enemyRigidBody;
-    private Transform currentPoint;
+    private Rigidbody2D _enemyRigidBody;
+    private Transform _currentPoint;
     void Start()
     {
-        enemyRigidBody = GetComponent<Rigidbody2D>();
-        currentPoint = rightEnd.transform;
+         _moveSpeed= DefaultMoveSpeed;
+        _enemyRigidBody = GetComponent<Rigidbody2D>();
+        _currentPoint = RightEnd.transform;
     }
 
     void Update()
     {
+
+        if (_isRooted) return;
+
         //give the direction that enemy will move towards
-        Vector2 point = currentPoint.position - transform.position;
+        Vector2 point = _currentPoint.position - transform.position;
         
-        if(currentPoint == rightEnd.transform)
+        if(_currentPoint == RightEnd.transform)
         {
-            enemyRigidBody.velocity = new Vector2(moveSpeed, 0f);
+            _enemyRigidBody.velocity = new Vector2(_moveSpeed, 0f);
         }
         else
         {
-            enemyRigidBody.velocity = new Vector2(-moveSpeed, 0f);
+            _enemyRigidBody.velocity = new Vector2(-_moveSpeed, 0f);
         }
         
         //if our enemy has reached the current point and if the current point is right end,
-        //we set the current point to leftEnd.
-        if(Vector2.Distance(transform.position, currentPoint.position) < 0.5f && currentPoint == rightEnd.transform)
+        //we set the current point to LeftEnd.
+        if(Vector2.Distance(transform.position, _currentPoint.position) < 0.5f && _currentPoint == RightEnd.transform)
         {
             FlipEnemyFacing();
-            currentPoint = leftEnd.transform;
+            _currentPoint = LeftEnd.transform;
         }
 
-        if (Vector2.Distance(transform.position, currentPoint.position) < 0.5f && currentPoint == leftEnd.transform)
+        if (Vector2.Distance(transform.position, _currentPoint.position) < 0.5f && _currentPoint == LeftEnd.transform)
         {
             FlipEnemyFacing();
-            currentPoint = rightEnd.transform;
+            _currentPoint = RightEnd.transform;
         }
 
     }
     private void FlipEnemyFacing()
     {
-        transform.localScale = new Vector2(-(Mathf.Sign(enemyRigidBody.velocity.x)), 1f);
+        transform.localScale = new Vector2(-(Mathf.Sign(_enemyRigidBody.velocity.x)), 1f);
     }
 
-    //just to easily visualise the distance and endpoints of the enemy's movement
+    public void ResetDefaultMoveSpeed()
+    {
+        _moveSpeed = DefaultMoveSpeed;
+    }
+
+    public void EnableDisableMovement(bool shouldEnable)
+    {
+        _isRooted = !shouldEnable;
+        if (!shouldEnable)
+        {
+            _enemyRigidBody.velocity = Vector2.zero;
+        }
+    }
+
+    //Visualisation tool for distance and endpoints of the enemy's movement (에너미 패트롤 동선 선으로 나타내 줌,게임 플레이시 사라짐) 
     private void OnDrawGizmos()
     {
-        Gizmos.DrawWireSphere(leftEnd.transform.position, 0.5f);
-        Gizmos.DrawWireSphere(rightEnd.transform.position, 0.5f);
-        Gizmos.DrawLine(leftEnd.transform.position, rightEnd.transform.position);
+        Gizmos.DrawWireSphere(LeftEnd.transform.position, 0.5f);
+        Gizmos.DrawWireSphere(RightEnd.transform.position, 0.5f);
+        Gizmos.DrawLine(LeftEnd.transform.position, RightEnd.transform.position);
     }
 }

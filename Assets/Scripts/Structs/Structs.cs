@@ -88,7 +88,7 @@ public struct SEnemyData
     public string Name_EN;
     public string Name_KO;
     public string PrefabPath;
-    public float MoveSpeed;
+    public float DefaultMoveSpeed;
     public float MaxHealth;
     // amount of gold to drop
     // percentage of drop

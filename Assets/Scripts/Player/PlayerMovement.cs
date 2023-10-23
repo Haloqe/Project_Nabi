@@ -7,8 +7,8 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
     // movement
-    [SerializeField] public float DefaultMoveSpeed = 10f;
-    private float _moveSpeed; 
+    [SerializeField] public float DefaultDefaultMoveSpeed = 10f;
+    private float _DefaultMoveSpeed; 
     private Vector2 _moveDirection;
     private bool _isRooted = false;
 
@@ -24,7 +24,7 @@ public class PlayerMovement : MonoBehaviour
     private void Start()
     {
         _rigidbody2D = GetComponent<Rigidbody2D>();
-        _moveSpeed = DefaultMoveSpeed;
+        _DefaultMoveSpeed = DefaultDefaultMoveSpeed;
         _jumpForce = DefaultJumpForce;
     }
 
@@ -33,7 +33,7 @@ public class PlayerMovement : MonoBehaviour
         // disable movement if rooted
         if (_isRooted) return;
             
-        _rigidbody2D.velocity = new Vector2(_moveDirection.x * _moveSpeed, _rigidbody2D.velocity.y);
+        _rigidbody2D.velocity = new Vector2(_moveDirection.x * _DefaultMoveSpeed, _rigidbody2D.velocity.y);
         if (_isJumpPressed && !_isJumping)
         {
             //_rigidbody2D.AddForce(new Vector2(0, jumpForce));
@@ -47,18 +47,18 @@ public class PlayerMovement : MonoBehaviour
     // 디버프 슬로우는 중첩 X, 이속버프 + 슬로우는 중첩 O.
     public void ChangeSpeedByPercentage(float percentage, bool isSlowerThanNow = false, bool onlySpeed = false)
     {
-        float newSpeed = DefaultMoveSpeed * percentage;
-        if (_moveSpeed > DefaultMoveSpeed) // if has buff
-            newSpeed = _moveSpeed * percentage;
+        float newSpeed = DefaultDefaultMoveSpeed * percentage;
+        if (_DefaultMoveSpeed > DefaultDefaultMoveSpeed) // if has buff
+            newSpeed = _DefaultMoveSpeed * percentage;
 
-        if (_moveSpeed > newSpeed || !isSlowerThanNow)
+        if (_DefaultMoveSpeed > newSpeed || !isSlowerThanNow)
         {
-            _moveSpeed = newSpeed;
+            _DefaultMoveSpeed = newSpeed;
             if (!onlySpeed) _jumpForce = DefaultJumpForce * percentage;
         }
     }
 
-    public void SetMoveSpeedForDuration(float percentage, float duration)
+    public void SetDefaultMoveSpeedForDuration(float percentage, float duration)
     {
         ChangeSpeedByPercentage(percentage, false, true);
         StartCoroutine(ResetSpeedAfterDuration(duration));
@@ -67,13 +67,13 @@ public class PlayerMovement : MonoBehaviour
     private IEnumerator ResetSpeedAfterDuration(float duration)
     {
         yield return new WaitForSeconds(duration);
-        ResetMoveSpeed();
+        ResetDefaultMoveSpeed();
         FindObjectOfType<PlayerCombat>().SetActiveSlow();
     }
 
-    public void ResetMoveSpeed()
+    public void ResetDefaultMoveSpeed()
     {
-        _moveSpeed = DefaultMoveSpeed;
+        _DefaultMoveSpeed = DefaultDefaultMoveSpeed;
     }
 
     public void SetMoveDirection(Vector2 value)
@@ -113,7 +113,7 @@ public class PlayerMovement : MonoBehaviour
 
     public void RemoveDebuffs()
     {
-        if (_moveSpeed <= DefaultMoveSpeed) _moveSpeed = DefaultMoveSpeed;
+        if (_DefaultMoveSpeed <= DefaultDefaultMoveSpeed) _DefaultMoveSpeed = DefaultDefaultMoveSpeed;
         if (_jumpForce <= DefaultJumpForce) _jumpForce = DefaultJumpForce;
         _isRooted = false;
     }

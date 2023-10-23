@@ -13,6 +13,6 @@ public class PerfectPurification : ActiveAbilityBase
     protected override void ActivateAbility()
     {
         _owner.RemoveAllDebuffs();
-        FindObjectOfType<PlayerMovement>().SetMoveSpeedForDuration(3f, 1.5f);
+        FindObjectOfType<PlayerMovement>().SetDefaultMoveSpeedForDuration(3f, 1.5f);
     }
 }
