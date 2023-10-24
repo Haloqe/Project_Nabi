@@ -1,12 +1,17 @@
 using Player.Abilities.Base;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UI;
 
 public abstract class ActiveAbilityBase : AbilityBase
 {
+    public int BoundIndex { get; set; }
     protected bool _isCleanseAbility = false;
     protected float _elapsedActiveTime = 0.0f;
     protected float _elapsedCoolTime = 0.0f;
     protected float _lifeTime = 0.0f;
+    private Image _cooldownUI;
+
 
     protected override void Start()
     {
@@ -14,6 +19,8 @@ public abstract class ActiveAbilityBase : AbilityBase
         _lifeTime = _data.LifeTime == 0.0f ? 
             Utility.GetLongestParticleDuration(gameObject) + 0.05f : _data.LifeTime;
         TogglePrefab(false);
+        _cooldownUI = PlayerAbilityManager.Instance.GetCooldownUI(BoundIndex);
+        _cooldownUI.fillAmount = 0.0f;
         Initialise();
     }
 
@@ -31,10 +38,12 @@ public abstract class ActiveAbilityBase : AbilityBase
 
             case EAbilityState.Active:
                 _elapsedActiveTime += Time.deltaTime;
+                _elapsedCoolTime += Time.deltaTime;
+                UpdateCooldownUI();
+
                 if (_elapsedActiveTime >= _lifeTime)
                 {
                     _state = EAbilityState.Cooldown;
-                    _elapsedCoolTime = _elapsedActiveTime;
                     _elapsedActiveTime = 0.0f;
                     OnFinished();
                 }
@@ -42,11 +51,13 @@ public abstract class ActiveAbilityBase : AbilityBase
 
             case EAbilityState.Cooldown:
                 _elapsedCoolTime += Time.deltaTime;
-                if (_elapsedCoolTime >= _data.CoolDownTime)
+                UpdateCooldownUI();
+
+                if (_elapsedCoolTime >= _data.CooldownTime)
                 {
                     _state = EAbilityState.Ready;
                     _elapsedCoolTime = 0.0f;
-                    PlayerAbilityManager.Instance.RequestCancelManualUpdate(this);
+                    PlayerAbilityManager.Instance.RequestCancelManualUpdate(BoundIndex);
                 }
                 break;
         }
@@ -79,6 +90,7 @@ public abstract class ActiveAbilityBase : AbilityBase
         Debug.Log("[" + _data.Name_EN + "] activated");
         TogglePrefab(true);
         _state = EAbilityState.Active;
+        _cooldownUI.fillAmount = 1.0f;
         ActivateAbility();
     }
 
@@ -102,12 +114,18 @@ public abstract class ActiveAbilityBase : AbilityBase
     public virtual void OnFinished()
     {
         Debug.Log("[" + _data.Name_EN + "] finished");
-        PlayerAbilityManager.Instance.RequestManualUpdate(this);
+        PlayerAbilityManager.Instance.RequestManualUpdate(BoundIndex);
         TogglePrefab(false);
     }
 
     public virtual void CleanUpAbility()
     {
         Destroy(gameObject);
+    }
+
+    private void UpdateCooldownUI()
+    {
+        float coolTimeRatio = Mathf.Clamp((_data.CooldownTime - _elapsedCoolTime) / _data.CooldownTime, 0, 1);
+        _cooldownUI.fillAmount = coolTimeRatio;
     }
 }

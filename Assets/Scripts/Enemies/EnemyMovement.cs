@@ -59,7 +59,8 @@ public class EnemyMovement : MonoBehaviour
     }
     private void FlipEnemyFacing()
     {
-        transform.localScale = new Vector2(-(Mathf.Sign(_enemyRigidBody.velocity.x)), 1f);
+        transform.localScale = new Vector2(
+            -(Mathf.Sign(_enemyRigidBody.velocity.x)) * transform.localScale.x, transform.localScale.y);
     }
 
     public void ResetDefaultMoveSpeed()

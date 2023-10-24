@@ -7,6 +7,8 @@ using UnityEngine;
 using System;
 using Unity.VisualScripting;
 using Player.Abilities.Base;
+using UnityEngine.UI;
+using UnityEditor.Playables;
 
 public class PlayerAbilityManager : Singleton<PlayerAbilityManager>
 {
@@ -18,6 +20,9 @@ public class PlayerAbilityManager : Singleton<PlayerAbilityManager>
     private ActiveAbilityBase[] _activeAbilities = new ActiveAbilityBase[5];
     private PassiveAbilityBase[] _passiveAbilities = new PassiveAbilityBase[3];
     private List<ActiveAbilityBase> _manualUpdateAbilities = new List<ActiveAbilityBase>();
+    private Sprite[] _abilityIconSprites;
+    private Image[] _activeAbilityIcons = new Image[5];
+    private Image[] _activeAbilityCooldowns = new Image[5];
 
     protected override void Awake()
     {
@@ -29,6 +34,13 @@ public class PlayerAbilityManager : Singleton<PlayerAbilityManager>
             new Dictionary<int, SAbilityData>(),    // Copper
             new Dictionary<int, SAbilityData>(),    // Gold
         };
+        _abilityIconSprites = Resources.LoadAll<Sprite>("Sprites/Icons/Abilities/PlayerAbilitySpritesheet");
+        var abilityGroup = GameObject.Find("AbilityLayoutGroup").transform;
+        for (int i = 0; i < 5; i++)
+        {
+            _activeAbilityIcons[i] = abilityGroup.Find("Slot_" + i).Find("AbilityIcon").GetComponent<Image>();
+            _activeAbilityCooldowns[i] = abilityGroup.Find("Slot_" + i).Find("CooldownTimer").GetComponent<Image>(); 
+        }
     }
 
     private void Start()
@@ -67,13 +79,13 @@ public class PlayerAbilityManager : Singleton<PlayerAbilityManager>
                     Name_KO      = csv.GetField("Name_KO"),
                     Des_EN       = csv.GetField("Description_EN"),
                     Des_KO       = csv.GetField("Description_KO"),
-                    IconPath     = csv.GetField("Icon"),
+                    IconIndex    = int.Parse(csv.GetField("IconIndex")),
                     PrefabPath   = csv.GetField("Prefab"),
                     IsAttached   = bool.Parse(csv.GetField("IsAttached")),
                     Interaction  = (EInteraction)Enum.Parse(typeof(EInteraction), csv.GetField("Interaction")),
                     Type         = (EAbilityType)Enum.Parse(typeof(EAbilityType), csv.GetField("Type")),
                     MetalType    = (EAbilityMetalType)Enum.Parse(typeof(EAbilityMetalType), csv.GetField("MetalType")),
-                    CoolDownTime = float.Parse(csv.GetField("CoolDownTime")),
+                    CooldownTime = float.Parse(csv.GetField("CooldownTime")),
                     LifeTime     = float.Parse(csv.GetField("LifeTime"))
                 };
 
@@ -253,6 +265,11 @@ public class PlayerAbilityManager : Singleton<PlayerAbilityManager>
 
         // Set variables of the ability
         _activeAbilities[actionIdx]._data = _abilities[abilityIdx];
+        _activeAbilities[actionIdx].BoundIndex = actionIdx;
+
+        // Update UI
+        _activeAbilityIcons[actionIdx].sprite = _abilityIconSprites[_abilities[abilityIdx].IconIndex];
+        _activeAbilityIcons[actionIdx].color = Color.white;
 
         // Register callbacks
         // TODO Later pass context as parameter if needed
@@ -285,6 +302,10 @@ public class PlayerAbilityManager : Singleton<PlayerAbilityManager>
         action.performed -= _ => _activeAbilities[actionIdx].OnPerformed();
         action.canceled -= _ => _activeAbilities[actionIdx].OnCanceled();
 
+        // Update UI
+        _activeAbilityIcons[actionIdx].sprite = null;
+        _activeAbilityIcons[actionIdx].color = Color.clear;
+
         // Remove ability component
         _activeAbilities[actionIdx].CleanUpAbility();
         _activeAbilities[actionIdx] = null;
@@ -298,14 +319,19 @@ public class PlayerAbilityManager : Singleton<PlayerAbilityManager>
         }
     }
 
-    public void RequestManualUpdate(ActiveAbilityBase ability)
+    public void RequestManualUpdate(int boundIndex)
     {
-        _manualUpdateAbilities.Add(ability);
+        _manualUpdateAbilities.Add(_activeAbilities[boundIndex]);
     }
-    public void RequestCancelManualUpdate(ActiveAbilityBase ability)
+    public void RequestCancelManualUpdate(int boundIndex)
     {
-        _manualUpdateAbilities.Remove(ability);
+        _manualUpdateAbilities.Remove(_activeAbilities[boundIndex]);
     }
+
+    public Image GetCooldownUI(int boundIndex)
+    {
+        return _activeAbilityCooldowns[boundIndex];
+    }    
 
     public Dictionary<int, SAbilityData> GetAbilitiesByMetal(EAbilityMetalType metalType)
     {

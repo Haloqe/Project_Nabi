@@ -68,14 +68,14 @@ public struct SAbilityData
     public string Name_KO;
     public string Des_EN;
     public string Des_KO;
-    public string IconPath;
+    public int IconIndex;
     public string PrefabPath;
     public bool IsAttached;
     public EInteraction Interaction; // 이후 slowtap duration, hold duration 등 필요해지면 string 또는 separated field 변경
 
     public EAbilityType Type;
     public EAbilityMetalType MetalType;
-    public float CoolDownTime;
+    public float CooldownTime;
     public float LifeTime;
     public SDamageInfo DamageInfo;
 }

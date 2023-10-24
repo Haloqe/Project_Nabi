@@ -11,6 +11,7 @@ public class PlayerController : MonoBehaviour
     static int _testNumCalls = 0;
     private bool _isNYScene;
 
+
     private void Awake()
     {
         Instance = this;
@@ -52,6 +53,16 @@ public class PlayerController : MonoBehaviour
         {
             PlayerAbilityManager.Instance.BindActiveAbility(0, 1); // Mansa Musa
             PlayerAbilityManager.Instance.BindActiveAbility(1, 7); // Perfect Purification
+            _testNumCalls++;
+        }
+        else if (_testNumCalls == 1)
+        {
+            PlayerAbilityManager.Instance.BindActiveAbility(0, 2); // Bear the Crown
+            _testNumCalls++;
+        }
+        else if (_testNumCalls == 2)
+        {
+            PlayerAbilityManager.Instance.BindActiveAbility(2, 1); // Mansa Musa
             _testNumCalls++;
         }
     }

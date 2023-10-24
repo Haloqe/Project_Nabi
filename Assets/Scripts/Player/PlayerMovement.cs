@@ -10,6 +10,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] public float DefaultMoveSpeed = 10f;
     private float _moveSpeed; 
     private Vector2 _moveDirection;
+    private bool _isMoving;
     private bool _isRooted = false;
 
     // jumping
@@ -20,13 +21,22 @@ public class PlayerMovement : MonoBehaviour
 
     // others
     private Rigidbody2D _rigidbody2D;
-    
+    private Animator _animator;
+
     private void Start()
     {
+        _animator = GetComponent<Animator>();
         _rigidbody2D = GetComponent<Rigidbody2D>();
         _moveSpeed = DefaultMoveSpeed;
         _jumpForce = DefaultJumpForce;
         _isJumping = true;
+        _isMoving = false;
+    }
+
+    private void Update()
+    {
+        _animator.SetBool("IsMoving", _isMoving && !_isRooted);
+        _animator.SetBool("IsJumping", _isJumping);
     }
 
     private void FixedUpdate()
@@ -85,6 +95,12 @@ public class PlayerMovement : MonoBehaviour
     public void SetMoveDirection(Vector2 value)
     {
         _moveDirection = value;
+        if (value.x != 0)
+        {
+            _isMoving = true;
+            transform.localScale = new Vector2(Mathf.Sign(value.x), transform.localScale.y);
+        }
+        else _isMoving = false;
     }
 
     public void EnableDisableMovement(bool shouldEnable)
