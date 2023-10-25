@@ -1,5 +1,7 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
@@ -14,6 +16,8 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
     public bool IsSilenced { get; private set; }
     public bool IsSilencedExceptCleanse { get; private set; }
     [NamedArray(typeof(EStatusEffect))] public GameObject[] DebuffEffects;
+    [NamedArray(typeof(EDamageType))] public GameObject[] DamageEffects;
+    private int[] _activeDOTCounts;
     private float[] _effectRemainingTimes;
     private SortedDictionary<float, float> _slowRemainingTimes; // str,time
 
@@ -27,6 +31,7 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
         _slowRemainingTimes = new SortedDictionary<float, float>(
             Comparer<float>.Create(delegate (float x, float y) { return y.CompareTo(x); })
         );
+        _activeDOTCounts = new int[(int)EDamageType.MAX];
         Debug.Assert(DebuffEffects.Length == 6);
     }
 
@@ -125,18 +130,19 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
     }
 
     #region Damage Dealing and Receiving
+    // IDamageDealer Override
     public void DealDamage(IDamageable target, SDamageInfo damageInfo)
     {
         target.TakeDamage(AdjustOutgoingDamage(damageInfo));
     }
-
+    
+    // IDamageable Override
     public void TakeDamage(SDamageInfo damageInfo)
     {
         // TEMP CODE
         Utility.PrintDamageInfo("player", damageInfo);
         HandleNewDamages(damageInfo.Damages);
         HandleNewStatusEffects(damageInfo.StatusEffects);
-        
     }
 
     private SDamageInfo AdjustOutgoingDamage(SDamageInfo damageInfo)
@@ -145,27 +151,91 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
         return damageInfo;
     }
 
-    // TODO
     private void HandleNewDamages(List<SDamage> damages)
     {
-        int damage = (int)IDamageable.CalculateRoughDamage(damages);
-        _health -= damage;
-        Debug.Log("Player: Current health: " + _health + "(-" + damage +")");
-        if (_health <= 0) Die();
+        foreach (var damage in damages)
+        {
+            StartCoroutine(DamageCoroutine(damage));
+        }      
     }
 
     private void Die()
     {
-        // TEMP CODE
+        StopAllCoroutines();
         Debug.Log("Player died.");
         // should save info somewhere, do progressive updates
         DeadCanvas.SetActive(true);
         Destroy(gameObject);
     }
+
+    private IEnumerator DamageCoroutine(SDamage damage)
+    {
+        int damageTypeIdx = (int)damage.Type;
+        
+        // One-shot damage
+        if (damage.Duration == 0)
+        {
+            ReduceHealth(damage.Amount);
+            yield return null;
+        }
+        // Damage Over Time (DOT) damage
+        // Deals damage.Amount of damage every 0.5 seconds for damage.Duration
+        else
+        {
+            // Depending on the damage type, start an effect if this is a DOT attack
+            if (damage.Duration != 0.0f && ++_activeDOTCounts[damageTypeIdx] == 1)
+            {
+                if (DamageEffects[damageTypeIdx] != null)
+                {
+                    DamageEffects[damageTypeIdx].SetActive(true);
+                }
+            }
+
+            var damageCoroutine = StartCoroutine(DOTDamageCoroutine(damage));
+            yield return new WaitForSeconds(damage.Duration);
+
+            // Do cleanup
+            // Stop applying damage if the duration is over
+            StopCoroutine(damageCoroutine);
+
+            // If this is the last effect, activate the VFX
+            if (--_activeDOTCounts[damageTypeIdx] == 0)
+            {
+                if (DamageEffects[damageTypeIdx] != null)
+                {
+                    DamageEffects[damageTypeIdx].SetActive(false);
+                }
+            }
+        }
+    }
+
+    private IEnumerator DOTDamageCoroutine(SDamage damage)
+    {
+        while (true)
+        {
+            // Wait for a tick time and take damage again
+            ReduceHealth(damage.Amount);
+            yield return new WaitForSeconds(Define.DamageTick);
+        }
+    }
+
+    private void ReduceHealth(float amount)
+    {
+        ReduceHealth((int)amount);
+    }
+
+    private void ReduceHealth(int amount)
+    {
+        // TODO hit effect
+        _health -= amount;
+        Debug.Log("Player HP: " + _health + " (-" + amount + ")");
+        if (_health <= 0) Die();
+    }
+
     #endregion Damage Dealing and Receiving
 
 
-#region Status effects handling
+    #region Status effects handling
     //TODO
     private void HandleNewStatusEffects(List<SStatusEffect> statusEffects)
     {
@@ -244,7 +314,7 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
         // return if invalid slow
         if (strength == 0 || duration == 0) return;
 
-        // check if this is the first slow
+        // check if this is the first slowss
         if (_slowRemainingTimes.Count == 0)
         {
             SetVFXActive(EStatusEffect.Slow, true);

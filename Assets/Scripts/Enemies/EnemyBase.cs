@@ -1,15 +1,18 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Burst.Intrinsics;
 using UnityEngine;
 
-public abstract class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
+public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 {
     protected Rigidbody2D _rigidbody2D;
     protected Animator _animator;
     protected SEnemyData _data;
+    protected EEnemyMoveType _moveType;
 
-    //reference to other components
-    private EnemyMovement _enemyMovement;
+    // Movement
+    protected EnemyMovement _movement = null;
 
     //Status effect attributes
     [NamedArray(typeof(EStatusEffect))] public GameObject[] DebuffEffects;
@@ -27,10 +30,11 @@ public abstract class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         _slowRemainingTimes = new SortedDictionary<float, float> (
             Comparer<float>.Create(delegate (float x, float y) { return y.CompareTo(x); })
         );
-        Initialise();
+        _movement = GetComponent<EnemyMovement>();
+        Initialise();         
     }
 
-    protected abstract void Initialise();
+    protected virtual void Initialise() { }
 
     //Handles the status effect imposed by the player
     private void UpdateStatusEffectTimes()
@@ -68,7 +72,7 @@ public abstract class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
            _effectRemainingTimes[(int)EStatusEffect.Airborne] == 0.0f &&
            _effectRemainingTimes[(int)EStatusEffect.Stun] == 0.0f)
         {
-            _enemyMovement.EnableDisableMovement(true);
+            _movement.EnableDisableMovement(true);
         }
 
         //UpdateSlowTimes();

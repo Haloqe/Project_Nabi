@@ -19,8 +19,6 @@ public class NamedArrayDrawer : PropertyDrawer
             var enum_names = System.Enum.GetNames(config.TargetEnum);
             int pos = int.Parse(property.propertyPath.Split('[', ']')[1]);
             var enum_label = enum_names.GetValue(pos) as string;
-            // Make names nicer to read (but won't exactly match enum definition).
-            //enum_label = ObjectNames.NicifyVariableName(enum_label.ToLower());
             label = new GUIContent(enum_label);
         }
         catch

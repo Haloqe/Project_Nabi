@@ -6,6 +6,10 @@ public enum EDamageType
     Base,
     Light,
     Fire,
+    Poison,
+    Stench, // TODO change name
+    Electric,
+    MAX,
 }
 
 public enum EStatusEffect
@@ -46,3 +50,11 @@ public enum EInteraction
     None,
 }
 #endregion Ability
+
+#region Enemy
+public enum EEnemyMoveType
+{
+    None,
+    FollowStraightPath,
+}
+#endregion Enemy
