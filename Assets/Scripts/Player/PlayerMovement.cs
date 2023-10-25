@@ -17,7 +17,6 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] public float DefaultJumpForce = 10f;
     private float _jumpForce;
     private bool _isJumping;
-    private bool _isJumpPressed = false;
 
     // others
     private Rigidbody2D _rigidbody2D;
@@ -36,7 +35,6 @@ public class PlayerMovement : MonoBehaviour
     private void Update()
     {
         _animator.SetBool("IsMoving", _isMoving && !_isRooted);
-        _animator.SetBool("IsJumping", _isJumping);
     }
 
     private void FixedUpdate()
@@ -45,11 +43,6 @@ public class PlayerMovement : MonoBehaviour
         if (_isRooted) return;
             
         _rigidbody2D.velocity = new Vector2(_moveDirection.x * _moveSpeed, _rigidbody2D.velocity.y);
-        if (_isJumpPressed && !_isJumping)
-        {
-            //_rigidbody2D.AddForce(new Vector2(0, jumpForce));
-            _rigidbody2D.velocity += (new Vector2(0, _jumpForce));
-        }
     }
 
     ///<summary>Set move speed to default speed * percentage. If isSlowerThanNow is true, update speed only if 
@@ -114,7 +107,10 @@ public class PlayerMovement : MonoBehaviour
 
     public void SetJump(bool value)
     {
-        _isJumpPressed = value;
+        if (_isJumping) return;
+        if (!value) return;
+
+        _rigidbody2D.velocity += (new Vector2(0, _jumpForce));
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -122,6 +118,7 @@ public class PlayerMovement : MonoBehaviour
         if (other.CompareTag("Ground"))
         {
             _isJumping = false;
+            _animator.SetBool("IsJumping", _isJumping);
         }
     }
 
@@ -130,6 +127,7 @@ public class PlayerMovement : MonoBehaviour
         if (other.CompareTag("Ground"))
         {
             _isJumping = true;
+            _animator.SetBool("IsJumping", _isJumping);
         }
     }
 
