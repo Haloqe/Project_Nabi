@@ -62,10 +62,11 @@ public class EnemyMovement : MonoBehaviour
         transform.localScale = new Vector2(-(Mathf.Sign(_enemyRigidBody.velocity.x)), 1f);
     }
 
-    public void ResetDefaultMoveSpeed()
+    public void ResetMoveSpeed()
     {
         _moveSpeed = DefaultMoveSpeed;
     }
+
 
     public void EnableDisableMovement(bool shouldEnable)
     {
@@ -74,6 +75,11 @@ public class EnemyMovement : MonoBehaviour
         {
             _enemyRigidBody.velocity = Vector2.zero;
         }
+    }
+
+    public void ChangeSpeedByPercentage(float percentage)
+    {
+        float newSpeed = DefaultMoveSpeed * percentage;
     }
 
     //Visualisation tool for distance and endpoints of the enemy's movement (에너미 패트롤 동선 선으로 나타내 줌,게임 플레이시 사라짐) 
