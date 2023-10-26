@@ -70,10 +70,11 @@ public class EnemyMovement : MonoBehaviour
 
     public void EnableDisableMovement(bool shouldEnable)
     {
+        //shouldEnable = true means the enemy should move
         _isRooted = !shouldEnable;
         if (!shouldEnable)
         {
-            _enemyRigidBody.velocity = Vector2.zero;
+            _enemyRigidBody.velocity = new Vector2(0, 0f);
         }
     }
 

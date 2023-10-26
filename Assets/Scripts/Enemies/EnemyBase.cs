@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.IO.LowLevel.Unsafe;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -18,18 +19,20 @@ public abstract class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     [NamedArray(typeof(EStatusEffect))] public GameObject[] DebuffEffects;
     private float[] _effectRemainingTimes;
     private SortedDictionary<float, float> _slowRemainingTimes; // str,time
-
+    
     //Enemy health attribute
     [SerializeField] int enemyHealth = 30;
 
     protected virtual void Start()
-    {
+    {   
+        _enemyMovement = GetComponent<EnemyMovement>();
         _rigidbody2D = GetComponent<Rigidbody2D>();
         _animator = GetComponent<Animator>();
         _effectRemainingTimes = new float[(int)EStatusEffect.MAX];
         _slowRemainingTimes = new SortedDictionary<float, float> (
             Comparer<float>.Create(delegate (float x, float y) { return y.CompareTo(x); })
         );
+        DebuffEffects = new GameObject[(int)EStatusEffect.MAX];
         Initialise();
     }
 
@@ -41,11 +44,9 @@ public abstract class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     protected abstract void Initialise();
 
     #region Status Effects imposed by the player handling
-    private void HandleNewStatusEffects(List<SStatusEffect> statusEffects)
+            private void HandleNewStatusEffects(List<SStatusEffect> statusEffects)
     {
         //SStatusEffect has three instance variables: effect, strength, duration
-       
-        if (statusEffects.Count == 0) return;
 
         foreach (var statusEffect in statusEffects)
         {
@@ -61,7 +62,7 @@ public abstract class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
             {
                 UpdateStatusEffectTime(statusEffect.Effect, statusEffect.Duration);
             }
-            
+
             switch (statusEffect.Effect)
             {
                 case EStatusEffect.Blind: // raise attack miss rate
@@ -100,6 +101,7 @@ public abstract class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         if (duration == 0) return; // TODO to be handled later (장판형 유지스킬)
 
         int effectIdx = (int)effect;
+
         // apply new effect
         if (_effectRemainingTimes[effectIdx] == 0)
         {
@@ -126,13 +128,14 @@ public abstract class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
             if (_effectRemainingTimes[i] == 0.0f) continue;
 
             //slow is handled seperately in another method to be called at the end of this function
-            else if (i == (int)EStatusEffect.Slow) continue;
+            if (i == (int)EStatusEffect.Slow) continue;
 
-            else
+            _effectRemainingTimes[i] -= deltaTime;
+            EStatusEffect currEffect = (EStatusEffect)i;
+            Debug.Log(currEffect + "'s RemainingTime: " + _effectRemainingTimes[i]);
+
+            if (_effectRemainingTimes[i] <= 0)
             {
-                _effectRemainingTimes[i] -= deltaTime;
-                EStatusEffect currEffect = (EStatusEffect)i;
-
                 //if there is no remaining time for the status effect imposed on the enemy after calculation
                 if (_effectRemainingTimes[i] <= 0)
                 {
@@ -236,8 +239,8 @@ public abstract class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     // TO-DO
     #endregion Status Effects imposing on the player handling
 
-    #region Damage Dealing and Receiving
-    // Dealing damage to the player Handling
+        #region Damage Dealing and Receiving
+        // Dealing damage to the player Handling
     public virtual void DealDamage(IDamageable target, SDamageInfo damageInfo)
     {
         damageInfo.DamageSource = gameObject.GetInstanceID();
@@ -255,7 +258,7 @@ public abstract class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     {
         int damage = (int)IDamageable.CalculateRoughDamage(damages);
         enemyHealth -= damage;
-        Debug.Log("Player: Current health: " + enemyHealth + "(-" + damage + ")");
+        Debug.Log(gameObject.name + "'s Current health: " + enemyHealth + "(-" + damage + ")");
         if (enemyHealth <= 0) { Die(); }
     }
 
