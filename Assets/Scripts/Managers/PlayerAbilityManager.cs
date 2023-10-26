@@ -98,26 +98,27 @@ public class PlayerAbilityManager : Singleton<PlayerAbilityManager>
                 if (data.Type == EAbilityType.Active)
                 {
                     // Damage type & amount data
-                    if (damages.Length % 3 == 0)
+                    if (damages.Length % 4 == 0)
                     {
                         damageInfo.Damages = new List<SDamage>();
-                        for (int i = 0; i < damages.Length; i += 3)
+                        for (int i = 0; i < damages.Length; i += 4)
                         {
                             SDamage temp = new SDamage
                             {
                                 Type = (EDamageType)Enum.Parse(typeof(EDamageType), damages[i]),
-                                Amount = float.Parse(damages[i+1]),
-                                Duration = float.Parse(damages[i+2]),
+                                TotalAmount = float.Parse(damages[i + 1]),
+                                Duration = float.Parse(damages[i + 2]),
+                                Tick = damages[i + 3] == "0" ? Define.DefaultDamageTick : float.Parse(damages[i + 3])
                             };
                             damageInfo.Damages.Add(temp);
                         }
                     }
 
                     // Status effect data
-                    if (statusEffects.Length % 3 == 0)
+                    if (statusEffects.Length % 4 == 0)
                     {
                         damageInfo.StatusEffects = new List<SStatusEffect>();
-                        for (int i = 0; i < statusEffects.Length; i += 3)
+                        for (int i = 0; i < statusEffects.Length; i += 4)
                         {
                             SStatusEffect temp = new SStatusEffect
                             {

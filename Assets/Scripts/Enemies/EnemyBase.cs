@@ -9,7 +9,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     protected Rigidbody2D _rigidbody2D;
     protected Animator _animator;
     protected SEnemyData _data;
-    protected EEnemyMoveType _moveType;
+    [SerializeField] protected EEnemyMoveType MoveType = EEnemyMoveType.None;
 
     // Movement
     protected EnemyMovement _movement = null;
@@ -30,7 +30,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         _slowRemainingTimes = new SortedDictionary<float, float> (
             Comparer<float>.Create(delegate (float x, float y) { return y.CompareTo(x); })
         );
-        _movement = GetComponent<EnemyMovement>();
+        if (MoveType != EEnemyMoveType.None) _movement = GetComponent<EnemyMovement>();
         Initialise();         
     }
 
@@ -72,7 +72,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
            _effectRemainingTimes[(int)EStatusEffect.Airborne] == 0.0f &&
            _effectRemainingTimes[(int)EStatusEffect.Stun] == 0.0f)
         {
-            _movement.EnableDisableMovement(true);
+            _movement?.EnableDisableMovement(true);
         }
 
         //UpdateSlowTimes();
