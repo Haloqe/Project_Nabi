@@ -107,7 +107,7 @@ public class PlayerMovement : MonoBehaviour
 
     public void SetJump(bool value)
     {
-        if (_isJumping) return;
+        if (_isJumping || _isRooted) return;
         if (!value) return;
 
         _rigidbody2D.velocity += (new Vector2(0, _jumpForce));
