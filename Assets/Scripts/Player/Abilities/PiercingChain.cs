@@ -50,7 +50,7 @@ public class PiercingChain : ActiveAbilityBase
         specificDamage = _data.DamageInfo.Damages[0];
 
         //change to half amount
-        specificDamage.Amount = specificDamage.Amount / 2;
+        specificDamage.TotalAmount = specificDamage.TotalAmount / 2;
         halvedDamageInfo.Damages[0] = specificDamage;
 
         //first Hit - get the first half of the damage

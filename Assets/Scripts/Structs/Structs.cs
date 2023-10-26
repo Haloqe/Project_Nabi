@@ -30,21 +30,30 @@ public struct SStatusEffect
 public struct SDamage
 {
     public EDamageType Type;
-    public float Amount;
+    public float TotalAmount;
     public float Duration; // zero if one-shot damage
-    // public float Interval; // 너무 복잡해져서 도트뎀은 0.5초 tick으로 통일
+    public float Tick; // the dot damage tick
 
     public SDamage(EDamageType type, float amount)
     {
         Type = type;
-        Amount = amount;
+        TotalAmount = amount;
         Duration = 0;
+        Tick = 0;
     }
     public SDamage(EDamageType type, float amount, float duration)
     {
         Type = type;
-        Amount = amount;
+        TotalAmount = amount;
+        Duration = 0;
+        Tick = Define.DefaultDamageTick;
+    }
+    public SDamage(EDamageType type, float amount, float duration, float interval)
+    {
+        Type = type;
+        TotalAmount = amount;
         Duration = duration;
+        Tick = interval;
     }
 }
 

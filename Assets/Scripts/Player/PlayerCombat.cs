@@ -10,7 +10,7 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
     private PlayerMovement _playerMovement;
 
     // TEMP heatlh attributes
-    private int _health = 15;
+    private float _health = 40;
 
     // status effect attributes
     public bool IsSilenced { get; private set; }
@@ -26,6 +26,7 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
 
     private void Start()
     {
+        PlayerEvents.Defeated += OnDefeated;
         _playerMovement = GetComponent<PlayerMovement>();
         _effectRemainingTimes = new float[(int)EStatusEffect.MAX];
         _slowRemainingTimes = new SortedDictionary<float, float>(
@@ -159,7 +160,7 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
         }      
     }
 
-    private void Die()
+    private void OnDefeated()
     {
         StopAllCoroutines();
         Debug.Log("Player died.");
@@ -175,11 +176,11 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
         // One-shot damage
         if (damage.Duration == 0)
         {
-            ReduceHealth(damage.Amount);
+            ReduceHealth(damage.TotalAmount);
             yield return null;
         }
         // Damage Over Time (DOT) damage
-        // Deals damage.Amount of damage every 0.5 seconds for damage.Duration
+        // Deals damage.TotalAmount of damage every damage.Tick seconds for damage.Duration
         else
         {
             // Depending on the damage type, start an effect if this is a DOT attack
@@ -191,47 +192,40 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
                 }
             }
 
-            var damageCoroutine = StartCoroutine(DOTDamageCoroutine(damage));
-            yield return new WaitForSeconds(damage.Duration);
+            float damagePerTick = damage.TotalAmount / (damage.Duration / damage.Tick + 1);
+            var damageCoroutine = StartCoroutine(DOTDamageCoroutine(damagePerTick, damage.Tick));
+            yield return new WaitForSeconds(damage.Duration + damage.Tick / 2.0f);
 
             // Do cleanup
             // Stop applying damage if the duration is over
             StopCoroutine(damageCoroutine);
 
             // If this is the last effect, activate the VFX
-            if (--_activeDOTCounts[damageTypeIdx] == 0)
+            if (--_activeDOTCounts[damageTypeIdx] == 0 && DamageEffects[damageTypeIdx] != null)
             {
-                if (DamageEffects[damageTypeIdx] != null)
-                {
-                    DamageEffects[damageTypeIdx].SetActive(false);
-                }
+                DamageEffects[damageTypeIdx].SetActive(false);
             }
         }
     }
 
-    private IEnumerator DOTDamageCoroutine(SDamage damage)
+    private IEnumerator DOTDamageCoroutine(float damagePerTick, float tick)
     {
         while (true)
         {
-            // Wait for a tick time and take damage again
-            ReduceHealth(damage.Amount);
-            yield return new WaitForSeconds(Define.DamageTick);
+            // Wait for a tick time and take damage repeatedly
+            ReduceHealth(damagePerTick);
+            yield return new WaitForSeconds(tick);
         }
     }
 
     private void ReduceHealth(float amount)
     {
-        ReduceHealth((int)amount);
-    }
-
-    private void ReduceHealth(int amount)
-    {
         // TODO hit effect
         _health -= amount;
-        Debug.Log("Player HP: " + _health + " (-" + amount + ")");
-        if (_health <= 0) Die();
+        PlayerEvents.Damaged.Invoke(amount);
+        Debug.Log("Player HP: " + _health.ToString("0.00") + " (-" + amount + ")");
+        if (_health <= 0) PlayerEvents.Defeated.Invoke();
     }
-
     #endregion Damage Dealing and Receiving
 
 

@@ -1,4 +1,4 @@
 public static class Define
 {
-    public const float DamageTick = 0.8f;
+    public static float DefaultDamageTick = 0.5f;
 }

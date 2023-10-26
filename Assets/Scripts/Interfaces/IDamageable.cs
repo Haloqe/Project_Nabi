@@ -10,11 +10,11 @@ public interface IDamageable
     {
         if (damages == null) return 0;
 
-        float total = 0; float duration = 0;
+        float total = 0; float damageCount = 0;
         foreach (var damage in damages)
         {
-            duration = damage.Duration == 0 ? 1 : damage.Duration;
-            total += (damage.Amount * duration);
+            damageCount = damage.Duration == 0 ? 1 : (damage.Duration / damage.Tick + 1);
+            total += (damage.TotalAmount * damageCount);
         }
 
         return total;

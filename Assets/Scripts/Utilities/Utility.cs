@@ -31,8 +31,16 @@ public static class Utility
         {
             foreach (var damage in damageInfo.Damages)
             {
-                damages += damage.Type.ToString() + " (" + damage.Duration +
-                    "s, " + damage.Amount + ")";
+                if (damage.Duration == 0)
+                {
+                    damages += damage.Type.ToString() + damage.TotalAmount + ")";
+                }
+                else
+                {
+                    float perTick = damage.TotalAmount / (damage.Duration / damage.Tick + 1);
+                    damages += damage.Type.ToString() + " (" + perTick +
+                        " / " + damage.Tick + "s for " + damage.Duration + "s)";
+                }
             }
         }
         
