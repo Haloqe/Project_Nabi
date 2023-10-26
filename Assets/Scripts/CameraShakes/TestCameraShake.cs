@@ -14,16 +14,26 @@ public class TestCameraShake : MonoBehaviour
 
     private void Awake()
     {
+        PlayerEvents.Damaged += OnPlayerDamaged;
+        PlayerEvents.Defeated += OnPlayerDefeated;
         _vCam = GetComponent<CinemachineVirtualCamera>();
         _cbmcp = _vCam.GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>();
         _cbmcp.m_AmplitudeGain = 0.0f;
         _remainingTime = 0.0f;
     }
 
-    public void StartShake()
+    public void OnPlayerDamaged(float damageAmount)
     {
-        _cbmcp.m_AmplitudeGain = _shakeIntensity;
+        // TEMP
+        _cbmcp.m_AmplitudeGain = _shakeIntensity * Mathf.Clamp(damageAmount/3f, 1, 3);
         _remainingTime += (_shakeTime - _remainingTime);
+    }
+
+    public void OnPlayerDefeated()
+    {
+        // TEMP
+        _cbmcp.m_AmplitudeGain = _shakeIntensity * 5;
+        _remainingTime += (_shakeTime*2 - _remainingTime);
     }
 
     public void StopShake()
@@ -34,11 +44,6 @@ public class TestCameraShake : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (Input.GetKey(KeyCode.Y))
-        {
-            StartShake();
-        }
-
         if (_remainingTime > 0)
         {
             _remainingTime -= Time.deltaTime;

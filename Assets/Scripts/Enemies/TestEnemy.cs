@@ -127,8 +127,11 @@ public class TestEnemy : EnemyBase
     {
         if (collision.gameObject.CompareTag("Player") == false) return;
         Debug.Log("STOP DOT");
-        if (_isAttackDOTInArea) StopCoroutine(_activeDOTRoutine);
-        _activeDOTRoutine = null;
+        if (_isAttackDOTInArea && _activeDOTRoutine != null)
+        {
+            StopCoroutine(_activeDOTRoutine);
+            _activeDOTRoutine = null;
+        }
     }
 
 

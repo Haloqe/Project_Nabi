@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Burst.Intrinsics;
 using UnityEngine;
-
+ 
 public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 {
     protected Rigidbody2D _rigidbody2D;

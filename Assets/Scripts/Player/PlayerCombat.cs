@@ -26,6 +26,7 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
 
     private void Start()
     {
+        PlayerEvents.Defeated += OnDefeated;
         _playerMovement = GetComponent<PlayerMovement>();
         _effectRemainingTimes = new float[(int)EStatusEffect.MAX];
         _slowRemainingTimes = new SortedDictionary<float, float>(
@@ -159,7 +160,7 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
         }      
     }
 
-    private void Die()
+    private void OnDefeated()
     {
         StopAllCoroutines();
         Debug.Log("Player died.");
@@ -221,8 +222,9 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
     {
         // TODO hit effect
         _health -= amount;
+        PlayerEvents.Damaged.Invoke(amount);
         Debug.Log("Player HP: " + _health.ToString("0.00") + " (-" + amount + ")");
-        if (_health <= 0) Die();
+        if (_health <= 0) PlayerEvents.Defeated.Invoke();
     }
     #endregion Damage Dealing and Receiving
 
