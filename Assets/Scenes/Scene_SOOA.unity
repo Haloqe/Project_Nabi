@@ -3538,6 +3538,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 323643145475508073, guid: 7b5e109369a0f9845bf3029ca541a7ad, type: 3}
+      propertyPath: m_SortingLayer
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 323643145475508073, guid: 7b5e109369a0f9845bf3029ca541a7ad, type: 3}
+      propertyPath: m_SortingLayerID
+      value: 45253025
+      objectReference: {fileID: 0}
     - target: {fileID: 3886810093057469375, guid: 7b5e109369a0f9845bf3029ca541a7ad, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.6
@@ -3548,7 +3556,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3886810093057469375, guid: 7b5e109369a0f9845bf3029ca541a7ad, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.73
+      value: -1.48
       objectReference: {fileID: 0}
     - target: {fileID: 3886810093057469375, guid: 7b5e109369a0f9845bf3029ca541a7ad, type: 3}
       propertyPath: m_LocalPosition.y
@@ -3587,16 +3595,24 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4644158558201232398, guid: 7b5e109369a0f9845bf3029ca541a7ad, type: 3}
+      propertyPath: DamageTick
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4644158558201232398, guid: 7b5e109369a0f9845bf3029ca541a7ad, type: 3}
       propertyPath: damageType
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4644158558201232398, guid: 7b5e109369a0f9845bf3029ca541a7ad, type: 3}
       propertyPath: DamageAmount
-      value: 3
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 4644158558201232398, guid: 7b5e109369a0f9845bf3029ca541a7ad, type: 3}
       propertyPath: ShouldAttack
-      value: 0
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4644158558201232398, guid: 7b5e109369a0f9845bf3029ca541a7ad, type: 3}
+      propertyPath: StatusEffect
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 4644158558201232398, guid: 7b5e109369a0f9845bf3029ca541a7ad, type: 3}
       propertyPath: AttackInterval
@@ -3605,6 +3621,10 @@ PrefabInstance:
     - target: {fileID: 4644158558201232398, guid: 7b5e109369a0f9845bf3029ca541a7ad, type: 3}
       propertyPath: DamageDuration
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4644158558201232398, guid: 7b5e109369a0f9845bf3029ca541a7ad, type: 3}
+      propertyPath: EffectDuration
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8154329678701240256, guid: 7b5e109369a0f9845bf3029ca541a7ad, type: 3}
       propertyPath: m_Name
@@ -3657,6 +3677,7 @@ GameObject:
   - component: {fileID: 1944611745}
   - component: {fileID: 1944611747}
   - component: {fileID: 1944611746}
+  - component: {fileID: 1944611748}
   m_Layer: 6
   m_Name: AttackRange
   m_TagString: Untagged
@@ -3673,8 +3694,8 @@ Transform:
   m_GameObject: {fileID: 1944611744}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 2.5, y: 2.5, z: 1}
+  m_LocalPosition: {x: 0, y: 1.93, z: 0}
+  m_LocalScale: {x: 8.322657, y: 5.6328125, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1901412631}
@@ -3686,7 +3707,7 @@ CircleCollider2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1944611744}
-  m_Enabled: 1
+  m_Enabled: 0
   m_Density: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -3755,8 +3776,8 @@ SpriteRenderer:
   m_SortingLayerID: 454680111
   m_SortingLayer: 3
   m_SortingOrder: 0
-  m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
-  m_Color: {r: 0.28230682, g: 0.6188452, b: 0.735849, a: 0.078431375}
+  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
+  m_Color: {r: 0.4056604, g: 0.052302096, b: 0.093469985, a: 0.25490198}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -3766,6 +3787,51 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!61 &1944611748
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1944611744}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 1, y: 1}
+    newSize: {x: 1, y: 1}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  serializedVersion: 2
+  m_Size: {x: 1, y: 1}
+  m_EdgeRadius: 0
 --- !u!1 &1978418870
 GameObject:
   m_ObjectHideFlags: 0
@@ -3966,7 +4032,7 @@ Transform:
   m_GameObject: {fileID: 2014996291}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -6.02, y: -0.92, z: 0}
+  m_LocalPosition: {x: -4.95, y: -0.79, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
