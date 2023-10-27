@@ -36,7 +36,7 @@ public abstract class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         Initialise();
     }
 
-    private void Update()
+    protected virtual void FixedUpdate()
     {
         UpdateRemainingStatusEffectTimes();
     }
@@ -44,7 +44,7 @@ public abstract class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     protected abstract void Initialise();
 
     #region Status Effects imposed by the player handling
-            private void HandleNewStatusEffects(List<SStatusEffect> statusEffects)
+    private void HandleNewStatusEffects(List<SStatusEffect> statusEffects)
     {
         //SStatusEffect has three instance variables: effect, strength, duration
 
@@ -107,6 +107,7 @@ public abstract class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         {
             SetVFXActive(effectIdx, true);
             Debug.Log("New " + effect.ToString() + " time: " + duration.ToString("0.0000"));
+            _effectRemainingTimes[effectIdx] = duration;
         }
         // or increment effect time
         else
@@ -114,25 +115,30 @@ public abstract class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
             duration = Mathf.Clamp(duration - _effectRemainingTimes[effectIdx], 0, float.MaxValue);
             Debug.Log("Previous " + effect.ToString() + " time: " + _effectRemainingTimes[effectIdx] +
                 " Updated time: " + (_effectRemainingTimes[effectIdx] + duration).ToString("0.0000"));
+
+            if (_effectRemainingTimes[effectIdx] <= duration)
+                _effectRemainingTimes[effectIdx] = duration;
         }
-        _effectRemainingTimes[effectIdx] += duration;
+
+        
     }
 
     private void UpdateRemainingStatusEffectTimes()
     {
         //아직 다시 움직이게 하는거 , 사일런스 풀리는 것 밖에 구현 안되어있음
         float deltaTime = Time.deltaTime;
-
+        
         for (int i = 0; i < _effectRemainingTimes.Length; i++)
         {
-            if (_effectRemainingTimes[i] == 0.0f) continue;
+
+            if (_effectRemainingTimes[i] == 0) continue;
 
             //slow is handled seperately in another method to be called at the end of this function
             if (i == (int)EStatusEffect.Slow) continue;
 
             _effectRemainingTimes[i] -= deltaTime;
             EStatusEffect currEffect = (EStatusEffect)i;
-            Debug.Log(currEffect + "'s RemainingTime: " + _effectRemainingTimes[i]);
+            //Debug.Log(currEffect + "'s RemainingTime: " + _effectRemainingTimes[i]);
 
             if (_effectRemainingTimes[i] <= 0)
             {
@@ -140,7 +146,7 @@ public abstract class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
                 if (_effectRemainingTimes[i] <= 0)
                 {
                     SetVFXActive(i, false);
-
+                    
                     _effectRemainingTimes[i] = 0.0f;
 
                     if (currEffect == EStatusEffect.Root || currEffect == EStatusEffect.Airborne || currEffect == EStatusEffect.Stun)

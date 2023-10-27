@@ -34,7 +34,7 @@ public class TestEnemy : EnemyBase
         if (ShouldAttack) StartCoroutine(AttackRoutine());
     }
 
-    private void Update()
+    protected override void FixedUpdate()
     {
         if (_target == null)
         {
