@@ -428,17 +428,25 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4644158558201232398, guid: 7b5e109369a0f9845bf3029ca541a7ad, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8154329678701240256, guid: 7b5e109369a0f9845bf3029ca541a7ad, type: 3}
       propertyPath: m_Name
       value: "\uB0E5\uC774"
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 4644158558201232398, guid: 7b5e109369a0f9845bf3029ca541a7ad, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 8154329678701240256, guid: 7b5e109369a0f9845bf3029ca541a7ad, type: 3}
       insertIndex: -1
       addedObject: {fileID: 453423910}
+    - targetCorrespondingSourceObject: {fileID: 8154329678701240256, guid: 7b5e109369a0f9845bf3029ca541a7ad, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 453423916}
   m_SourcePrefab: {fileID: 100100000, guid: 7b5e109369a0f9845bf3029ca541a7ad, type: 3}
 --- !u!1 &453423909 stripped
 GameObject:
@@ -460,6 +468,20 @@ MonoBehaviour:
   LeftEnd: {fileID: 966926223}
   RightEnd: {fileID: 818409977}
   DefaultMoveSpeed: 3
+--- !u!114 &453423916
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 453423909}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c89082c7975e9a5419ba27f64dc7188a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DebuffEffects: []
+  enemyHealth: 30
 --- !u!1 &500919926
 GameObject:
   m_ObjectHideFlags: 0
