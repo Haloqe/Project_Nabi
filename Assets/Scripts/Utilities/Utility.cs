@@ -4,7 +4,7 @@ using UnityEngine;
 
 public static class Utility
 {
-    public static UnityEngine.Object LoadObjectFromFile(string path)
+    public static UnityEngine.Object LoadObjectFromPath(string path)
     {
         var loadedObject = Resources.Load(path);
         if (loadedObject == null)

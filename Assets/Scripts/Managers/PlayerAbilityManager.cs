@@ -27,7 +27,6 @@ public class PlayerAbilityManager : Singleton<PlayerAbilityManager>
     protected override void Awake()
     {
         base.Awake();
-        _playerInput = FindObjectOfType<PlayerInput>();
         _abilities = new Dictionary<int, SAbilityData>();
         _abilitiesByMetals = new[]
         {
@@ -35,18 +34,20 @@ public class PlayerAbilityManager : Singleton<PlayerAbilityManager>
             new Dictionary<int, SAbilityData>(),    // Gold
         };
         _abilityIconSprites = Resources.LoadAll<Sprite>("Sprites/Icons/Abilities/PlayerAbilitySpritesheet");
+    }
+
+    public void InitInGameVariables()
+    {
+        _playerInput = FindObjectOfType<PlayerInput>();
+        _attachedAbilityContainer = PlayerController.Instance.transform.Find("Abilities").gameObject;
+        _detachedAbilityContainer = GameObject.Find("DetachedAbilities");
+
         var abilityGroup = GameObject.Find("AbilityLayoutGroup").transform;
         for (int i = 0; i < 5; i++)
         {
             _activeAbilityIcons[i] = abilityGroup.Find("Slot_" + i).Find("AbilityIcon").GetComponent<Image>();
-            _activeAbilityCooldowns[i] = abilityGroup.Find("Slot_" + i).Find("CooldownTimer").GetComponent<Image>(); 
+            _activeAbilityCooldowns[i] = abilityGroup.Find("Slot_" + i).Find("CooldownTimer").GetComponent<Image>();
         }
-    }
-
-    private void Start()
-    {
-        _attachedAbilityContainer = PlayerController.Instance.transform.Find("Abilities").gameObject;
-        _detachedAbilityContainer = GameObject.Find("DetachedAbilities");
     }
 
     private void Update()
@@ -225,7 +226,7 @@ public class PlayerAbilityManager : Singleton<PlayerAbilityManager>
     {
         SAbilityData data = _abilities[abilityIdx];
         UnityEngine.Object prefabObj = null;
-        UnityEngine.Object prefab = Utility.LoadObjectFromFile("Prefabs/PlayerAbilities/" + data.PrefabPath);
+        UnityEngine.Object prefab = Utility.LoadObjectFromPath("Prefabs/PlayerAbilities/" + data.PrefabPath);
         Debug.Assert(prefab);
 
         if (data.IsAttached)

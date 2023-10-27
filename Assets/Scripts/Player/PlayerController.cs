@@ -2,9 +2,8 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : Singleton<PlayerController>
 {
-    static public PlayerController Instance { get; private set; }
     private PlayerInput _playerInput;
     private PlayerMovement _playerMovement;
     private PlayerCombat _playerCombat;
@@ -12,9 +11,10 @@ public class PlayerController : MonoBehaviour
     private bool _isNYScene;
 
 
-    private void Awake()
+    protected override void Awake()
     {
-        Instance = this;
+        base.Awake();
+        Debug.Log("PlayerController::Awake");
         _playerInput = GetComponent<PlayerInput>();
         _playerMovement = GetComponent<PlayerMovement>();
         _playerCombat = GetComponent<PlayerCombat>();
