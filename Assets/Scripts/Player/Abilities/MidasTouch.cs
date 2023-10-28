@@ -34,8 +34,9 @@ public class MidasTouch : ActiveAbilityBase
 
         _affectedEnemies.Add(collision.gameObject.GetInstanceID());
         //상태이상 후 상태이상 풀릴때 데미지 들어가는 스킬
-        //TO-DO: 상태이상 구현
+        //TO-DO: Gold 상태이상 구현
         //상태이상 후 데미지
         _owner.DealDamage(target, _data.DamageInfo);
+        
     }
 }

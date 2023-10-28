@@ -19,6 +19,7 @@ public abstract class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     [NamedArray(typeof(EStatusEffect))] public GameObject[] DebuffEffects;
     private float[] _effectRemainingTimes;
     private SortedDictionary<float, float> _slowRemainingTimes; // str,time
+    private float _tempPullduration;
     
     //Enemy health attribute
     [SerializeField] int enemyHealth = 30;
@@ -57,6 +58,12 @@ public abstract class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
                 continue;
             }
 
+            if(statusEffect.Effect == EStatusEffect.Pull)
+            {
+                _tempPullduration = statusEffect.Duration;
+                _enemyMovement.EnablePulling(_tempPullduration);
+            }
+
             //handles status effect other than slow
             else
             {
@@ -87,6 +94,7 @@ public abstract class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
                 case EStatusEffect.Silence: // disable skill
                     IsSilenced = true;
                     break;
+
             }
         }
 
@@ -149,12 +157,12 @@ public abstract class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
                     
                     _effectRemainingTimes[i] = 0.0f;
 
-                    if (currEffect == EStatusEffect.Root || currEffect == EStatusEffect.Airborne || currEffect == EStatusEffect.Stun)
+                    if (currEffect == EStatusEffect.Root || currEffect == EStatusEffect.Airborne || currEffect == EStatusEffect.Stun || currEffect == EStatusEffect.Pull)
                     {
                         _enemyMovement.EnableDisableMovement(true);
                     }
 
-                    if (currEffect == EStatusEffect.Airborne || currEffect == EStatusEffect.Stun || currEffect == EStatusEffect.Silence)
+                    if (currEffect == EStatusEffect.Airborne || currEffect == EStatusEffect.Stun || currEffect == EStatusEffect.Silence || currEffect == EStatusEffect.Pull)
                     {
                         IsSilenced = false;
                     }

@@ -1,7 +1,9 @@
+using JetBrains.Annotations;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using UnityEngine;
+using UnityEngine.ProBuilder;
 using UnityEngine.UIElements;
 
 public class EnemyMovement : MonoBehaviour
@@ -15,11 +17,17 @@ public class EnemyMovement : MonoBehaviour
     private float _moveSpeed;
     private bool _isRooted = false;
 
+    //the speed at which the enemy will be pulled
+    public float smoothing = 1f;
+    private Transform _target = null;
+    private GameObject _attacker;
+
     //rigid body component of enemy
     private Rigidbody2D _enemyRigidBody;
     private Transform _currentPoint;
     void Start()
     {
+        _target = PlayerController.Instance.transform;
          _moveSpeed= DefaultMoveSpeed;
         _enemyRigidBody = GetComponent<Rigidbody2D>();
         _currentPoint = RightEnd.transform;
@@ -67,7 +75,6 @@ public class EnemyMovement : MonoBehaviour
         _moveSpeed = DefaultMoveSpeed;
     }
 
-
     public void EnableDisableMovement(bool shouldEnable)
     {
         //shouldEnable = true means the enemy should move
@@ -76,6 +83,29 @@ public class EnemyMovement : MonoBehaviour
         {
             _enemyRigidBody.velocity = new Vector2(0, 0f);
         }
+    }
+    public void EnablePulling(float pullDuration)
+    {
+        StartCoroutine(OnPull(pullDuration));
+    }
+
+    IEnumerator OnPull(float pullDuration)
+    {
+        //everything needs to be done on pull:
+        //could change the pulling time later - hardcoded for now
+        float remainingTime = pullDuration;
+        float deltaTime = Time.deltaTime;
+
+        while (remainingTime > 0)
+        {
+            transform.position = Vector3.Lerp(transform.position, _target.position, smoothing * Time.deltaTime);
+            remainingTime -= deltaTime;
+            yield return null;
+        }
+
+        Debug.Log("Pulling finished.");
+        
+
     }
 
     public void ChangeSpeedByPercentage(float percentage)

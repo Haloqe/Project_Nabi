@@ -16,6 +16,7 @@ public enum EStatusEffect
     Airborne,
     Silence,
     Root,
+    Pull,
     MAX,
 }
 #endregion Common

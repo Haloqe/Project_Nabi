@@ -1,17 +1,40 @@
 using Player.Abilities.Base;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class BindingChain : ActiveAbilityBase
 {
+    private List<int> _affectedEnemies;
+    private int _maxTargetNum;
+
     protected override void Initialise()
     {
-        // Do initialisation for the binding of the ability
+        _affectedEnemies = new List<int>();
+        _maxTargetNum = 3;
     }
 
     protected override void ActivateAbility()
     {
-        // Called upon activation of ability
-        // Do initialisation for the activation of the ability
+        _affectedEnemies.Clear();
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.gameObject.CompareTag("Enemy") == false)
+        {
+            Debug.LogError(_data.Name_EN + " trigger with non-enemy");
+            return;
+        }
+        if (_affectedEnemies.Count >= _maxTargetNum) return;
+        if (Utility.IsObjectInList(collision.gameObject, _affectedEnemies)) return;
+
+        IDamageable target = collision.gameObject.GetComponent<IDamageable>();
+        if (target == null) return;
+
+
+        _affectedEnemies.Add(collision.gameObject.GetInstanceID());
+        _owner.DealDamage(target, _data.DamageInfo);
+
     }
 }

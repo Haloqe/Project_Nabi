@@ -27,7 +27,6 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
         _slowRemainingTimes = new SortedDictionary<float, float>(
             Comparer<float>.Create(delegate (float x, float y) { return y.CompareTo(x); })
         );
-        Debug.Assert(DebuffEffects.Length == 6);
     }
 
     private void Update()
