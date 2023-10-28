@@ -11,6 +11,9 @@ public class PlayerMovement : MonoBehaviour
     private float _moveSpeed; 
     private Vector2 _moveDirection;
     private bool _isRooted = false;
+    public bool _facingRight { get; private set; }
+    private float _inputHorizontal;
+    private float _inputVertical;
 
     // jumping
     [SerializeField] public float DefaultJumpForce = 10f;
@@ -31,10 +34,23 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
+
+        _inputHorizontal = Input.GetAxisRaw("Horizontal");
+        _inputVertical = Input.GetAxisRaw("Vertical");
+
         // disable movement if rooted
         if (_isRooted) return;
-            
+        
         _rigidbody2D.velocity = new Vector2(_moveDirection.x * _moveSpeed, _rigidbody2D.velocity.y);
+
+        if (_inputHorizontal > 0 && !_facingRight)
+        {
+            Flip();
+        }
+        if(_inputHorizontal <0 && _facingRight)
+        {
+            Flip();
+        }
         if (_isJumpPressed && !_isJumping)
         {
             //_rigidbody2D.AddForce(new Vector2(0, jumpForce));
@@ -122,5 +138,15 @@ public class PlayerMovement : MonoBehaviour
         if (_moveSpeed <= DefaultMoveSpeed) _moveSpeed = DefaultMoveSpeed;
         if (_jumpForce <= DefaultJumpForce) _jumpForce = DefaultJumpForce;
         _isRooted = false;
+    }
+
+    void Flip()
+    {
+        Vector3 currentScale = gameObject.transform.localScale;
+        //if 1 = facing right, if -1 = facing left
+        currentScale.x *= -1;
+        gameObject.transform.localScale = currentScale;
+
+        _facingRight = !_facingRight;
     }
 }

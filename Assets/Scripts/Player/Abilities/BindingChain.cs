@@ -18,6 +18,19 @@ public class BindingChain : ActiveAbilityBase
     {
         _affectedEnemies.Clear();
     }
+    protected override void TogglePrefab(bool isActive)
+    {
+        gameObject.SetActive(isActive);
+        if (isActive && !_data.IsAttached)
+        {
+            //these three lines of code flip the skill VFX prefab depending on the side that the player is facing
+            Vector3 currentScale = gameObject.transform.localScale;
+            currentScale.x *= -1;
+            gameObject.transform.localScale = currentScale;
+
+            gameObject.transform.position = _owner.transform.position;
+        }
+    }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {

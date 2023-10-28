@@ -33,6 +33,20 @@ public class PiercingChain : ActiveAbilityBase
         _affectedEnemies.Clear();
     }
 
+    protected override void TogglePrefab(bool isActive)
+    {
+        gameObject.SetActive(isActive);
+        if (isActive && !_data.IsAttached)
+        {
+            //these three lines of code flip the skill VFX prefab depending on the side that the player is facing
+            Vector3 currentScale = gameObject.transform.localScale;
+            currentScale.x *= -1;
+            gameObject.transform.localScale = currentScale;
+
+            gameObject.transform.position = _owner.transform.position;
+        }
+    }
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.gameObject.CompareTag("Enemy") == false)
@@ -71,7 +85,10 @@ public class PiercingChain : ActiveAbilityBase
         //second Hit - get the second half of the damage and stun effect
         _owner.DealDamage(target, _halvedDamageInfo);
 
+    }
 
-
+    void FlipVFX()
+    {
+        
     }
 }
