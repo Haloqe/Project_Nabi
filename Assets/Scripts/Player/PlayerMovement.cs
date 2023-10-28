@@ -13,7 +13,7 @@ public class PlayerMovement : MonoBehaviour
     private bool _isRooted = false;
     public bool _facingRight { get; private set; }
     private float _inputHorizontal;
-    private float _inputVertical;
+
 
     // jumping
     [SerializeField] public float DefaultJumpForce = 10f;
@@ -36,7 +36,7 @@ public class PlayerMovement : MonoBehaviour
     {
 
         _inputHorizontal = Input.GetAxisRaw("Horizontal");
-        _inputVertical = Input.GetAxisRaw("Vertical");
+
 
         // disable movement if rooted
         if (_isRooted) return;

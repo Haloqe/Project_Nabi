@@ -1,4 +1,5 @@
 using Player.Abilities.Base;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public abstract class ActiveAbilityBase : AbilityBase
@@ -8,7 +9,7 @@ public abstract class ActiveAbilityBase : AbilityBase
     protected float _elapsedCoolTime = 0.0f;
     protected float _lifeTime = 0.0f;
 
-    protected override void Start()
+protected override void Start()
     {
         base.Start();
         _lifeTime = _data.LifeTime == 0.0f ? 

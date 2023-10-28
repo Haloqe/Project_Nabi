@@ -13,13 +13,20 @@ public class PiercingChain : ActiveAbilityBase
 {
     private List<int> _affectedEnemies;
     private int _maxTargetNum;
+    private GameObject _player;
+
+    //used for damage modification
     private SDamage _specificDamage;
     private SDamageInfo _halvedDamageInfo;
     private SStatusEffect _specificStatusEffect;
     private SStatusEffect temp;
+    public bool SkillEnded { get; private set; } = true;
+    private PlayerMovement _playerMovement;
 
     protected override void Initialise()
     {
+        _player = GameObject.FindGameObjectWithTag("Player");
+        _playerMovement = _player.GetComponent<PlayerMovement>();
         _affectedEnemies = new List<int>();
         _maxTargetNum = 5;
         _specificDamage = new SDamage();
@@ -32,18 +39,31 @@ public class PiercingChain : ActiveAbilityBase
     {
         _affectedEnemies.Clear();
     }
-
+    public override void Activate()
+    {
+        if (!CanActivate()) return;
+        Debug.Log("[" + _data.Name_EN + "] activated");
+        _state = EAbilityState.Active;
+        TogglePrefab(true);
+        _playerMovement.EnableDisableMovement(false);
+        ActivateAbility();
+    }
+    public override void OnFinished()
+    {
+        _playerMovement.EnableDisableMovement(true);
+        Debug.Log("[" + _data.Name_EN + "] finished");
+        PlayerAbilityManager.Instance.RequestManualUpdate(this);
+        TogglePrefab(false);
+    }
     protected override void TogglePrefab(bool isActive)
     {
+        VFXFlip();
         gameObject.SetActive(isActive);
         if (isActive && !_data.IsAttached)
         {
-            //these three lines of code flip the skill VFX prefab depending on the side that the player is facing
-            Vector3 currentScale = gameObject.transform.localScale;
-            currentScale.x *= -1;
-            gameObject.transform.localScale = currentScale;
 
             gameObject.transform.position = _owner.transform.position;
+
         }
     }
 
@@ -87,8 +107,13 @@ public class PiercingChain : ActiveAbilityBase
 
     }
 
-    void FlipVFX()
+    void VFXFlip()
     {
-        
+        //these three lines of code flip the skill VFX prefab depending on the side that the player is facing
+        Vector3 currentScale = gameObject.transform.localScale;
+        currentScale.x *= -1;
+        gameObject.transform.localScale = currentScale;
     }
+
+
 }

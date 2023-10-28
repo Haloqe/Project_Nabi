@@ -13,7 +13,6 @@ public class MidasTouch : ActiveAbilityBase
     {
         _affectedEnemies = new List<int>();
         _maxTargetNum = 1;
-        _playerMovement = new PlayerMovement();
     }
 
     protected override void ActivateAbility()
@@ -51,6 +50,7 @@ public class MidasTouch : ActiveAbilityBase
 
         //TO-DO: Gold 상태이상 구현
         _owner.DealDamage(target, _data.DamageInfo);
-        
+
     }
 
+}
