@@ -27,7 +27,7 @@ public class MetalContractItem : MonoBehaviour
     private void OnInteract(InputAction.CallbackContext obj)
     {
         Debug.Log("MetalContractItem::OnInteract");
-        UIManager.Instance.LoadMetalContractUI();
+        UIManager.Instance.LoadMetalContractUI(this);
     }
 
     //You can exit the Skill Selection UI if you move far away from the Game Object Contractor or press F again.

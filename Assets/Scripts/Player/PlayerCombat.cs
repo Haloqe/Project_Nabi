@@ -21,9 +21,6 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
     private float[] _effectRemainingTimes;
     private SortedDictionary<float, float> _slowRemainingTimes; // str,time
 
-    // TEMP VAR
-    [SerializeField] GameObject DeadCanvas;
-
     private void Start()
     {
         PlayerEvents.Defeated += OnDefeated;
@@ -164,8 +161,7 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
     {
         StopAllCoroutines();
         Debug.Log("Player died.");
-        // should save info somewhere, do progressive updates
-        DeadCanvas.SetActive(true);
+        // TODO should save info somewhere, do progressive updates
         Destroy(gameObject);
     }
 

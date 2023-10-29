@@ -18,7 +18,7 @@ public class TESTSCRIPT : MonoBehaviour
     void Update()
     {
         elapsed += Time.deltaTime;
-        if (elapsed >= 3.0f)
+        if (elapsed >= 0.2f)
         {
             SceneManager.LoadScene(nextSceneName);
             elapsed = 0.0f;

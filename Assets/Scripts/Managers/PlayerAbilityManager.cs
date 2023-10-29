@@ -17,12 +17,16 @@ public class PlayerAbilityManager : Singleton<PlayerAbilityManager>
     private PlayerInput _playerInput;
     private Dictionary<int, SAbilityData> _abilities;
     private Dictionary<int, SAbilityData>[] _abilitiesByMetals;
+    private List<int> _collectedAbilities = new List<int>();
     private ActiveAbilityBase[] _activeAbilities = new ActiveAbilityBase[5];
     private PassiveAbilityBase[] _passiveAbilities = new PassiveAbilityBase[3];
     private List<ActiveAbilityBase> _manualUpdateAbilities = new List<ActiveAbilityBase>();
     private Sprite[] _abilityIconSprites;
     private Image[] _activeAbilityIcons = new Image[5];
     private Image[] _activeAbilityCooldowns = new Image[5];
+
+    // TEMP 
+    private int _nextAvailableBindIdx = 0;
 
     protected override void Awake()
     {
@@ -203,23 +207,20 @@ public class PlayerAbilityManager : Singleton<PlayerAbilityManager>
     }
 
     //------------------------------------------------------------------------------------
-    
-    //return true if the abilityIdx is not already bound
-    //reutrn false if the abilityIdx already bound
-    public bool CheckabilityAlreadyBound(int abilityIdx)
+
+    public bool IsAbilityAlreadyBound(int abilityIdx)
     {
-        Dictionary<int, SAbilityData> _abilitiesByMetalForCheck;
-        _abilitiesByMetalForCheck = GetAbilitiesByMetal(EAbilityMetalType.Gold);
-
-        for (int i = 1; i <= _abilitiesByMetalForCheck.Count; i++)
+        foreach (var activeAbility in _activeAbilities)
         {
-            if(_abilitiesByMetalForCheck[i].Id == abilityIdx)
-            {
-                return false;
-            }
+            if (activeAbility == null) continue;
+            if (activeAbility._data.Id == abilityIdx) return true;
         }
-
-        return true;
+        foreach (var passiveAbility in _passiveAbilities)
+        {
+            if (passiveAbility == null) continue;
+            if (passiveAbility._data.Id == abilityIdx) return true;
+        }
+        return false;
     }
     
     private AbilityBase InitiateAbility(int abilityIdx)
@@ -244,7 +245,16 @@ public class PlayerAbilityManager : Singleton<PlayerAbilityManager>
         return (AbilityBase)abilityObj;
     }
     
-    // NOTE currently does not consider if the same ability is bound to another key
+    public void CollectAbility(int abilityIdx)
+    {
+        // TODO FIX 지금은 active ability만 바로 바인딩. 패시브 따로 빼야함
+        if (_nextAvailableBindIdx == 5 || _abilities[abilityIdx].Type != EAbilityType.Active) return;
+        _collectedAbilities.Add(abilityIdx);
+
+        // TEMP NEED FIX 일단 collect하면 순서대로 바인딩함 나중에 바인딩ui 추가하면서 픽스할 것.
+        BindActiveAbility(_nextAvailableBindIdx++, abilityIdx);
+    }
+
     public void BindActiveAbility(int actionIdx, int abilityIdx)
     {
         Debug.Log("Attempting to bind ability [" + abilityIdx + "] to action index [" + actionIdx + "]");
@@ -252,7 +262,7 @@ public class PlayerAbilityManager : Singleton<PlayerAbilityManager>
         Debug.Assert(_abilities[abilityIdx].Type == EAbilityType.Active);
 
         // Return if already bound (probably not needed in the future when we have ui)
-        if (_activeAbilities[actionIdx] != null && _activeAbilities[actionIdx]._data.Id == abilityIdx)
+        if (IsAbilityAlreadyBound(abilityIdx))
         {
             Debug.Log("The same action is already bound!");
             return;
@@ -270,7 +280,7 @@ public class PlayerAbilityManager : Singleton<PlayerAbilityManager>
         _activeAbilities[actionIdx].BoundIndex = actionIdx;
 
         // Update UI
-        _activeAbilityIcons[actionIdx].sprite = _abilityIconSprites[_abilities[abilityIdx].IconIndex];
+        _activeAbilityIcons[actionIdx].sprite = GetAbilityIconSprite(abilityIdx);
         _activeAbilityIcons[actionIdx].color = Color.white;
 
         // Register callbacks
@@ -335,8 +345,23 @@ public class PlayerAbilityManager : Singleton<PlayerAbilityManager>
         return _activeAbilityCooldowns[boundIndex];
     }    
 
-    public Dictionary<int, SAbilityData> GetAbilitiesByMetal(EAbilityMetalType metalType)
+    public List<SAbilityData> GetAbilitiesByMetal(EAbilityMetalType metalType, bool removeCollected = false)
     {
-        return _abilitiesByMetals[(int)metalType];
+        var abilitiesDict = _abilitiesByMetals[(int)metalType];
+        if (removeCollected)
+        {
+            foreach (var collectedIdx in _collectedAbilities)
+            {
+                abilitiesDict.Remove(collectedIdx);
+            }
+        }
+
+        List<SAbilityData> abilities = abilitiesDict.Values.ToList();
+        return abilities;
+    }
+
+    public Sprite GetAbilityIconSprite(int abilityIdx)
+    {
+        return _abilityIconSprites[_abilities[abilityIdx].IconIndex];
     }
 }

@@ -97,7 +97,11 @@ public class UIManager : Singleton<UIManager>
         _metalContractUI    = Instantiate(_metalContractUIPrefab, Vector3.zero, Quaternion.identity).GameObject();
 
         _activeAbilityUI.SetActive(true);
+        // TODO in scene manager perhaps?
         PlayerAbilityManager.Instance.InitInGameVariables();
+
+        // TEMP 지금은 mainscene->ingame 순서가 아니라 디버깅용이라 여기서 하면 오류
+        //_metalContractUI.GetComponent<MetalContractUI>().Initialize();
     }
 
     private void LoadDefeatedUI()
@@ -114,20 +118,24 @@ public class UIManager : Singleton<UIManager>
         _UIIAMap.Enable();
     }
 
-    private void CloseFocusedUI()
+    public void CloseFocusedUI()
     {
         if (_playerMovement) _playerMovement.EnableDisableMovement(true);
         _playerIAMap.Enable();
         _UIIAMap.Disable();
         _focusedOverlay.SetActive(false);
-        _activeFocusedUI.SetActive(false);
-        _activeFocusedUI = null;
+        if (_activeFocusedUI)
+        {
+            _activeFocusedUI.SetActive(false);
+            _activeFocusedUI = null;
+        }
     }
 
-    public void LoadMetalContractUI()
+    public void LoadMetalContractUI(MetalContractItem contractItem)
     {
         OpenFocusedUI();
         _activeFocusedUI = _metalContractUI;
+        _metalContractUI.GetComponent<MetalContractUI>().ActiveContractItem = contractItem;
         _metalContractUI.SetActive(true);
     }
 }
