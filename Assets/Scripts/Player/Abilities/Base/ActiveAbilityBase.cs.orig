@@ -1,25 +1,40 @@
 using Player.Abilities.Base;
 using Unity.VisualScripting;
 using UnityEngine;
+<<<<<<< .merge_file_DEixBU
 using UnityEngine.UI;
 
 public abstract class ActiveAbilityBase : AbilityBase
 {
     public int BoundIndex { get; set; }
+=======
+
+public abstract class ActiveAbilityBase : AbilityBase
+{
+>>>>>>> .merge_file_dNu4fj
     protected bool _isCleanseAbility = false;
     protected float _elapsedActiveTime = 0.0f;
     protected float _elapsedCoolTime = 0.0f;
     protected float _lifeTime = 0.0f;
+<<<<<<< .merge_file_DEixBU
     private Image _cooldownUI;
 
+
     protected override void Start()
+=======
+
+protected override void Start()
+>>>>>>> .merge_file_dNu4fj
     {
         base.Start();
         _lifeTime = _data.LifeTime == 0.0f ? 
             Utility.GetLongestParticleDuration(gameObject) + 0.05f : _data.LifeTime;
         TogglePrefab(false);
+<<<<<<< .merge_file_DEixBU
         _cooldownUI = PlayerAbilityManager.Instance.GetCooldownUI(BoundIndex);
         _cooldownUI.fillAmount = 0.0f;
+=======
+>>>>>>> .merge_file_dNu4fj
         Initialise();
     }
 
@@ -37,12 +52,19 @@ public abstract class ActiveAbilityBase : AbilityBase
 
             case EAbilityState.Active:
                 _elapsedActiveTime += Time.deltaTime;
+<<<<<<< .merge_file_DEixBU
                 _elapsedCoolTime += Time.deltaTime;
                 UpdateCooldownUI();
 
                 if (_elapsedActiveTime >= _lifeTime)
                 {
                     _state = EAbilityState.Cooldown;
+=======
+                if (_elapsedActiveTime >= _lifeTime)
+                {
+                    _state = EAbilityState.Cooldown;
+                    _elapsedCoolTime = _elapsedActiveTime;
+>>>>>>> .merge_file_dNu4fj
                     _elapsedActiveTime = 0.0f;
                     OnFinished();
                 }
@@ -50,6 +72,7 @@ public abstract class ActiveAbilityBase : AbilityBase
 
             case EAbilityState.Cooldown:
                 _elapsedCoolTime += Time.deltaTime;
+<<<<<<< .merge_file_DEixBU
                 UpdateCooldownUI();
 
                 if (_elapsedCoolTime >= _data.CooldownTime)
@@ -57,6 +80,13 @@ public abstract class ActiveAbilityBase : AbilityBase
                     _state = EAbilityState.Ready;
                     _elapsedCoolTime = 0.0f;
                     PlayerAbilityManager.Instance.RequestCancelManualUpdate(BoundIndex);
+=======
+                if (_elapsedCoolTime >= _data.CoolDownTime)
+                {
+                    _state = EAbilityState.Ready;
+                    _elapsedCoolTime = 0.0f;
+                    PlayerAbilityManager.Instance.RequestCancelManualUpdate(this);
+>>>>>>> .merge_file_dNu4fj
                 }
                 break;
         }
@@ -89,7 +119,10 @@ public abstract class ActiveAbilityBase : AbilityBase
         Debug.Log("[" + _data.Name_EN + "] activated");
         TogglePrefab(true);
         _state = EAbilityState.Active;
+<<<<<<< .merge_file_DEixBU
         _cooldownUI.fillAmount = 1.0f;
+=======
+>>>>>>> .merge_file_dNu4fj
         ActivateAbility();
     }
 
@@ -110,24 +143,28 @@ public abstract class ActiveAbilityBase : AbilityBase
 
     // An ability is finished when its lifetime ends (iff lifetime > 0)
     // (TODO) or after some time (in case its a one shot animation and no lifetime exists)
-    public void OnFinished()
+    public virtual void OnFinished()
     {
         Debug.Log("[" + _data.Name_EN + "] finished");
-        EndAbility();
+<<<<<<< .merge_file_DEixBU
         PlayerAbilityManager.Instance.RequestManualUpdate(BoundIndex);
+=======
+        PlayerAbilityManager.Instance.RequestManualUpdate(this);
+>>>>>>> .merge_file_dNu4fj
         TogglePrefab(false);
     }
-
-    protected abstract void EndAbility();
 
     public virtual void CleanUpAbility()
     {
         Destroy(gameObject);
     }
+<<<<<<< .merge_file_DEixBU
 
     private void UpdateCooldownUI()
     {
         float coolTimeRatio = Mathf.Clamp((_data.CooldownTime - _elapsedCoolTime) / _data.CooldownTime, 0, 1);
         _cooldownUI.fillAmount = coolTimeRatio;
     }
+=======
+>>>>>>> .merge_file_dNu4fj
 }

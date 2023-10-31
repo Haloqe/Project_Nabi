@@ -15,4 +15,10 @@ public class PerfectPurification : ActiveAbilityBase
         _owner.RemoveAllDebuffs();
         FindObjectOfType<PlayerMovement>().SetMoveSpeedForDuration(3f, 1.5f);
     }
+
+    protected override void EndAbility()
+    {
+        // Called during the termination of the ability
+        // Do some jobs after the ability is finished
+    }
 }

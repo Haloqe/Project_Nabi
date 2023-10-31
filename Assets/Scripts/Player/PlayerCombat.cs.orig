@@ -9,7 +9,7 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
     // reference to other components
     private PlayerMovement _playerMovement;
 
-    // TEMP health attributes
+    // TEMP heatlh attributes
     private float _health = 40;
 
     // status effect attributes
@@ -23,14 +23,17 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
 
     private void Start()
     {
-        PlayerEvents.defeated += OnDefeated;
+        PlayerEvents.Defeated += OnDefeated;
         _playerMovement = GetComponent<PlayerMovement>();
         _effectRemainingTimes = new float[(int)EStatusEffect.MAX];
         _slowRemainingTimes = new SortedDictionary<float, float>(
             Comparer<float>.Create(delegate (float x, float y) { return y.CompareTo(x); })
         );
+<<<<<<< .merge_file_T0yGX1
         _activeDOTCounts = new int[(int)EDamageType.MAX];
         Debug.Assert(DebuffEffects.Length == 6);
+=======
+>>>>>>> .merge_file_rpqC9L
     }
 
     private void Update()
@@ -85,7 +88,7 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
                 _effectRemainingTimes[(int)EStatusEffect.Airborne] == 0.0f &&
                 _effectRemainingTimes[(int)EStatusEffect.Stun] == 0.0f)
             {
-                _playerMovement.EnableMovement();
+                _playerMovement.EnableDisableMovement(true);
             }
         }
         if (shouldCheckUpdateSilenceEx)
@@ -218,9 +221,9 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
     {
         // TODO hit effect
         _health -= amount;
-        PlayerEvents.damaged.Invoke(amount);
+        PlayerEvents.Damaged.Invoke(amount);
         Debug.Log("Player HP: " + _health.ToString("0.00") + " (-" + amount + ")");
-        if (_health <= 0) PlayerEvents.defeated.Invoke();
+        if (_health <= 0) PlayerEvents.Defeated.Invoke();
     }
     #endregion Damage Dealing and Receiving
 
@@ -274,7 +277,7 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
 
         if (shouldDisableMovement)
         {
-            _playerMovement.DisableMovement();
+            _playerMovement.EnableDisableMovement(false);
         }
     }
 
@@ -304,7 +307,7 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
         // return if invalid slow
         if (strength == 0 || duration == 0) return;
 
-        // check if this is the first slow
+        // check if this is the first slowss
         if (_slowRemainingTimes.Count == 0)
         {
             SetVFXActive(EStatusEffect.Slow, true);

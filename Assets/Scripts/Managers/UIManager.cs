@@ -7,7 +7,6 @@ using UnityEngine.SceneManagement;
 
 public class UIManager : Singleton<UIManager>
 {
-    string prevSceneName = String.Empty;
     private InputActionMap _playerIAMap;
     private InputActionMap _UIIAMap;
     private PlayerMovement _playerMovement;
@@ -31,7 +30,7 @@ public class UIManager : Singleton<UIManager>
         SceneManager.sceneLoaded += OnSceneLoaded;
         InputAction closeAction = FindObjectOfType<InputSystemUIInputModule>().actionsAsset.FindAction("UI/Close");
         closeAction.performed += OnClose;
-        PlayerEvents.Defeated += OnPlayerDefeated;
+        PlayerEvents.defeated += OnPlayerDefeated;
         LoadAllUIPrefabs();
     }
 
@@ -51,8 +50,6 @@ public class UIManager : Singleton<UIManager>
         {
 
         }
-
-        prevSceneName = name; // temp
     }
 
     private void OnPlayerDefeated()
@@ -113,14 +110,14 @@ public class UIManager : Singleton<UIManager>
     private void OpenFocusedUI()
     {
         _focusedOverlay.SetActive(true);
-        _playerMovement.EnableDisableMovement(false);
+        _playerMovement.DisableMovement();
         _playerIAMap.Disable();
         _UIIAMap.Enable();
     }
 
     public void CloseFocusedUI()
     {
-        if (_playerMovement) _playerMovement.EnableDisableMovement(true);
+        if (_playerMovement) _playerMovement.EnableMovement();
         _playerIAMap.Enable();
         _UIIAMap.Disable();
         _focusedOverlay.SetActive(false);

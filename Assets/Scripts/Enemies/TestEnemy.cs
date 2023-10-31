@@ -17,7 +17,7 @@ public class TestEnemy : EnemyBase
     [SerializeField] private EDamageType DamageType;
     [SerializeField] float DamageAmount = 3;
     [SerializeField] float DamageDuration = 0;
-    [Tooltip("dd")][SerializeField] float DamageTick = 0;
+    [SerializeField] float DamageTick = 0;
 
     [Header("Status Effect")]
     [SerializeField] public EStatusEffect StatusEffect;
@@ -56,7 +56,7 @@ public class TestEnemy : EnemyBase
        _attacker.SetActive(ShouldAttack); 
     }
 
-    private void Update()
+    protected override void FixedUpdate()
     {
         if (_target == null)
         {

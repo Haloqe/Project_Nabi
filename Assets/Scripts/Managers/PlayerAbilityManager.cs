@@ -8,7 +8,6 @@ using System;
 using Unity.VisualScripting;
 using Player.Abilities.Base;
 using UnityEngine.UI;
-using UnityEditor.Playables;
 
 public class PlayerAbilityManager : Singleton<PlayerAbilityManager>
 {
@@ -120,10 +119,10 @@ public class PlayerAbilityManager : Singleton<PlayerAbilityManager>
                     }
 
                     // Status effect data
-                    if (statusEffects.Length % 4 == 0)
+                    if (statusEffects.Length % 3 == 0)
                     {
                         damageInfo.StatusEffects = new List<SStatusEffect>();
-                        for (int i = 0; i < statusEffects.Length; i += 4)
+                        for (int i = 0; i < statusEffects.Length; i += 3)
                         {
                             SStatusEffect temp = new SStatusEffect
                             {

@@ -41,14 +41,6 @@ public class EnemyMovement_FollowStraightPath : EnemyMovement
         transform.localScale = new Vector2(
             -(Mathf.Sign(_rigidBody.velocity.x)) * Mathf.Abs(transform.localScale.x), transform.localScale.y);
     }
-    public override void EnableDisableMovement(bool shouldEnable)
-    {
-        _isRooted = !shouldEnable;
-        if (!shouldEnable)
-        {
-            _rigidBody.velocity = Vector2.zero;
-        }
-    }
 
     //Visualisation tool for distance and endpoints of the enemy's movement (에너미 패트롤 동선 선으로 나타내 줌,게임 플레이시 사라짐) 
     private void OnDrawGizmos()

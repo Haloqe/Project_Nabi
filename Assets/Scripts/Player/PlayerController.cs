@@ -10,7 +10,6 @@ public class PlayerController : Singleton<PlayerController>
     static int _testNumCalls = 0;
     private bool _isNYScene;
 
-
     protected override void Awake()
     {
         base.Awake();

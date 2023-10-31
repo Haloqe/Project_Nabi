@@ -34,4 +34,9 @@ public class MansaMusa : ActiveAbilityBase
         _affectedEnemies.Add(collision.gameObject.GetInstanceID());
         _owner.DealDamage(target, _data.DamageInfo);
     }
+
+    protected override void EndAbility()
+    {
+        
+    }
 }

@@ -13,21 +13,47 @@ public class PiercingChain : ActiveAbilityBase
 {
     private List<int> _affectedEnemies;
     private int _maxTargetNum;
-    public List<SDamage> temp;
-    public SDamage specificDamage;
-    public SDamageInfo halvedDamageInfo;
+    private GameObject _player;
+
+    //used for damage modification
+    private SDamage _specificDamage;
+    private SDamageInfo _halvedDamageInfo;
+    private SStatusEffect _specificStatusEffect;
+    private SStatusEffect temp;
+    public bool SkillEnded { get; private set; } = true;
+    private PlayerMovement _playerMovement;
 
     protected override void Initialise()
     {
+        _player = GameObject.FindGameObjectWithTag("Player");
+        _playerMovement = _player.GetComponent<PlayerMovement>();
         _affectedEnemies = new List<int>();
         _maxTargetNum = 5;
-        specificDamage = new SDamage();
-        halvedDamageInfo = new SDamageInfo();
+        _specificDamage = new SDamage();
+        _halvedDamageInfo = new SDamageInfo();
+        _specificStatusEffect = new SStatusEffect();
+        temp = new SStatusEffect();
     }
 
     protected override void ActivateAbility()
     {
         _affectedEnemies.Clear();
+        _playerMovement.DisableMovement();
+    }
+
+    protected override void EndAbility()
+    {
+        _playerMovement.EnableMovement();
+    }
+
+    protected override void TogglePrefab(bool isActive)
+    {
+        VFXFlip();
+        gameObject.SetActive(isActive);
+        if (isActive && !_data.IsAttached)
+        {
+            gameObject.transform.position = _owner.transform.position;
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -43,26 +69,36 @@ public class PiercingChain : ActiveAbilityBase
         IDamageable target = collision.gameObject.GetComponent<IDamageable>();
         if (target == null) return;
 
-
         _affectedEnemies.Add(collision.gameObject.GetInstanceID());
 
-        halvedDamageInfo = _data.DamageInfo;
-        specificDamage = _data.DamageInfo.Damages[0];
+        _halvedDamageInfo = _data.DamageInfo;
 
-        //change to half amount
-        specificDamage.TotalAmount = specificDamage.TotalAmount / 2;
-        halvedDamageInfo.Damages[0] = specificDamage;
+        //Retrieve Damage and statuseffect info about Piercing Chain
+        _specificDamage = _data.DamageInfo.Damages[0];
+        _specificStatusEffect = _data.DamageInfo.StatusEffects[0];
+        temp = _data.DamageInfo.StatusEffects[0];
+
+        //change to half amount and binding duration 0
+        _specificDamage.TotalAmount = _specificDamage.TotalAmount / 2;
+        _specificStatusEffect.Duration = 0;
+
+        _halvedDamageInfo.Damages[0] = _specificDamage;
+        _halvedDamageInfo.StatusEffects[0] = _specificStatusEffect;
 
         //first Hit - get the first half of the damage
-        _owner.DealDamage(target, halvedDamageInfo);
+        _owner.DealDamage(target, _halvedDamageInfo);
 
-        //After the first hit, give the enemy stun status effect
-        //TO-DO: Enemybases에서 enemy가 받을 stun 정의하고 바꾸기
+        _halvedDamageInfo.StatusEffects[0] = temp;
 
-        //second Hit - get the second half of the damage
-        _owner.DealDamage(target, halvedDamageInfo);
+        //second Hit - get the second half of the damage and stun effect
+        _owner.DealDamage(target, _halvedDamageInfo);
+    }
 
-
-
+    void VFXFlip()
+    {
+        //these three lines of code flip the skill VFX prefab depending on the side that the player is facing
+        Vector3 currentScale = gameObject.transform.localScale;
+        currentScale.x *= -1;
+        gameObject.transform.localScale = currentScale;
     }
 }

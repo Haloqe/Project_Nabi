@@ -1,20 +1,30 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+<<<<<<< .merge_file_bOHj9w
+using Unity.Burst.Intrinsics;
+=======
 using System.Linq;
+using Unity.IO.LowLevel.Unsafe;
+using Unity.VisualScripting;
+>>>>>>> .merge_file_q5wwBl
 using UnityEngine;
  
 public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 {
     // reference to other components
+    private EnemyMovement _enemyMovement;
     protected Rigidbody2D _rigidbody2D;
     protected Animator _animator;
     protected SEnemyData _data;
-    [SerializeField] protected EEnemyMoveType MoveType;
+    [SerializeField] protected EEnemyMoveType MoveType = EEnemyMoveType.None;
 
+<<<<<<< .merge_file_bOHj9w
     // Movement
     protected EnemyMovement _movement = null;
 
+=======
+>>>>>>> .merge_file_q5wwBl
     //Status effect attributes
     public bool IsSilenced { get; private set; }
     public bool ShouldDisableMovement { get; private set; }
@@ -24,19 +34,26 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     private float _tempPullduration;
     
     //Enemy health attribute
-    [SerializeField] protected int Health = 30;
+    [SerializeField] int enemyHealth = 30;
 
     protected virtual void Start()
-    { 
+    {   
+        _enemyMovement = GetComponent<EnemyMovement>();
         _rigidbody2D = GetComponent<Rigidbody2D>();
         _animator = GetComponent<Animator>();
         _effectRemainingTimes = new float[(int)EStatusEffect.MAX];
         _slowRemainingTimes = new SortedDictionary<float, float> (
             Comparer<float>.Create(delegate (float x, float y) { return y.CompareTo(x); })
         );
-        DebuffEffects = new GameObject[(int)EStatusEffect.MAX];
+<<<<<<< .merge_file_bOHj9w
         if (MoveType != EEnemyMoveType.None) _movement = GetComponent<EnemyMovement>();
         Initialise();         
+    }
+
+    protected virtual void Initialise() { }
+=======
+        DebuffEffects = new GameObject[(int)EStatusEffect.MAX];
+        Initialise();
     }
 
     protected virtual void FixedUpdate()
@@ -44,7 +61,8 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         UpdateRemainingStatusEffectTimes();
     }
 
-    protected virtual void Initialise() { }
+    protected abstract void Initialise();
+>>>>>>> .merge_file_q5wwBl
 
     #region Status Effects imposed by the player handling
     private void HandleNewStatusEffects(List<SStatusEffect> statusEffects)
@@ -63,7 +81,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
             if(statusEffect.Effect == EStatusEffect.Pull)
             {
                 _tempPullduration = statusEffect.Duration;
-                _movement.EnablePulling(_tempPullduration);
+                _enemyMovement.EnablePulling(_tempPullduration);
             }
 
             //handles status effect other than slow
@@ -102,7 +120,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
         if (ShouldDisableMovement)
         {
-            _movement.DisableMovement();
+            _enemyMovement.EnableDisableMovement(false);
         }
     }
 
@@ -140,8 +158,6 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         
         for (int i = 0; i < _effectRemainingTimes.Length; i++)
         {
-            // slow time is handled separately
-            if (i == (int)EStatusEffect.Slow) continue;
 
             if (_effectRemainingTimes[i] == 0) continue;
 
@@ -163,7 +179,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
                     if (currEffect == EStatusEffect.Root || currEffect == EStatusEffect.Airborne || currEffect == EStatusEffect.Stun || currEffect == EStatusEffect.Pull)
                     {
-                        _movement.EnableMovement();
+                        _enemyMovement.EnableDisableMovement(true);
                     }
 
                     if (currEffect == EStatusEffect.Airborne || currEffect == EStatusEffect.Stun || currEffect == EStatusEffect.Silence || currEffect == EStatusEffect.Pull)
@@ -184,23 +200,27 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         bool removed = false;
         foreach (float strength in _slowRemainingTimes.Keys.ToList())
         {
+<<<<<<< .merge_file_bOHj9w
+            _movement?.EnableDisableMovement(true);
+=======
             _slowRemainingTimes[strength] -= Time.deltaTime;
             if (_slowRemainingTimes[strength] <= 0.0f)
             {
                 _slowRemainingTimes.Remove(strength);
                 removed = true;
             }
+>>>>>>> .merge_file_q5wwBl
         }
 
         // update slow strength (i.e. move speed)
         if (_slowRemainingTimes.Count == 0)
         {
-            _movement.ResetMoveSpeed();
+            _enemyMovement.ResetMoveSpeed();
             SetVFXActive(EStatusEffect.Slow, false);
         }
         else if (removed)
         {
-            _movement.ChangeSpeedByPercentage(_slowRemainingTimes.First().Key);
+            _enemyMovement.ChangeSpeedByPercentage(_slowRemainingTimes.First().Key);
         }
     }
 
@@ -235,7 +255,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         }
 
         // else, add new slow
-        _movement.ChangeSpeedByPercentage(strength);
+        _enemyMovement.ChangeSpeedByPercentage(strength);
         _slowRemainingTimes.Add(strength, duration);
         Debug.Log("New slow (" + strength + ") time: " + duration.ToString("0.0000"));
     }
@@ -275,9 +295,9 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     private void HandleNewDamages(List<SDamage> damages)
     {
         int damage = (int)IDamageable.CalculateRoughDamage(damages);
-        Health -= damage;
-        Debug.Log(gameObject.name + "'s Current health: " + Health + "(-" + damage + ")");
-        if (Health <= 0) { Die(); }
+        enemyHealth -= damage;
+        Debug.Log(gameObject.name + "'s Current health: " + enemyHealth + "(-" + damage + ")");
+        if (enemyHealth <= 0) { Die(); }
     }
 
     private void Die()
@@ -288,4 +308,5 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
     }
     #endregion Damage Dealing and Receiving
+
 }

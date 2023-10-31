@@ -14,8 +14,8 @@ public class TestCameraShake : MonoBehaviour
 
     private void Awake()
     {
-        PlayerEvents.Damaged += OnPlayerDamaged;
-        PlayerEvents.Defeated += OnPlayerDefeated;
+        PlayerEvents.damaged += OnPlayerDamaged;
+        PlayerEvents.defeated += OnPlayerDefeated;
         _vCam = GetComponent<CinemachineVirtualCamera>();
         _cbmcp = _vCam.GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>();
         _cbmcp.m_AmplitudeGain = 0.0f;

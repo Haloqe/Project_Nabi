@@ -35,7 +35,7 @@ public class MetalContractItem : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            _interactAction.RemoveAllBindingOverrides();
+            _interactAction.performed -= OnInteract;
         }
     }
 

@@ -89,7 +89,7 @@ public class MetalContractUI : MonoBehaviour
     public void OnMouseClickIcon(int index)
     {
         PlayerAbilityManager.Instance.CollectAbility(_abilitiesToDisplay[index].Id);
-        ActiveContractItem.gameObject.SetActive(false);
+        Destroy(ActiveContractItem.gameObject);
         UIManager.Instance.CloseFocusedUI();
     }
 }
