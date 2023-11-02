@@ -11,6 +11,7 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
 
     // TEMP health attributes
     private float _health = 40;
+    private float _maxHealth = 40;
 
     // status effect attributes
     public bool IsSilenced { get; private set; }
@@ -218,9 +219,14 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
     {
         // TODO hit effect
         _health -= amount;
-        PlayerEvents.damaged.Invoke(amount);
+        PlayerEvents.HPChanged.Invoke(-amount, GetHPRatio());
         Debug.Log("Player HP: " + _health.ToString("0.00") + " (-" + amount + ")");
         if (_health <= 0) PlayerEvents.defeated.Invoke();
+    }
+
+    public float GetHPRatio()
+    {
+        return _health / _maxHealth;
     }
     #endregion Damage Dealing and Receiving
 

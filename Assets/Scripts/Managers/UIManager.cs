@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class UIManager : Singleton<UIManager>
 {
@@ -12,14 +13,15 @@ public class UIManager : Singleton<UIManager>
     private PlayerMovement _playerMovement;
 
     private UnityEngine.Object _defeatedUIPrefab;
-    private UnityEngine.Object _activeAbilityUIPrefab;
+    private UnityEngine.Object _inGameCombatPrefab;
     private UnityEngine.Object _metalContractUIPrefab;
     private UnityEngine.Object _focusedOverlayPrefab;
 
     private GameObject _defeatedUI;
-    private GameObject _activeAbilityUI;
+    private GameObject _inGameCombatUI;
     private GameObject _metalContractUI;
     private GameObject _focusedOverlay;
+    private Slider _playerHPSlider;
 
     private GameObject _activeFocusedUI;
     int temp = 0;
@@ -31,6 +33,7 @@ public class UIManager : Singleton<UIManager>
         InputAction closeAction = FindObjectOfType<InputSystemUIInputModule>().actionsAsset.FindAction("UI/Close");
         closeAction.performed += OnClose;
         PlayerEvents.defeated += OnPlayerDefeated;
+        PlayerEvents.HPChanged += OnPlayerHPChanged;
         LoadAllUIPrefabs();
     }
 
@@ -52,6 +55,11 @@ public class UIManager : Singleton<UIManager>
         }
     }
 
+    private void OnPlayerHPChanged(float changeAmount, float hpRatio)
+    {
+        _playerHPSlider.value = hpRatio;
+    }
+
     private void OnPlayerDefeated()
     {
         LoadDefeatedUI();
@@ -71,7 +79,7 @@ public class UIManager : Singleton<UIManager>
         string path = "Prefabs/UI/";
         _focusedOverlayPrefab   = Utility.LoadObjectFromPath(path + "InGame/FocusedCanvas");
         _defeatedUIPrefab       = Utility.LoadObjectFromPath(path + "InGame/DeadCanvas");
-        _activeAbilityUIPrefab  = Utility.LoadObjectFromPath(path + "InGame/Ability/AbilityCanvas");
+        _inGameCombatPrefab  = Utility.LoadObjectFromPath(path + "InGame/CombatCanvas");
         _metalContractUIPrefab  = Utility.LoadObjectFromPath(path + "InGame/Ability/MetalContractCanvas");
     }
 
@@ -90,10 +98,12 @@ public class UIManager : Singleton<UIManager>
 
         _focusedOverlay     = Instantiate(_focusedOverlayPrefab, Vector3.zero, Quaternion.identity).GameObject();
         _defeatedUI         = Instantiate(_defeatedUIPrefab, Vector3.zero, Quaternion.identity).GameObject();
-        _activeAbilityUI    = Instantiate(_activeAbilityUIPrefab, Vector3.zero, Quaternion.identity).GameObject();
+        _inGameCombatUI     = Instantiate(_inGameCombatPrefab, Vector3.zero, Quaternion.identity).GameObject();
         _metalContractUI    = Instantiate(_metalContractUIPrefab, Vector3.zero, Quaternion.identity).GameObject();
+        _playerHPSlider     = _inGameCombatUI.GetComponentInChildren<Slider>();
 
-        _activeAbilityUI.SetActive(true);
+        _inGameCombatUI.SetActive(true);
+        _playerHPSlider.value = FindObjectOfType<PlayerCombat>().GetHPRatio();
         // TODO in scene manager perhaps?
         PlayerAbilityManager.Instance.InitInGameVariables();
 
