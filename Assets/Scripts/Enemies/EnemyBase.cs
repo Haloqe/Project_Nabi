@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.IO.LowLevel.Unsafe;
 using UnityEngine;
  
 public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
@@ -25,6 +26,9 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     
     //Enemy health attribute
     [SerializeField] protected int Health = 30;
+
+    //Gold Drop
+    public GameObject _pickups;
 
     protected virtual void Start()
     { 
@@ -257,8 +261,8 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     // TO-DO
     #endregion Status Effects imposing on the player handling
 
-        #region Damage Dealing and Receiving
-        // Dealing damage to the player Handling
+    #region Damage Dealing and Receiving
+    // Dealing damage to the player Handling
     public virtual void DealDamage(IDamageable target, SDamageInfo damageInfo)
     {
         damageInfo.DamageSource = gameObject.GetInstanceID();
@@ -283,9 +287,20 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     private void Die()
     {
         Destroy(gameObject);
+        DropGold();
         // TEMP code
         Debug.Log(gameObject.name + " died.");
 
     }
     #endregion Damage Dealing and Receiving
+
+    #region Gold Drop
+    protected virtual void DropGold()
+    {
+        UnityEngine.Object prefabObj = null;
+        UnityEngine.Object prefab = Utility.LoadObjectFromPath("Prefabs/Coin/PREF_Coin.prefab");
+        prefabObj = Instantiate(prefab, _pickups.transform);
+    }
+    #endregion Gold Drop
+
 }
