@@ -12,7 +12,6 @@ public class EnemyManager : Singleton<EnemyManager>
         base.Awake();
         _enemies = new Dictionary<int, SEnemyData>();
     }
-
     public void Init(string dataPath)
     {
         Debug.Log("Initialising Enemy Data");
@@ -32,12 +31,18 @@ public class EnemyManager : Singleton<EnemyManager>
                     Name_KO = csv.GetField("Name_KO"),
                     PrefabPath = csv.GetField("Prefab"),
                     MaxHealth = float.Parse(csv.GetField("MaxHealth")),
-                    DefaultMoveSpeed = float.Parse(csv.GetField("DefaultMoveSpeed"))
+                    DefaultMoveSpeed = float.Parse(csv.GetField("DefaultMoveSpeed")),
+                    MinCoin = int.Parse(csv.GetField("MinCoin")),
+                    MaxCoin = int.Parse(csv.GetField("MaxCoin"))
                 };
 
                 _enemies.Add(data.Id, data);
                 Debug.Log("Enemy [" + data.Name_EN + "][" + data.Id + "] added to the dictionary.");
             }
         }
+    }
+    public Dictionary<int, SEnemyData> GetEnemies()
+    {
+        return _enemies;
     }
 }

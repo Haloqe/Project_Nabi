@@ -99,6 +99,8 @@ public struct SEnemyData
     public string PrefabPath;
     public float DefaultMoveSpeed;
     public float MaxHealth;
+    public int MinCoin;
+    public int MaxCoin;
     // amount of gold to drop
     // percentage of drop
     // rank

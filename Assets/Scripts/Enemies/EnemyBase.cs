@@ -287,7 +287,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     private void Die()
     {
         Destroy(gameObject);
-        DropGold();
+        DropCoin();
         // TEMP code
         Debug.Log(gameObject.name + " died.");
 
@@ -295,7 +295,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     #endregion Damage Dealing and Receiving
 
     #region Gold Drop
-    protected virtual void DropGold()
+    protected virtual void DropCoin()
     {
         UnityEngine.Object prefabObj = null;
         UnityEngine.Object prefab = Utility.LoadObjectFromPath("Prefabs/Coin/PREF_Coin.prefab");
