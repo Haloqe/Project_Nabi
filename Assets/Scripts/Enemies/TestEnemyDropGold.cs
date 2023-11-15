@@ -26,15 +26,20 @@ public class TestEnemyDropGold : EnemyBase
     }
     protected override void DropCoin()
     {
-        UnityEngine.Object prefabObj = null;
         UnityEngine.Object prefab = Utility.LoadObjectFromPath("Prefabs/Coin/PREF_Coin");
         Debug.Assert(prefab);
         Instantiate(prefab, gameObject.transform.position, gameObject.transform.rotation);
 
     }
 
-    public void CoinRange(string name)
+    public int MinCoinRange()
     {
-        
+        //TO-DO: 몬스터에 따라서 id 1 이 아니고 특정 id넣어줘야 함.
+        return _enemies[1].MinCoin; 
+    }
+    public int MaxCoinRange()
+    { 
+        //TO-DO: 몬스터에 따라서 id 1 이 아니고 특정 id넣어줘야 함.
+        return _enemies[1].MaxCoin;
     }
 }

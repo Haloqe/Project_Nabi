@@ -51,6 +51,7 @@ public class TestEnemy : EnemyBase
             }
         }
 
+        //다른 기능들: statuseffect, golddrop실험하느라 cross-out 해놨음.나중에 주석처리 해제시켜도 됨. 
         //StartCoroutine(ChaseRoutine());
         //if (ShouldAttack) StartCoroutine(AttackRoutine());
        _attacker.SetActive(ShouldAttack); 

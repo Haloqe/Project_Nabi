@@ -1,16 +1,20 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.InteropServices.WindowsRuntime;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 public class Coin : MonoBehaviour
 {
-    //TO-DO: the coin moving up and down 
-    [SerializeField] private int value;
     private bool hasTriggered;
-
+    TestEnemyDropGold testEnemyDropGold;
     private CoinManager _coinManager;
+
+    public static event Action OnCoinCollected;
     public void Start()
     {
+        testEnemyDropGold = FindObjectOfType<TestEnemyDropGold>();
         _coinManager = CoinManager.instance;
     }
     public void Update()
@@ -22,15 +26,18 @@ public class Coin : MonoBehaviour
         if (other.tag == "Player" && !hasTriggered)
         {
             hasTriggered = true;
-            _coinManager.ChangeCoins(value);
+            _coinManager.ChangeCoins(CoinValue());
             Destroy(gameObject);
             CoinGainEffect();
         }
-        
     }
 
+    private int CoinValue()
+    {
+        int value = UnityEngine.Random.Range(testEnemyDropGold.MinCoinRange(), testEnemyDropGold.MaxCoinRange());
+        return value;
+    }
     
-
     //TO-DO: Coin gain Effect()
     public void CoinGainEffect()
     {
