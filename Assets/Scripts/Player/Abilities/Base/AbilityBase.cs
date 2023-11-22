@@ -7,7 +7,7 @@ namespace Player.Abilities.Base
     {
         protected PlayerCombat _owner;
         public SAbilityData _data { get; set; }
-        protected EAbilityState _state;
+        protected EAbilityState _state; 
 
         protected virtual void Start()
         {

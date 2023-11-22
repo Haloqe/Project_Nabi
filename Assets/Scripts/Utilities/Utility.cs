@@ -1,9 +1,22 @@
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public static class Utility
 {
+    public static bool LoadSceneByNameSafe(string sceneName)
+    {
+        int sceneIdx = SceneUtility.GetBuildIndexByScenePath(sceneName);
+        var scene = SceneManager.GetSceneByBuildIndex(sceneIdx);
+        if (scene.IsValid())
+        {
+            SceneManager.LoadScene(sceneIdx);
+            return true;
+        }
+        return false;
+    }
+
     public static UnityEngine.Object LoadObjectFromPath(string path)
     {
         var loadedObject = Resources.Load(path);

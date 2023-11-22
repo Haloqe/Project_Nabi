@@ -1,42 +1,25 @@
 //MakeContract
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class MetalContractItem : MonoBehaviour
+public class MetalContractItem : Interactor
 {
-    private InputAction _interactAction;
-
-    private void Awake()
-    {
-        _interactAction = FindObjectOfType<PlayerInput>().actions["Player/Interact"];
-    }
-
     private void Update()
     {
         transform.Rotate(0, 50.0f * Time.deltaTime, 0);
     }
-
-    private void OnTriggerEnter2D(Collider2D other)
+    
+    protected override void OnInteract(InputAction.CallbackContext obj)
     {
-        if (other.CompareTag("Player"))
-        {
-            _interactAction.performed += OnInteract;
-        }
-    }
+        // TEMP TEST
+        //var relics = RelicManager.Instance.RandomChooseRelic_Store(3);
+        var relics = RelicManager.Instance.RandomChooseRelic_Field();
 
-    private void OnInteract(InputAction.CallbackContext obj)
-    {
-        Debug.Log("MetalContractItem::OnInteract");
-        UIManager.Instance.LoadMetalContractUI(this);
-    }
+        //Debug.Log(string.Format("Here's the list: ({0}).", string.Join(", ", relics.Select(relic => relic.Name_KO).ToList())));
+        Debug.Log(relics.Name_KO + " " + relics.Rarity.ToString());
 
-    //You can exit the Skill Selection UI if you move far away from the Game Object Contractor or press F again.
-    private void OnTriggerExit2D(Collider2D other)
-    {
-        if (other.CompareTag("Player"))
-        {
-            _interactAction.performed -= OnInteract;
-        }
+        //Debug.Log("MetalContractItem::OnInteract");
+        //UIManager.Instance.LoadMetalContractUI(this);
     }
-
 }

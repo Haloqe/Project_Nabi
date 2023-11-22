@@ -14,12 +14,15 @@ public class PlayerAbilityManager : Singleton<PlayerAbilityManager>
     private GameObject _attachedAbilityContainer;
     private GameObject _detachedAbilityContainer;
     private PlayerInput _playerInput;
+    
     private Dictionary<int, SAbilityData> _abilities;
     private Dictionary<int, SAbilityData>[] _abilitiesByMetals;
+
     private List<int> _collectedAbilities = new List<int>();
     private ActiveAbilityBase[] _activeAbilities = new ActiveAbilityBase[5];
     private PassiveAbilityBase[] _passiveAbilities = new PassiveAbilityBase[3];
     private List<ActiveAbilityBase> _manualUpdateAbilities = new List<ActiveAbilityBase>();
+    
     private Sprite[] _abilityIconSprites;
     private Image[] _activeAbilityIcons = new Image[5];
     private Image[] _activeAbilityCooldowns = new Image[5];

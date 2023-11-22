@@ -32,23 +32,43 @@ public enum EAbilityMetalType
     Gold,
     None,
 }
+
 public enum EAbilityType // AbilityType이 좀 모호한듯도 한데 괜찮은 이름 있으면 바꿔줘.. 괜찮으면 냅두고.
 {
     Passive,
     Active,
     None,
 }
+
 public enum EAbilityState
 {
     Ready,
     Active,
     Cooldown,
 } 
+
 public enum EInteraction
 {
     Press,
     Hold,
     None,
+}
+
+public enum EAbilityRarity
+{
+    Common,
+    Rare,
+    Epic,
+    Legendary,
+}
+
+[Flags] 
+public enum EAbilityObtainMethod
+{
+    None    = 0,
+    Field   = 1,
+    Store   = 2,
+    Monster = 4,
 }
 #endregion Ability
 
@@ -59,3 +79,12 @@ public enum EEnemyMoveType
     FollowStraightPath,
 }
 #endregion Enemy
+
+#region Interaction
+public enum EPortalType
+{
+    GeneralStore,
+    FoodStore,
+    NextLevel,
+}
+#endregion Interaction

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -64,5 +65,13 @@ public class PlayerController : Singleton<PlayerController>
         //    PlayerAbilityManager.Instance.BindActiveAbility(2, 1); // Mansa Musa
         //    _testNumCalls++;
         //}
+
+        PlayerAbilityManager.Instance.CollectAbility(4);
+        PlayerAbilityManager.Instance.CollectAbility(1);
+        PlayerAbilityManager.Instance.CollectAbility(2);
+        PlayerAbilityManager.Instance.CollectAbility(3);
+        PlayerAbilityManager.Instance.CollectAbility(5);
+        PlayerAbilityManager.Instance.CollectAbility(6);
+        PlayerAbilityManager.Instance.CollectAbility(7);
     }
 }

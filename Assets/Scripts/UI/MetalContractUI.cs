@@ -19,7 +19,6 @@ public class MetalContractUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _metalNameText;
     [SerializeField] private TextMeshProUGUI _abilityDescText;
 
-
     private void Awake()
     {
         _selectedColor = Color.white;

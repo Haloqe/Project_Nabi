@@ -88,6 +88,19 @@ public struct SAbilityData
     public float LifeTime;
     public SDamageInfo DamageInfo;
 }
+
+public struct SRelicData
+{
+    public int AbilityId;
+    public string Name_EN;
+    public string Name_KO;
+    public string Des_EN;
+    public string Des_KO;
+    public int SpriteIndex;
+    public EAbilityObtainMethod ObtainMethod;
+    public EAbilityRarity Rarity;
+    public int[] Locations;
+}
 #endregion Player
 
 #region Enemy

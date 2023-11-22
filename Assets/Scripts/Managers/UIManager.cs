@@ -29,12 +29,12 @@ public class UIManager : Singleton<UIManager>
     protected override void Awake()
     {
         base.Awake();
+        LoadAllUIPrefabs();
         SceneManager.sceneLoaded += OnSceneLoaded;
         InputAction closeAction = FindObjectOfType<InputSystemUIInputModule>().actionsAsset.FindAction("UI/Close");
         closeAction.performed += OnClose;
         PlayerEvents.defeated += OnPlayerDefeated;
         PlayerEvents.HPChanged += OnPlayerHPChanged;
-        LoadAllUIPrefabs();
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode loadMode)
@@ -79,7 +79,7 @@ public class UIManager : Singleton<UIManager>
         string path = "Prefabs/UI/";
         _focusedOverlayPrefab   = Utility.LoadObjectFromPath(path + "InGame/FocusedCanvas");
         _defeatedUIPrefab       = Utility.LoadObjectFromPath(path + "InGame/DeadCanvas");
-        _inGameCombatPrefab  = Utility.LoadObjectFromPath(path + "InGame/CombatCanvas");
+        _inGameCombatPrefab     = Utility.LoadObjectFromPath(path + "InGame/CombatCanvas");
         _metalContractUIPrefab  = Utility.LoadObjectFromPath(path + "InGame/Ability/MetalContractCanvas");
     }
 

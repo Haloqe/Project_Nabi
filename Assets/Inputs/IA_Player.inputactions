@@ -94,6 +94,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "Interact_Hold",
+                    "type": "Button",
+                    "id": "026367d4-1bb3-4ecb-b35a-14154ec0b229",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -248,6 +257,17 @@
                     "processors": "",
                     "groups": "Keyboard&Mouse",
                     "action": "Interact",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "a90799e4-7e8b-40ec-9022-daa9ebb998a0",
+                    "path": "<Keyboard>/e",
+                    "interactions": "Hold(duration=2)",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "Interact_Hold",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
