@@ -8,15 +8,6 @@ using UnityEngine.UI;
 
 public class FoodStore : MonoBehaviour
 {
-    public struct SFoodInfo
-    {
-        public string Name;
-        public string Description;
-        public float HealthPoint;
-        public float Price;
-        public int SpriteIndex;
-    }
-
     private List<SFoodInfo> _foodsToSell = new List<SFoodInfo> 
         {new SFoodInfo {Name = "음식 (소)", Description = "작은 음식이다.", HealthPoint = 25, Price = 100, SpriteIndex = 51}, 
         new SFoodInfo {Name = "음식 (중)", Description = "중간 음식이다.", HealthPoint = 50, Price = 200, SpriteIndex = 53}, 

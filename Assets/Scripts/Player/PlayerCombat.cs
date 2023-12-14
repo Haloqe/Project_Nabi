@@ -173,7 +173,7 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
         // One-shot damage
         if (damage.Duration == 0)
         {
-            ReduceHealth(damage.TotalAmount);
+            ChangeHealthByAmount(-damage.TotalAmount);
             yield return null;
         }
         // Damage Over Time (DOT) damage
@@ -210,18 +210,18 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
         while (true)
         {
             // Wait for a tick time and take damage repeatedly
-            ReduceHealth(damagePerTick);
+            ChangeHealthByAmount(-damagePerTick);
             yield return new WaitForSeconds(tick);
         }
     }
 
-    private void ReduceHealth(float amount)
+    private void ChangeHealthByAmount(float amount)
     {
         // TODO hit effect
-        _health -= amount;
-        PlayerEvents.HPChanged.Invoke(-amount, GetHPRatio());
-        Debug.Log("Player HP: " + _health.ToString("0.00") + " (-" + amount + ")");
-        if (_health <= 0) PlayerEvents.defeated.Invoke();
+        _health = Mathf.Clamp(_health + amount, 0, _maxHealth);
+        PlayerEvents.HPChanged.Invoke(amount, GetHPRatio());
+        Debug.Log("Player HP: " + _health.ToString("0.00") + " (" + amount + ")");
+        if (_health == 0) PlayerEvents.defeated.Invoke();
     }
 
     public float GetHPRatio()

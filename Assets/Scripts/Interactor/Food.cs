@@ -10,10 +10,10 @@ public class Food : InteractorHold
     private Sprite[] _foodSprites;
     private Canvas _priceCanvas;
     private int _itemIdx;
-    private FoodStore.SFoodInfo _foodInfo;
+    private SFoodInfo _foodInfo;
     private FoodStore _ownerStore;
     
-    public void Init(FoodStore owner, int itemIdx, FoodStore.SFoodInfo info)
+    public void Init(FoodStore owner, int itemIdx, SFoodInfo info)
     {
         //set variables
         _priceCanvas = GetComponentInChildren<Canvas>();
