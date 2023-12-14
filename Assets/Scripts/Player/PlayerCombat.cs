@@ -217,7 +217,7 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
 
     private void ChangeHealthByAmount(float amount)
     {
-        // TODO hit effect
+        // TODO hit/heal effect
         _health = Mathf.Clamp(_health + amount, 0, _maxHealth);
         PlayerEvents.HPChanged.Invoke(amount, GetHPRatio());
         Debug.Log("Player HP: " + _health.ToString("0.00") + " (" + amount + ")");
