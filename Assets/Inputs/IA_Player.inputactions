@@ -33,7 +33,7 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "Cast_0",
+                    "name": "Attack_Melee",
                     "type": "Value",
                     "id": "8009339c-d1fc-49e1-beb3-5d3df21f7a96",
                     "expectedControlType": "Button",
@@ -42,7 +42,7 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "Cast_1",
+                    "name": "Attack_Range",
                     "type": "Value",
                     "id": "76cc2dc5-5abe-43c3-b769-7ae69bc89e98",
                     "expectedControlType": "Button",
@@ -51,7 +51,7 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "Cast_2",
+                    "name": "Attack_Dash",
                     "type": "Value",
                     "id": "92c185e6-827f-456e-a303-9e48d64bb049",
                     "expectedControlType": "Button",
@@ -60,18 +60,9 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "Cast_3",
+                    "name": "Attack_Area",
                     "type": "Value",
                     "id": "768dad64-05d6-4316-b37a-57eaab2515aa",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": true
-                },
-                {
-                    "name": "Cast_4",
-                    "type": "Value",
-                    "id": "8db5584e-dab3-40e5-bd20-000fdef1835c",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -107,7 +98,7 @@
             ],
             "bindings": [
                 {
-                    "name": "WASD",
+                    "name": "Arrows",
                     "id": "00ca640b-d935-4593-8157-c05846ea39b3",
                     "path": "Dpad",
                     "interactions": "",
@@ -186,44 +177,33 @@
                 {
                     "name": "",
                     "id": "80d96885-9b02-4abd-9a71-11cb29aaf0aa",
-                    "path": "<Keyboard>/1",
+                    "path": "<Keyboard>/q",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "Cast_0",
+                    "action": "Attack_Melee",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
                 {
                     "name": "",
                     "id": "ae28da6a-123c-42d4-a2e5-06548892fe61",
-                    "path": "<Keyboard>/3",
+                    "path": "<Keyboard>/e",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "Cast_2",
+                    "action": "Attack_Dash",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
                 {
                     "name": "",
                     "id": "2b55ef72-17d5-42de-9535-a8812c19fc02",
-                    "path": "<Keyboard>/4",
+                    "path": "<Keyboard>/r",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "Cast_3",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "c67e2483-51c2-4ad5-9ebc-3538b6dedb63",
-                    "path": "<Keyboard>/t",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "Cast_4",
+                    "action": "Attack_Area",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -241,11 +221,11 @@
                 {
                     "name": "",
                     "id": "8089d78e-103c-4cfa-8861-42a321619872",
-                    "path": "<Keyboard>/2",
+                    "path": "<Keyboard>/w",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "Cast_1",
+                    "action": "Attack_Range",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

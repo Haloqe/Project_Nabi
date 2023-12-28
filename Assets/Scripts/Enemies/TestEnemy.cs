@@ -37,7 +37,6 @@ public class TestEnemy : EnemyBase
         _attacker = transform.Find("AttackRange").gameObject;
         _damageInfo = new SDamageInfo
         {
-            DamageSource = gameObject.GetInstanceID(),
             Damages = new List<SDamage>() { new SDamage(DamageType, DamageAmount, DamageDuration, DamageTick) },
             StatusEffects = new List<SStatusEffect> { new SStatusEffect(StatusEffect, EffectStrength, EffectDuration) }
         };

@@ -105,7 +105,7 @@ public class UIManager : Singleton<UIManager>
         _inGameCombatUI.SetActive(true);
         _playerHPSlider.value = FindObjectOfType<PlayerCombat>().GetHPRatio();
         // TODO in scene manager perhaps?
-        PlayerAbilityManager.Instance.InitInGameVariables();
+        PlayerAttackManager.Instance.InitInGameVariables();
 
         // TEMP 지금은 mainscene->ingame 순서가 아니라 디버깅용이라 여기서 하면 오류
         //_metalContractUI.GetComponent<MetalContractUI>().Initialize();
@@ -120,14 +120,14 @@ public class UIManager : Singleton<UIManager>
     private void OpenFocusedUI()
     {
         _focusedOverlay.SetActive(true);
-        _playerMovement.DisableMovement();
+        _playerMovement.DisableMovement(true);
         _playerIAMap.Disable();
         _UIIAMap.Enable();
     }
 
     public void CloseFocusedUI()
     {
-        if (_playerMovement) _playerMovement.EnableMovement();
+        if (_playerMovement) _playerMovement.EnableMovement(true);
         _playerIAMap.Enable();
         _UIIAMap.Disable();
         _focusedOverlay.SetActive(false);
@@ -142,7 +142,7 @@ public class UIManager : Singleton<UIManager>
     {
         OpenFocusedUI();
         _activeFocusedUI = _metalContractUI;
-        _metalContractUI.GetComponent<MetalContractUI>().ActiveContractItem = contractItem;
+        //_metalContractUI.GetComponent<MetalContractUI>().ActiveContractItem = contractItem;
         _metalContractUI.SetActive(true);
     }
 }

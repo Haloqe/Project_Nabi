@@ -1,5 +1,14 @@
 using System;
 
+#region Settings
+public enum ELocalisation
+{
+    ENG,
+    KOR,
+    MAX,
+}
+#endregion Settings
+
 #region Common
 public enum EDamageType
 {
@@ -14,6 +23,21 @@ public enum EDamageType
 
 public enum EStatusEffect
 {
+    // Base
+    Sommer,
+    Poison,
+    Drugged,
+    Swarm,
+    Evade,
+
+    // Upgraded
+    Sleep,
+    Leech,
+    Indoctrinated,
+    Cloud,
+    Camouflage,
+
+    // Others
     Blind,
     Stun,
     Slow,
@@ -21,26 +45,23 @@ public enum EStatusEffect
     Silence,
     Root,
     Pull,
+
     MAX,
 }
 #endregion Common
 
-#region Ability
-public enum EAbilityMetalType
+#region Legacy
+public enum ELegacyType
 {
-    Copper,
-    Gold,
-    None,
-}
-
-public enum EAbilityType // AbilityType이 좀 모호한듯도 한데 괜찮은 이름 있으면 바꿔줘.. 괜찮으면 냅두고.
-{
+    Melee,
+    Range,
+    Dash,
+    Area,
     Passive,
-    Active,
-    None,
+    MAX,
 }
 
-public enum EAbilityState
+public enum EAttackState
 {
     Ready,
     Active,
@@ -54,23 +75,43 @@ public enum EInteraction
     None,
 }
 
-public enum EAbilityRarity
+public enum ELegacyPreservation
 {
-    Common,
-    Rare,
-    Epic,
-    Legendary,
+    Weathered,  // 닳은
+    Tarnished,  // 빛바랜
+    Intact,     // 온전한
+    Pristine,   // 완벽한
+    
+    MAX,
+}
+
+public enum EWarrior
+{
+    Sommer,
+    Vernon,
+    Euphoria,
+    Turbela,
+    Shade,
+    
+    MAX,
+}
+
+public enum ETiming
+{
+    Before,
+    After,
+    With,
 }
 
 [Flags] 
-public enum EAbilityObtainMethod
+public enum EItemObtainMethod
 {
-    None    = 0,
     Field   = 1,
     Store   = 2,
     Monster = 4,
+    Boss    = 8,
 }
-#endregion Ability
+#endregion Legacy
 
 #region Enemy
 public enum EEnemyMoveType

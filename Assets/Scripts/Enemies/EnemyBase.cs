@@ -261,7 +261,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         // Dealing damage to the player Handling
     public virtual void DealDamage(IDamageable target, SDamageInfo damageInfo)
     {
-        damageInfo.DamageSource = gameObject.GetInstanceID();
+        //damageInfo.DamageSource = gameObject.GetInstanceID();
         target.TakeDamage(damageInfo);
     }
 

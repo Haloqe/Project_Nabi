@@ -1,10 +1,16 @@
 using System.Collections.Generic;
 using System.IO;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public static class Utility
 {
+    public static string GetLocalisationString(int index)
+    {
+        return ((ELocalisation)index).ToString();
+    }
+
     public static bool LoadSceneByNameSafe(string sceneName)
     {
         int sceneIdx = SceneUtility.GetBuildIndexByScenePath(sceneName);
@@ -27,6 +33,15 @@ public static class Utility
         return loadedObject;
     }
 
+    public static GameObject LoadGameObjectFromPath(string path)
+    {
+        Object obj = LoadObjectFromPath(path);
+        if (obj != null)
+        {
+            return obj.GameObject();
+        }
+        return null;
+    }
     public static bool IsObjectInList(GameObject obj, List<int> list)
     {
         int id = obj.GetInstanceID();
@@ -67,9 +82,7 @@ public static class Utility
             }
         }
 
-        Debug.Log("[Dealer ID] " + damageInfo.DamageSource +
-            " [Receiver] " + receiver + " [Metal Type] " + damageInfo.AbilityMetalType.ToString() +
-            " [Damage Types] " + damages + " [Status Effects] " + statusEffects);
+        Debug.Log("[Damage Types] " + damages + " [Status Effects] " + statusEffects);
     }
 
     public static float GetLongestParticleDuration(GameObject obj)

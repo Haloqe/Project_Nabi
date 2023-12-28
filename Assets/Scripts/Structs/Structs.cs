@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 #region Common
@@ -59,56 +60,51 @@ public struct SDamage
 
 public struct SDamageInfo
 {
-    public int DamageSource;
-    public EAbilityMetalType AbilityMetalType; // only for player's damage
     public List<SDamage> Damages;
     public List<SStatusEffect> StatusEffects;
 }
 #endregion Common
 
 #region Player
-public struct SAbilityData
+public struct SWarrior
 {
-    public bool ShouldOverride; // TEMP DEV PURPOSE ONLY
-
-    public int Id;
+    public List<string> Names;
+    public EStatusEffect EffectBase;
+    public EStatusEffect EffectUpgraded;
+}
+public struct SLegacyData
+{
+    public int ID;
     public string ClassName;
-    public string Name_EN;
-    public string Name_KO;
-    public string Des_EN;
-    public string Des_KO;
+    public List<string> Names;
+    public List<string> Descs;
     public int IconIndex;
-    public string PrefabPath;
-    public bool IsAttached;
-    public EInteraction Interaction; // 이후 slowtap duration, hold duration 등 필요해지면 string 또는 separated field 변경
-
-    public EAbilityType Type;
-    public EAbilityMetalType MetalType;
-    public float CooldownTime;
-    public float LifeTime;
-    public SDamageInfo DamageInfo;
+    public EWarrior Warrior;
+    public ELegacyType Type;
+    public int[] Prerequisites;
+    public int[] StatByPreservation;
+    //EItemObtainMethod ObtainMethod;
 }
 
-public struct SRelicData
-{
-    public int AbilityId;
-    public string Name_EN;
-    public string Name_KO;
-    public string Des_EN;
-    public string Des_KO;
-    public int SpriteIndex;
-    public EAbilityObtainMethod ObtainMethod;
-    public EAbilityRarity Rarity;
-    public int[] Locations;
-}
+//public struct SRelicData
+//{
+//    public int AbilityId;
+//    public string Name_EN;
+//    public string Name_KO;
+//    public string Des_EN;
+//    public string Des_KO;
+//    public int SpriteIndex;
+//    public EItemObtainMethod ObtainMethod;
+//    public EAbilityRarity Rarity;
+//    public int[] Locations;
+//}
 #endregion Player
 
 #region Enemy
 public struct SEnemyData
 {
-    public int Id;
-    public string Name_EN;
-    public string Name_KO;
+    public int ID;
+    public string Name;
     public string PrefabPath;
     public float DefaultMoveSpeed;
     public float MaxHealth;

@@ -86,7 +86,7 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
                 _effectRemainingTimes[(int)EStatusEffect.Airborne] == 0.0f &&
                 _effectRemainingTimes[(int)EStatusEffect.Stun] == 0.0f)
             {
-                _playerMovement.EnableMovement();
+                _playerMovement.EnableMovement(true);
             }
         }
         if (shouldCheckUpdateSilenceEx)
@@ -280,7 +280,7 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
 
         if (shouldDisableMovement)
         {
-            _playerMovement.DisableMovement();
+            _playerMovement.DisableMovement(true);
         }
     }
 

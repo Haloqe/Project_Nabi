@@ -1,7 +1,4 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
@@ -17,6 +14,9 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] public float DefaultJumpForce = 10f;
     private float _jumpForce;
     private bool _isJumping;
+
+    // attack
+    private bool _isAttacking;
 
     // others
     private Rigidbody2D _rigidbody2D;
@@ -37,12 +37,27 @@ public class PlayerMovement : MonoBehaviour
         _animator.SetBool("IsMoving", _isMoving && !_isRooted);
     }
 
+    void OnGUI()
+    {
+        GUILayout.BeginArea(new Rect(Screen.width - 1000, 500, 400, Screen.height));
+        GUILayout.Label(_moveDirection.ToString());
+        GUILayout.EndArea();
+    }
+
     private void FixedUpdate()
     {
         // disable movement if rooted
         if (_isRooted) return;
-        
-        _rigidbody2D.velocity = new Vector2(_moveDirection.x * _moveSpeed, _rigidbody2D.velocity.y);
+
+        // Only allow up, down movement during attack
+        if (_isAttacking)
+        {
+            _rigidbody2D.velocity = new Vector2(0.0f, _rigidbody2D.velocity.y);
+        }
+        else
+        {
+            _rigidbody2D.velocity = new Vector2(_moveDirection.x * _moveSpeed, _rigidbody2D.velocity.y);
+        }
     }
 
     ///<summary>Set move speed to default speed * percentage. If isSlowerThanNow is true, update speed only if 
@@ -88,28 +103,50 @@ public class PlayerMovement : MonoBehaviour
     public void SetMoveDirection(Vector2 value)
     {
         _moveDirection = value;
-        if (value.x != 0)
+        if (value.x != 0 && !_isAttacking)
         {
+            // Note: Player sprite default direction is left
             _isMoving = true;
-            transform.localScale = new Vector2(Mathf.Sign(value.x), transform.localScale.y);
+            transform.localScale = new Vector2(-Mathf.Sign(value.x), transform.localScale.y);
         }
         else _isMoving = false;
     }
 
-    public void EnableMovement()
+    public void EnableMovement(bool strict)
     {
-        _isRooted = false;
+        if (strict)
+        {
+            _isRooted = false;
+        }
+        else
+        {
+            _isAttacking = false;
+            if (_moveDirection.x != 0)
+            {
+                // Note: Player sprite default direction is left
+                _isMoving = true;
+                transform.localScale = new Vector2(-Mathf.Sign(_moveDirection.x), transform.localScale.y);
+            }
+        }
     }
 
-    public void DisableMovement()
+    public void DisableMovement(bool strict)
     {
-        _isRooted = true;
-        _rigidbody2D.velocity = Vector2.zero;
+        if (strict)
+        {
+            _isRooted = true;
+            _rigidbody2D.velocity = Vector2.zero;
+        }
+        else
+        {
+            _isAttacking = true;
+            _isMoving = false;
+        }
     }
 
     public void SetJump(bool value)
     {
-        if (_isJumping || _isRooted) return;
+        if (_isJumping || _isRooted || _isAttacking) return;
         if (!value) return;
 
         _rigidbody2D.velocity += (new Vector2(0, _jumpForce));

@@ -8,6 +8,7 @@ public class PlayerController : Singleton<PlayerController>
     private PlayerInput _playerInput;
     private PlayerMovement _playerMovement;
     private PlayerCombat _playerCombat;
+    private PlayerAttack _playerAttack;
     static int _testNumCalls = 0;
     private bool _isNYScene;
 
@@ -18,12 +19,19 @@ public class PlayerController : Singleton<PlayerController>
         _playerInput = GetComponent<PlayerInput>();
         _playerMovement = GetComponent<PlayerMovement>();
         _playerCombat = GetComponent<PlayerCombat>();
+        _playerAttack = GetComponent<PlayerAttack>();
     }
 
     private void Start()
     {
         // TEMP for debug
         _isNYScene = SceneManager.GetActiveScene().name == "Scene_NY";
+
+        // Input Binding for Attacks
+        _playerInput.actions["Attack_Melee"].performed += _ => _playerAttack.OnAttack(0);
+        _playerInput.actions["Attack_Range"].performed += _ => _playerAttack.OnAttack(1);
+        _playerInput.actions["Attack_Dash"].performed += _ => _playerAttack.OnAttack(2);
+        _playerInput.actions["Attack_Area"].performed += _ => _playerAttack.OnAttack(3);
     }
 
     void OnMove(InputValue value)
@@ -34,7 +42,7 @@ public class PlayerController : Singleton<PlayerController>
     void OnJump(InputValue value)
     {
         _playerMovement.SetJump(value.isPressed);
-    }        
+    }
 
     void OnTestAction(InputValue value)
     {
@@ -66,12 +74,6 @@ public class PlayerController : Singleton<PlayerController>
         //    _testNumCalls++;
         //}
 
-        PlayerAbilityManager.Instance.CollectAbility(4);
-        PlayerAbilityManager.Instance.CollectAbility(1);
-        PlayerAbilityManager.Instance.CollectAbility(2);
-        PlayerAbilityManager.Instance.CollectAbility(3);
-        PlayerAbilityManager.Instance.CollectAbility(5);
-        PlayerAbilityManager.Instance.CollectAbility(6);
-        PlayerAbilityManager.Instance.CollectAbility(7);
+        
     }
 }

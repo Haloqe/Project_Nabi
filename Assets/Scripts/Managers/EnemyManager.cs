@@ -27,16 +27,14 @@ public class EnemyManager : Singleton<EnemyManager>
             {
                 SEnemyData data = new SEnemyData
                 {
-                    Id = int.Parse(csv.GetField("Id")),
-                    Name_EN = csv.GetField("Name_EN"),
-                    Name_KO = csv.GetField("Name_KO"),
+                    ID = int.Parse(csv.GetField("ID")),
+                    Name = csv.GetField("Name"),
                     PrefabPath = csv.GetField("Prefab"),
                     MaxHealth = float.Parse(csv.GetField("MaxHealth")),
                     DefaultMoveSpeed = float.Parse(csv.GetField("DefaultMoveSpeed"))
                 };
 
-                _enemies.Add(data.Id, data);
-                Debug.Log("Enemy [" + data.Name_EN + "][" + data.Id + "] added to the dictionary.");
+                _enemies.Add(data.ID, data);
             }
         }
     }

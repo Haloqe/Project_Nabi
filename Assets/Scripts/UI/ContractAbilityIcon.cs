@@ -14,11 +14,11 @@ public class ContractAbilityIcon : MonoBehaviour, IPointerEnterHandler, IPointer
     }
     public void OnPointerEnter(PointerEventData eventData)
     {
-        _baseUI.OnMouseEnterIcon(index);
+        //_baseUI.OnMouseEnterIcon(index);
     }
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        _baseUI.OnMouseClickIcon(index);
+        //_baseUI.OnMouseClickIcon(index);
     }
 }
