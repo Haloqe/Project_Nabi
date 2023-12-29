@@ -33,32 +33,24 @@ public abstract class AttackBase : MonoBehaviour
         _playerAttack = GetComponent<PlayerAttack>();
     }
 
-    public virtual void Attack()
+    public abstract void Attack();
+
+    protected virtual void OnAttackEnd_PreDelay()
     {
-        _animator.SetInteger("AttackIndex", (int)_attackType);
 
-        // Play VFX
-        if (_vfxObject == null) return;
-        if (_isAttached)
-        {
+    }
 
-        }
-        else
-        {
-            float dir = Mathf.Sign(gameObject.transform.localScale.x);
-            Vector3 playerPos = gameObject.transform.position;
-            Vector3 vfxPos = _vfxObject.transform.position;
-            Vector3 position = new Vector3(playerPos.x + dir * (vfxPos.x), playerPos.y + vfxPos.y, playerPos.z + vfxPos.z);
+    protected virtual void OnAttackEnd_PostDelay()
+    {
 
-            _vfxObject.transform.localScale = new Vector3(dir, 1.0f, 1.0f);
-            Instantiate(_vfxObject, position, Quaternion.identity);
-        }
     }
 
     public IEnumerator AttackPostDelayCorountine()
     {
+        OnAttackEnd_PreDelay();
         yield return new WaitForSeconds(_attackPostDelay);
-        _playerAttack.OnAttackEnd_Post();
+        OnAttackEnd_PostDelay();
+        _playerAttack.OnAttackEnd_PostDelay();
     }
 
     public virtual void IsActiveBound()

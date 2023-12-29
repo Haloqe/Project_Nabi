@@ -83,4 +83,9 @@ public class AttackBase_Melee : AttackBase
         _animator.SetInteger("AttackIndex", (int)_attackType);
         _animator.SetInteger("MeleeIndex", meleeIdx); 
     }
+
+    public void OnComboHit()
+    {
+        FindObjectOfType<TestCameraShake>().OnComboAttack();
+    }
 }

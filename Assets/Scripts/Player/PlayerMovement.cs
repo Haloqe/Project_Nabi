@@ -1,3 +1,4 @@
+using Cinemachine;
 using System.Collections;
 using UnityEngine;
 
@@ -17,6 +18,7 @@ public class PlayerMovement : MonoBehaviour
 
     // attack
     private bool _isAttacking;
+    public bool IsDashing;
 
     // others
     private Rigidbody2D _rigidbody2D;
@@ -37,17 +39,10 @@ public class PlayerMovement : MonoBehaviour
         _animator.SetBool("IsMoving", _isMoving && !_isRooted);
     }
 
-    void OnGUI()
-    {
-        GUILayout.BeginArea(new Rect(Screen.width - 1000, 500, 400, Screen.height));
-        GUILayout.Label(_moveDirection.ToString());
-        GUILayout.EndArea();
-    }
-
     private void FixedUpdate()
     {
-        // disable movement if rooted
-        if (_isRooted) return;
+        // disable extra movement if rooted or dashing
+        if (_isRooted || IsDashing) return;
 
         // Only allow up, down movement during attack
         if (_isAttacking)
@@ -103,13 +98,16 @@ public class PlayerMovement : MonoBehaviour
     public void SetMoveDirection(Vector2 value)
     {
         _moveDirection = value;
-        if (value.x != 0 && !_isAttacking)
+        if (value.x == 0 || _isAttacking || IsDashing)
+        {
+            _isMoving = false;
+        }
+        else
         {
             // Note: Player sprite default direction is left
             _isMoving = true;
             transform.localScale = new Vector2(-Mathf.Sign(value.x), transform.localScale.y);
         }
-        else _isMoving = false;
     }
 
     public void EnableMovement(bool strict)

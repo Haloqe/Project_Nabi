@@ -37,7 +37,11 @@ public class PlayerAttack : MonoBehaviour, IDamageDealer
             IsUnderAttackDelay = true;
             CurrAttackIdx = attackIdx;
             _attacks[attackIdx].Attack();
-            GetComponent<PlayerMovement>().DisableMovement(false);
+            
+            if (attackIdx != (int)ELegacyType.Dash)
+                _playerMovement.DisableMovement(false);
+            else
+                _playerMovement.IsDashing = true;   
         }
     }
 
@@ -47,10 +51,11 @@ public class PlayerAttack : MonoBehaviour, IDamageDealer
         CurrAttackIdx = -1;
         _animator.SetInteger("AttackIndex", CurrAttackIdx);
         StartCoroutine(_attacks[(int)attackType].AttackPostDelayCorountine());
+        _playerMovement.IsDashing = false;
     }
 
     // Called when attack delay ends
-    public void OnAttackEnd_Post()
+    public void OnAttackEnd_PostDelay()
     {
         IsUnderAttackDelay = false;
         GetComponent<PlayerMovement>().EnableMovement(false);

@@ -39,6 +39,13 @@ public class TestCameraShake : MonoBehaviour
         _remainingTime += (_shakeTime*2 - _remainingTime);
     }
 
+    public void OnComboAttack()
+    {
+        // TEMP
+        _cbmcp.m_AmplitudeGain = _shakeIntensity * 1;
+        _remainingTime += (_shakeTime * 1 - _remainingTime);
+    }
+
     public void StopShake()
     {
         _cbmcp.m_AmplitudeGain = 0.0f;

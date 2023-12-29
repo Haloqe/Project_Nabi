@@ -10,6 +10,7 @@ public class AttackBase_Area : AttackBase
     public override void Initialise()
     {
         base.Initialise();
+        _attackType = ELegacyType.Area;
         _isAttached = false;
         _vfxObject = Utility.LoadGameObjectFromPath("Prefabs/Player/AttackVFXs/Area_Default");
     }
@@ -24,10 +25,8 @@ public class AttackBase_Area : AttackBase
 
     public override void Attack()
     {
-        Debug.Log("AttackBase_Area");
-        _animator.SetInteger("AttackIndex", (int)ELegacyType.Area);
+        _animator.SetInteger("AttackIndex", (int)_attackType);
 
-        // Play VFX
         float dir = Mathf.Sign(gameObject.transform.localScale.x);
         Vector3 playerPos = gameObject.transform.position;
         Vector3 vfxPos = _vfxObject.transform.position;

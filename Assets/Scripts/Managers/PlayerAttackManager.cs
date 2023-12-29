@@ -1,15 +1,11 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using UnityEngine.InputSystem;
 using UnityEngine;
 using System;
-using Unity.VisualScripting;
 using UnityEngine.UI;
-using UnityEditor.VersionControl;
 using UnityEditor;
-using System.Threading;
 
 public class PlayerAttackManager : Singleton<PlayerAttackManager>
 {
@@ -143,6 +139,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
 
         // Create Assets
         // Values uninitialised
+#if UNITY_EDITOR
         for (int warrior = 0; warrior < (int)EWarrior.MAX; warrior++)
         {
             string basePath = "Assets/Resources/Legacies/" + ((EWarrior)warrior).ToString() + "/";
@@ -155,6 +152,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
             }
         }
         AssetDatabase.SaveAssets();
+#endif
     }
 
 

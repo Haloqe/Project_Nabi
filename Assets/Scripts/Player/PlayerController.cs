@@ -1,4 +1,7 @@
+using Cinemachine;
 using System;
+using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -11,6 +14,17 @@ public class PlayerController : Singleton<PlayerController>
     private PlayerAttack _playerAttack;
     static int _testNumCalls = 0;
     private bool _isNYScene;
+
+    // TEMP
+    CinemachineVirtualCamera _playerVirtualCamera;
+    [SerializeField] TextMeshProUGUI _camSizeText;
+
+    public void SetCamSize(float t)
+    {
+        float size = 6 * (1 - t) + 13 * t;
+        _playerVirtualCamera.m_Lens.OrthographicSize = size;
+        _camSizeText.text = size.ToString();
+    }
 
     protected override void Awake()
     {
@@ -25,6 +39,7 @@ public class PlayerController : Singleton<PlayerController>
     private void Start()
     {
         // TEMP for debug
+        _playerVirtualCamera = FindObjectOfType<CinemachineVirtualCamera>();
         _isNYScene = SceneManager.GetActiveScene().name == "Scene_NY";
 
         // Input Binding for Attacks
