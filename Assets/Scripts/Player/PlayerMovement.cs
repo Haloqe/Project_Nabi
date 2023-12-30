@@ -26,7 +26,7 @@ public class PlayerMovement : MonoBehaviour
 
     // attack
     private bool _isAttacking;
-    public bool IsDashing;
+    public bool _isDashing;
 
     // others
     private Rigidbody2D _rigidbody2D;
@@ -56,7 +56,7 @@ public class PlayerMovement : MonoBehaviour
     private void FixedUpdate()
     {
         // disable extra movement if rooted or dashing
-        if (_isRooted || IsDashing) return;
+        if (_isRooted || _isDashing) return;
 
         // Only allow up, down movement during attack
         if (_isAttacking)
@@ -112,7 +112,7 @@ public class PlayerMovement : MonoBehaviour
     public void SetMoveDirection(Vector2 value)
     {
         _moveDirection = value;
-        if (value.x == 0 || _isAttacking || IsDashing)
+        if (value.x == 0 || _isAttacking || _isDashing)
         {
             _isMoving = false;
         }
@@ -154,6 +154,12 @@ public class PlayerMovement : MonoBehaviour
             _isAttacking = true;
             _isMoving = false;
         }
+    }
+
+    public void SetDash()
+    {
+        _isDashing = true;
+        _isMoving = false;
     }
 
     public void SetJump(bool value)

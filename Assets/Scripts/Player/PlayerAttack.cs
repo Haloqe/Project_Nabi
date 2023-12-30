@@ -41,7 +41,9 @@ public class PlayerAttack : MonoBehaviour, IDamageDealer
             if (attackIdx != (int)ELegacyType.Dash)
                 _playerMovement.DisableMovement(false);
             else
-                _playerMovement.IsDashing = true;   
+            {
+                _playerMovement.SetDash();
+            }
         }
     }
 
@@ -51,7 +53,7 @@ public class PlayerAttack : MonoBehaviour, IDamageDealer
         CurrAttackIdx = -1;
         _animator.SetInteger("AttackIndex", CurrAttackIdx);
         StartCoroutine(_attacks[(int)attackType].AttackPostDelayCorountine());
-        _playerMovement.IsDashing = false;
+        _playerMovement._isDashing = false;
     }
 
     // Called when attack delay ends
