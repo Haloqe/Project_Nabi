@@ -5,7 +5,6 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
     // movement
-    
     [SerializeField] public float DefaultMoveSpeed = 10f;
     private float _moveSpeed; 
     private Vector2 _moveDirection;
@@ -16,13 +15,6 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] public float DefaultJumpForce = 10f;
     private float _jumpForce;
     private bool _isJumping;
-    private int _jumpCounter;
-
-    [SerializeField] private float _coyoteTime = 0.2f;
-    private float _coyoteTimeCounter;
-
-    [SerializeField] private float _jumpBufferTime = 0.2f;
-    private float _jumpBufferTimeCounter;
 
     // attack
     private bool _isAttacking;
@@ -39,18 +31,12 @@ public class PlayerMovement : MonoBehaviour
         _moveSpeed = DefaultMoveSpeed;
         _jumpForce = DefaultJumpForce;
         _isJumping = true;
-        _jumpCounter = 0;
         _isMoving = false;
     }
 
     private void Update()
     {
-        _animator.SetBool("IsMoving", _isMoving && !_isRooted);
-        if (_isJumping)
-        {
-            _coyoteTimeCounter -= Time.deltaTime;
-            _jumpBufferTimeCounter -= Time.deltaTime;
-        }
+        _animator.SetBool("IsMoving", _isMoving && !_isRooted && !IsDashing);
     }
 
     private void FixedUpdate()
@@ -158,13 +144,10 @@ public class PlayerMovement : MonoBehaviour
 
     public void SetJump(bool value)
     {
-        _jumpBufferTimeCounter = _jumpBufferTime;
-        if (_isRooted || _isAttacking) return;
-        if (_coyoteTimeCounter < 0f && _jumpCounter >= 2) return;
+        if (_isJumping || _isRooted || _isAttacking) return;
         if (!value) return;
 
-        _rigidbody2D.velocity = new Vector2(_rigidbody2D.velocity.x, _jumpForce);
-        _jumpCounter += 1;
+        _rigidbody2D.velocity += (new Vector2(0, _jumpForce));
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -172,10 +155,7 @@ public class PlayerMovement : MonoBehaviour
         if (other.CompareTag("Ground"))
         {
             _isJumping = false;
-            _jumpCounter = 0;
-            _coyoteTimeCounter = _coyoteTime;
             _animator.SetBool("IsJumping", _isJumping);
-            if (_jumpBufferTimeCounter > 0f) SetJump(true);
         }
     }
 
