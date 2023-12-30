@@ -36,7 +36,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
-        _animator.SetBool("IsMoving", _isMoving && !_isRooted);
+        _animator.SetBool("IsMoving", _isMoving && !_isRooted && !IsDashing);
     }
 
     private void FixedUpdate()

@@ -28,7 +28,7 @@ public class AttackBase_Melee : AttackBase
     public override void Reset()
     {
         base.Reset();
-        _comboDelay = 0.6f;
+        _comboDelay = 0.2f;
         _comboTimer = 0.0f;
         _comboStack = 0;
         ActiveLegacy = null;
@@ -58,12 +58,11 @@ public class AttackBase_Melee : AttackBase
 
         // Dir: Positive if left, negative if right
         float dir = Mathf.Sign(gameObject.transform.localScale.x);
-        int meleeIdx;
 
         // Combo Attack
         if (_comboStack == 3)
         {
-            meleeIdx = 2;
+            _animator.SetBool("IsMeleeCombo", true);
             _attackPostDelay = _comboDelay;
             _comboStack = 0; // Reset combo stack
             _vfxObjBase.transform.localScale = new Vector3(dir, 1.0f, 1.0f);
@@ -73,7 +72,7 @@ public class AttackBase_Melee : AttackBase
         // Base Attack
         else
         {
-            meleeIdx = 0;//dir > 0 ? 0 : 1;
+            _animator.SetBool("IsMeleeCombo", false);
             _vfxObjBase.transform.localScale = new Vector3(dir, 1.0f, 1.0f);
             _attackPostDelay = _baseDelay;
             _vfxObjBase.SetActive(true);
@@ -81,7 +80,6 @@ public class AttackBase_Melee : AttackBase
         }      
 
         _animator.SetInteger("AttackIndex", (int)_attackType);
-        _animator.SetInteger("MeleeIndex", meleeIdx); 
     }
 
     public void OnComboHit()
