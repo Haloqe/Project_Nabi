@@ -158,13 +158,16 @@ public class PlayerMovement : MonoBehaviour
 
     public void SetJump(bool value)
     {
+        Debug.Log("jump try");
         _jumpBufferTimeCounter = _jumpBufferTime;
         if (_isRooted || _isAttacking) return;
         if (_coyoteTimeCounter < 0f && _jumpCounter >= 2) return;
         if (!value) return;
 
+        Debug.Log("jump executed");
         _rigidbody2D.velocity = new Vector2(_rigidbody2D.velocity.x, _jumpForce);
         _jumpCounter += 1;
+        _jumpBufferTimeCounter -= 1;
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -175,6 +178,7 @@ public class PlayerMovement : MonoBehaviour
             _jumpCounter = 0;
             _coyoteTimeCounter = _coyoteTime;
             _animator.SetBool("IsJumping", _isJumping);
+            Debug.Log("ground touched");
             if (_jumpBufferTimeCounter > 0f) SetJump(true);
         }
     }
