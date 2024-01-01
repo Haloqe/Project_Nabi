@@ -3,7 +3,7 @@ using UnityEngine;
 public class Bullet : MonoBehaviour
 {
     private Legacy_Range _owner;
-    private float _speed = 6.0f;
+    private float _speed = 8.5f;
     private float _lifeTime = 4f;
     private float _timer = 0.0f;
     public float Direction { set; private get; }

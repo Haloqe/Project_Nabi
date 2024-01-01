@@ -34,16 +34,16 @@ public class PlayerAttack : MonoBehaviour, IDamageDealer
         {
             //방향전환 막기
             //이동.점프는?
-            IsUnderAttackDelay = true;
-            CurrAttackIdx = attackIdx;
-            _attacks[attackIdx].Attack();
-            
             if (attackIdx != (int)ELegacyType.Dash)
                 _playerMovement.DisableMovement(false);
             else
             {
                 _playerMovement.SetDash();
             }
+
+            IsUnderAttackDelay = true;
+            CurrAttackIdx = attackIdx;
+            _attacks[attackIdx].Attack();
         }
     }
 

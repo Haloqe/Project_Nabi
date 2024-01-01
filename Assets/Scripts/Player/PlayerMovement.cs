@@ -31,7 +31,8 @@ public class PlayerMovement : MonoBehaviour
     // others
     private Rigidbody2D _rigidbody2D;
     private Animator _animator;
-
+    private Vector2 _additionalVelocity;
+    
     private void Start()
     {
         _animator = GetComponent<Animator>();
@@ -55,18 +56,11 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
-        // disable extra movement if rooted or dashing
-        if (_isRooted || _isDashing) return;
-
-        // Only allow up, down movement during attack
-        if (_isAttacking)
-        {
-            _rigidbody2D.velocity = new Vector2(0.0f, _rigidbody2D.velocity.y);
-        }
-        else
-        {
-            _rigidbody2D.velocity = new Vector2(_moveDirection.x * _moveSpeed, _rigidbody2D.velocity.y);
-        }
+        // disable extra movement if rooted or dashing or attacking
+        if (_isRooted || _isDashing /*|| _isAttacking*/) return;
+                
+        _rigidbody2D.velocity = new Vector2(_moveDirection.x * _moveSpeed, _rigidbody2D.velocity.y);
+        _rigidbody2D.velocity += _additionalVelocity;
     }
 
     ///<summary>Set move speed to default speed * percentage. If isSlowerThanNow is true, update speed only if 
@@ -151,6 +145,8 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
+            // Only allow up, down movement during attack
+            //_rigidbody2D.velocity = new Vector2(0.0f, _rigidbody2D.velocity.y);
             _isAttacking = true;
             _isMoving = false;
         }
@@ -201,5 +197,53 @@ public class PlayerMovement : MonoBehaviour
         if (_moveSpeed <= DefaultMoveSpeed) _moveSpeed = DefaultMoveSpeed;
         if (_jumpForce <= DefaultJumpForce) _jumpForce = DefaultJumpForce;
         _isRooted = false;
+    }
+
+    // Move vertically to the direction the character is facing
+    public void AnimEvent_StartMoveVertical(float xVelocity)
+    {
+        if (_isRooted) return;
+
+        // Cast a ray to check a wall
+        Vector2 playerCentre = new Vector2(transform.position.x, transform.position.y + 0.1f);
+        Vector2 faceDir = new Vector2(-Mathf.Sign(gameObject.transform.localScale.x), 0f);
+        RaycastHit2D hit = Physics2D.Raycast(playerCentre, faceDir, 1.0f);
+        Debug.DrawRay(playerCentre, faceDir, Color.white, 2.0f);
+        if (hit.collider != null && hit.collider.gameObject.layer == LayerMask.NameToLayer("Platform"))
+        {
+            Debug.Log("Hit wall");
+            return;
+        }
+
+        // If no wall in front, move forward
+        float dir = -Mathf.Sign(gameObject.transform.localScale.x);
+        _additionalVelocity = new Vector2(_additionalVelocity.x + dir * xVelocity, _additionalVelocity.y);
+    }
+
+    public void AnimEvent_StartMoveHorizontal(float yVelocity)
+    {
+        _additionalVelocity = new Vector2(_additionalVelocity.x, yVelocity);
+    }
+
+    public void AnimEvent_StopMoveVertical()
+    {
+        _additionalVelocity = new Vector2(0, _additionalVelocity.y);
+    }
+
+    public void AnimEvent_StopMoveHorizontal()
+    {
+        _additionalVelocity = new Vector2(_additionalVelocity.x, 0);
+    }
+
+    public void MoveForSeconds(Vector2 velocity, float seconds)
+    {
+        StartCoroutine(MoveCoroutine(velocity, seconds));
+    }
+
+    private IEnumerator MoveCoroutine(Vector2 velocity, float seconds)
+    {
+        _rigidbody2D.velocity += velocity;
+        yield return new WaitForSeconds(seconds);
+        _rigidbody2D.velocity -= velocity;
     }
 }
