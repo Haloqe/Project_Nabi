@@ -150,7 +150,7 @@ Transform:
   m_GameObject: {fileID: 60012784}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -8.251042, y: -1.5167083, z: -10.016022}
+  m_LocalPosition: {x: -8.251043, y: -1.2627083, z: -10.016022}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -179,7 +179,7 @@ MonoBehaviour:
   m_Follow: {fileID: 2014996296}
   m_Lens:
     FieldOfView: 60
-    OrthographicSize: 6
+    OrthographicSize: 7
     NearClipPlane: 0.3
     FarClipPlane: 1000
     Dutch: 0
@@ -5772,11 +5772,6 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
---- !u!1 &796364477 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 539064456449143768, guid: ec642c166e291f1408ac64a18e7704f4, type: 3}
-  m_PrefabInstance: {fileID: 2333299634879230151}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &801583461
 GameObject:
   m_ObjectHideFlags: 3
@@ -5863,11 +5858,11 @@ MonoBehaviour:
   m_ScreenX: 0.5
   m_ScreenY: 0.627
   m_CameraDistance: 10
-  m_DeadZoneWidth: 0.248
+  m_DeadZoneWidth: 0.173
   m_DeadZoneHeight: 0.328
   m_DeadZoneDepth: 0
   m_UnlimitedSoftZone: 0
-  m_SoftZoneWidth: 0.642
+  m_SoftZoneWidth: 0.36179155
   m_SoftZoneHeight: 0.661
   m_BiasX: 0
   m_BiasY: 0
@@ -5945,7 +5940,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 6
+  orthographic size: 7
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -5970,7 +5965,7 @@ Transform:
   m_GameObject: {fileID: 1016829064}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -8.251042, y: -1.5167083, z: -10.016022}
+  m_LocalPosition: {x: -8.251043, y: -1.2627083, z: -10.016022}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6656,57 +6651,12 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 39438638665260744, guid: ec642c166e291f1408ac64a18e7704f4, type: 3}
   m_PrefabInstance: {fileID: 2333299634879230151}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 796364477}
+  m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 80a92563d372d1e47815193a136aa979, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!61 &2014996328
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 796364477}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 6200000, guid: ca067ae38b052e84da3315771554b3fc, type: 2}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0.86}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0}
-    oldSize: {x: 2.0625, y: 2}
-    newSize: {x: 0.08, y: 0.08}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  serializedVersion: 2
-  m_Size: {x: 0.78, y: 1.72}
-  m_EdgeRadius: 0
 --- !u!1 &2094348807
 GameObject:
   m_ObjectHideFlags: 0
@@ -6825,46 +6775,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Dochi
       objectReference: {fileID: 0}
-    - target: {fileID: 3431984937059004776, guid: ec642c166e291f1408ac64a18e7704f4, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -0.65
-      objectReference: {fileID: 0}
-    - target: {fileID: 5432775129287780314, guid: ec642c166e291f1408ac64a18e7704f4, type: 3}
-      propertyPath: m_SpriteTilingProperty.newSize.x
-      value: 0.08
-      objectReference: {fileID: 0}
-    - target: {fileID: 5432775129287780314, guid: ec642c166e291f1408ac64a18e7704f4, type: 3}
-      propertyPath: m_SpriteTilingProperty.newSize.y
-      value: 0.08
-      objectReference: {fileID: 0}
-    - target: {fileID: 5432775129287780314, guid: ec642c166e291f1408ac64a18e7704f4, type: 3}
-      propertyPath: m_SpriteTilingProperty.oldSize.x
-      value: 2.0625
-      objectReference: {fileID: 0}
-    - target: {fileID: 5432775129287780314, guid: ec642c166e291f1408ac64a18e7704f4, type: 3}
-      propertyPath: m_SpriteTilingProperty.oldSize.y
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 5748632347468720890, guid: ec642c166e291f1408ac64a18e7704f4, type: 3}
-      propertyPath: m_Size.x
-      value: 0.08
-      objectReference: {fileID: 0}
-    - target: {fileID: 5748632347468720890, guid: ec642c166e291f1408ac64a18e7704f4, type: 3}
-      propertyPath: m_Size.y
-      value: 0.08
-      objectReference: {fileID: 0}
-    - target: {fileID: 5748632347468720890, guid: ec642c166e291f1408ac64a18e7704f4, type: 3}
-      propertyPath: m_Sprite
-      value: 
-      objectReference: {fileID: -557139343, guid: e4e92383c03a72e42be720c8cd8b02a0, type: 3}
-    - target: {fileID: 5748632347468720890, guid: ec642c166e291f1408ac64a18e7704f4, type: 3}
-      propertyPath: m_WasSpriteAssigned
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7447269887879556946, guid: ec642c166e291f1408ac64a18e7704f4, type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 8151576322963956177, guid: ec642c166e291f1408ac64a18e7704f4, type: 3}
       propertyPath: m_LocalPosition.x
       value: -7.56
@@ -6908,10 +6818,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 539064456449143768, guid: ec642c166e291f1408ac64a18e7704f4, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 2014996328}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ec642c166e291f1408ac64a18e7704f4, type: 3}
 --- !u!1001 &8599080193190126033
 PrefabInstance:
