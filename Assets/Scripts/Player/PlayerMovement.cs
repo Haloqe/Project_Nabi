@@ -27,6 +27,7 @@ public class PlayerMovement : MonoBehaviour
     // attack
     private bool _isAttacking;
     public bool _isDashing;
+    public bool IsAreaAttacking; //temp
 
     // others
     private Rigidbody2D _rigidbody2D;
@@ -57,7 +58,7 @@ public class PlayerMovement : MonoBehaviour
     private void FixedUpdate()
     {
         // disable extra movement if rooted or dashing or attacking
-        if (_isRooted || _isDashing /*|| _isAttacking*/) return;
+        if (_isRooted || _isDashing || IsAreaAttacking/*|| _isAttacking*/) return;
                 
         _rigidbody2D.velocity = new Vector2(_moveDirection.x * _moveSpeed, _rigidbody2D.velocity.y);
         _rigidbody2D.velocity += _additionalVelocity;

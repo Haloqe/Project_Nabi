@@ -8,6 +8,7 @@ public class AttackBase_Range : AttackBase
     [SerializeField] private Transform _firePos;
     [SerializeField] private GameObject _bullet;
 
+
     public override void Reset()
     {
         base.Reset();
