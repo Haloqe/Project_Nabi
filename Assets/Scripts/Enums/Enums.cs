@@ -88,3 +88,41 @@ public enum EPortalType
     NextLevel,
 }
 #endregion Interaction
+
+#region LevelGeneration
+public enum ERoomType
+{
+    Normal,
+    Corridor,
+    Entrance,
+    Teleport,
+    Treasure,
+    Shop,
+    MAX,
+}
+
+public enum EConnectionType
+{
+    Horizontal,
+    Vertical,
+}
+
+public enum ECellType
+{
+    Empty,
+    Filled,
+    Open_H,
+    Open_V,
+}
+
+public enum ETilemapType
+{
+    Wall,
+    Collideable,
+    Background,
+    Other1,
+    Other2,
+    Other3,
+    MAX,
+}
+#endregion
