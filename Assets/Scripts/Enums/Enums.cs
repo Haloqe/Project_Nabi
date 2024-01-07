@@ -111,8 +111,7 @@ public enum ECellType
 {
     Empty,
     Filled,
-    Open_H,
-    Open_V,
+    ToBeFilled,
 }
 
 public enum ETilemapType
@@ -124,5 +123,13 @@ public enum ETilemapType
     Other2,
     Other3,
     MAX,
+}
+
+public enum EDoorDirection
+{
+    Up,
+    Down,
+    Left,
+    Right,
 }
 #endregion

@@ -14,12 +14,12 @@ public class LevelGraph
     private List<List<int>> _graph = new();
     private int _nextID = 0;
     private int _startID = 0;
-    
+
     public ERoomType GetRoomType(int roomID)
     {
         return _nodes[roomID].RoomType;
     }
-    
+
     public void SetStartRoom(int roomID)
     {
         _startID = roomID;
@@ -43,7 +43,7 @@ public class LevelGraph
     public List<int> GetConnectedRooms(int roomID)
     {
         Debug.Assert(_nodes.Count > roomID);
-        return _graph[roomID]; 
+        return _graph[roomID];
     }
 
     public int AddRoom(ERoomType roomType)

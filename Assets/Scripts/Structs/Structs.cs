@@ -127,30 +127,25 @@ public struct SDoorInfo
     /// The bottom left world position of the door
     /// </summary>
     public Vector3Int Position;
+    public EDoorDirection Direction;
 
-    public SDoorInfo(EConnectionType type, Vector3Int pos)
+    public SDoorInfo(EConnectionType type, EDoorDirection dir, Vector3Int pos)
     {
         ConnectionType = type;
+        Direction = dir;
         Position = pos;
     }
 }
 
 public struct SRoomInfo
 {
-    /// <summary>
-    /// The ID of the room in the level graph
-    /// </summary>
+    public int PrevRoomID;
     public int RoomID; 
 
-    /// <summary>
-    /// The information of the doors of the room this room is first connected from
-    /// </summary>
-    public List<SDoorInfo> PrevDoorInfos;
-
-    public SRoomInfo(int roomID, List<SDoorInfo> doors)
+    public SRoomInfo(int prevRoomID, int roomID)
     {
+        PrevRoomID = prevRoomID;
         RoomID = roomID;
-        PrevDoorInfos = doors;
     }
 }
 #endregion LevelGeneration
