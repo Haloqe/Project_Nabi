@@ -63,7 +63,7 @@ public class LevelGraph
         return _nextID - 1;
     }
 
-    public void ConnectRoom(int roomA, int roomB)
+    private void ConnectRoom(int roomA, int roomB)
     {
         // Connect two rooms
         _graph[roomA].Add(roomB);

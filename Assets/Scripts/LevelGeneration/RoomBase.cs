@@ -61,4 +61,16 @@ public class RoomBase : MonoBehaviour
         // Randomly select a door
         return _doors[(int)connectionType][Random.Range(0, _doors[(int)connectionType].Count)];
     }
+
+    public void HideAllDoors()
+    {
+        if (_doors == null) FindDoors();
+        foreach (var doorList in _doors)
+        {
+            foreach (var door in doorList)
+            {
+                door.gameObject.SetActive(false);
+            }
+        }
+    }
 }

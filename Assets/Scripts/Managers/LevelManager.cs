@@ -21,7 +21,9 @@ public class LevelManager : Singleton<LevelManager>
 
     private LevelGraph _levelGraph;
 
-    [NamedArray(typeof(ETilemapType))] public Tilemap[] Tilemaps;
+    //public Tilemap MapTilemap;
+    public Tilemap SuperWallTilemap;
+    public TileBase WallRuleTile;
 
     private EDoorDirection[] _matchDirections;
     Vector3Int[] _newDoorOffsets;
@@ -32,9 +34,10 @@ public class LevelManager : Singleton<LevelManager>
         _maxHeight = 1000;
         _maxWidth = 1000;
         _superGrid = new ECellType[_maxHeight, _maxWidth];
-        _corridors = new List<Vector3Int>[2];
-        _corridors[0] = new List<Vector3Int>();
-        _corridors[1] = new List<Vector3Int>();
+        _corridors = new List<Vector3Int>[]
+        {
+            new List<Vector3Int>(), new List<Vector3Int>()
+        };
         _matchDirections = new EDoorDirection[]
         {
             EDoorDirection.Down, EDoorDirection.Up, 
@@ -54,6 +57,8 @@ public class LevelManager : Singleton<LevelManager>
 
         // Traverse level graph
         GenerateLevel();
+
+        PostProcessLevel();
     }
 
     // TEMP
@@ -108,6 +113,7 @@ public class LevelManager : Singleton<LevelManager>
         {
             RoomBase roomBase = room.GetComponent<RoomBase>();
             roomBase.Initialise();
+            roomBase.Tilemaps[(int)ETilemapType.Wall].CompressBounds();
             _roomsByType[(int)roomBase.RoomType].Add(roomBase);            
         }
     }
@@ -115,10 +121,8 @@ public class LevelManager : Singleton<LevelManager>
     private void GenerateLevel()
     {
         // Clear tiles
-        for (int i = 0; i < (int)ETilemapType.MAX; i++)
-        {
-            Tilemaps[i].ClearAllTiles();
-        }
+        SuperWallTilemap.ClearAllTiles();
+        //MapTilemap.ClearAllTiles();
 
         // Add starting room
         _openDoorInfos[_levelGraph.GetNumRooms()] = new List<SDoorInfo>{
@@ -253,14 +257,11 @@ public class LevelManager : Singleton<LevelManager>
     private bool CanRoomBePlaced(RoomBase room, Door newDoor, Vector3Int doorWorldPos)
     {
         var wallTilemap = room.Tilemaps[(int)ETilemapType.Wall];
-        wallTilemap.CompressBounds();
         BoundsInt localBounds = wallTilemap.cellBounds;
         Vector3Int doorLocalPos = newDoor.GetLocalPosition();
         Vector3Int maxYPos = Vector3Int.back;
         List<Vector3Int> toFillPositions = new();
         bool canBePlaced = true;
-
-        int count = 0;
 
         // Check wall tiles
         foreach (var pos in localBounds.allPositionsWithin)
@@ -284,7 +285,6 @@ public class LevelManager : Singleton<LevelManager>
                 {
                     _superGrid[newWorldPos.y, newWorldPos.x] = ECellType.ToBeFilled;
                     toFillPositions.Add(newWorldPos);
-                    count++;
                 }
             }
         }
@@ -323,7 +323,6 @@ public class LevelManager : Singleton<LevelManager>
                     case ECellType.Empty:
                         {
                             _superGrid[curr.y, curr.x] = ECellType.ToBeFilled;
-                            count++;
                             foreach (var offset in offsets)
                             {
                                 toVisits.Enqueue(curr + offset);
@@ -340,7 +339,6 @@ public class LevelManager : Singleton<LevelManager>
         {
             _superGrid[pos.y, pos.x] = updateType;
         }
-        if (canBePlaced) Debug.Log("Total: " + count);
 
         return canBePlaced;
     }
@@ -372,19 +370,23 @@ public class LevelManager : Singleton<LevelManager>
 
     private void AddRoomToWorld(RoomBase room, Door door, Vector3Int doorWorldPos)
     {
-        // Paint all layers
-        Vector3Int doorLocalPos = door.GetLocalPosition();
-        for (int i = 0; i < (int)ETilemapType.MAX; i++)
-        {
-            room.Tilemaps[i].CompressBounds();
-            BoundsInt localBounds = room.Tilemaps[i].cellBounds;
-            BoundsInt worldBounds = localBounds;
-            worldBounds.SetMinMax(doorWorldPos - doorLocalPos + localBounds.min,
-                doorWorldPos - doorLocalPos + localBounds.max);
+        // Instantiate room
+        Vector3Int genPosition = doorWorldPos - door.GetLocalPosition();
+        var roomObj = Instantiate(room.gameObject, genPosition, Quaternion.identity);
 
-            var tiles = room.Tilemaps[i].GetTilesBlock(localBounds);
-            Tilemaps[i].SetTilesBlock(worldBounds, tiles);
-        }
+        // Hide doors
+        roomObj.GetComponent<RoomBase>().HideAllDoors();
+
+        // Draw the wall layer in the main tilemap layer
+        var roomWallTilemap = roomObj.GetComponent<RoomBase>().Tilemaps[(int)ETilemapType.Wall];
+        roomWallTilemap.GetComponent<TilemapRenderer>().enabled = false;
+
+        Vector3Int doorLocalPos = door.GetLocalPosition();
+        BoundsInt localBounds = roomWallTilemap.cellBounds;
+        BoundsInt worldBounds = localBounds;
+        worldBounds.SetMinMax(doorWorldPos - doorLocalPos + localBounds.min,
+            doorWorldPos - doorLocalPos + localBounds.max);
+        SuperWallTilemap.SetTilesBlock(worldBounds, roomWallTilemap.GetTilesBlock(localBounds));
 
         // Add corridor to the list except for the first room (entrance)
         if (room.RoomType != ERoomType.Entrance)
@@ -394,25 +396,59 @@ public class LevelManager : Singleton<LevelManager>
             // Remove wall tile at the corridor position -> New door
             var otherDoorPos = door.ConnectionType == EConnectionType.Vertical ?
             new Vector3Int(doorWorldPos.x + 1, doorWorldPos.y) : new Vector3Int(doorWorldPos.x, doorWorldPos.y + 1);
-            Tilemaps[(int)ETilemapType.Wall].SetTile(doorWorldPos, null);
-            Tilemaps[(int)ETilemapType.Wall].SetTile(otherDoorPos, null);
+            SuperWallTilemap.SetTile(doorWorldPos, null);
+            SuperWallTilemap.SetTile(otherDoorPos, null);
 
             // Remove wall tile at the corridor position -> Previous door
-            Tilemaps[(int)ETilemapType.Wall].SetTile(doorWorldPos + _newDoorOffsets[(int)door.Direction], null);
-            Tilemaps[(int)ETilemapType.Wall].SetTile(otherDoorPos + _newDoorOffsets[(int)door.Direction], null);
-
-
-            Debug.Log("New Door removed [" + door.Direction.ToString() + "] at "
-                + (doorWorldPos)
-                + " " + (otherDoorPos));
-
-            Debug.Log("Prev Door removed [" + door.Direction.ToString() + "] at "
-                + (doorWorldPos + _newDoorOffsets[(int)door.Direction])
-                + " "  + (otherDoorPos + _newDoorOffsets[(int)door.Direction]));
+            SuperWallTilemap.SetTile(doorWorldPos + _newDoorOffsets[(int)door.Direction], null);
+            SuperWallTilemap.SetTile(otherDoorPos + _newDoorOffsets[(int)door.Direction], null);
         }
+    }
 
-        Debug.Log("Background: " + room.Tilemaps[(int)ETilemapType.Background].GetTilesRangeCount(
-            room.Tilemaps[(int)ETilemapType.Background].cellBounds.min,
-            room.Tilemaps[(int)ETilemapType.Background].cellBounds.max));
+    private void PostProcessLevel()
+    {
+        //AddSurroundingWallTiles();
+        
+    }
+
+    private void AddSurroundingWallTiles()
+    {
+        SuperWallTilemap.CompressBounds();
+        var wallBounds = SuperWallTilemap.cellBounds;
+        wallBounds.SetMinMax(wallBounds.min + Vector3Int.left * 9 + Vector3Int.down * 4,
+            wallBounds.max + Vector3Int.right * 10 + Vector3Int.up * 5);
+
+        // Graph traversal to fill the unused wall area
+        Queue<Vector3Int> toVisit = new();
+        toVisit.Enqueue(wallBounds.min);
+
+        // Four directions to search from each cell
+        Vector3Int[] offsets = { Vector3Int.left, Vector3Int.right, Vector3Int.up, Vector3Int.down };
+
+        while (toVisit.Count > 0)
+        {
+            var curr = toVisit.Dequeue();
+
+            // If out of bounds, skip
+            if (curr.x < wallBounds.xMin || curr.y < wallBounds.yMin || curr.x > wallBounds.xMax || curr.y > wallBounds.yMax)
+            {
+                continue;
+            }
+
+            // If is filled by wall, skip
+            if (SuperWallTilemap.HasTile(curr))
+            {
+                continue;
+            }
+
+            // Fill by wall
+            SuperWallTilemap.SetTile(curr, WallRuleTile);
+
+            // Add neighbour cells
+            foreach (var offset in offsets)
+            {
+                toVisit.Enqueue(curr + offset);
+            }
+        }
     }
 }
