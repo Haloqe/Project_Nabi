@@ -1,5 +1,5 @@
-using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 #region Common
 public struct SStatusEffect
@@ -113,6 +113,37 @@ public struct SEnemyData
     // rank
 }
 #endregion Enemy
+
+#region LevelGeneration
+public struct SDoorInfo
+{
+    public EConnectionType ConnectionType;
+    /// <summary>
+    /// The bottom left world position of the door
+    /// </summary>
+    public Vector3Int Position;
+    public EDoorDirection Direction;
+
+    public SDoorInfo(EConnectionType type, EDoorDirection dir, Vector3Int pos)
+    {
+        ConnectionType = type;
+        Direction = dir;
+        Position = pos;
+    }
+}
+
+public struct SRoomInfo
+{
+    public int PrevRoomID;
+    public int RoomID; 
+
+    public SRoomInfo(int prevRoomID, int roomID)
+    {
+        PrevRoomID = prevRoomID;
+        RoomID = roomID;
+    }
+}
+#endregion LevelGeneration
 
 #region Item
 public struct SFoodInfo

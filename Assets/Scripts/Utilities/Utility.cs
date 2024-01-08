@@ -3,6 +3,7 @@ using System.IO;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Tilemaps;
 
 public static class Utility
 {
@@ -28,7 +29,7 @@ public static class Utility
         var loadedObject = Resources.Load(path);
         if (loadedObject == null)
         {
-            throw new FileNotFoundException("...no file found - please check the configuration");
+            throw new FileNotFoundException("Object Load Failed " + path);
         }
         return loadedObject;
     }
@@ -42,6 +43,14 @@ public static class Utility
         }
         return null;
     }
+
+    public static Object[] LoadAllObjectsFromPath(string path)
+    {
+        var resources = Resources.LoadAll(path);
+        Debug.AssertFormat(resources.Length > 0, "Objects not found");
+        return resources;
+    }
+
     public static bool IsObjectInList(GameObject obj, List<int> list)
     {
         int id = obj.GetInstanceID();
@@ -50,6 +59,13 @@ public static class Utility
             if (i == id) return true;
         }
         return false;
+    }
+
+    public static TileBase LoadTileFromPath(string path)
+    {
+        TileBase tile = (TileBase)LoadObjectFromPath("Tiles/" + path);
+        Debug.Assert(tile != null, "Invalid tile path");
+        return tile;
     }
 
     public static void PrintDamageInfo(string receiver, SDamageInfo damageInfo)
