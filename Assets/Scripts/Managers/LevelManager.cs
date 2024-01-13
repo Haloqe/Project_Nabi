@@ -1,17 +1,17 @@
+using Cinemachine;
 using System.Collections.Generic;
-using System.IO.Compression;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.ProBuilder.Shapes;
 using UnityEngine.Tilemaps;
-using static UnityEditor.PlayerSettings;
 
 public class LevelManager : Singleton<LevelManager>
 { 
     private int _maxHeight;
     private int _maxWidth;
 
+    private Transform _roomsContainer;
+    private List<GameObject> _generatedRooms;
     private Object[] _roomTemplates;
     private List<List<RoomBase>> _roomsByType;
 
@@ -22,7 +22,7 @@ public class LevelManager : Singleton<LevelManager>
     private LevelGraph _levelGraph;
 
     //public Tilemap MapTilemap;
-    public Tilemap SuperWallTilemap;
+    private Tilemap _superWallTilemap;
     public TileBase WallRuleTile;
 
     private EDoorDirection[] _matchDirections;
@@ -48,10 +48,13 @@ public class LevelManager : Singleton<LevelManager>
             Vector3Int.up, Vector3Int.down,
             Vector3Int.left, Vector3Int.right
         };
+        _generatedRooms = new List<GameObject>();
+        _roomsContainer = GameObject.Find("Rooms").transform;
+        _superWallTilemap = GameObject.FindWithTag("Ground").GetComponent<Tilemap>();
         InitialiseRooms();
     }
 
-    private void Start()
+    public void Generate()
     {
         GenerateLevelGraph();
 
@@ -121,7 +124,7 @@ public class LevelManager : Singleton<LevelManager>
     private void GenerateLevel()
     {
         // Clear tiles
-        SuperWallTilemap.ClearAllTiles();
+        _superWallTilemap.ClearAllTiles();
         //MapTilemap.ClearAllTiles();
 
         // Add starting room
@@ -373,6 +376,8 @@ public class LevelManager : Singleton<LevelManager>
         // Instantiate room
         Vector3Int genPosition = doorWorldPos - door.GetLocalPosition();
         var roomObj = Instantiate(room.gameObject, genPosition, Quaternion.identity);
+        roomObj.transform.parent = _roomsContainer;
+        _generatedRooms.Add(roomObj);
 
         // Hide doors
         roomObj.GetComponent<RoomBase>().HideAllDoors();
@@ -386,7 +391,7 @@ public class LevelManager : Singleton<LevelManager>
         BoundsInt worldBounds = localBounds;
         worldBounds.SetMinMax(doorWorldPos - doorLocalPos + localBounds.min,
             doorWorldPos - doorLocalPos + localBounds.max);
-        SuperWallTilemap.SetTilesBlock(worldBounds, roomWallTilemap.GetTilesBlock(localBounds));
+        _superWallTilemap.SetTilesBlock(worldBounds, roomWallTilemap.GetTilesBlock(localBounds));
 
         // Add corridor to the list except for the first room (entrance)
         if (room.RoomType != ERoomType.Entrance)
@@ -396,24 +401,25 @@ public class LevelManager : Singleton<LevelManager>
             // Remove wall tile at the corridor position -> New door
             var otherDoorPos = door.ConnectionType == EConnectionType.Vertical ?
             new Vector3Int(doorWorldPos.x + 1, doorWorldPos.y) : new Vector3Int(doorWorldPos.x, doorWorldPos.y + 1);
-            SuperWallTilemap.SetTile(doorWorldPos, null);
-            SuperWallTilemap.SetTile(otherDoorPos, null);
+            _superWallTilemap.SetTile(doorWorldPos, null);
+            _superWallTilemap.SetTile(otherDoorPos, null);
 
             // Remove wall tile at the corridor position -> Previous door
-            SuperWallTilemap.SetTile(doorWorldPos + _newDoorOffsets[(int)door.Direction], null);
-            SuperWallTilemap.SetTile(otherDoorPos + _newDoorOffsets[(int)door.Direction], null);
+            _superWallTilemap.SetTile(doorWorldPos + _newDoorOffsets[(int)door.Direction], null);
+            _superWallTilemap.SetTile(otherDoorPos + _newDoorOffsets[(int)door.Direction], null);
         }
     }
 
     private void PostProcessLevel()
     {
         //AddSurroundingWallTiles();
+        SetPlayerSpawnPosition();
     }
 
     private void AddSurroundingWallTiles()
     {
-        SuperWallTilemap.CompressBounds();
-        var wallBounds = SuperWallTilemap.cellBounds;
+        _superWallTilemap.CompressBounds();
+        var wallBounds = _superWallTilemap.cellBounds;
         wallBounds.SetMinMax(wallBounds.min + Vector3Int.left * 9 + Vector3Int.down * 4,
             wallBounds.max + Vector3Int.right * 10 + Vector3Int.up * 5);
 
@@ -435,13 +441,13 @@ public class LevelManager : Singleton<LevelManager>
             }
 
             // If is filled by wall, skip
-            if (SuperWallTilemap.HasTile(curr))
+            if (_superWallTilemap.HasTile(curr))
             {
                 continue;
             }
 
             // Fill by wall
-            SuperWallTilemap.SetTile(curr, WallRuleTile);
+            _superWallTilemap.SetTile(curr, WallRuleTile);
 
             // Add neighbour cells
             foreach (var offset in offsets)
@@ -449,5 +455,14 @@ public class LevelManager : Singleton<LevelManager>
                 toVisit.Enqueue(curr + offset);
             }
         }
+    }
+
+    private void SetPlayerSpawnPosition()
+    {
+        var playerStart = _generatedRooms[0].transform.Find("PlayerStart");
+        var player = PlayerController.Instance == null ? 
+            Instantiate(GameManager.Instance.Player) : PlayerController.Instance.gameObject;
+        player.transform.position = playerStart.position;
+        GameObject.Find("Virtual Camera").GetComponent<CinemachineVirtualCamera>().Follow = player.transform;
     }
 }

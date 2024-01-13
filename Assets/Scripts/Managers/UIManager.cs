@@ -39,7 +39,6 @@ public class UIManager : Singleton<UIManager>
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode loadMode)
     {
-        Debug.Log("UIManager::OnSceneLoaded");
         string name = scene.name;
         if (name.Contains("InGame"))
         {

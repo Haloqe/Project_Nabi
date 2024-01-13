@@ -18,6 +18,7 @@ public class AttackBase_Dash : AttackBase
         var obj = Utility.LoadGameObjectFromPath("Prefabs/Player/AttackVFXs/Dash_Default");
         Transform transform = gameObject.transform.Find("AttackVFXs").transform;
         _vfxObject = Instantiate(obj, transform);
+        _vfxObject.GetComponent<ParticleSystemRenderer>().sortingLayerID = SortingLayer.NameToID("VFX_Front");
     }
 
     public override void Attack()
