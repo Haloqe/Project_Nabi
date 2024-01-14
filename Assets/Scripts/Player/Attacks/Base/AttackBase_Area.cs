@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class AttackBase_Area : AttackBase
@@ -5,7 +7,8 @@ public class AttackBase_Area : AttackBase
     private Legacy_Area _activeLegacy;
     private float _areaRadius;
     private float _areaRadiusMultiplier;
-    [SerializeField] private GameObject _bomb;
+
+    // Stopping player movement
     private float _prevGravity;
     private Vector3 _prevVelocity;
     private Rigidbody2D _rigidbody2D;
@@ -17,6 +20,11 @@ public class AttackBase_Area : AttackBase
         _isAttached = false;
         _vfxObject = Utility.LoadGameObjectFromPath("Prefabs/Player/AttackVFXs/Area_Default");
         _rigidbody2D = GetComponent<Rigidbody2D>();
+        _damageInitBase = new SDamageInfo
+        {
+            Damages = new List<SDamage> { new SDamage(EDamageType.Base, 15) },
+            StatusEffects = new List<SStatusEffect>(),
+        };
     }
 
     public override void Reset()
@@ -45,7 +53,8 @@ public class AttackBase_Area : AttackBase
         Vector3 position = new Vector3(playerPos.x + dir * (vfxPos.x), playerPos.y + vfxPos.y, playerPos.z + vfxPos.z);
 
         _vfxObject.transform.localScale = new Vector3(dir, 1.0f, 1.0f);
-        Instantiate(_vfxObject, position, Quaternion.identity);
+        var vfx = Instantiate(_vfxObject, position, Quaternion.identity);
+        vfx.GetComponent<Bomb>().Owner = this;
     }
 
     protected override void OnAttackEnd_PreDelay()
@@ -53,5 +62,10 @@ public class AttackBase_Area : AttackBase
         _rigidbody2D.gravityScale = _prevGravity;
         _rigidbody2D.velocity = new Vector2(_prevVelocity.x, 0); // _prevVelocity
         GetComponent<PlayerMovement>().IsAreaAttacking = false;
+    }
+
+    public void DealDamage(IDamageable target)
+    {
+        _damageDealer.DealDamage(target, _damageBase);
     }
 }

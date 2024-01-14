@@ -282,6 +282,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
     private void ReduceHealth(float reduceAmount)
     {
+        Health -= (int)reduceAmount;
         Debug.Log(gameObject.name + "'s Current health: " + Health + "(-" + reduceAmount + ")");
         if (Health <= 0) { Die(); }
         StartCoroutine(DamagedRoutine());

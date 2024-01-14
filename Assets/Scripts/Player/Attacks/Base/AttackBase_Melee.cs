@@ -89,24 +89,16 @@ public class AttackBase_Melee : AttackBase
             _animator.SetBool("IsMeleeCombo", true);
             _attackPostDelay = _comboDelay;
             _comboStack = 0; // Reset combo stack
-            if (dir < 0)
-                _vfxObjCombo.GetComponent<ParticleSystemRenderer>().flip = Vector3.right;
-            else
-                _vfxObjCombo.GetComponent<ParticleSystemRenderer>().flip = Vector3.zero;
+            _vfxObjCombo.GetComponent<ParticleSystemRenderer>().flip = (dir < 0 ? Vector3.right : Vector3.zero);
             _vfxObjCombo.SetActive(true);
-            Debug.Log("Combo");
         }
         // Base Attack
         else
         {
             _animator.SetBool("IsMeleeCombo", false);
-            if (dir < 0)
-                _vfxObjBase.GetComponent<ParticleSystemRenderer>().flip = Vector3.right;
-            else
-                _vfxObjBase.GetComponent<ParticleSystemRenderer>().flip = Vector3.zero;
             _attackPostDelay = _baseDelay;
+            _vfxObjBase.GetComponent<ParticleSystemRenderer>().flip = (dir < 0 ? Vector3.right : Vector3.zero);
             _vfxObjBase.SetActive(true);
-            Debug.Log("Base " + _comboStack);
         }      
 
         _animator.SetInteger("AttackIndex", (int)_attackType);
