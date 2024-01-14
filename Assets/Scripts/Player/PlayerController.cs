@@ -10,21 +10,21 @@ public class PlayerController : Singleton<PlayerController>
 {
     private PlayerInput _playerInput;
     private PlayerMovement _playerMovement;
-    private PlayerCombat _playerCombat;
-    private PlayerAttack _playerAttack;
+    private PlayerDamageReceiver _playerCombat;
+    private PlayerDamageDealer _playerAttack;
     static int _testNumCalls = 0;
     private bool _isNYScene;
 
-    // TEMP
-    CinemachineVirtualCamera _playerVirtualCamera;
-    [SerializeField] TextMeshProUGUI _camSizeText;
+    //// TEMP
+    //CinemachineVirtualCamera _playerVirtualCamera;
+    //[SerializeField] TextMeshProUGUI _camSizeText;
 
-    public void SetCamSize(float t)
-    {
-        float size = 6 * (1 - t) + 13 * t;
-        _playerVirtualCamera.m_Lens.OrthographicSize = size;
-        _camSizeText.text = size.ToString();
-    }
+    //public void SetCamSize(float t)
+    //{
+    //    float size = 6 * (1 - t) + 13 * t;
+    //    _playerVirtualCamera.m_Lens.OrthographicSize = size;
+    //    _camSizeText.text = size.ToString();
+    //}
 
     protected override void Awake()
     {
@@ -32,14 +32,14 @@ public class PlayerController : Singleton<PlayerController>
         Debug.Log("PlayerController::Awake");
         _playerInput = GetComponent<PlayerInput>();
         _playerMovement = GetComponent<PlayerMovement>();
-        _playerCombat = GetComponent<PlayerCombat>();
-        _playerAttack = GetComponent<PlayerAttack>();
+        _playerCombat = GetComponent<PlayerDamageReceiver>();
+        _playerAttack = GetComponent<PlayerDamageDealer>();
     }
 
     private void Start()
     {
         // TEMP for debug
-        _playerVirtualCamera = FindObjectOfType<CinemachineVirtualCamera>();
+        //_playerVirtualCamera = FindObjectOfType<CinemachineVirtualCamera>();
         _isNYScene = SceneManager.GetActiveScene().name == "Scene_NY";
 
         // Input Binding for Attacks

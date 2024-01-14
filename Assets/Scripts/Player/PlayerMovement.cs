@@ -95,7 +95,7 @@ public class PlayerMovement : MonoBehaviour
     {
         yield return new WaitForSeconds(duration);
         ResetMoveSpeed();
-        FindObjectOfType<PlayerCombat>().SetActiveSlow();
+        FindObjectOfType<PlayerDamageReceiver>().SetActiveSlow();
     }
 
     public void ResetMoveSpeed()

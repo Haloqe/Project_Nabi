@@ -37,7 +37,7 @@ public class AttackBase_Dash : AttackBase
         yield return new WaitForSeconds(0.35f);
 
         _vfxObject.SetActive(false);
-        _playerAttack.OnAttackEnd(ELegacyType.Dash);
+        _damageDealer.OnAttackEnd(ELegacyType.Dash);
         _rigidbody2D.gravityScale = prevGravity;
         //_rigidbody2D.velocity = new Vector2(0f, 0f);
     }

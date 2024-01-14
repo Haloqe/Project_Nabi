@@ -49,8 +49,9 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     #region Status Effects imposed by the player handling
     private void HandleNewStatusEffects(List<SStatusEffect> statusEffects)
     {
-        //SStatusEffect has three instance variables: effect, strength, duration
+        if (statusEffects == null) return;
 
+        //SStatusEffect has three instance variables: effect, strength, duration
         foreach (var statusEffect in statusEffects)
         {
             // handle SLOW separately
@@ -257,8 +258,8 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     // TO-DO
     #endregion Status Effects imposing on the player handling
 
-        #region Damage Dealing and Receiving
-        // Dealing damage to the player Handling
+    #region Damage Dealing and Receiving
+    // Dealing damage to the player Handling
     public virtual void DealDamage(IDamageable target, SDamageInfo damageInfo)
     {
         //damageInfo.DamageSource = gameObject.GetInstanceID();
@@ -272,20 +273,34 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         HandleNewDamages(damageInfo.Damages);
         HandleNewStatusEffects(damageInfo.StatusEffects);
     }
+
     private void HandleNewDamages(List<SDamage> damages)
     {
         int damage = (int)IDamageable.CalculateRoughDamage(damages);
-        Health -= damage;
-        Debug.Log(gameObject.name + "'s Current health: " + Health + "(-" + damage + ")");
+        ReduceHealth(damage);
+    }
+
+    private void ReduceHealth(float reduceAmount)
+    {
+        Debug.Log(gameObject.name + "'s Current health: " + Health + "(-" + reduceAmount + ")");
         if (Health <= 0) { Die(); }
+        StartCoroutine(DamagedRoutine());
+    }
+    
+    // TEMP TODO FIX: For damage visualisation
+    private IEnumerator DamagedRoutine()
+    {
+        GetComponent<SpriteRenderer>().color = new Color(0.6f, 0.05f, 0.05f);
+        yield return new WaitForSeconds(0.1f);
+        GetComponent<SpriteRenderer>().color = Color.white;
     }
 
     private void Die()
     {
+        StopAllCoroutines();
         Destroy(gameObject);
         // TEMP code
         Debug.Log(gameObject.name + " died.");
-
     }
     #endregion Damage Dealing and Receiving
 }

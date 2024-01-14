@@ -4,7 +4,7 @@ using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
+public class PlayerDamageReceiver : MonoBehaviour, IDamageable
 {
     // reference to other components
     private PlayerMovement _playerMovement;
@@ -129,11 +129,7 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
     }
 
     #region Damage Dealing and Receiving
-    // IDamageDealer Override
-    public void DealDamage(IDamageable target, SDamageInfo damageInfo)
-    {
-        target.TakeDamage(AdjustOutgoingDamage(damageInfo));
-    }
+    
     
     // IDamageable Override
     public void TakeDamage(SDamageInfo damageInfo)
@@ -142,13 +138,7 @@ public class PlayerCombat : MonoBehaviour, IDamageDealer, IDamageable
         Utility.PrintDamageInfo("player", damageInfo);
         HandleNewDamages(damageInfo.Damages);
         HandleNewStatusEffects(damageInfo.StatusEffects);
-    }
-
-    private SDamageInfo AdjustOutgoingDamage(SDamageInfo damageInfo)
-    {
-        // make changes to the damage dealt based on attributes
-        return damageInfo;
-    }
+    }    
 
     private void HandleNewDamages(List<SDamage> damages)
     {

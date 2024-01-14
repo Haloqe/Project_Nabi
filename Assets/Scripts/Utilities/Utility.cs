@@ -77,7 +77,7 @@ public static class Utility
             {
                 if (damage.Duration == 0)
                 {
-                    damages += damage.Type.ToString() + damage.TotalAmount + ")";
+                    damages += damage.Type.ToString() + " (" + damage.TotalAmount + ")";
                 }
                 else
                 {

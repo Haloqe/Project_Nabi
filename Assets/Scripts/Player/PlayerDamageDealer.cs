@@ -1,7 +1,6 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
-public class PlayerAttack : MonoBehaviour, IDamageDealer
+public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
 {
     private Animator _animator;
     private PlayerMovement _playerMovement;
@@ -63,8 +62,15 @@ public class PlayerAttack : MonoBehaviour, IDamageDealer
         GetComponent<PlayerMovement>().EnableMovement(false);
     }
 
+    // IDamageDealer Override
     public void DealDamage(IDamageable target, SDamageInfo damageInfo)
     {
-        throw new System.NotImplementedException();
+        target.TakeDamage(AdjustOutgoingDamage(damageInfo));
+    }
+
+    private SDamageInfo AdjustOutgoingDamage(SDamageInfo damageInfo)
+    {
+        // make changes to the damage dealt based on attributes
+        return damageInfo;
     }
 }

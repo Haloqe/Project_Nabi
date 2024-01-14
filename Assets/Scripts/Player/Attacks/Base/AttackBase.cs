@@ -3,12 +3,12 @@ using UnityEngine;
 
 public abstract class AttackBase : MonoBehaviour
 {
-    protected PlayerAttack _playerAttack;
+    protected PlayerDamageDealer _damageDealer;
     protected Animator _animator;
     private float _attackDelay;
     private float _attackSpeedMultiplier;
-    private SDamageInfo _baseDamage_Init;
-    private SDamageInfo _baseDamage;
+    protected SDamageInfo _damageInitBase;
+    protected SDamageInfo _damageBase;
     protected float _attackPostDelay;
 
     protected ELegacyType _attackType;
@@ -18,19 +18,19 @@ public abstract class AttackBase : MonoBehaviour
     
     public virtual void Initialise()
     {
-        Reset();
     }
 
     public virtual void Reset()
     {
-        _baseDamage = _baseDamage_Init;
+        _damageBase = _damageInitBase;
     }
 
     public virtual void Start()
     {
         Initialise();
+        Reset();
         _animator = GetComponent<Animator>();
-        _playerAttack = GetComponent<PlayerAttack>();
+        _damageDealer = GetComponent<PlayerDamageDealer>();
     }
 
     public abstract void Attack();
@@ -50,7 +50,7 @@ public abstract class AttackBase : MonoBehaviour
         OnAttackEnd_PreDelay();
         yield return new WaitForSeconds(_attackPostDelay);
         OnAttackEnd_PostDelay();
-        _playerAttack.OnAttackEnd_PostDelay();
+        _damageDealer.OnAttackEnd_PostDelay();
     }
 
     public virtual void IsActiveBound()

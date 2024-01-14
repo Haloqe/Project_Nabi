@@ -102,7 +102,7 @@ public class UIManager : Singleton<UIManager>
         _playerHPSlider     = _inGameCombatUI.GetComponentInChildren<Slider>();
 
         _inGameCombatUI.SetActive(true);
-        _playerHPSlider.value = FindObjectOfType<PlayerCombat>().GetHPRatio();
+        _playerHPSlider.value = FindObjectOfType<PlayerDamageReceiver>().GetHPRatio();
         // TODO in scene manager perhaps?
         PlayerAttackManager.Instance.InitInGameVariables();
 

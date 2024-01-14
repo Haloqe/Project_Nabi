@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -8,22 +9,42 @@ public class AttackBase_Melee : AttackBase
     [SerializeField] private GameObject _vfxObjBase;
     [SerializeField] private GameObject _vfxObjCombo;
 
+    // Collider
+    private List<int> _affectedEnemies;
+    private Collider2D _colliderBase;
+    private Collider2D _colliderCombo;
+
     public Legacy_Melee ActiveLegacy;
     private float animLength;
 
     // Combo attack
-    public SDamageInfo ComboDamage_Init;
-    public SDamageInfo ComboDamage;
     private float _comboTimeLimit = 1.3f;
     private float _comboTimer;
     private int _comboStack = 0;
     private float _comboDelay;
     private float _baseDelay;
 
+    // Damage
+    private SDamageInfo _damageCombo;
+    private SDamageInfo _damageInitCombo;
+
     public override void Initialise()
     {
         base.Initialise();
         _baseDelay = 0.0f;
+        _colliderBase = _vfxObjBase.GetComponent<BoxCollider2D>();
+        _colliderCombo = _vfxObjCombo.GetComponent<BoxCollider2D>();
+        _affectedEnemies = new List<int>();
+        _damageInitBase = new SDamageInfo
+        {
+            Damages = new List<SDamage> { new SDamage(EDamageType.Base, 5) },
+            StatusEffects = new List<SStatusEffect>(),
+        };
+        _damageInitCombo = new SDamageInfo
+        {
+            Damages = new List<SDamage> { new SDamage(EDamageType.Base, 10) },
+            StatusEffects = new List<SStatusEffect>(),
+        };
     }
 
     public override void Reset()
@@ -33,7 +54,9 @@ public class AttackBase_Melee : AttackBase
         _comboTimer = 0.0f;
         _comboStack = 0;
         ActiveLegacy = null;
-        ComboDamage = ComboDamage_Init;
+        _damageBase = _damageInitBase;
+        _damageCombo = _damageInitCombo;
+        _affectedEnemies.Clear();
     }
 
     private void Update()
@@ -66,7 +89,10 @@ public class AttackBase_Melee : AttackBase
             _animator.SetBool("IsMeleeCombo", true);
             _attackPostDelay = _comboDelay;
             _comboStack = 0; // Reset combo stack
-            _vfxObjBase.transform.localScale = new Vector3(dir, 1.0f, 1.0f);
+            if (dir < 0)
+                _vfxObjCombo.GetComponent<ParticleSystemRenderer>().flip = Vector3.right;
+            else
+                _vfxObjCombo.GetComponent<ParticleSystemRenderer>().flip = Vector3.zero;
             _vfxObjCombo.SetActive(true);
             Debug.Log("Combo");
         }
@@ -74,7 +100,10 @@ public class AttackBase_Melee : AttackBase
         else
         {
             _animator.SetBool("IsMeleeCombo", false);
-            _vfxObjBase.transform.localScale = new Vector3(dir, 1.0f, 1.0f);
+            if (dir < 0)
+                _vfxObjBase.GetComponent<ParticleSystemRenderer>().flip = Vector3.right;
+            else
+                _vfxObjBase.GetComponent<ParticleSystemRenderer>().flip = Vector3.zero;
             _attackPostDelay = _baseDelay;
             _vfxObjBase.SetActive(true);
             Debug.Log("Base " + _comboStack);
@@ -86,5 +115,51 @@ public class AttackBase_Melee : AttackBase
     public void OnComboHit()
     {
         FindObjectOfType<TestCameraShake>().OnComboAttack();
+    }
+
+    public void ActivateCollider()
+    {
+        // Combo Attack
+        if (_comboStack == 0)
+        {
+            _colliderCombo.enabled = true;
+        }
+        // Base Attack
+        else
+        {
+            _colliderBase.enabled = true;
+        }
+    }
+
+    public void DeactivateCollider()
+    {
+        // Combo Attack
+        if (_comboStack == 0)
+        {
+            _colliderCombo.enabled = false;
+        }
+        // Base Attack
+        else
+        {
+            _colliderBase.enabled = false;
+        }
+    }
+
+    public void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.gameObject.CompareTag("Enemy") == false) return;
+        if (Utility.IsObjectInList(collision.gameObject, _affectedEnemies)) return;
+
+        IDamageable target = collision.gameObject.GetComponent<IDamageable>();
+        if (target == null) return;
+
+        _affectedEnemies.Add(collision.gameObject.GetInstanceID());
+        _damageDealer.DealDamage(target, _comboStack == 0 ? _damageCombo : _damageBase);
+    }
+
+    protected override void OnAttackEnd_PreDelay()
+    {
+        base.OnAttackEnd_PreDelay();
+        _affectedEnemies.Clear();
     }
 }

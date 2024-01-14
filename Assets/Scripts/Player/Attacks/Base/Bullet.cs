@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class Bullet : MonoBehaviour
 {
-    private Legacy_Range _owner;
+    public AttackBase_Range Owner;
     private float _speed = 8.5f;
     private float _lifeTime = 4f;
     private float _timer = 0.0f;
@@ -28,6 +28,11 @@ public class Bullet : MonoBehaviour
         GetComponent<SpriteRenderer>().enabled = false;
 
         // TODO if enemy,
+        IDamageable target = collision.gameObject.GetComponent<IDamageable>();
+        if (target != null)
+        {
+            Owner.DealDamage(target);
+        }
 
         // Play hit effect
         GetComponentInChildren<ParticleSystem>().Play();
