@@ -7,6 +7,7 @@ public abstract class EnemyMovement : MonoBehaviour
     protected float _moveSpeed;
     protected bool _isRooted = false;
     protected Rigidbody2D _rigidBody;
+    protected Animator _animator;
 
     //the speed at which the enemy will be pulled
     public float smoothing = 1f;
@@ -15,6 +16,7 @@ public abstract class EnemyMovement : MonoBehaviour
 
     protected virtual void Start()
     {
+        _animator = GetComponent<Animator>();
         _rigidBody = GetComponent<Rigidbody2D>();
         _moveSpeed = DefaultMoveSpeed;
         EnableMovement();
