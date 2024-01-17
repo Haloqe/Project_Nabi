@@ -3,14 +3,18 @@ using UnityEngine;
 public class Bullet : MonoBehaviour
 {
     public AttackBase_Range Owner;
-    private float _speed = 8.5f;
+    private float _speed = 8f;
     private float _lifeTime = 4f;
     private float _timer = 0.0f;
     public float Direction { set; private get; }
 
     private void Start()
     {
+        // Set velocity
         GetComponent<Rigidbody2D>().velocity = new Vector2(Direction * _speed, 0.0f);
+
+        // Flip sprite to the flying direction
+        transform.localScale = new Vector3(-Direction, 1, 1);
     }
 
     private void Update()

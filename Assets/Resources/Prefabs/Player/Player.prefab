@@ -171,6 +171,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   DefaultMoveSpeed: 5
+  IsOnMovingPlatform: 0
   DefaultJumpForce: 8
   _coyoteTime: 0.2
   _jumpBufferTime: 0.2
@@ -795,6 +796,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3178300950567567074, guid: 1860e2786f5cbed4da92fe5953966538, type: 3}
       propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6796274833088129307, guid: 1860e2786f5cbed4da92fe5953966538, type: 3}
+      propertyPath: m_Flip.x
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6796274833088129307, guid: 1860e2786f5cbed4da92fe5953966538, type: 3}
@@ -803,11 +808,11 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: fb531d21abfeed84ab424c71ea3e0921, type: 2}
     - target: {fileID: 8590932045577842670, guid: 1860e2786f5cbed4da92fe5953966538, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.011
+      value: 0.13
       objectReference: {fileID: 0}
     - target: {fileID: 8590932045577842670, guid: 1860e2786f5cbed4da92fe5953966538, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.94
+      value: 0.88
       objectReference: {fileID: 0}
     - target: {fileID: 8590932045577842670, guid: 1860e2786f5cbed4da92fe5953966538, type: 3}
       propertyPath: m_LocalPosition.z
@@ -843,11 +848,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8990628294605959499, guid: 1860e2786f5cbed4da92fe5953966538, type: 3}
       propertyPath: looping
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8990628294605959499, guid: 1860e2786f5cbed4da92fe5953966538, type: 3}
       propertyPath: lengthInSec
-      value: 0.6668
+      value: 1.1113
       objectReference: {fileID: 0}
     - target: {fileID: 8990628294605959499, guid: 1860e2786f5cbed4da92fe5953966538, type: 3}
       propertyPath: UVModule.tilesX
@@ -858,8 +863,12 @@ PrefabInstance:
       value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 8990628294605959499, guid: 1860e2786f5cbed4da92fe5953966538, type: 3}
+      propertyPath: InitialModule.startSize.scalar
+      value: 4.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8990628294605959499, guid: 1860e2786f5cbed4da92fe5953966538, type: 3}
       propertyPath: InitialModule.startLifetime.scalar
-      value: 0.6668
+      value: 1.1113
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 4222921550398753383, guid: 1860e2786f5cbed4da92fe5953966538, type: 3}
@@ -1205,6 +1214,14 @@ PrefabInstance:
     - target: {fileID: 8590932045577842670, guid: 1860e2786f5cbed4da92fe5953966538, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8990628294605959499, guid: 1860e2786f5cbed4da92fe5953966538, type: 3}
+      propertyPath: lengthInSec
+      value: 0.65
+      objectReference: {fileID: 0}
+    - target: {fileID: 8990628294605959499, guid: 1860e2786f5cbed4da92fe5953966538, type: 3}
+      propertyPath: InitialModule.startLifetime.scalar
+      value: 0.65
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
