@@ -3,6 +3,9 @@ using UnityEngine;
 
 public class AttackBase_Range : AttackBase
 {
+    // VFX
+    [SerializeField] private GameObject _vfxObj;
+
     private Legacy_Range _activeLegacy;
     [SerializeField] private Transform FireTransform;
     [SerializeField] private GameObject BulletObject;
@@ -26,6 +29,9 @@ public class AttackBase_Range : AttackBase
     public override void Attack()
     {
         _animator.SetInteger("AttackIndex", (int)ELegacyType.Range);
+        _vfxObj.GetComponent<ParticleSystemRenderer>().flip = 
+            (Mathf.Sign(gameObject.transform.localScale.x) < 0 ? Vector3.right : Vector3.zero);
+        _vfxObj.SetActive(true);
     }
 
     public void Fire()
@@ -39,7 +45,6 @@ public class AttackBase_Range : AttackBase
     public void DealDamage(IDamageable target)
     {
         // TODO: Damage alteration from the legacy
-
         _damageDealer.DealDamage(target, _damageBase);
     }
 }

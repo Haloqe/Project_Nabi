@@ -50,7 +50,7 @@ public class AttackBase_Melee : AttackBase
     public override void Reset()
     {
         base.Reset();
-        _comboDelay = 0.2f;
+        _comboDelay = 0;// .2f;
         _comboTimer = 0.0f;
         _comboStack = 0;
         ActiveLegacy = null;

@@ -4,13 +4,18 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    // movement
-    
-    [SerializeField] public float DefaultMoveSpeed = 10f;
+    // physics
+    private CapsuleCollider2D _capsuleCollider;
+    private float _defaultFriction;
+    private float _defaultBounciness;
+
+    // movement    
+    public float DefaultMoveSpeed = 10f;
     private float _moveSpeed; 
     private Vector2 _moveDirection;
     private bool _isMoving;
     private bool _isRooted = false;
+    public bool IsOnMovingPlatform = false;
 
     // jumping
     [SerializeField] public float DefaultJumpForce = 10f;
@@ -43,6 +48,10 @@ public class PlayerMovement : MonoBehaviour
         _isJumping = true;
         _jumpCounter = 0;
         _isMoving = false;
+
+        _capsuleCollider = GetComponent<CapsuleCollider2D>();
+        _defaultBounciness = _capsuleCollider.sharedMaterial.bounciness;
+        _defaultFriction = _capsuleCollider.sharedMaterial.friction;
     }
 
     private void Update()
@@ -115,7 +124,7 @@ public class PlayerMovement : MonoBehaviour
         {
             // Note: Player sprite default direction is left
             _isMoving = true;
-            transform.localScale = new Vector2(-Mathf.Sign(value.x), transform.localScale.y);
+            transform.localScale = new Vector2(-Mathf.Sign(value.x) * Mathf.Abs(transform.localScale.x), transform.localScale.y);
         }
     }
 
@@ -132,7 +141,7 @@ public class PlayerMovement : MonoBehaviour
             {
                 // Note: Player sprite default direction is left
                 _isMoving = true;
-                transform.localScale = new Vector2(-Mathf.Sign(_moveDirection.x), transform.localScale.y);
+                transform.localScale = new Vector2(-Mathf.Sign(_moveDirection.x) * Mathf.Abs(transform.localScale.x), transform.localScale.y);
             }
         }
     }
@@ -200,6 +209,7 @@ public class PlayerMovement : MonoBehaviour
         _isRooted = false;
     }
 
+    #region Animation Event Handlers
     // Move vertically to the direction the character is facing
     public void AnimEvent_StartMoveVertical(float xVelocity)
     {
@@ -247,4 +257,32 @@ public class PlayerMovement : MonoBehaviour
         yield return new WaitForSeconds(seconds);
         _rigidbody2D.velocity -= velocity;
     }
+    #endregion 
+
+
+    #region Physics Settings
+    public void SetFriction(float friction)
+    {
+        _capsuleCollider.sharedMaterial.friction = friction;
+        _capsuleCollider.enabled = false;
+        _capsuleCollider.enabled = true;
+    }
+
+    public void ResetFriction()
+    {
+        SetFriction(_defaultFriction);
+    }
+
+    public void SetBounciness(float bounciness)
+    {
+        _capsuleCollider.sharedMaterial.bounciness = bounciness;
+        _capsuleCollider.enabled = false;
+        _capsuleCollider.enabled = true;
+    }
+
+    public void ResetBounciness()
+    {
+        SetBounciness(_defaultBounciness);
+    }
+    #endregion
 }
