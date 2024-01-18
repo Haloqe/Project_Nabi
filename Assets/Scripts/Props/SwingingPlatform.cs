@@ -1,15 +1,21 @@
 using System.Collections;
 using UnityEngine;
 
-public class RotatingPlatform : MonoBehaviour
+public class SwingingPlatform : MonoBehaviour
 {
-    public float FullRotationSpeed;
+    public float MinRotation;
+    public float MaxRotation;
+    public float Duration;
+
     private bool _isPlayerOnPlatform;
+    private float _deltaRotation;
+    private float _prevRotation;
 
 
-    public void Update()
+    public void Start()
     {
-        transform.Rotate(Vector3.forward, FullRotationSpeed * Time.deltaTime);
+        if (Duration > 0)
+            StartCoroutine(RotationCoroutine());
     }
 
     private void LateUpdate()
@@ -17,8 +23,23 @@ public class RotatingPlatform : MonoBehaviour
         if (_isPlayerOnPlatform)
         {
             Transform trans = PlayerController.Instance.transform;
-            trans.RotateAround(transform.position, Vector3.forward, FullRotationSpeed * Time.deltaTime);
+            trans.RotateAround(transform.position, Vector3.forward, _deltaRotation);
             trans.rotation = Quaternion.identity;
+        }
+    }
+
+    private IEnumerator RotationCoroutine()
+    {
+        while (true)
+        {
+            for (float time = 0; time < Duration * 2; time += Time.deltaTime)
+            {
+                _prevRotation = transform.eulerAngles.z;
+                float progress = Mathf.PingPong(time, Duration) / Duration;
+                transform.eulerAngles = new Vector3(0, 0, Mathf.Lerp(MinRotation, MaxRotation, progress));
+                _deltaRotation = transform.eulerAngles.z - _prevRotation;
+                yield return null;
+            }
         }
     }
 
