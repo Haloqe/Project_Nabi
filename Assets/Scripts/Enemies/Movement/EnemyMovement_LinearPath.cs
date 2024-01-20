@@ -6,6 +6,7 @@ public class EnemyMovement_LinearPath : EnemyMovement
     private bool _isOnAir = true;
     private bool _isMoving = true;
     private bool _isChasingPlayer = false;
+    private bool _isInAttackSequence = false;
     private GameObject _player;
 
     [SerializeField] private float _idleProbability = 0.4f; //walkProbability will be 1 - idleProbability
@@ -24,34 +25,33 @@ public class EnemyMovement_LinearPath : EnemyMovement
     private void Update()
     {
         if (_isOnAir) return;
-        
-        bool playerIsInDetectRange = Mathf.Abs(transform.position.x - _player.transform.position.x) <= _detectRange 
-            && _player.transform.position.y - transform.position.y <= 1f;
 
-        if (playerIsInDetectRange)
-        {
-            _isChasingPlayer = true;
-            _isMoving = true;
-            _actionTimeCounter = _chasePlayerDuration;
-            _animator.SetBool("IsWalking", _isMoving);
-
-            bool playerIsInAttackRange = Mathf.Abs(transform.position.x - _player.transform.position.x) <= _attackRange 
-            && _player.transform.position.y - transform.position.y <= 1f;
-
-            if (playerIsInAttackRange)
-            {
-                Attack();
-                return;
-            }
-
-            _animator.SetBool("IsAttacking", false);
+        if (_animator.GetCurrentAnimatorStateInfo(0).IsName("Attack")) {
+            _isInAttackSequence = true;
+        } else {
+            _isInAttackSequence = false;
         }
 
-        if (_isChasingPlayer && _actionTimeCounter > 0)
+        bool playerIsInAttackRange = Mathf.Abs(transform.position.x - _player.transform.position.x) <= _attackRange 
+            && _player.transform.position.y - transform.position.y <= 1f;
+
+        bool playerIsInDetectRange = Mathf.Abs(transform.position.x - _player.transform.position.x) <= _detectRange 
+            && _player.transform.position.y - transform.position.y <= 1f;
+        
+        if (playerIsInAttackRange)
         {
+            Attack();
+            return;
+        }
+        else if (playerIsInDetectRange)
+        {
+            _actionTimeCounter = _chasePlayerDuration;
             Chase();
-        } else {
-            Patrol();
+        }
+        else
+        {
+            if (_isChasingPlayer && _actionTimeCounter > 0) Chase();
+            else Patrol();
         }
 
         _actionTimeCounter -= Time.deltaTime;
@@ -69,13 +69,23 @@ public class EnemyMovement_LinearPath : EnemyMovement
     {
         //if (_isChasingPlayer) return; needs edits.
         if (_isChasingPlayer) _actionTimeCounter = 0;
-        FlipEnemyFacing();
+        FlipEnemy();
     }
 
-    private void FlipEnemyFacing()
+    private void FlipEnemy()
     {
         transform.localScale = new Vector2(
-            -(Mathf.Sign(_rigidBody.velocity.x)) * Mathf.Abs(transform.localScale.x), transform.localScale.y);
+            -1 * transform.localScale.x, transform.localScale.y);
+    }
+
+    private void FlipEnemyTowardsTarget()
+    {
+        if (transform.position.x - _player.transform.position.x >= 0)
+        {
+            if (transform.localScale.x > Mathf.Epsilon) FlipEnemy();
+        } else {
+            if (transform.localScale.x < Mathf.Epsilon) FlipEnemy();
+        }
     }
 
     private void WalkForward()
@@ -99,12 +109,13 @@ public class EnemyMovement_LinearPath : EnemyMovement
             _isMoving = true;
             _actionTimeCounter = Random.Range(_walkAverageDuration * 0.5f, _walkAverageDuration * 1.5f);
 
-            if (Random.Range(0.0f, 1.0f) <= 0.5f) FlipEnemyFacing();
+            if (Random.Range(0.0f, 1.0f) <= 0.5f) FlipEnemy();
         }
     }
 
     private void Patrol()
     {
+        _animator.SetBool("IsAttacking", false);
         _isChasingPlayer = false;
         if (_actionTimeCounter <= 0) GenerateRandomState();
         if (_isMoving) WalkForward();
@@ -113,18 +124,18 @@ public class EnemyMovement_LinearPath : EnemyMovement
 
     private void Chase()
     {
-        if (transform.position.x - _player.transform.position.x >= 0)
-        {
-            if (transform.localScale.x > Mathf.Epsilon) FlipEnemyFacing();
-        } else {
-            if (transform.localScale.x < Mathf.Epsilon) FlipEnemyFacing();
-        }
+        _animator.SetBool("IsAttacking", false);
+        _animator.SetBool("IsWalking", true);
+        _isChasingPlayer = true;
+        FlipEnemyTowardsTarget();
         WalkForward();
     }
 
     private void Attack()
     {
+        if (_isInAttackSequence) FlipEnemyTowardsTarget();
         _animator.SetBool("IsAttacking", true);
     }
 
 }
+
