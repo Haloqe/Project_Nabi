@@ -64,7 +64,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
             if(statusEffect.Effect == EStatusEffect.Pull)
             {
                 _tempPullduration = statusEffect.Duration;
-                _movement.EnablePulling(_tempPullduration);
+                // _movement.EnablePulling(_tempPullduration);
             }
 
             //handles status effect other than slow
