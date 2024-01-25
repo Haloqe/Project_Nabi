@@ -12,7 +12,7 @@ public abstract class AttackBase : MonoBehaviour
     protected float _attackPostDelay;
 
     protected ELegacyType _attackType;
-    protected GameObject _vfxObject;
+    [SerializeField] protected GameObject VFXObject;
     protected bool _isAttached;
 
     

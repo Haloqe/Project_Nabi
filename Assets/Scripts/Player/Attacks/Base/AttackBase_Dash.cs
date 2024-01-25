@@ -12,20 +12,13 @@ public class AttackBase_Dash : AttackBase
     {
         base.Reset();
         _rigidbody2D = GetComponent<Rigidbody2D>();
-
-        // Attach default VFX
-        if (_vfxObject != null) Destroy(_vfxObject);
-        var obj = Utility.LoadGameObjectFromPath("Prefabs/Player/AttackVFXs/Dash_Default");
-        Transform transform = gameObject.transform.Find("AttackVFXs").transform;
-        _vfxObject = Instantiate(obj, transform);
-        _vfxObject.GetComponent<ParticleSystemRenderer>().sortingLayerID = SortingLayer.NameToID("VFX_Front");
     }
 
     public override void Attack()
     {
         _animator.SetInteger("AttackIndex", (int)ELegacyType.Dash);
-        _vfxObject.transform.localScale = new Vector3(Mathf.Sign(gameObject.transform.localScale.x), 1.0f, 1.0f);
-        _vfxObject.SetActive(true);
+        VFXObject.transform.localScale = new Vector3(Mathf.Sign(gameObject.transform.localScale.x), 1.0f, 1.0f);
+        VFXObject.SetActive(true);
         StartCoroutine(Dash());
     }
 
@@ -36,7 +29,7 @@ public class AttackBase_Dash : AttackBase
         _rigidbody2D.velocity = new Vector2(-transform.localScale.x * _dashStrength, 0f);
         yield return new WaitForSeconds(0.35f);
 
-        _vfxObject.SetActive(false);
+        VFXObject.SetActive(false);
         _damageDealer.OnAttackEnd(ELegacyType.Dash);
         _rigidbody2D.gravityScale = prevGravity;
         //_rigidbody2D.velocity = new Vector2(0f, 0f);

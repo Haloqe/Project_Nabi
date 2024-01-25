@@ -18,7 +18,7 @@ public class AttackBase_Area : AttackBase
         base.Initialise();
         _attackType = ELegacyType.Area;
         _isAttached = false;
-        _vfxObject = Utility.LoadGameObjectFromPath("Prefabs/Player/AttackVFXs/Area_Default");
+        VFXObject = Utility.LoadGameObjectFromPath("Prefabs/Player/AttackVFXs/Area_Default");
         _rigidbody2D = GetComponent<Rigidbody2D>();
         _damageInitBase = new SDamageInfo
         {
@@ -49,11 +49,11 @@ public class AttackBase_Area : AttackBase
         // Instantiate VFX
         float dir = Mathf.Sign(gameObject.transform.localScale.x);
         Vector3 playerPos = gameObject.transform.position;
-        Vector3 vfxPos = _vfxObject.transform.position;
+        Vector3 vfxPos = VFXObject.transform.position;
         Vector3 position = new Vector3(playerPos.x + dir * (vfxPos.x), playerPos.y + vfxPos.y, playerPos.z + vfxPos.z);
 
-        _vfxObject.transform.localScale = new Vector3(dir, 1.0f, 1.0f);
-        var vfx = Instantiate(_vfxObject, position, Quaternion.identity);
+        VFXObject.transform.localScale = new Vector3(dir, 1.0f, 1.0f);
+        var vfx = Instantiate(VFXObject, position, Quaternion.identity);
         vfx.GetComponent<Bomb>().Owner = this;
     }
 

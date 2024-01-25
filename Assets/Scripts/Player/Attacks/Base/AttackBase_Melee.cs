@@ -6,7 +6,6 @@ using UnityEngine.EventSystems;
 public class AttackBase_Melee : AttackBase
 {
     // VFX
-    [SerializeField] private GameObject _vfxObjBase;
     [SerializeField] private GameObject _vfxObjCombo;
 
     // Collider
@@ -32,7 +31,7 @@ public class AttackBase_Melee : AttackBase
     {
         base.Initialise();
         _baseDelay = 0.0f;
-        _colliderBase = _vfxObjBase.GetComponent<BoxCollider2D>();
+        _colliderBase = VFXObject.GetComponent<BoxCollider2D>();
         _colliderCombo = _vfxObjCombo.GetComponent<BoxCollider2D>();
         _affectedEnemies = new List<int>();
         _damageInitBase = new SDamageInfo
@@ -97,8 +96,8 @@ public class AttackBase_Melee : AttackBase
         {
             _animator.SetBool("IsMeleeCombo", false);
             _attackPostDelay = _baseDelay;
-            _vfxObjBase.GetComponent<ParticleSystemRenderer>().flip = (dir < 0 ? Vector3.right : Vector3.zero);
-            _vfxObjBase.SetActive(true);
+            VFXObject.GetComponent<ParticleSystemRenderer>().flip = (dir < 0 ? Vector3.right : Vector3.zero);
+            VFXObject.SetActive(true);
         }      
 
         _animator.SetInteger("AttackIndex", (int)_attackType);

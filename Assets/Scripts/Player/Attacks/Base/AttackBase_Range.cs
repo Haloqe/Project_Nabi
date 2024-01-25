@@ -3,9 +3,6 @@ using UnityEngine;
 
 public class AttackBase_Range : AttackBase
 {
-    // VFX
-    [SerializeField] private GameObject _vfxObj;
-
     private Legacy_Range _activeLegacy;
     [SerializeField] private Transform FireTransform;
     [SerializeField] private GameObject BulletObject;
@@ -29,9 +26,9 @@ public class AttackBase_Range : AttackBase
     public override void Attack()
     {
         _animator.SetInteger("AttackIndex", (int)ELegacyType.Range);
-        _vfxObj.GetComponent<ParticleSystemRenderer>().flip = 
+        VFXObject.GetComponent<ParticleSystemRenderer>().flip = 
             (Mathf.Sign(gameObject.transform.localScale.x) < 0 ? Vector3.right : Vector3.zero);
-        _vfxObj.SetActive(true);
+        VFXObject.SetActive(true);
     }
 
     public void Fire()
