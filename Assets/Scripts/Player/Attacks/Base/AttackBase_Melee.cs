@@ -28,6 +28,9 @@ public class AttackBase_Melee : AttackBase
     // Damage
     private SDamageInfo _damageCombo;
     private SDamageInfo _damageInitCombo;
+    
+    // Legacy
+    private ELegacyPreservation _activeLegacyPreservation;
 
     public override void Start()
     {

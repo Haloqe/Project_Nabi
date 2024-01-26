@@ -15,6 +15,11 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     private List<SWarrior> _warriors;
     private List<SLegacyData> _legacies;
     private List<List<SLegacyData>> _legaciesByWarrior;
+    
+    private LegacySO[][] _activeLegacySOByWarrior; //probs discard later
+    private Dictionary<int, LegacySO> _activeLegacySODictionary;
+    
+    
     private Texture2D[][] _vfxTexturesByWarrior;
     private GameObject[] _bulletsByWarrior;
     
@@ -46,6 +51,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     {
         Init_WarriorData();
         Init_LegacyData();
+        Init_LegacySOs();
         Init_WarriorVFXs();
     }
     
@@ -134,7 +140,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                 SLegacyData data = new SLegacyData
                 {
                     ID = int.Parse(csv.GetField("ID")),
-                    ClassName = csv.GetField("ClassName"),
+                    AssetName = csv.GetField("AssetName"),
                     Names = names,
                     Descs = descs,
                     IconIndex = int.Parse(csv.GetField("IconIndex")),
@@ -144,31 +150,48 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
 
                 // Prerequisites and Stats
                 string prerequisites = csv.GetField("Prerequisites");
-                string stats = csv.GetField("StatsByPreservation");
                 if (prerequisites != "")
-                    data.Prerequisites = Array.ConvertAll(prerequisites.Split('|'), int.Parse);
-                if (stats != "")
-                    data.StatByPreservation = Array.ConvertAll(stats.Split('|'), int.Parse);
+                    data.PrerequisiteIDs = Array.ConvertAll(prerequisites.Split('|'), int.Parse);
 
                 _legacies.Add(data);
                 _legaciesByWarrior[(int)data.Warrior].Add(data);
             }
         }
+    }
 
+    private void Init_LegacySOs()
+    {
+        _activeLegacySOByWarrior = new LegacySO[(int)EWarrior.MAX][];
+        _activeLegacySODictionary = new Dictionary<int, LegacySO>((int)EWarrior.MAX * 3); // melee, range, dash for each warrior
+        
         // Create Assets
         // Values uninitialised
-#if UNITY_EDITOR
         for (int warrior = 0; warrior < (int)EWarrior.MAX; warrior++)
         {
-            string basePath = "Assets/Resources/Legacies/" + ((EWarrior)warrior).ToString() + "/";
+            _activeLegacySOByWarrior[warrior] = new LegacySO[3];
+            string basePath = "Assets/Resources/Legacies/" + (EWarrior)warrior + "/";
             foreach (var legacy in _legaciesByWarrior[warrior])
             {
-                string assetPath = basePath + legacy.ClassName + ".asset";
-                if (File.Exists(assetPath)) continue;
-                var asset = ScriptableObject.CreateInstance("Legacy_" + legacy.Type.ToString());
-                AssetDatabase.CreateAsset(asset, assetPath);
+                // Do not create scriptable object asset for passive legacies
+                if (legacy.Type == ELegacyType.Passive) continue;
+                ScriptableObject legacyAsset = null;
+#if UNITY_EDITOR
+                // Otherwise, create asset if file does not exist
+                string assetPath = basePath + legacy.AssetName + ".asset";
+                if (!File.Exists(assetPath))
+                {
+                    legacyAsset = ScriptableObject.CreateInstance("Legacy_" + legacy.Type);
+                    AssetDatabase.CreateAsset(legacyAsset, assetPath);
+                }
+#endif
+                // Add asset to array
+                if (legacyAsset == null)
+                    legacyAsset = Resources.Load<ScriptableObject>("Legacies/"  + (EWarrior)warrior + "/" + legacy.AssetName);
+                _activeLegacySOByWarrior[warrior][(int)legacy.Type] = (LegacySO)legacyAsset;
+                _activeLegacySODictionary.Add(legacy.ID, (LegacySO)legacyAsset);
             }
         }
+#if UNITY_EDITOR
         AssetDatabase.SaveAssets();
 #endif
     }

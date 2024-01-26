@@ -1,30 +1,36 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "LegacyData_Melee", menuName = "ScriptableObjects/LegacyData_Melee")]
-public class Legacy_Melee : LegacyData
+[CreateAssetMenu(fileName = "LegacyMelee", menuName = "LegacyData/LegacyData_Melee")]
+public class Legacy_Melee : LegacySO
 {
-    public GameObject StrikeVFX;
-    public GameObject ComboStrikeVFX;
-    public GameObject HitSpawnObject;
-    public SDamageInfo Damage_Combo;
+    // Prefab object to spawn upon combo hit attack
+    public GameObject ComboHitSpawnObject;
+    [NamedArray(typeof(ELegacyPreservation))] public float[] ComboDamageMultiplier = new float[4];
+    
+    // Do something upon base attack
+    private void OnAttack_Base()
+    {
+    }
 
-    private void OnStrike()
+    // Do something upon combo attack
+    private void OnAttack_Combo()
+    {
+        if (ComboHitSpawnObject != null)
+        {
+            Instantiate(ComboHitSpawnObject, _playerTransform.transform.position,
+                Quaternion.identity);
+        }
+    } 
+    
+    // Do something upon base attack hit success
+    private void OnHit_Base()
     {
         
     }
 
-    private void OnStrike_Combo()
-    {
-
-    }
-
-    private void OnHit()
-    {
-
-    }
-
+    // Do something upon combo attack hit success
     private void OnHit_Combo()
     {
-
-    }
+        
+    } 
 }

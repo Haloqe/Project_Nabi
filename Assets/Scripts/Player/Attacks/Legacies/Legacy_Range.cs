@@ -1,7 +1,7 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "LegacyData_Range", menuName = "ScriptableObjects/LegacyData_Range")]
-public class Legacy_Range : LegacyData
+[CreateAssetMenu(fileName = "LegacyData_Range", menuName = "LegacyData/LegacyData_Range")]
+public class Legacy_Range : LegacySO
 {
     public GameObject AttackVFX;
     public GameObject HitVFX;
