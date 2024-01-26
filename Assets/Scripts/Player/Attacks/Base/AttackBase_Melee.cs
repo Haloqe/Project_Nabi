@@ -2,11 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Serialization;
 
 public class AttackBase_Melee : AttackBase
 {
     // VFX
-    [SerializeField] private GameObject _vfxObjCombo;
+    public GameObject VFXObjCombo;
+    private Material _defaultVFXComboMaterial;
 
     // Collider
     private List<int> _affectedEnemies;
@@ -27,12 +29,12 @@ public class AttackBase_Melee : AttackBase
     private SDamageInfo _damageCombo;
     private SDamageInfo _damageInitCombo;
 
-    public override void Initialise()
+    public override void Start()
     {
-        base.Initialise();
         _baseDelay = 0.0f;
+        _defaultVFXComboMaterial = VFXObjCombo.GetComponent<ParticleSystemRenderer>().sharedMaterial;
         _colliderBase = VFXObject.GetComponent<BoxCollider2D>();
-        _colliderCombo = _vfxObjCombo.GetComponent<BoxCollider2D>();
+        _colliderCombo = VFXObjCombo.GetComponent<BoxCollider2D>();
         _affectedEnemies = new List<int>();
         _damageInitBase = new SDamageInfo
         {
@@ -44,18 +46,31 @@ public class AttackBase_Melee : AttackBase
             Damages = new List<SDamage> { new SDamage(EDamageType.Base, 10) },
             StatusEffects = new List<SStatusEffect>(),
         };
+        base.Start();
     }
 
     public override void Reset()
     {
         base.Reset();
+        
+        // Combo
         _comboDelay = 0;// .2f;
         _comboTimer = 0.0f;
         _comboStack = 0;
+        
+        // Damage
         ActiveLegacy = null;
         _damageBase = _damageInitBase;
         _damageCombo = _damageInitCombo;
         _affectedEnemies.Clear();
+
+        ResetVFXs();
+    }
+
+    public override void ResetVFXs()
+    {
+        base.ResetVFXs();
+        VFXObjCombo.GetComponent<ParticleSystemRenderer>().sharedMaterial = _defaultVFXComboMaterial;
     }
 
     private void Update()
@@ -88,8 +103,8 @@ public class AttackBase_Melee : AttackBase
             _animator.SetBool("IsMeleeCombo", true);
             _attackPostDelay = _comboDelay;
             _comboStack = 0; // Reset combo stack
-            _vfxObjCombo.GetComponent<ParticleSystemRenderer>().flip = (dir < 0 ? Vector3.right : Vector3.zero);
-            _vfxObjCombo.SetActive(true);
+            VFXObjCombo.GetComponent<ParticleSystemRenderer>().flip = (dir < 0 ? Vector3.right : Vector3.zero);
+            VFXObjCombo.SetActive(true);
         }
         // Base Attack
         else

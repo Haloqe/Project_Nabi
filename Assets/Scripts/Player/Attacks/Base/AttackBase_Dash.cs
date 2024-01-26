@@ -12,6 +12,8 @@ public class AttackBase_Dash : AttackBase
     {
         base.Reset();
         _rigidbody2D = GetComponent<Rigidbody2D>();
+        VFXObject.GetComponent<ParticleSystemRenderer>()
+            .material.mainTexture = Resources.Load<Texture2D>("Sprites/Player/VFX/Default/Dash");
     }
 
     public override void Attack()

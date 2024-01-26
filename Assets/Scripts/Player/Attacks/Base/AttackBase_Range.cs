@@ -5,22 +5,38 @@ public class AttackBase_Range : AttackBase
 {
     private Legacy_Range _activeLegacy;
     [SerializeField] private Transform FireTransform;
-    [SerializeField] private GameObject BulletObject;
+    private GameObject _bulletObject;
 
-    public override void Initialise()
+    public override void Start()
     {
-        base.Initialise();
         _damageInitBase = new SDamageInfo
         {
             Damages = new List<SDamage> { new SDamage(EDamageType.Base, 3) },
             StatusEffects = new List<SStatusEffect>(),
         };
+        base.Start();
     }
+
+    public void SetBullet(GameObject bulletPrefab)
+    {
+        if (bulletPrefab == null) ResetBulletToDefault(); 
+        else _bulletObject = bulletPrefab;
+    }
+
+    public void ResetBulletToDefault()
+    {
+        _bulletObject = Resources.Load<GameObject>("Prefabs/Player/Bullet_Default");
+    }
+
+    
 
     public override void Reset()
     {
         base.Reset();
-        _activeLegacy = null;        
+        _activeLegacy = null;    
+        ResetBulletToDefault();
+        VFXObject.GetComponent<ParticleSystemRenderer>()
+            .material.mainTexture = Resources.Load<Texture2D>("Sprites/Player/VFX/Default/Range");
     }
 
     public override void Attack()
@@ -33,7 +49,7 @@ public class AttackBase_Range : AttackBase
 
     public void Fire()
     {
-        var bullet = Instantiate(BulletObject, FireTransform.position, Quaternion.identity)
+        var bullet = Instantiate(_bulletObject, FireTransform.position, Quaternion.identity)
             .GetComponent<Bullet>();
         bullet.Direction = -Mathf.Sign(gameObject.transform.localScale.x);
         bullet.Owner = this;

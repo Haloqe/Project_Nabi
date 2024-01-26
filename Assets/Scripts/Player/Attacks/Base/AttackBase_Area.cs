@@ -13,18 +13,18 @@ public class AttackBase_Area : AttackBase
     private Vector3 _prevVelocity;
     private Rigidbody2D _rigidbody2D;
 
-    public override void Initialise()
+    public override void Start()
     {
-        base.Initialise();
         _attackType = ELegacyType.Area;
         _isAttached = false;
-        VFXObject = Utility.LoadGameObjectFromPath("Prefabs/Player/AttackVFXs/Area_Default");
+        VFXObject = Utility.LoadGameObjectFromPath("Prefabs/Player/AreaVFX");
         _rigidbody2D = GetComponent<Rigidbody2D>();
         _damageInitBase = new SDamageInfo
         {
             Damages = new List<SDamage> { new SDamage(EDamageType.Base, 15) },
             StatusEffects = new List<SStatusEffect>(),
         };
+        base.Start();
     }
 
     public override void Reset()
@@ -61,7 +61,7 @@ public class AttackBase_Area : AttackBase
     {
         _rigidbody2D.gravityScale = _prevGravity;
         _rigidbody2D.velocity = new Vector2(_prevVelocity.x, 0); // _prevVelocity
-        GetComponent<PlayerMovement>().IsAreaAttacking = false;
+        _playerMovement.IsAreaAttacking = false;
     }
 
     public void DealDamage(IDamageable target)

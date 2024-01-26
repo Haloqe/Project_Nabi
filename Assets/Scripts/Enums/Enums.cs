@@ -61,6 +61,15 @@ public enum ELegacyType
     MAX,
 }
 
+public enum EPlayerAttackType
+{
+    Melee_Base,
+    Melee_Combo,
+    Range,
+    Dash,
+    MAX,
+}
+
 public enum EAttackState
 {
     Ready,
@@ -88,9 +97,9 @@ public enum ELegacyPreservation
 public enum EWarrior
 {
     Sommer,
-    Vernon,
     Euphoria,
     Turbela,
+    Vernon,
     Shade,
     
     MAX,

@@ -10,11 +10,14 @@ using UnityEditor;
 public class PlayerAttackManager : Singleton<PlayerAttackManager>
 {
     private PlayerInput _playerInput;
+    private PlayerDamageDealer _playerDamageDealer;
 
     private List<SWarrior> _warriors;
     private List<SLegacyData> _legacies;
     private List<List<SLegacyData>> _legaciesByWarrior;
-
+    private Texture2D[][] _vfxTexturesByWarrior;
+    private GameObject[] _bulletsByWarrior;
+    
     private List<int> _collectedLegacies_Active = new List<int>();
     private List<int> _collectedLegacies_Passive = new List<int>();
     
@@ -30,6 +33,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     public void InitInGameVariables()
     {
         _playerInput = FindObjectOfType<PlayerInput>();
+        _playerDamageDealer = FindObjectOfType<PlayerDamageDealer>();
 
         var abilityGroup = GameObject.Find("AbilityLayoutGroup").transform;
         for (int i = 0; i < 4; i++)
@@ -37,22 +41,36 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
             _activeLegacyIcons[i] = abilityGroup.Find("Slot_" + i).Find("AbilityIcon").GetComponent<Image>();
         }
     }
-
-    private void Update()
-    {
-    }
-
+    
     public void Init()
     {
         Init_WarriorData();
         Init_LegacyData();
+        Init_WarriorVFXs();
+    }
+    
+    private void Init_WarriorVFXs()
+    {
+        _bulletsByWarrior = new GameObject[(int)EWarrior.MAX];
+        _vfxTexturesByWarrior = new Texture2D[(int)EWarrior.MAX][];
+        for (int warriorIdx = 0; warriorIdx < (int)EWarrior.MAX; warriorIdx++)
+        {
+            string s = "Prefabs/Player/Bullet_" + (EWarrior)warriorIdx;
+            _bulletsByWarrior[warriorIdx] = Resources.Load<GameObject>("Prefabs/Player/Bullet_" + (EWarrior)warriorIdx);
+            _vfxTexturesByWarrior[warriorIdx] = new Texture2D[(int)EPlayerAttackType.MAX];
+            for (int attackIdx = 0; attackIdx < (int)EPlayerAttackType.MAX; attackIdx++)
+            {
+                _vfxTexturesByWarrior[warriorIdx][attackIdx] = Resources.Load<Texture2D>(
+                    "Sprites/Player/VFX/" + (EWarrior)warriorIdx + "/" + (EPlayerAttackType)attackIdx);
+            }
+        }
     }
 
     private void Init_WarriorData()
     {
         _warriors = new List<SWarrior>((int)EWarrior.MAX);
         string dataPath = Application.dataPath + "/Tables/WarriorsTable.csv";
-        Debug.Assert(dataPath != null && File.Exists(dataPath));
+        Debug.Assert(File.Exists(dataPath));
 
         using (var reader = new StreamReader(dataPath))
         using (var csv = new CsvHelper.CsvReader(reader, CultureInfo.InvariantCulture))
@@ -92,7 +110,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         
         // Retrieve data
         string dataPath = Application.dataPath + "/Tables/LegaciesTable.csv";
-        Debug.Assert(dataPath != null && File.Exists(dataPath));
+        Debug.Assert(File.Exists(dataPath));
 
         using (var reader = new StreamReader(dataPath))
         using (var csv = new CsvHelper.CsvReader(reader, CultureInfo.InvariantCulture))
@@ -259,5 +277,59 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     public Sprite GetAbilityIconSprite(int legacyID)
     {
         return _legacyIconSpriteSheet[_legacies[legacyID].IconIndex];
+    }
+
+    public Texture2D GetWarriorVFXTexture(EWarrior warrior, EPlayerAttackType attack)
+    {
+        return _vfxTexturesByWarrior[(int)warrior][(int)attack];
+    }
+
+    public void ResetAttackVFXs()
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            _playerDamageDealer.AttackBases[i].ResetVFXs();
+        }
+    }
+    
+    public void UpdateAttackVFX(EWarrior warrior, ELegacyType attackType)
+    { 
+        // try get warrior-specific VFX
+        switch (attackType)
+        {
+            case ELegacyType.Melee:
+                {
+                    var attackBase = (AttackBase_Melee)_playerDamageDealer.AttackBases[(int)attackType];
+                    
+                    // Base VFX
+                    attackBase.VFXObject.GetComponent<ParticleSystemRenderer>()
+                        .material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Melee_Base);
+                    
+                    // Combo VFX
+                    attackBase.VFXObjCombo.GetComponent<ParticleSystemRenderer>()
+                        .material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Melee_Combo);
+                }
+                break;
+            case ELegacyType.Range:
+                {
+                    var attackBase = (AttackBase_Range)_playerDamageDealer.AttackBases[(int)attackType];
+                    
+                    // Base VFX
+                    attackBase.VFXObject.GetComponent<ParticleSystemRenderer>()
+                        .material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Range);
+                    
+                    // bullet
+                    attackBase.SetBullet(_bulletsByWarrior[(int)warrior]);
+                }
+                break;
+            case ELegacyType.Dash:
+                {
+                    // Base VFX
+                    _playerDamageDealer.AttackBases[(int)attackType]
+                        .VFXObject.GetComponent<ParticleSystemRenderer>()
+                        .material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Dash);
+                }
+                break;
+        }
     }
 }
