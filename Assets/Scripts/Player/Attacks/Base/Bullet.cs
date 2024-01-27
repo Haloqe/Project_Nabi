@@ -33,7 +33,8 @@ public class Bullet : MonoBehaviour
     // Destroy bullet after hitting target; if target is null then nobody is hit
     private void DestroySelf(IDamageable target)
     {
-        Owner.OnBulletDestroy(target, transform.position);
         Destroy(gameObject);
+        Debug.Log("Destro bullet!");
+        Owner.OnBulletDestroy(target, transform.position);
     }
 }
