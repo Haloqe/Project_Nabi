@@ -128,6 +128,7 @@ public enum EEnemyMoveType
 {
     None,
     FollowStraightPath,
+    LinearPath,
 }
 #endregion Enemy
 

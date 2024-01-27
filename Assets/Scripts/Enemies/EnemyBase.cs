@@ -22,9 +22,12 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     private float[] _effectRemainingTimes;
     private SortedDictionary<float, float> _slowRemainingTimes; // str,time
     private float _tempPullduration;
+    private int _sommerStackCount = 0;
+    private float _sommerTimeSinceStacked = 0f;
+    [SerializeField] private float _sommerStackCoolTime = 5f;
     
     //Enemy health attribute
-    [SerializeField] protected int Health = 30;
+    [SerializeField] protected float Health = 30f;
 
     protected virtual void Start()
     { 
@@ -42,6 +45,13 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     protected virtual void FixedUpdate()
     {
         UpdateRemainingStatusEffectTimes();
+
+        _sommerTimeSinceStacked += Time.deltaTime;
+        if (_sommerTimeSinceStacked >= _sommerStackCoolTime)
+        {
+            _sommerStackCount = 0;
+            // add sleep into status effect list
+        }
     }
 
     protected virtual void Initialise() { }
@@ -75,6 +85,17 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
             switch (statusEffect.Effect)
             {
+                case EStatusEffect.Sommer:
+                    _movement.ChangeSpeedByPercentage(0.9f);
+                    _sommerStackCount++;
+                    _sommerTimeSinceStacked = 0f;
+                    break;
+
+                case EStatusEffect.Sleep:
+                    ShouldDisableMovement = true;
+                    //TODO
+                    break;
+
                 case EStatusEffect.Blind: // raise attack miss rate
                     // TODO
                     break;
@@ -282,7 +303,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
     private void ReduceHealth(float reduceAmount)
     {
-        Health -= (int)reduceAmount;
+        Health -= reduceAmount;
         Debug.Log(gameObject.name + "'s Current health: " + Health + "(-" + reduceAmount + ")");
         if (Health <= 0) { Die(); }
         StartCoroutine(DamagedRoutine());

@@ -94,6 +94,7 @@ GameObject:
   - component: {fileID: 5591945732660086987}
   - component: {fileID: 7298965470491366097}
   - component: {fileID: 5308452106748503754}
+  - component: {fileID: 3751648719412672287}
   m_Layer: 8
   m_Name: Insectivore
   m_TagString: Enemy
@@ -127,7 +128,7 @@ Animator:
   m_GameObject: {fileID: 2594149972786258606}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: c2ec7057338824178b141c40c61e3fa2, type: 2}
+  m_Controller: {fileID: 9100000, guid: d2b94b95eddd843d79c4d77caf69c305, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -235,3 +236,21 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 3.189975, y: 2.4954357}
   m_EdgeRadius: 0
+--- !u!114 &3751648719412672287
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2594149972786258606}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17d86252521ea410aa21d4b4b8ec2648, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DefaultMoveSpeed: 1
+  smoothing: 1
+  _flipProbability: 0.1
+  _idleAverageDuration: 3
+  _detectRange: 5
+  _attackRange: 2
