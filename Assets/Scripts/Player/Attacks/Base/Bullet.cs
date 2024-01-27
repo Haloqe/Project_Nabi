@@ -21,24 +21,19 @@ public class Bullet : MonoBehaviour
     {
         // Kill if lifeTime ended
         _timer += Time.deltaTime;
-        if (_timer > _lifeTime) Destroy(gameObject);
+        if (_timer > _lifeTime) DestroySelf(null);
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        // Disable object
-        GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-        GetComponent<CircleCollider2D>().enabled = false;
-        GetComponent<SpriteRenderer>().enabled = false;
-
-        // TODO if enemy,
         IDamageable target = collision.gameObject.GetComponent<IDamageable>();
-        if (target != null)
-        {
-            Owner.DealDamage(target);
-        }
+        DestroySelf(target);
+    }
 
-        // Play hit effect
-        GetComponentInChildren<ParticleSystem>().Play();
+    // Destroy bullet after hitting target; if target is null then nobody is hit
+    private void DestroySelf(IDamageable target)
+    {
+        Owner.OnBulletDestroy(target, transform.position);
+        Destroy(gameObject);
     }
 }

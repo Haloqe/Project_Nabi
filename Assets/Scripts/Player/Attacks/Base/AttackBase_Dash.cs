@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class AttackBase_Dash : AttackBase
 {
-    private Legacy_Dash ActiveLegacy;
+    private Legacy_Dash _activeLegacy;
     private Rigidbody2D _rigidbody2D;
     private float _dashStrength = 8;
 
@@ -35,5 +35,11 @@ public class AttackBase_Dash : AttackBase
         _damageDealer.OnAttackEnd(ELegacyType.Dash);
         _rigidbody2D.gravityScale = prevGravity;
         //_rigidbody2D.velocity = new Vector2(0f, 0f);
+    }
+    
+    public override void BindActiveLegacy(LegacySO legacyAsset)
+    {
+        legacyAsset.PlayerTransform = gameObject.transform;
+        _activeLegacy = (Legacy_Dash)legacyAsset;
     }
 }

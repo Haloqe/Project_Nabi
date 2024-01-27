@@ -13,7 +13,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     private PlayerDamageDealer _playerDamageDealer;
 
     private List<SWarrior> _warriors;
-    private List<SLegacyData> _legacies;
+    private Dictionary<int, SLegacyData> _legacies;
     private List<List<SLegacyData>> _legaciesByWarrior;
     
     private LegacySO[][] _activeLegacySOByWarrior; //probs discard later
@@ -92,13 +92,12 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                     names.Add(name);
                 }
 
-                SWarrior data = new SWarrior
-                {
-                    Names = names,
-                    EffectBase = (EStatusEffect)Enum.Parse(typeof(EStatusEffect), csv.GetField("Effect_Base")),
-                    EffectUpgraded = (EStatusEffect)Enum.Parse(typeof(EStatusEffect), csv.GetField("Effect_Upgraded"))
-                };
-
+                SWarrior data = new SWarrior();
+                data.Names = names;
+                data.Effects = new EStatusEffect[] 
+                    {(EStatusEffect)Enum.Parse(typeof(EStatusEffect), csv.GetField("Effect_Base")),
+                     (EStatusEffect)Enum.Parse(typeof(EStatusEffect), csv.GetField("Effect_Upgraded"))};
+                
                 _warriors.Add(data);
             }
         }
@@ -107,7 +106,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     private void Init_LegacyData()
     {
         // Initialise list
-        _legacies = new List<SLegacyData>();
+        _legacies = new Dictionary<int, SLegacyData>();
         _legaciesByWarrior = new List<List<SLegacyData>>();
         for (int i = 0; i < (int)EWarrior.MAX; i++)
         {
@@ -153,7 +152,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                 if (prerequisites != "")
                     data.PrerequisiteIDs = Array.ConvertAll(prerequisites.Split('|'), int.Parse);
 
-                _legacies.Add(data);
+                _legacies.Add(data.ID, data);
                 _legaciesByWarrior[(int)data.Warrior].Add(data);
             }
         }
@@ -174,21 +173,22 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
             {
                 // Do not create scriptable object asset for passive legacies
                 if (legacy.Type == ELegacyType.Passive) continue;
-                ScriptableObject legacyAsset = null;
+                LegacySO legacyAsset = null;
 #if UNITY_EDITOR
                 // Otherwise, create asset if file does not exist
                 string assetPath = basePath + legacy.AssetName + ".asset";
                 if (!File.Exists(assetPath))
                 {
-                    legacyAsset = ScriptableObject.CreateInstance("Legacy_" + legacy.Type);
+                    legacyAsset = (LegacySO)ScriptableObject.CreateInstance("Legacy_" + legacy.Type);
                     AssetDatabase.CreateAsset(legacyAsset, assetPath);
                 }
 #endif
                 // Add asset to array
                 if (legacyAsset == null)
-                    legacyAsset = Resources.Load<ScriptableObject>("Legacies/"  + (EWarrior)warrior + "/" + legacy.AssetName);
-                _activeLegacySOByWarrior[warrior][(int)legacy.Type] = (LegacySO)legacyAsset;
-                _activeLegacySODictionary.Add(legacy.ID, (LegacySO)legacyAsset);
+                    legacyAsset = Resources.Load<LegacySO>("Legacies/"  + (EWarrior)warrior + "/" + legacy.AssetName);
+                legacyAsset.Warrior = legacy.Warrior;
+                _activeLegacySOByWarrior[warrior][(int)legacy.Type] = legacyAsset;
+                _activeLegacySODictionary.Add(legacy.ID, legacyAsset);
             }
         }
 #if UNITY_EDITOR
@@ -216,12 +216,19 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     
     public void CollectLegacy(int legacyID)
     {
-        //// TODO FIX 지금은 active ability만 바로 바인딩. 패시브 따로 빼야함
-        //if (_nextAvailableBindIdx == 5 || _abilities[abilityIdx].Type != ELegacyType.Active) return;
-        //_collectedAbilities.Add(abilityIdx);
+        var legacyData = _legacies[legacyID];
+        
+        // TODO Handle passive legacy
+        if (legacyData.Type == ELegacyType.Passive) return; 
+        
+        // Find and bind legacy SO
+        var legacyAsset = _activeLegacySODictionary[legacyID];
+        _playerDamageDealer.AttackBases[(int)legacyData.Type].BindActiveLegacy(legacyAsset);
 
-        //// TEMP NEED FIX 일단 collect하면 순서대로 바인딩함 나중에 바인딩ui 추가하면서 픽스할 것.
-        //BindActiveAbility(_nextAvailableBindIdx++, abilityIdx);
+        // Update VFX
+        UpdateAttackVFX(legacyData.Warrior, legacyData.Type);
+        
+        // TODO Update UI
     }
 
     public void BindActiveLegacy(int legacyID)
@@ -307,6 +314,11 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         return _vfxTexturesByWarrior[(int)warrior][(int)attack];
     }
 
+    public EStatusEffect GetWarriorStatusEffect(EWarrior warrior, int level)
+    {
+        return _warriors[(int)warrior].Effects[level];
+    }
+    
     public void ResetAttackVFXs()
     {
         for (int i = 0; i < 3; i++)

@@ -28,8 +28,6 @@ public class AttackBase_Range : AttackBase
         _bulletObject = Resources.Load<GameObject>("Prefabs/Player/Bullet_Default");
     }
 
-    
-
     public override void Reset()
     {
         base.Reset();
@@ -55,9 +53,44 @@ public class AttackBase_Range : AttackBase
         bullet.Owner = this;
     }
 
-    public void DealDamage(IDamageable target)
+    // Called when a shot bullet is destroyed for any reason
+    public void OnBulletDestroy(IDamageable target, Vector3 bulletPos)
     {
-        // TODO: Damage alteration from the legacy
-        _damageDealer.DealDamage(target, _damageBase);
+        // Deal damage to the target if the bullet is hit
+        if (target != null)
+        {
+            // TODO: Adjust damage from the legacy
+            _damageDealer.DealDamage(target, _damageBase);
+        }
+        
+        if (_activeLegacy) _activeLegacy.OnBulletDestroy(bulletPos);
+    }
+    
+    public override void BindActiveLegacy(LegacySO legacyAsset)
+    {
+        legacyAsset.PlayerTransform = gameObject.transform;
+        _activeLegacy = (Legacy_Range)legacyAsset;
+        RecalculateDamages();
+    }
+    
+    public void RecalculateDamages()
+    {
+        // TODO 대장장이
+        
+        // Legacy - Damage
+        var newBaseDamage = _damageInitBase.Damages[0];
+        newBaseDamage.TotalAmount *= _activeLegacy.BaseDamageMultiplier[(int)_activeLegacyPreservation];
+        _damageBase.Damages[0] = newBaseDamage;
+        
+        // Legacy - Status effect
+        var newStatusEffectsBase = _damageBase.StatusEffects;
+        EStatusEffect warriorSpecificEffect =
+            PlayerAttackManager.Instance.GetWarriorStatusEffect(_activeLegacy.Warrior,
+                _damageDealer.GetStatusEffectLevel(_activeLegacy.Warrior));
+        var newEffect = new SStatusEffect(warriorSpecificEffect,
+            _activeLegacy.StatusEffectStrength[(int)_activeLegacyPreservation],
+            _activeLegacy.StatusEffectDuration[(int)_activeLegacyPreservation]);
+        newStatusEffectsBase.Add(newEffect);
+        _damageBase.StatusEffects = newStatusEffectsBase;
     }
 }

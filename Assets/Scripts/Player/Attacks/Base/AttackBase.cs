@@ -6,16 +6,19 @@ public abstract class AttackBase : MonoBehaviour
     protected PlayerDamageDealer _damageDealer;
     protected PlayerMovement _playerMovement;
     protected Animator _animator;
+    
     private float _attackDelay;
     private float _attackSpeedMultiplier;
     protected SDamageInfo _damageInitBase;
     protected SDamageInfo _damageBase;
     protected float _attackPostDelay;
-
     protected ELegacyType _attackType;
+    
     public GameObject VFXObject;
     private Material _defaultVFXMaterial;
-    protected bool _isAttached;
+    
+    // Legacy
+    protected ELegacyPreservation _activeLegacyPreservation;
     
     public virtual void Reset()
     {
@@ -62,8 +65,5 @@ public abstract class AttackBase : MonoBehaviour
 
     }
 
-    public virtual void BindLegacy()
-    {
-
-    }
+    public abstract void BindActiveLegacy(LegacySO legacyAsset);
 }

@@ -69,8 +69,7 @@ public struct SDamageInfo
 public struct SWarrior
 {
     public List<string> Names;
-    public EStatusEffect EffectBase;
-    public EStatusEffect EffectUpgraded;
+    public EStatusEffect[] Effects;
 }
 public struct SLegacyData
 {

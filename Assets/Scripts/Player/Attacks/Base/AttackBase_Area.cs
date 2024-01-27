@@ -16,7 +16,6 @@ public class AttackBase_Area : AttackBase
     public override void Start()
     {
         _attackType = ELegacyType.Area;
-        _isAttached = false;
         VFXObject = Utility.LoadGameObjectFromPath("Prefabs/Player/AreaVFX");
         _rigidbody2D = GetComponent<Rigidbody2D>();
         _damageInitBase = new SDamageInfo
@@ -62,6 +61,10 @@ public class AttackBase_Area : AttackBase
         _rigidbody2D.gravityScale = _prevGravity;
         _rigidbody2D.velocity = new Vector2(_prevVelocity.x, 0); // _prevVelocity
         _playerMovement.IsAreaAttacking = false;
+    }
+    public override void BindActiveLegacy(LegacySO legacyAsset)
+    {
+        throw new NotImplementedException();
     }
 
     public void DealDamage(IDamageable target)

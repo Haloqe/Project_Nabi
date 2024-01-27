@@ -7,9 +7,13 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
     public AttackBase[] AttackBases { get; set; }
     public int CurrAttackIdx = -1;
     public bool IsUnderAttackDelay = false;
+    
+    // Legacy
+    private int[] _statusEffectLevels;
 
     private void Start()
     {
+        _statusEffectLevels = new int[(int)EWarrior.MAX];
         _animator = GetComponent<Animator>();
         _playerMovement = GetComponent<PlayerMovement>();
         AttackBases = new AttackBase[]
@@ -72,5 +76,10 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
     {
         // make changes to the damage dealt based on attributes
         return damageInfo;
+    }
+
+    public int GetStatusEffectLevel(EWarrior warrior)
+    {
+        return _statusEffectLevels[(int)warrior];
     }
 }

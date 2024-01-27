@@ -45,15 +45,28 @@ public class PlayerController : Singleton<PlayerController>
     private int count = -1;
     void OnTestAction(InputValue value)
     {
-        count++;
-        for (int attackIdx = 0; attackIdx < 3; attackIdx++)
+        switch (++count)
         {
-            PlayerAttackManager.Instance.UpdateAttackVFX((EWarrior)count, (ELegacyType)attackIdx);
+            case 0:
+                PlayerAttackManager.Instance.CollectLegacy(0); // melee
+                break;
+            case 1:
+                PlayerAttackManager.Instance.CollectLegacy(1); // range
+                break;
+            case 2:
+                PlayerAttackManager.Instance.CollectLegacy(2); // dash
+                break;
         }
-        if (count == 3)
-        {
-            count = -1;
-            PlayerAttackManager.Instance.ResetAttackVFXs();
-        }
+
+        // count++;
+        // for (int attackIdx = 0; attackIdx < 3; attackIdx++)
+        // {
+        //     PlayerAttackManager.Instance.UpdateAttackVFX((EWarrior)count, (ELegacyType)attackIdx);
+        // }
+        // if (count == 3)
+        // {
+        //     count = -1;
+        //     PlayerAttackManager.Instance.ResetAttackVFXs();
+        // }
     }
 }
