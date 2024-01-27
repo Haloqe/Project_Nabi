@@ -69,20 +69,18 @@ public struct SDamageInfo
 public struct SWarrior
 {
     public List<string> Names;
-    public EStatusEffect EffectBase;
-    public EStatusEffect EffectUpgraded;
+    public EStatusEffect[] Effects;
 }
 public struct SLegacyData
 {
     public int ID;
-    public string ClassName;
+    public string AssetName;
     public List<string> Names;
     public List<string> Descs;
     public int IconIndex;
     public EWarrior Warrior;
     public ELegacyType Type;
-    public int[] Prerequisites;
-    public int[] StatByPreservation;
+    public int[] PrerequisiteIDs;
     //EItemObtainMethod ObtainMethod;
 }
 

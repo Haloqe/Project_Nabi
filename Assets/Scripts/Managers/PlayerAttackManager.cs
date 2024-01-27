@@ -10,11 +10,19 @@ using UnityEditor;
 public class PlayerAttackManager : Singleton<PlayerAttackManager>
 {
     private PlayerInput _playerInput;
+    private PlayerDamageDealer _playerDamageDealer;
 
     private List<SWarrior> _warriors;
-    private List<SLegacyData> _legacies;
+    private Dictionary<int, SLegacyData> _legacies;
     private List<List<SLegacyData>> _legaciesByWarrior;
-
+    
+    private LegacySO[][] _activeLegacySOByWarrior; //probs discard later
+    private Dictionary<int, LegacySO> _activeLegacySODictionary;
+    
+    
+    private Texture2D[][] _vfxTexturesByWarrior;
+    private GameObject[] _bulletsByWarrior;
+    
     private List<int> _collectedLegacies_Active = new List<int>();
     private List<int> _collectedLegacies_Passive = new List<int>();
     
@@ -30,6 +38,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     public void InitInGameVariables()
     {
         _playerInput = FindObjectOfType<PlayerInput>();
+        _playerDamageDealer = FindObjectOfType<PlayerDamageDealer>();
 
         var abilityGroup = GameObject.Find("AbilityLayoutGroup").transform;
         for (int i = 0; i < 4; i++)
@@ -37,22 +46,37 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
             _activeLegacyIcons[i] = abilityGroup.Find("Slot_" + i).Find("AbilityIcon").GetComponent<Image>();
         }
     }
-
-    private void Update()
-    {
-    }
-
+    
     public void Init()
     {
         Init_WarriorData();
         Init_LegacyData();
+        Init_LegacySOs();
+        Init_WarriorVFXs();
+    }
+    
+    private void Init_WarriorVFXs()
+    {
+        _bulletsByWarrior = new GameObject[(int)EWarrior.MAX];
+        _vfxTexturesByWarrior = new Texture2D[(int)EWarrior.MAX][];
+        for (int warriorIdx = 0; warriorIdx < (int)EWarrior.MAX; warriorIdx++)
+        {
+            string s = "Prefabs/Player/Bullet_" + (EWarrior)warriorIdx;
+            _bulletsByWarrior[warriorIdx] = Resources.Load<GameObject>("Prefabs/Player/Bullet_" + (EWarrior)warriorIdx);
+            _vfxTexturesByWarrior[warriorIdx] = new Texture2D[(int)EPlayerAttackType.MAX];
+            for (int attackIdx = 0; attackIdx < (int)EPlayerAttackType.MAX; attackIdx++)
+            {
+                _vfxTexturesByWarrior[warriorIdx][attackIdx] = Resources.Load<Texture2D>(
+                    "Sprites/Player/VFX/" + (EWarrior)warriorIdx + "/" + (EPlayerAttackType)attackIdx);
+            }
+        }
     }
 
     private void Init_WarriorData()
     {
         _warriors = new List<SWarrior>((int)EWarrior.MAX);
         string dataPath = Application.dataPath + "/Tables/WarriorsTable.csv";
-        Debug.Assert(dataPath != null && File.Exists(dataPath));
+        Debug.Assert(File.Exists(dataPath));
 
         using (var reader = new StreamReader(dataPath))
         using (var csv = new CsvHelper.CsvReader(reader, CultureInfo.InvariantCulture))
@@ -68,13 +92,12 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                     names.Add(name);
                 }
 
-                SWarrior data = new SWarrior
-                {
-                    Names = names,
-                    EffectBase = (EStatusEffect)Enum.Parse(typeof(EStatusEffect), csv.GetField("Effect_Base")),
-                    EffectUpgraded = (EStatusEffect)Enum.Parse(typeof(EStatusEffect), csv.GetField("Effect_Upgraded"))
-                };
-
+                SWarrior data = new SWarrior();
+                data.Names = names;
+                data.Effects = new EStatusEffect[] 
+                    {(EStatusEffect)Enum.Parse(typeof(EStatusEffect), csv.GetField("Effect_Base")),
+                     (EStatusEffect)Enum.Parse(typeof(EStatusEffect), csv.GetField("Effect_Upgraded"))};
+                
                 _warriors.Add(data);
             }
         }
@@ -83,7 +106,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     private void Init_LegacyData()
     {
         // Initialise list
-        _legacies = new List<SLegacyData>();
+        _legacies = new Dictionary<int, SLegacyData>();
         _legaciesByWarrior = new List<List<SLegacyData>>();
         for (int i = 0; i < (int)EWarrior.MAX; i++)
         {
@@ -92,7 +115,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         
         // Retrieve data
         string dataPath = Application.dataPath + "/Tables/LegaciesTable.csv";
-        Debug.Assert(dataPath != null && File.Exists(dataPath));
+        Debug.Assert(File.Exists(dataPath));
 
         using (var reader = new StreamReader(dataPath))
         using (var csv = new CsvHelper.CsvReader(reader, CultureInfo.InvariantCulture))
@@ -116,7 +139,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                 SLegacyData data = new SLegacyData
                 {
                     ID = int.Parse(csv.GetField("ID")),
-                    ClassName = csv.GetField("ClassName"),
+                    AssetName = csv.GetField("AssetName"),
                     Names = names,
                     Descs = descs,
                     IconIndex = int.Parse(csv.GetField("IconIndex")),
@@ -126,31 +149,49 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
 
                 // Prerequisites and Stats
                 string prerequisites = csv.GetField("Prerequisites");
-                string stats = csv.GetField("StatsByPreservation");
                 if (prerequisites != "")
-                    data.Prerequisites = Array.ConvertAll(prerequisites.Split('|'), int.Parse);
-                if (stats != "")
-                    data.StatByPreservation = Array.ConvertAll(stats.Split('|'), int.Parse);
+                    data.PrerequisiteIDs = Array.ConvertAll(prerequisites.Split('|'), int.Parse);
 
-                _legacies.Add(data);
+                _legacies.Add(data.ID, data);
                 _legaciesByWarrior[(int)data.Warrior].Add(data);
             }
         }
+    }
 
+    private void Init_LegacySOs()
+    {
+        _activeLegacySOByWarrior = new LegacySO[(int)EWarrior.MAX][];
+        _activeLegacySODictionary = new Dictionary<int, LegacySO>((int)EWarrior.MAX * 3); // melee, range, dash for each warrior
+        
         // Create Assets
         // Values uninitialised
-#if UNITY_EDITOR
         for (int warrior = 0; warrior < (int)EWarrior.MAX; warrior++)
         {
-            string basePath = "Assets/Resources/Legacies/" + ((EWarrior)warrior).ToString() + "/";
+            _activeLegacySOByWarrior[warrior] = new LegacySO[3];
+            string basePath = "Assets/Resources/Legacies/" + (EWarrior)warrior + "/";
             foreach (var legacy in _legaciesByWarrior[warrior])
             {
-                string assetPath = basePath + legacy.ClassName + ".asset";
-                if (File.Exists(assetPath)) continue;
-                var asset = ScriptableObject.CreateInstance("Legacy_" + legacy.Type.ToString());
-                AssetDatabase.CreateAsset(asset, assetPath);
+                // Do not create scriptable object asset for passive legacies
+                if (legacy.Type == ELegacyType.Passive) continue;
+                LegacySO legacyAsset = null;
+#if UNITY_EDITOR
+                // Otherwise, create asset if file does not exist
+                string assetPath = basePath + legacy.AssetName + ".asset";
+                if (!File.Exists(assetPath))
+                {
+                    legacyAsset = (LegacySO)ScriptableObject.CreateInstance("Legacy_" + legacy.Type);
+                    AssetDatabase.CreateAsset(legacyAsset, assetPath);
+                }
+#endif
+                // Add asset to array
+                if (legacyAsset == null)
+                    legacyAsset = Resources.Load<LegacySO>("Legacies/"  + (EWarrior)warrior + "/" + legacy.AssetName);
+                legacyAsset.Warrior = legacy.Warrior;
+                _activeLegacySOByWarrior[warrior][(int)legacy.Type] = legacyAsset;
+                _activeLegacySODictionary.Add(legacy.ID, legacyAsset);
             }
         }
+#if UNITY_EDITOR
         AssetDatabase.SaveAssets();
 #endif
     }
@@ -175,12 +216,19 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     
     public void CollectLegacy(int legacyID)
     {
-        //// TODO FIX 지금은 active ability만 바로 바인딩. 패시브 따로 빼야함
-        //if (_nextAvailableBindIdx == 5 || _abilities[abilityIdx].Type != ELegacyType.Active) return;
-        //_collectedAbilities.Add(abilityIdx);
+        var legacyData = _legacies[legacyID];
+        
+        // TODO Handle passive legacy
+        if (legacyData.Type == ELegacyType.Passive) return; 
+        
+        // Find and bind legacy SO
+        var legacyAsset = _activeLegacySODictionary[legacyID];
+        _playerDamageDealer.AttackBases[(int)legacyData.Type].BindActiveLegacy(legacyAsset);
 
-        //// TEMP NEED FIX 일단 collect하면 순서대로 바인딩함 나중에 바인딩ui 추가하면서 픽스할 것.
-        //BindActiveAbility(_nextAvailableBindIdx++, abilityIdx);
+        // Update VFX
+        UpdateAttackVFX(legacyData.Warrior, legacyData.Type);
+        
+        // TODO Update UI
     }
 
     public void BindActiveLegacy(int legacyID)
@@ -259,5 +307,64 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     public Sprite GetAbilityIconSprite(int legacyID)
     {
         return _legacyIconSpriteSheet[_legacies[legacyID].IconIndex];
+    }
+
+    public Texture2D GetWarriorVFXTexture(EWarrior warrior, EPlayerAttackType attack)
+    {
+        return _vfxTexturesByWarrior[(int)warrior][(int)attack];
+    }
+
+    public EStatusEffect GetWarriorStatusEffect(EWarrior warrior, int level)
+    {
+        return _warriors[(int)warrior].Effects[level];
+    }
+    
+    public void ResetAttackVFXs()
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            _playerDamageDealer.AttackBases[i].ResetVFXs();
+        }
+    }
+    
+    public void UpdateAttackVFX(EWarrior warrior, ELegacyType attackType)
+    { 
+        // try get warrior-specific VFX
+        switch (attackType)
+        {
+            case ELegacyType.Melee:
+                {
+                    var attackBase = (AttackBase_Melee)_playerDamageDealer.AttackBases[(int)attackType];
+                    
+                    // Base VFX
+                    attackBase.VFXObject.GetComponent<ParticleSystemRenderer>()
+                        .material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Melee_Base);
+                    
+                    // Combo VFX
+                    attackBase.VFXObjCombo.GetComponent<ParticleSystemRenderer>()
+                        .material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Melee_Combo);
+                }
+                break;
+            case ELegacyType.Range:
+                {
+                    var attackBase = (AttackBase_Range)_playerDamageDealer.AttackBases[(int)attackType];
+                    
+                    // Base VFX
+                    attackBase.VFXObject.GetComponent<ParticleSystemRenderer>()
+                        .material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Range);
+                    
+                    // bullet
+                    attackBase.SetBullet(_bulletsByWarrior[(int)warrior]);
+                }
+                break;
+            case ELegacyType.Dash:
+                {
+                    // Base VFX
+                    _playerDamageDealer.AttackBases[(int)attackType]
+                        .VFXObject.GetComponent<ParticleSystemRenderer>()
+                        .material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Dash);
+                }
+                break;
+        }
     }
 }

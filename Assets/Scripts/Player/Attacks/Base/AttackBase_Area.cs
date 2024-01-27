@@ -13,18 +13,17 @@ public class AttackBase_Area : AttackBase
     private Vector3 _prevVelocity;
     private Rigidbody2D _rigidbody2D;
 
-    public override void Initialise()
+    public override void Start()
     {
-        base.Initialise();
         _attackType = ELegacyType.Area;
-        _isAttached = false;
-        _vfxObject = Utility.LoadGameObjectFromPath("Prefabs/Player/AttackVFXs/Area_Default");
+        VFXObject = Utility.LoadGameObjectFromPath("Prefabs/Player/AreaVFX");
         _rigidbody2D = GetComponent<Rigidbody2D>();
         _damageInitBase = new SDamageInfo
         {
             Damages = new List<SDamage> { new SDamage(EDamageType.Base, 15) },
             StatusEffects = new List<SStatusEffect>(),
         };
+        base.Start();
     }
 
     public override void Reset()
@@ -49,11 +48,11 @@ public class AttackBase_Area : AttackBase
         // Instantiate VFX
         float dir = Mathf.Sign(gameObject.transform.localScale.x);
         Vector3 playerPos = gameObject.transform.position;
-        Vector3 vfxPos = _vfxObject.transform.position;
+        Vector3 vfxPos = VFXObject.transform.position;
         Vector3 position = new Vector3(playerPos.x + dir * (vfxPos.x), playerPos.y + vfxPos.y, playerPos.z + vfxPos.z);
 
-        _vfxObject.transform.localScale = new Vector3(dir, 1.0f, 1.0f);
-        var vfx = Instantiate(_vfxObject, position, Quaternion.identity);
+        VFXObject.transform.localScale = new Vector3(dir, 1.0f, 1.0f);
+        var vfx = Instantiate(VFXObject, position, Quaternion.identity);
         vfx.GetComponent<Bomb>().Owner = this;
     }
 
@@ -61,7 +60,11 @@ public class AttackBase_Area : AttackBase
     {
         _rigidbody2D.gravityScale = _prevGravity;
         _rigidbody2D.velocity = new Vector2(_prevVelocity.x, 0); // _prevVelocity
-        GetComponent<PlayerMovement>().IsAreaAttacking = false;
+        _playerMovement.IsAreaAttacking = false;
+    }
+    public override void BindActiveLegacy(LegacySO legacyAsset)
+    {
+        throw new NotImplementedException();
     }
 
     public void DealDamage(IDamageable target)

@@ -21,7 +21,7 @@ public class LevelManager : Singleton<LevelManager>
 
     private LevelGraph _levelGraph;
 
-    //public Tilemap MapTilemap;
+    private Tilemap _mapTilemap;
     private Tilemap _superWallTilemap;
     public TileBase WallRuleTile;
 
@@ -50,6 +50,7 @@ public class LevelManager : Singleton<LevelManager>
         };
         _generatedRooms = new List<GameObject>();
         _roomsContainer = GameObject.Find("Rooms").transform;
+        //_mapTilemap = GameObject.Find()
         _superWallTilemap = GameObject.FindWithTag("Ground").GetComponent<Tilemap>();
         InitialiseRooms();
     }
@@ -414,6 +415,7 @@ public class LevelManager : Singleton<LevelManager>
     {
         //AddSurroundingWallTiles();
         SetPlayerSpawnPosition();
+        GenerateMinimap();
     }
 
     private void AddSurroundingWallTiles()
@@ -464,5 +466,11 @@ public class LevelManager : Singleton<LevelManager>
             Instantiate(GameManager.Instance.Player) : PlayerController.Instance.gameObject;
         player.transform.position = playerStart.position;
         GameObject.Find("Virtual Camera").GetComponent<CinemachineVirtualCamera>().Follow = player.transform;
+    }
+
+    private void GenerateMinimap()
+    {
+        var mapTilemap = GameObject.Find("Map").GetComponent<Tilemap>();
+        //mapTilemap.tile
     }
 }

@@ -1,7 +1,7 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "LegacyData_Dash", menuName = "ScriptableObjects/LegacyData_Dash")]
-public class Legacy_Dash : LegacyData
+[CreateAssetMenu(fileName = "LegacyData_Dash", menuName = "LegacyData/LegacyData_Dash")]
+public class Legacy_Dash : LegacySO
 {
     public GameObject DashVFX;
     public float DashSpeedMultiplier;

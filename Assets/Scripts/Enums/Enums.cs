@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 #region Settings
 public enum ELocalisation
@@ -56,8 +57,17 @@ public enum ELegacyType
     Melee,
     Range,
     Dash,
-    Area,
-    Passive,
+    [InspectorName(null)]Area,
+    [InspectorName(null)]Passive,
+    [InspectorName(null)]MAX,
+}
+
+public enum EPlayerAttackType
+{
+    Melee_Base,
+    Melee_Combo,
+    Range,
+    Dash,
     MAX,
 }
 
@@ -82,18 +92,18 @@ public enum ELegacyPreservation
     Intact,     // 온전한
     Pristine,   // 완벽한
     
-    MAX,
+    [InspectorName(null)]MAX,
 }
 
 public enum EWarrior
 {
     Sommer,
-    Vernon,
     Euphoria,
     Turbela,
+    Vernon,
     Shade,
     
-    MAX,
+    [InspectorName(null)]MAX,
 }
 
 public enum ETiming

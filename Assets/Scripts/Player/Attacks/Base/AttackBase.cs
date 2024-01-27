@@ -4,35 +4,42 @@ using UnityEngine;
 public abstract class AttackBase : MonoBehaviour
 {
     protected PlayerDamageDealer _damageDealer;
+    protected PlayerMovement _playerMovement;
     protected Animator _animator;
+    
     private float _attackDelay;
     private float _attackSpeedMultiplier;
     protected SDamageInfo _damageInitBase;
     protected SDamageInfo _damageBase;
     protected float _attackPostDelay;
-
     protected ELegacyType _attackType;
-    protected GameObject _vfxObject;
-    protected bool _isAttached;
-
     
-    public virtual void Initialise()
-    {
-    }
-
+    public GameObject VFXObject;
+    private Material _defaultVFXMaterial;
+    
+    // Legacy
+    protected ELegacyPreservation _activeLegacyPreservation;
+    
     public virtual void Reset()
     {
         _damageBase = _damageInitBase;
+        ResetVFXs();
     }
 
+    public virtual void ResetVFXs()
+    {
+        VFXObject.GetComponent<ParticleSystemRenderer>().sharedMaterial = _defaultVFXMaterial;
+    }
+    
     public virtual void Start()
     {
-        Initialise();
-        Reset();
+        _defaultVFXMaterial = VFXObject.GetComponent<ParticleSystemRenderer>().sharedMaterial;
         _animator = GetComponent<Animator>();
         _damageDealer = GetComponent<PlayerDamageDealer>();
+        _playerMovement = GetComponent<PlayerMovement>();
+        Reset();
     }
-
+    
     public abstract void Attack();
 
     protected virtual void OnAttackEnd_PreDelay()
@@ -45,7 +52,7 @@ public abstract class AttackBase : MonoBehaviour
 
     }
 
-    public IEnumerator AttackPostDelayCorountine()
+    public IEnumerator AttackPostDelayCoroutine()
     {
         OnAttackEnd_PreDelay();
         yield return new WaitForSeconds(_attackPostDelay);
@@ -58,8 +65,5 @@ public abstract class AttackBase : MonoBehaviour
 
     }
 
-    public virtual void BindLegacy()
-    {
-
-    }
+    public abstract void BindActiveLegacy(LegacySO legacyAsset);
 }

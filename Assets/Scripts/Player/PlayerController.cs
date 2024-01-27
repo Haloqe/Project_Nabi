@@ -12,20 +12,7 @@ public class PlayerController : Singleton<PlayerController>
     private PlayerMovement _playerMovement;
     private PlayerDamageReceiver _playerCombat;
     private PlayerDamageDealer _playerAttack;
-    static int _testNumCalls = 0;
-    private bool _isNYScene;
-
-    //// TEMP
-    //CinemachineVirtualCamera _playerVirtualCamera;
-    //[SerializeField] TextMeshProUGUI _camSizeText;
-
-    //public void SetCamSize(float t)
-    //{
-    //    float size = 6 * (1 - t) + 13 * t;
-    //    _playerVirtualCamera.m_Lens.OrthographicSize = size;
-    //    _camSizeText.text = size.ToString();
-    //}
-
+    
     protected override void Awake()
     {
         base.Awake();
@@ -38,10 +25,6 @@ public class PlayerController : Singleton<PlayerController>
 
     private void Start()
     {
-        // TEMP for debug
-        //_playerVirtualCamera = FindObjectOfType<CinemachineVirtualCamera>();
-        _isNYScene = SceneManager.GetActiveScene().name == "Scene_NY";
-
         // Input Binding for Attacks
         _playerInput.actions["Attack_Melee"].performed += _ => _playerAttack.OnAttack(0);
         _playerInput.actions["Attack_Range"].performed += _ => _playerAttack.OnAttack(1);
@@ -59,38 +42,31 @@ public class PlayerController : Singleton<PlayerController>
         _playerMovement.SetJump(value.isPressed);
     }
 
+    private int count = -1;
     void OnTestAction(InputValue value)
     {
-        if (_isNYScene) OnTestAction_NY(value);
-        else OnTestAction_SOOA(value);
+        switch (++count)
+        {
+            case 0:
+                PlayerAttackManager.Instance.CollectLegacy(0); // melee
+                break;
+            case 1:
+                PlayerAttackManager.Instance.CollectLegacy(1); // range
+                break;
+            case 2:
+                PlayerAttackManager.Instance.CollectLegacy(2); // dash
+                break;
+        }
+
+        // count++;
+        // for (int attackIdx = 0; attackIdx < 3; attackIdx++)
+        // {
+        //     PlayerAttackManager.Instance.UpdateAttackVFX((EWarrior)count, (ELegacyType)attackIdx);
+        // }
+        // if (count == 3)
+        // {
+        //     count = -1;
+        //     PlayerAttackManager.Instance.ResetAttackVFXs();
+        // }
     }
-
-    private void OnTestAction_NY(InputValue value)
-    {
-
-    }
-
-    private void OnTestAction_SOOA(InputValue value)
-    {
-        //if (_testNumCalls == 0)
-        //{
-        //    PlayerAbilityManager.Instance.BindActiveAbility(0, 1); // Mansa Musa
-        //    PlayerAbilityManager.Instance.BindActiveAbility(1, 7); // Perfect Purification
-        //    _testNumCalls++;
-        //}
-        //else if (_testNumCalls == 1)
-        //{
-        //    PlayerAbilityManager.Instance.BindActiveAbility(0, 2); // Bear the Crown
-        //    _testNumCalls++;
-        //}
-        //else if (_testNumCalls == 2)
-        //{
-        //    PlayerAbilityManager.Instance.BindActiveAbility(2, 1); // Mansa Musa
-        //    _testNumCalls++;
-        //}
-
-        
-    }
-
-
 }

@@ -1,7 +1,7 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "LegacyData_Area", menuName = "ScriptableObjects/LegacyData_Area")]
-public class Legacy_Area : LegacyData
+
+public class Legacy_Area : LegacySO
 {
     public float AreaRadius;
     public float ExplodeDelay;
