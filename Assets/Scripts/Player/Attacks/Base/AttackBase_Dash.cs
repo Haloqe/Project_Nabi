@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -26,15 +27,27 @@ public class AttackBase_Dash : AttackBase
 
     private IEnumerator Dash()
     {
+        // Start Dash
         float prevGravity = _rigidbody2D.gravityScale;
         _rigidbody2D.gravityScale = 0f;
         _rigidbody2D.velocity = new Vector2(-transform.localScale.x * _dashStrength, 0f);
+        Coroutine legacyCoroutine = null;
+        if (_activeLegacy != null)
+        {
+            _activeLegacy.OnDashBegin();
+            legacyCoroutine = StartCoroutine(_activeLegacy.DashCoroutine());
+        }
         yield return new WaitForSeconds(0.35f);
 
+        // End Dash
         VFXObject.SetActive(false);
         _damageDealer.OnAttackEnd(ELegacyType.Dash);
         _rigidbody2D.gravityScale = prevGravity;
-        //_rigidbody2D.velocity = new Vector2(0f, 0f);
+        if (_activeLegacy != null)
+        {
+            _activeLegacy.OnDashEnd();
+            if (legacyCoroutine != null) StopCoroutine(legacyCoroutine);
+        }
     }
     
     public override void BindActiveLegacy(LegacySO legacyAsset)

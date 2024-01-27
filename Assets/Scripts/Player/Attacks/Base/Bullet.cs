@@ -34,7 +34,6 @@ public class Bullet : MonoBehaviour
     private void DestroySelf(IDamageable target)
     {
         Destroy(gameObject);
-        Debug.Log("Destro bullet!");
         Owner.OnBulletDestroy(target, transform.position);
     }
 }

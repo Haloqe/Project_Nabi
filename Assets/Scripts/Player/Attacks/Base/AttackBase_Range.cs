@@ -56,14 +56,14 @@ public class AttackBase_Range : AttackBase
     // Called when a shot bullet is destroyed for any reason
     public void OnBulletDestroy(IDamageable target, Vector3 bulletPos)
     {
+        if (_activeLegacy) _activeLegacy.OnBulletDestroy(bulletPos);
+        
         // Deal damage to the target if the bullet is hit
         if (target != null)
         {
             // TODO: Adjust damage from the legacy
             _damageDealer.DealDamage(target, _damageBase);
         }
-        
-        if (_activeLegacy) _activeLegacy.OnBulletDestroy(bulletPos);
     }
     
     public override void BindActiveLegacy(LegacySO legacyAsset)
