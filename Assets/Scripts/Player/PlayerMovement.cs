@@ -170,6 +170,7 @@ public class PlayerMovement : MonoBehaviour
 
     public void SetJump(bool value)
     {
+        if (_isDashing) return;
         if (_jumpCounter > 1) _jumpBufferTimeCounter = _jumpBufferTime;
 
         if (_isRooted || _isAttacking) return;
@@ -183,7 +184,6 @@ public class PlayerMovement : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        Debug.Log("Enter");
         if (other.CompareTag("Ground"))
         {
             _isJumping = false;
@@ -196,7 +196,6 @@ public class PlayerMovement : MonoBehaviour
 
     private void OnTriggerExit2D(Collider2D other)
     {
-        Debug.Log("Exit");
         if (other.CompareTag("Ground"))
         {
             _isJumping = true;

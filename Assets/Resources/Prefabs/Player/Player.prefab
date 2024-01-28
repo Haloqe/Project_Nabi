@@ -22,6 +22,7 @@ GameObject:
   - component: {fileID: 8252723021151575567}
   - component: {fileID: 5643336750713579750}
   - component: {fileID: 7074130228895634554}
+  - component: {fileID: 5172949226278732633}
   m_Layer: 7
   m_Name: Player
   m_TagString: Player
@@ -312,7 +313,7 @@ BoxCollider2D:
   m_GameObject: {fileID: 539064456449143768}
   m_Enabled: 1
   m_Density: 1
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: ca067ae38b052e84da3315771554b3fc, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -335,7 +336,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 1}
+  m_Offset: {x: 0, y: 0.83}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0}
@@ -346,7 +347,52 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 2.0625, y: 2}
+  m_Size: {x: 0.68, y: 1.66}
+  m_EdgeRadius: 0
+--- !u!61 &5172949226278732633
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 539064456449143768}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0.05, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0}
+    oldSize: {x: 2.0625, y: 2}
+    newSize: {x: 0.08, y: 0.08}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  serializedVersion: 2
+  m_Size: {x: 0.5, y: 0.05}
   m_EdgeRadius: 0
 --- !u!1 &3425149512923496877
 GameObject:
@@ -711,11 +757,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3145289229496709071, guid: 08614ad0f443b4047bf0c4156d465d7d, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.13
+      value: -0.02
       objectReference: {fileID: 0}
     - target: {fileID: 3145289229496709071, guid: 08614ad0f443b4047bf0c4156d465d7d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.88
+      value: 0.9
       objectReference: {fileID: 0}
     - target: {fileID: 3145289229496709071, guid: 08614ad0f443b4047bf0c4156d465d7d, type: 3}
       propertyPath: m_LocalPosition.z
@@ -767,7 +813,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6068153743655837865, guid: 08614ad0f443b4047bf0c4156d465d7d, type: 3}
       propertyPath: InitialModule.startSize.scalar
-      value: 4.5
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 6068153743655837865, guid: 08614ad0f443b4047bf0c4156d465d7d, type: 3}
       propertyPath: InitialModule.startLifetime.scalar

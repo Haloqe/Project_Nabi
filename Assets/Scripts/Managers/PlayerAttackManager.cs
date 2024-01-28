@@ -62,7 +62,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         for (int warriorIdx = 0; warriorIdx < (int)EWarrior.MAX; warriorIdx++)
         {
             string s = "Prefabs/Player/Bullet_" + (EWarrior)warriorIdx;
-            _bulletsByWarrior[warriorIdx] = Resources.Load<GameObject>("Prefabs/Player/Bullet_" + (EWarrior)warriorIdx);
+            _bulletsByWarrior[warriorIdx] = Resources.Load<GameObject>("Prefabs/Player/Bullets/Bullet_" + (EWarrior)warriorIdx);
             _vfxTexturesByWarrior[warriorIdx] = new Texture2D[(int)EPlayerAttackType.MAX];
             for (int attackIdx = 0; attackIdx < (int)EPlayerAttackType.MAX; attackIdx++)
             {
@@ -352,6 +352,17 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                     // Base VFX
                     attackBase.VFXObject.GetComponent<ParticleSystemRenderer>()
                         .material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Ranged);
+                    var main = attackBase.VFXObject.GetComponent<ParticleSystem>().main;
+                    if (warrior == EWarrior.Vernon)
+                    {
+                        main.startSize = 6.5f;
+                        attackBase.VFXObject.transform.localPosition = new Vector3(0.04f, 0.945f, 0);
+                    }
+                    else
+                    {
+                        main.startSize = 4f;
+                        attackBase.VFXObject.transform.localPosition = new Vector3(-0.02f, 0.9f, 0);
+                    }
                     
                     // bullet
                     attackBase.SetBullet(_bulletsByWarrior[(int)warrior]);

@@ -47,9 +47,12 @@ public class PlayerController : Singleton<PlayerController>
     {
         if (count == -1)
         {
-            PlayerAttackManager.Instance.CollectLegacy(0); // melee
-            PlayerAttackManager.Instance.CollectLegacy(1); // range
-            PlayerAttackManager.Instance.CollectLegacy(2); // dash
+            PlayerAttackManager.Instance.UpdateAttackVFX(EWarrior.Vernon, ELegacyType.Melee);
+            PlayerAttackManager.Instance.UpdateAttackVFX(EWarrior.Vernon, ELegacyType.Ranged);
+            PlayerAttackManager.Instance.UpdateAttackVFX(EWarrior.Vernon, ELegacyType.Dash);
+            // PlayerAttackManager.Instance.CollectLegacy(0); // melee
+            // PlayerAttackManager.Instance.CollectLegacy(1); // range
+            // PlayerAttackManager.Instance.CollectLegacy(2); // dash
             count++;
         }
 

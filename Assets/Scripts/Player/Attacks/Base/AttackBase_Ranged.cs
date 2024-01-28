@@ -24,7 +24,7 @@ public class AttackBase_Ranged : AttackBase
 
     public void ResetBulletToDefault()
     {
-        _bulletObject = Resources.Load<GameObject>("Prefabs/Player/Bullet_Default");
+        _bulletObject = Resources.Load<GameObject>("Prefabs/Player/Bullets/Bullet_Default");
     }
 
     public override void Reset()
