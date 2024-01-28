@@ -24,6 +24,9 @@ public class LevelManager : Singleton<LevelManager>
     private Tilemap _mapTilemap;
     private Tilemap _superWallTilemap;
     public TileBase WallRuleTile;
+    
+    // minimapTiles
+    [SerializeField] private TileBase[] MinimapTiles;
 
     private EDoorDirection[] _matchDirections;
     Vector3Int[] _newDoorOffsets;
@@ -34,23 +37,23 @@ public class LevelManager : Singleton<LevelManager>
         _maxHeight = 1000;
         _maxWidth = 1000;
         _superGrid = new ECellType[_maxHeight, _maxWidth];
-        _corridors = new List<Vector3Int>[]
+        _corridors = new[]
         {
             new List<Vector3Int>(), new List<Vector3Int>()
         };
-        _matchDirections = new EDoorDirection[]
+        _matchDirections = new[]
         {
             EDoorDirection.Down, EDoorDirection.Up, 
             EDoorDirection.Right, EDoorDirection.Left 
         };
-        _newDoorOffsets = new Vector3Int[]
+        _newDoorOffsets = new[]
         {
             Vector3Int.up, Vector3Int.down,
             Vector3Int.left, Vector3Int.right
         };
         _generatedRooms = new List<GameObject>();
         _roomsContainer = GameObject.Find("Rooms").transform;
-        //_mapTilemap = GameObject.Find()
+        _mapTilemap = GameObject.Find("Map").GetComponent<Tilemap>();
         _superWallTilemap = GameObject.FindWithTag("Ground").GetComponent<Tilemap>();
         InitialiseRooms();
     }
@@ -177,13 +180,13 @@ public class LevelManager : Singleton<LevelManager>
         var templates = _roomsByType[(int)roomType];
         if (templates.Count == 0)
         {
-            Debug.LogError("No templates for [" + roomType.ToString() + "]. Generate templates.");
+            Debug.LogError("No templates for [" + roomType + "]. Generate templates.");
             return false;
         }
 
         if (_openDoorInfos[prevRoomID].Count == 0)
         {
-            Debug.LogError("Failed to connect room [" + roomType.ToString() + "][" + currRoomID + "] to type ["
+            Debug.LogError("Failed to connect room [" + roomType + "][" + currRoomID + "] to type ["
                 + _levelGraph.GetRoomType(prevRoomID) + "][" + prevRoomID + "]\nThere is no door in the previous room.");
             return false;
         }
@@ -194,7 +197,7 @@ public class LevelManager : Singleton<LevelManager>
         {
             if (triedRoomIdxs.Count == templates.Count)
             {
-                Debug.LogError("Failed to connect room [" + roomType.ToString() + "][" + currRoomID + "] to type ["
+                Debug.LogError("Failed to connect room [" + roomType + "][" + currRoomID + "] to type ["
                     + _levelGraph.GetRoomType(prevRoomID) + "][" + prevRoomID + "]\nNot enough space or not enough door in the new room");
                 return false;
             }
@@ -253,6 +256,7 @@ public class LevelManager : Singleton<LevelManager>
 
         // Place the found room
         AddRoomToWorld(roomToPlace, newDoorToPlace, newDoorPos);
+        AddRoomToMinimap(roomToPlace, newDoorToPlace, newDoorPos);
         _openDoorInfos[currRoomID] = GetDoorWorldPositionsExceptNew(roomToPlace, newDoorToPlace, newDoorPos);
 
         return true;
@@ -426,7 +430,7 @@ public class LevelManager : Singleton<LevelManager>
             wallBounds.max + Vector3Int.right * 10 + Vector3Int.up * 5);
 
         // Graph traversal to fill the unused wall area
-        Queue<Vector3Int> toVisit = new();
+        Queue<Vector3Int> toVisit = new Queue<Vector3Int>();
         toVisit.Enqueue(wallBounds.min);
 
         // Four directions to search from each cell
@@ -470,7 +474,36 @@ public class LevelManager : Singleton<LevelManager>
 
     private void GenerateMinimap()
     {
-        var mapTilemap = GameObject.Find("Map").GetComponent<Tilemap>();
-        //mapTilemap.tile
+        _superWallTilemap.CompressBounds();
+
+        foreach (var localPos in _superWallTilemap.cellBounds.allPositionsWithin)
+        {   
+            if (_superWallTilemap.HasTile(localPos))
+                _mapTilemap.SetTile(localPos, MinimapTiles[1]);
+        }
+    }
+
+    private void AddRoomToMinimap(RoomBase room, Door door, Vector3Int doorWorldPos)
+    {
+        Vector3Int doorLocalPos = door.GetLocalPosition();
+
+        // In the order of background -> collideable
+        for (int layerIdx = 2; layerIdx > 0; layerIdx--)
+        {
+            var tilemap = room.Tilemaps[layerIdx];
+            tilemap.CompressBounds();
+
+            List<Vector3Int> tileWorldPositions = new List<Vector3Int>();
+            List<TileBase> tileBases = new List<TileBase>();
+            foreach (var localPos in tilemap.cellBounds.allPositionsWithin)
+            {   
+                if (tilemap.HasTile(localPos))
+                    tileWorldPositions.Add(doorWorldPos - doorLocalPos + localPos);
+            }
+            for (int i = 0; i < tileWorldPositions.Count; i++)
+                tileBases.Add(MinimapTiles[layerIdx]);
+            
+            _mapTilemap.SetTiles(tileWorldPositions.ToArray(), tileBases.ToArray());
+        }
     }
 }
