@@ -45,17 +45,12 @@ public class PlayerController : Singleton<PlayerController>
     private int count = -1;
     void OnTestAction(InputValue value)
     {
-        switch (++count)
+        if (count == -1)
         {
-            case 0:
-                PlayerAttackManager.Instance.CollectLegacy(0); // melee
-                break;
-            case 1:
-                PlayerAttackManager.Instance.CollectLegacy(1); // range
-                break;
-            case 2:
-                PlayerAttackManager.Instance.CollectLegacy(2); // dash
-                break;
+            PlayerAttackManager.Instance.CollectLegacy(0); // melee
+            PlayerAttackManager.Instance.CollectLegacy(1); // range
+            PlayerAttackManager.Instance.CollectLegacy(2); // dash
+            count++;
         }
 
         // count++;

@@ -10,6 +10,27 @@ public class Legacy_Dash : LegacySO
     public float PeriSpawnInterval;
     public float DashSpeedMultiplier;
 
+    public override void Init()
+    {
+        var player = PlayerTransform.gameObject.GetComponent<PlayerDamageDealer>();
+        if (SpawnObject_Pre)
+            SpawnObject_Pre.GetComponent<AttackSpawnObject>().PlayerDamageDealer = player;
+        if (SpawnObject_Peri)
+            SpawnObject_Peri.GetComponent<AttackSpawnObject>().PlayerDamageDealer = player;
+        if (SpawnObject_Post)
+            SpawnObject_Post.GetComponent<AttackSpawnObject>().PlayerDamageDealer = player;
+    }
+    
+    public override void OnUpdateStatusEffect(EStatusEffect newEffect)
+    {
+        if (SpawnObject_Pre)
+            SpawnObject_Pre.GetComponent<AttackSpawnObject>().StatusEffect = newEffect;
+        if (SpawnObject_Peri)
+            SpawnObject_Peri.GetComponent<AttackSpawnObject>().StatusEffect = newEffect;
+        if (SpawnObject_Post)
+            SpawnObject_Post.GetComponent<AttackSpawnObject>().StatusEffect = newEffect;
+    }
+    
     public void OnDashBegin()
     {
         if (SpawnObject_Pre == null) return;

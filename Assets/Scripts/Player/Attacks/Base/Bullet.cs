@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class Bullet : MonoBehaviour
 {
-    public AttackBase_Range Owner;
+    public AttackBase_Ranged Owner;
     private float _speed = 8f;
     private float _lifeTime = 4f;
     private float _timer = 0.0f;

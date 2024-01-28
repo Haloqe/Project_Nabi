@@ -11,13 +11,21 @@ public class Legacy_Melee : LegacySO
     // Object Spawn positions
     private Vector3[] _comboSpawnOffsets;
     
-    public void Init()
+    public override void Init()
     {
         // Pre-calculate object spawn positions
         var position = ComboHitSpawnObject.transform.position;
         _comboSpawnOffsets = new Vector3[2]; // [0] left, [1] right
         _comboSpawnOffsets[0] = position;
         _comboSpawnOffsets[1] = new Vector3(-position.x, position.y, 0);
+        if (ComboHitSpawnObject)
+            ComboHitSpawnObject.GetComponent<AttackSpawnObject>().PlayerDamageDealer 
+                = PlayerTransform.gameObject.GetComponent<PlayerDamageDealer>();
+    }
+    public override void OnUpdateStatusEffect(EStatusEffect newEffect)
+    {
+        if (ComboHitSpawnObject)
+            ComboHitSpawnObject.GetComponent<AttackSpawnObject>().StatusEffect = newEffect;
     }
 
     // Do something upon base attack

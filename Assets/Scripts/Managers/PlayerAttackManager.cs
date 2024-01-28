@@ -161,7 +161,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     private void Init_LegacySOs()
     {
         _activeLegacySOByWarrior = new LegacySO[(int)EWarrior.MAX][];
-        _activeLegacySODictionary = new Dictionary<int, LegacySO>((int)EWarrior.MAX * 3); // melee, range, dash for each warrior
+        _activeLegacySODictionary = new Dictionary<int, LegacySO>((int)EWarrior.MAX * 3); // melee, ranged, dash for each warrior
         
         // Create Assets
         // Values uninitialised
@@ -345,13 +345,13 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                         .material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Melee_Combo);
                 }
                 break;
-            case ELegacyType.Range:
+            case ELegacyType.Ranged:
                 {
-                    var attackBase = (AttackBase_Range)_playerDamageDealer.AttackBases[(int)attackType];
+                    var attackBase = (AttackBase_Ranged)_playerDamageDealer.AttackBases[(int)attackType];
                     
                     // Base VFX
                     attackBase.VFXObject.GetComponent<ParticleSystemRenderer>()
-                        .material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Range);
+                        .material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Ranged);
                     
                     // bullet
                     attackBase.SetBullet(_bulletsByWarrior[(int)warrior]);

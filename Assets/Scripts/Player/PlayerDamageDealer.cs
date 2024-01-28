@@ -19,7 +19,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         AttackBases = new AttackBase[]
         {
             GetComponent<AttackBase_Melee>(),
-            GetComponent<AttackBase_Range>(),
+            GetComponent<AttackBase_Ranged>(),
             GetComponent<AttackBase_Dash>(),
             GetComponent<AttackBase_Area>()
         };

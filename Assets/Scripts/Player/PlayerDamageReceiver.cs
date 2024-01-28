@@ -10,8 +10,8 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     private PlayerMovement _playerMovement;
 
     // TEMP health attributes
-    private float _health = 40;
-    private float _maxHealth = 40;
+    private float _health = 200;
+    private float _maxHealth = 200;
 
     // status effect attributes
     public bool IsSilenced { get; private set; }

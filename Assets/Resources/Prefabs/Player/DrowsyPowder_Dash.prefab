@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 7972647223635373673}
   - component: {fileID: 3045225999783829449}
   - component: {fileID: 2305239885931382608}
+  - component: {fileID: 7720251749093231668}
   m_Layer: 3
   m_Name: DrowsyPowder_Dash
   m_TagString: Untagged
@@ -4845,7 +4846,7 @@ ParticleSystemRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: e784847b950e81b488646f637d6f16e4, type: 2}
+  - {fileID: 2100000, guid: 2eadbd1f943a5cc40842b3bde1730c11, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -4931,3 +4932,22 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 0.89
+--- !u!114 &7720251749093231668
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4889142468014804746}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9ef8778b553f2f46882c0683c11c1d9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  PlayerDamageDealer: {fileID: 0}
+  DamageType: 0
+  TotalAmount: 0
+  DamageDuration: 0
+  StatusEffect: 0
+  StatusEffectDuration: 2
+  Strength: 1

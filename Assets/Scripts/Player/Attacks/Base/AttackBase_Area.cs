@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class AttackBase_Area : AttackBase
 {
-    private Legacy_Area _activeLegacy;
     private float _areaRadius;
     private float _areaRadiusMultiplier;
 
@@ -61,10 +60,6 @@ public class AttackBase_Area : AttackBase
         _rigidbody2D.gravityScale = _prevGravity;
         _rigidbody2D.velocity = new Vector2(_prevVelocity.x, 0); // _prevVelocity
         _playerMovement.IsAreaAttacking = false;
-    }
-    public override void BindActiveLegacy(LegacySO legacyAsset)
-    {
-        throw new NotImplementedException();
     }
 
     public void DealDamage(IDamageable target)

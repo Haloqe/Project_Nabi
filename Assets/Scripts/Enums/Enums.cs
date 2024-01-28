@@ -55,7 +55,7 @@ public enum EStatusEffect
 public enum ELegacyType
 {
     Melee,
-    Range,
+    Ranged,
     Dash,
     [InspectorName(null)]Area,
     [InspectorName(null)]Passive,
@@ -66,7 +66,7 @@ public enum EPlayerAttackType
 {
     Melee_Base,
     Melee_Combo,
-    Range,
+    Ranged,
     Dash,
     MAX,
 }

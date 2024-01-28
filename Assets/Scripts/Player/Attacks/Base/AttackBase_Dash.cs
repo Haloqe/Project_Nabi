@@ -5,10 +5,19 @@ using UnityEngine;
 
 public class AttackBase_Dash : AttackBase
 {
-    private Legacy_Dash _activeLegacy;
     private Rigidbody2D _rigidbody2D;
     private float _dashStrength = 8;
 
+    public override void Start()
+    {
+        _damageInitBase = new SDamageInfo
+        {
+            Damages = new List<SDamage>(),
+            StatusEffects = new List<SStatusEffect>(),
+        };
+        base.Start();
+    }
+    
     public override void Reset()
     {
         base.Reset();
@@ -34,8 +43,8 @@ public class AttackBase_Dash : AttackBase
         Coroutine legacyCoroutine = null;
         if (_activeLegacy != null)
         {
-            _activeLegacy.OnDashBegin();
-            legacyCoroutine = StartCoroutine(_activeLegacy.DashCoroutine());
+            ((Legacy_Dash)_activeLegacy).OnDashBegin();
+            legacyCoroutine = StartCoroutine(((Legacy_Dash)_activeLegacy).DashCoroutine());
         }
         yield return new WaitForSeconds(0.35f);
 
@@ -45,14 +54,8 @@ public class AttackBase_Dash : AttackBase
         _rigidbody2D.gravityScale = prevGravity;
         if (_activeLegacy != null)
         {
-            _activeLegacy.OnDashEnd();
+            ((Legacy_Dash)_activeLegacy).OnDashEnd();
             if (legacyCoroutine != null) StopCoroutine(legacyCoroutine);
         }
-    }
-    
-    public override void BindActiveLegacy(LegacySO legacyAsset)
-    {
-        legacyAsset.PlayerTransform = gameObject.transform;
-        _activeLegacy = (Legacy_Dash)legacyAsset;
     }
 }

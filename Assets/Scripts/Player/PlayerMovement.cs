@@ -5,7 +5,7 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
     // physics
-    private CapsuleCollider2D _capsuleCollider;
+    private BoxCollider2D _mainCollider;
     private float _defaultFriction;
     private float _defaultBounciness;
 
@@ -49,9 +49,9 @@ public class PlayerMovement : MonoBehaviour
         _jumpCounter = 0;
         _isMoving = false;
 
-        _capsuleCollider = GetComponent<CapsuleCollider2D>();
-        _defaultBounciness = _capsuleCollider.sharedMaterial.bounciness;
-        _defaultFriction = _capsuleCollider.sharedMaterial.friction;
+        _mainCollider = GetComponents<BoxCollider2D>()[0];
+        _defaultBounciness = _mainCollider.sharedMaterial.bounciness;
+        _defaultFriction = _mainCollider.sharedMaterial.friction;
     }
 
     private void Update()
@@ -104,7 +104,7 @@ public class PlayerMovement : MonoBehaviour
     {
         yield return new WaitForSeconds(duration);
         ResetMoveSpeed();
-        FindObjectOfType<PlayerDamageReceiver>().SetActiveSlow();
+        gameObject.GetComponent<PlayerDamageReceiver>().SetActiveSlow();
     }
 
     public void ResetMoveSpeed()
@@ -183,6 +183,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
+        Debug.Log("Enter");
         if (other.CompareTag("Ground"))
         {
             _isJumping = false;
@@ -195,6 +196,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void OnTriggerExit2D(Collider2D other)
     {
+        Debug.Log("Exit");
         if (other.CompareTag("Ground"))
         {
             _isJumping = true;
@@ -263,9 +265,9 @@ public class PlayerMovement : MonoBehaviour
     #region Physics Settings
     public void SetFriction(float friction)
     {
-        _capsuleCollider.sharedMaterial.friction = friction;
-        _capsuleCollider.enabled = false;
-        _capsuleCollider.enabled = true;
+        _mainCollider.sharedMaterial.friction = friction;
+        _mainCollider.enabled = false;
+        _mainCollider.enabled = true;
     }
 
     public void ResetFriction()
@@ -275,9 +277,9 @@ public class PlayerMovement : MonoBehaviour
 
     public void SetBounciness(float bounciness)
     {
-        _capsuleCollider.sharedMaterial.bounciness = bounciness;
-        _capsuleCollider.enabled = false;
-        _capsuleCollider.enabled = true;
+        _mainCollider.sharedMaterial.bounciness = bounciness;
+        _mainCollider.enabled = false;
+        _mainCollider.enabled = true;
     }
 
     public void ResetBounciness()

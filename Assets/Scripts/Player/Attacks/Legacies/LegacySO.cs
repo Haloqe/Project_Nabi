@@ -11,4 +11,7 @@ public abstract class LegacySO : ScriptableObject
         StatusEffectDuration = new float[4]{0,0,0,0};
     [NamedArray(typeof(ELegacyPreservation))] public float[] 
         StatusEffectStrength = new float[4]{0,0,0,0};
+
+    public virtual void Init() { }
+    public abstract void OnUpdateStatusEffect(EStatusEffect newEffect);
 }
