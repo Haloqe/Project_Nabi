@@ -470,6 +470,7 @@ public class LevelManager : Singleton<LevelManager>
             Instantiate(GameManager.Instance.Player) : PlayerController.Instance.gameObject;
         player.transform.position = playerStart.position;
         GameObject.Find("Virtual Camera").GetComponent<CinemachineVirtualCamera>().Follow = player.transform;
+        PlayerEvents.playerAddedToScene.Invoke();
     }
 
     private void GenerateMinimap()

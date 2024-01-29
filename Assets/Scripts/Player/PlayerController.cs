@@ -67,4 +67,9 @@ public class PlayerController : Singleton<PlayerController>
         //     PlayerAttackManager.Instance.ResetAttackVFXs();
         // }
     }
+    
+    private void OnOpenMap(InputValue value)
+    {
+        UIManager.Instance.ToggleMap();
+    }
 }

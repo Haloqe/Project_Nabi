@@ -94,6 +94,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "OpenMap",
+                    "type": "Button",
+                    "id": "b51860b7-fd00-49eb-8000-9ac458253180",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -250,6 +259,17 @@
                     "action": "Interact_Hold",
                     "isComposite": false,
                     "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "88c3f984-14c7-4d21-9314-bb6e524724f7",
+                    "path": "<Keyboard>/tab",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "OpenMap",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         },
@@ -351,6 +371,15 @@
                     "name": "Close",
                     "type": "Button",
                     "id": "26bc9c15-26dd-4853-9ff0-3ed2e7730762",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "CloseMap",
+                    "type": "Button",
+                    "id": "02aab15e-ea12-42f3-b590-f3c8da2bee93",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -779,11 +808,22 @@
                 {
                     "name": "",
                     "id": "03d0ad67-870b-4f16-b13c-53a6dccdc4af",
-                    "path": "<Keyboard>/e",
+                    "path": "<Keyboard>/escape",
                     "interactions": "Press",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
                     "action": "Close",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "a24dbdc3-f0b1-4cbe-9108-1fa6e95b91e2",
+                    "path": "<Keyboard>/tab",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "CloseMap",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
