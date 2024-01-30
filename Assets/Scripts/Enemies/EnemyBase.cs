@@ -22,12 +22,23 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     private float[] _effectRemainingTimes;
     private SortedDictionary<float, float> _slowRemainingTimes; // str,time
     private float _tempPullduration;
-    private int _sommerStackCount = 0;
+
+    // sommer status effect
+    private float _sommerStackCount = 0;
     private float _sommerTimeSinceStacked = 0f;
-    [SerializeField] private float _sommerStackCoolTime = 5f;
+    private int _sommerSubtractedStackPerSecond = 1;
+
+    // 이런것들 나중에 엑셀으로 뺴면 좋을듯
+    // [SerializeField] private float SommerStackCoolTime = 10f;
+    [SerializeField] private float SommerReducedSpeed = 0.3f;
+    [SerializeField] private float SommerReducedDamage = 0.3f;
+    [SerializeField] private float SleepDuration = 5f;
+    [SerializeField] private float SleepBaseStrength = 1f; // idk what this does
+
     
     //Enemy health attribute
-    [SerializeField] protected float Health = 30f;
+    public SDamageInfo _damageInfoTEMP;
+    [SerializeField] protected float Health = 1000f;
 
     protected virtual void Start()
     { 
@@ -39,19 +50,19 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         );
         DebuffEffects = new GameObject[(int)EStatusEffect.MAX];
         if (MoveType != EEnemyMoveType.None) _movement = GetComponent<EnemyMovement>();
+
+        _damageInfoTEMP = new SDamageInfo
+        {
+            Damages = new List<SDamage>() { new SDamage(EDamageType.Base, 5) },
+            StatusEffects = new List<SStatusEffect>(),
+        };
+
         Initialise();         
     }
 
     protected virtual void FixedUpdate()
     {
         UpdateRemainingStatusEffectTimes();
-
-        _sommerTimeSinceStacked += Time.deltaTime;
-        if (_sommerTimeSinceStacked >= _sommerStackCoolTime)
-        {
-            _sommerStackCount = 0;
-            // add sleep into status effect list
-        }
     }
 
     protected virtual void Initialise() { }
@@ -86,7 +97,9 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
             switch (statusEffect.Effect)
             {
                 case EStatusEffect.Sommer:
-                    _movement.ChangeSpeedByPercentage(0.9f);
+                    _movement.ChangeSpeedByPercentage(SommerReducedSpeed);
+                    // assumed that there's only 1 element in the list. might need edits
+                    _damageInfoTEMP.Damages[0] = new SDamage(EDamageType.Base, _damageInfoTEMP.Damages[0].TotalAmount * SommerReducedDamage);
                     _sommerStackCount++;
                     _sommerTimeSinceStacked = 0f;
                     break;
@@ -164,39 +177,58 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         {
             // slow time is handled separately
             if (i == (int)EStatusEffect.Slow) continue;
+            if (i == (int)EStatusEffect.Sommer) continue;
 
             if (_effectRemainingTimes[i] == 0) continue;
-
-            //slow is handled seperately in another method to be called at the end of this function
-            if (i == (int)EStatusEffect.Slow) continue;
 
             _effectRemainingTimes[i] -= deltaTime;
             EStatusEffect currEffect = (EStatusEffect)i;
             //Debug.Log(currEffect + "'s RemainingTime: " + _effectRemainingTimes[i]);
 
+            //if there is no remaining time for the status effect imposed on the enemy after calculation
             if (_effectRemainingTimes[i] <= 0)
             {
-                //if there is no remaining time for the status effect imposed on the enemy after calculation
-                if (_effectRemainingTimes[i] <= 0)
+                SetVFXActive(i, false);
+                
+                _effectRemainingTimes[i] = 0.0f;
+
+                if (currEffect == EStatusEffect.Sleep || currEffect == EStatusEffect.Root || currEffect == EStatusEffect.Airborne || currEffect == EStatusEffect.Stun || currEffect == EStatusEffect.Pull)
                 {
-                    SetVFXActive(i, false);
-                    
-                    _effectRemainingTimes[i] = 0.0f;
+                    _movement.EnableMovement();
+                }
 
-                    if (currEffect == EStatusEffect.Root || currEffect == EStatusEffect.Airborne || currEffect == EStatusEffect.Stun || currEffect == EStatusEffect.Pull)
-                    {
-                        _movement.EnableMovement();
-                    }
-
-                    if (currEffect == EStatusEffect.Airborne || currEffect == EStatusEffect.Stun || currEffect == EStatusEffect.Silence || currEffect == EStatusEffect.Pull)
-                    {
-                        IsSilenced = false;
-                    }
+                if (currEffect == EStatusEffect.Airborne || currEffect == EStatusEffect.Stun || currEffect == EStatusEffect.Silence || currEffect == EStatusEffect.Pull)
+                {
+                    IsSilenced = false;
                 }
             }
         }
 
         UpdateSlowTimes();
+        UpdateSommerTimes();
+    }
+
+    private void UpdateSommerTimes()
+    {
+        if (_sommerStackCount <= 0) return;
+
+        _sommerTimeSinceStacked += Time.deltaTime;
+
+        if (_sommerTimeSinceStacked > _effectRemainingTimes[(int)EStatusEffect.Sommer])
+            _sommerStackCount -= _sommerSubtractedStackPerSecond * Time.deltaTime;
+
+        if (_sommerStackCount >= 10)
+        {
+            _sommerTimeSinceStacked = 0;
+            _sommerStackCount = 0;
+            HandleNewStatusEffects(new List<SStatusEffect> { new SStatusEffect(EStatusEffect.Sleep, SleepBaseStrength, SleepDuration) });
+        }
+        else if (_sommerStackCount <= 0)
+        {
+            _movement.ChangeSpeedByPercentage(1f);
+            _damageInfoTEMP.Damages[0] = new SDamage(EDamageType.Base, _damageInfoTEMP.Damages[0].TotalAmount);
+            _effectRemainingTimes[(int)EStatusEffect.Sommer] = 0;
+        }
     }
 
     private void UpdateSlowTimes()
@@ -299,6 +331,13 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     {
         int damage = (int)IDamageable.CalculateRoughDamage(damages);
         ReduceHealth(damage);
+
+        // if (asleep) then wake up
+        if (_effectRemainingTimes[(int)EStatusEffect.Sleep] > 0)
+        {
+            _movement.EnableMovement();
+            _effectRemainingTimes[(int)EStatusEffect.Sleep] = 0;
+        }
     }
 
     private void ReduceHealth(float reduceAmount)

@@ -5,7 +5,6 @@ using UnityEngine;
 public abstract class EnemyMovement : MonoBehaviour
 {
     protected EnemyBase _enemyBase;
-    protected SDamageInfo _damageBaseTEMP;
     protected GameObject _target;
     protected IDamageable _targetDamageable;
 
@@ -14,6 +13,7 @@ public abstract class EnemyMovement : MonoBehaviour
     protected bool _isRooted = false;
     protected Rigidbody2D _rigidBody;
     protected Animator _animator;
+    protected bool _isFlippable = true;
 
     //the speed at which the enemy will be pulled
     public float smoothing = 1f;
@@ -28,11 +28,6 @@ public abstract class EnemyMovement : MonoBehaviour
         _rigidBody = GetComponent<Rigidbody2D>();
         _enemyBase = GetComponent<EnemyBase>();
         _moveSpeed = DefaultMoveSpeed;
-        _damageBaseTEMP = new SDamageInfo
-        {
-            Damages = new List<SDamage>() { new SDamage(EDamageType.Base, 15) },
-            StatusEffects = new List<SStatusEffect>(),
-        };
         EnableMovement();
     }
 
@@ -46,15 +41,47 @@ public abstract class EnemyMovement : MonoBehaviour
         _moveSpeed = DefaultMoveSpeed * percentage;
     }
 
+    protected virtual void FlipEnemy()
+    {
+        transform.localScale = new Vector2(
+            -1 * transform.localScale.x, transform.localScale.y);
+    }
+
+    protected virtual void FlipEnemyTowardsTarget()
+    {
+        if (transform.position.x - _target.transform.position.x >= 0)
+        {
+            if (transform.localScale.x > Mathf.Epsilon) FlipEnemy();
+        } else {
+            if (transform.localScale.x < Mathf.Epsilon) FlipEnemy();
+        }
+    }
+
+
     public virtual void EnableMovement()
     {
         _isRooted = false;
+        ResetMoveSpeed();
     }
 
     public virtual void DisableMovement()
     {
         _isRooted = true;
-        _rigidBody.velocity = Vector2.zero;
+        // _rigidBody.velocity = Vector2.zero;
+        _moveSpeed = 0;
+        _animator.SetBool("IsAttacking", false);
+        _animator.SetBool("IsWalking", false);
+    }
+
+    // for animation events
+    protected virtual void DisableFlip()
+    {
+        _isFlippable = false;
+    }
+
+    protected virtual void EnableFlip()
+    {
+        _isFlippable = true;
     }
 
     // public void EnablePulling(float pullDuration)

@@ -3,7 +3,6 @@ using UnityEngine;
 
 public class EnemyMovement_Stationary : EnemyMovement
 {
-    private bool _isFlippable = true;
     [SerializeField] private float _flipProbability = 0.1f; //walkProbability will be 1 - idleProbability
     [SerializeField] private float _idleAverageDuration = 1f;
     [SerializeField] private float _detectRange = 3f;
@@ -13,6 +12,12 @@ public class EnemyMovement_Stationary : EnemyMovement
 
     private void Update()
     {
+        if (_isRooted) return;
+        if (_target == null)
+        {
+            Patrol();
+            return;
+        }
 
         bool playerIsInAttackRange = Mathf.Abs(transform.position.x - _target.transform.position.x) <= _attackRange 
             && _target.transform.position.y - transform.position.y <= 1f;
@@ -44,24 +49,7 @@ public class EnemyMovement_Stationary : EnemyMovement
         // may have to edit to only take the child collider into account
         if (other.CompareTag(_target.tag))
         {
-            _enemyBase.DealDamage(_targetDamageable, _damageBaseTEMP);
-        }
-    }
-
-
-    private void FlipEnemy()
-    {
-        transform.localScale = new Vector2(
-            -1 * transform.localScale.x, transform.localScale.y);
-    }
-
-    private void FlipEnemyTowardsTarget()
-    {
-        if (transform.position.x - _target.transform.position.x >= 0)
-        {
-            if (transform.localScale.x > Mathf.Epsilon) FlipEnemy();
-        } else {
-            if (transform.localScale.x < Mathf.Epsilon) FlipEnemy();
+            _enemyBase.DealDamage(_targetDamageable, _enemyBase._damageInfoTEMP);
         }
     }
 
@@ -92,17 +80,6 @@ public class EnemyMovement_Stationary : EnemyMovement
     {
         if (_isFlippable) FlipEnemyTowardsTarget();
         _animator.SetBool("IsAttacking", true);
-    }
-
-    // for animation events
-    private void DisableFlip()
-    {
-        _isFlippable = false;
-    }
-
-    private void EnableFlip()
-    {
-        _isFlippable = true;
     }
 
 }
