@@ -10,7 +10,6 @@ public class UIManager : Singleton<UIManager>
 {
     private InputActionMap _playerIAMap;
     private InputActionMap _UIIAMap;
-    private PlayerMovement _playerMovement;
 
     private UnityEngine.Object _defeatedUIPrefab;
     private UnityEngine.Object _inGameCombatPrefab;
@@ -23,8 +22,10 @@ public class UIManager : Singleton<UIManager>
     private GameObject _metalContractUI;
     private GameObject _focusedOverlay;
     private GameObject _zoomedMap;
+    private MapController _mapController;
     private Slider _playerHPSlider;
-
+    
+    // UI Navigation
     private GameObject _activeFocusedUI;
     int temp = 0;
 
@@ -39,6 +40,11 @@ public class UIManager : Singleton<UIManager>
         var uiAssets = FindObjectOfType<InputSystemUIInputModule>().actionsAsset;
         uiAssets.FindAction("UI/Close").performed += OnClose;
         uiAssets.FindAction("UI/CloseMap").performed += OnCloseMap;
+        uiAssets.FindAction("UI/Navigate").performed += OnNavigate;
+        uiAssets.FindAction("UI/Navigate").canceled += OnNavigate;
+        uiAssets.FindAction("UI/Reset").performed += OnReset;
+        uiAssets.FindAction("UI/Zoom").performed += OnZoom;
+        uiAssets.FindAction("UI/Zoom").canceled += OnZoom;
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode loadMode)
@@ -67,16 +73,7 @@ public class UIManager : Singleton<UIManager>
     {
         LoadDefeatedUI();
     }
-
-    private void OnClose(InputAction.CallbackContext obj)
-    {
-        Debug.Log("UIManager::OnClose");
-        if (_activeFocusedUI)
-        {
-            CloseFocusedUI();
-        }
-    }
-
+    
     private void LoadAllUIPrefabs()
     {
         string path = "Prefabs/UI/";
@@ -94,7 +91,6 @@ public class UIManager : Singleton<UIManager>
 
     private void LoadInGameUI()
     {
-        Debug.Log("UIManager::LoadInGameUI " + temp++);
         InputActionAsset IAAsset = FindObjectOfType<InputSystemUIInputModule>().actionsAsset;
         _UIIAMap = IAAsset.FindActionMap("UI");
         
@@ -103,7 +99,9 @@ public class UIManager : Singleton<UIManager>
         _inGameCombatUI     = Instantiate(_inGameCombatPrefab, Vector3.zero, Quaternion.identity).GameObject();
         _metalContractUI    = Instantiate(_metalContractUIPrefab, Vector3.zero, Quaternion.identity).GameObject();
         _zoomedMap          = Instantiate(_zoomedMapPrefab, Vector3.zero, Quaternion.identity).GameObject();
+        _mapController      = _zoomedMap.GetComponent<MapController>();
         _playerHPSlider     = _inGameCombatUI.GetComponentInChildren<Slider>();
+        _zoomedMap.SetActive(false);
 
         _inGameCombatUI.SetActive(true);
 
@@ -115,7 +113,6 @@ public class UIManager : Singleton<UIManager>
     {
         InputActionAsset IAAsset = FindObjectOfType<PlayerInput>().actions;
         _playerIAMap = IAAsset.FindActionMap("Player");
-        _playerMovement = FindObjectOfType<PlayerMovement>();
         _playerHPSlider.value = FindObjectOfType<PlayerDamageReceiver>().GetHPRatio();
         
         // TODO in scene manager perhaps?
@@ -131,7 +128,6 @@ public class UIManager : Singleton<UIManager>
     private void OpenFocusedUI(GameObject uiObject, bool shouldShowOverlay = false)
     {
         if (shouldShowOverlay) _focusedOverlay.SetActive(true);
-        _playerMovement.DisableMovement(true);
         _playerIAMap.Disable();
         _UIIAMap.Enable();
         _activeFocusedUI = uiObject;
@@ -141,7 +137,6 @@ public class UIManager : Singleton<UIManager>
 
     public void CloseFocusedUI()
     {
-        if (_playerMovement) _playerMovement.EnableMovement(true);
         _playerIAMap.Enable();
         _UIIAMap.Disable();
         _focusedOverlay.SetActive(false);
@@ -152,22 +147,52 @@ public class UIManager : Singleton<UIManager>
         }
     }
 
-    public void LoadMetalContractUI(MetalContractItem contractItem)
-    {
-        OpenFocusedUI(_metalContractUI);
-    }
+    // public void LoadMetalContractUI(MetalContractItem contractItem)
+    // {
+    //     OpenFocusedUI(_metalContractUI);
+    // }
 
     public void ToggleMap()
     {
+        _mapController.ResetMapCamera();
         OpenFocusedUI(_zoomedMap);
     }
 
     private void OnCloseMap(InputAction.CallbackContext obj)
     {
-        Debug.Log("OnCloseMap");
         if (_activeFocusedUI == _zoomedMap)
         {
             CloseFocusedUI();
+        }
+    }
+    
+    private void OnClose(InputAction.CallbackContext obj)
+    {
+        Debug.Log("UIManager::OnClose");
+        if (_activeFocusedUI)
+        {
+            CloseFocusedUI();
+        }
+    }
+
+    // UI Navigation
+    private void OnNavigate(InputAction.CallbackContext obj)
+    {
+        var value = obj.ReadValue<Vector2>();
+        if (_activeFocusedUI == _zoomedMap) _mapController.OnNavigate(value);
+    }
+    
+    private void OnZoom(InputAction.CallbackContext obj)
+    {
+        var value = obj.ReadValue<float>();
+        if (_activeFocusedUI == _zoomedMap) _mapController.OnZoom(value);
+    }
+
+    private void OnReset(InputAction.CallbackContext obj)
+    {
+        if (_activeFocusedUI == _zoomedMap)
+        {
+            _mapController.ResetMapCamera(true);
         }
     }
 }

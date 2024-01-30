@@ -87,13 +87,14 @@ GameObject:
   - component: {fileID: 7977447185294389312}
   - component: {fileID: 2321413636455166144}
   - component: {fileID: 7777833117536844876}
+  - component: {fileID: 3240340568226082128}
   m_Layer: 5
   m_Name: ZoomedMap
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &2426174677786964866
 RectTransform:
   m_ObjectHideFlags: 0
@@ -177,6 +178,18 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!114 &3240340568226082128
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5687796558550011891}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 84a2ab23050f4eb79f79be2459f8913b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &7470265495379244198
 GameObject:
   m_ObjectHideFlags: 0
@@ -266,7 +279,7 @@ GameObject:
   - component: {fileID: 161091508159689810}
   - component: {fileID: 736249202767965680}
   m_Layer: 5
-  m_Name: Minimap
+  m_Name: Map
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -319,7 +332,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Texture: {fileID: 8400000, guid: f3a3bc421348b6141bfd05b1d347b373, type: 2}
+  m_Texture: {fileID: 8400000, guid: 2c2cc801ce362554980151983d6408e4, type: 2}
   m_UVRect:
     serializedVersion: 2
     x: 0
