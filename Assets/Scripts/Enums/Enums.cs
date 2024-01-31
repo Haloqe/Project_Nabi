@@ -26,6 +26,7 @@ public enum EStatusEffect
 {
     // Base
     Sommer,
+    Drowsiness,
     Poison,
     Drugged,
     Swarm,
