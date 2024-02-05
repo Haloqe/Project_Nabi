@@ -41,8 +41,6 @@ public class Portal : Interactor
         string currStage = GameManager.Instance.CurrStage.ToString().PadLeft(2, '0');
         string sceneName = "InGame_Stage_" + currStage + "_GeneralStore";
         if (!Utility.LoadSceneByNameSafe(sceneName)) return;
-
-
     }
 
     private void LoadFoodStore()
@@ -50,8 +48,6 @@ public class Portal : Interactor
         string currStage = GameManager.Instance.CurrStage.ToString().PadLeft(2, '0');
         string sceneName = "InGame_Stage_" + currStage + "_FoodStore";
         if (!Utility.LoadSceneByNameSafe(sceneName)) return;
-
-
     }
 
     // TODO

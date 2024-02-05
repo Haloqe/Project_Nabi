@@ -1,9 +1,9 @@
 using System;
+using System.Collections;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class UIManager : Singleton<UIManager>
@@ -16,12 +16,15 @@ public class UIManager : Singleton<UIManager>
     private UnityEngine.Object _metalContractUIPrefab;
     private UnityEngine.Object _focusedOverlayPrefab;
     private UnityEngine.Object _zoomedMapPrefab;
+    private UnityEngine.Object _loadingScreenPrefab;
 
     private GameObject _defeatedUI;
     private GameObject _inGameCombatUI;
     private GameObject _metalContractUI;
     private GameObject _focusedOverlay;
     private GameObject _zoomedMap;
+    private GameObject _loadingScreenUI;
+    
     private MapController _mapController;
     private Slider _playerHPSlider;
     
@@ -32,67 +35,37 @@ public class UIManager : Singleton<UIManager>
     protected override void Awake()
     {
         base.Awake();
+        if (_toBeDestroyed) return;
         LoadAllUIPrefabs();
-        SceneManager.sceneLoaded += OnSceneLoaded;
+        
         PlayerEvents.defeated += OnPlayerDefeated;
         PlayerEvents.HPChanged += OnPlayerHPChanged;
-        PlayerEvents.playerAddedToScene += OnPlayerAdded;
-        var uiAssets = FindObjectOfType<InputSystemUIInputModule>().actionsAsset;
-        uiAssets.FindAction("UI/Close").performed += OnClose;
-        uiAssets.FindAction("UI/CloseMap").performed += OnCloseMap;
-        uiAssets.FindAction("UI/Navigate").performed += OnNavigate;
-        uiAssets.FindAction("UI/Navigate").canceled += OnNavigate;
-        uiAssets.FindAction("UI/Reset").performed += OnReset;
-        uiAssets.FindAction("UI/Zoom").performed += OnZoom;
-        uiAssets.FindAction("UI/Zoom").canceled += OnZoom;
-    }
-
-    private void OnSceneLoaded(Scene scene, LoadSceneMode loadMode)
-    {
-        string name = scene.name;
-        if (name.Contains("InGame"))
-        {
-            LoadInGameUI();
-        }
-        else if (name.Contains("MainMenu"))
-        {
-            LoadMainMenuUI();
-        }
-        else
-        {
-
-        }
-    }
-
-    private void OnPlayerHPChanged(float changeAmount, float hpRatio)
-    {
-        _playerHPSlider.value = hpRatio;
-    }
-
-    private void OnPlayerDefeated()
-    {
-        LoadDefeatedUI();
-    }
-    
-    private void LoadAllUIPrefabs()
-    {
-        string path = "Prefabs/UI/";
-        _focusedOverlayPrefab   = Utility.LoadObjectFromPath(path + "InGame/FocusedCanvas");
-        _defeatedUIPrefab       = Utility.LoadObjectFromPath(path + "InGame/DeadCanvas");
-        _inGameCombatPrefab     = Utility.LoadObjectFromPath(path + "InGame/CombatCanvas");
-        _metalContractUIPrefab  = Utility.LoadObjectFromPath(path + "InGame/Ability/MetalContractCanvas");
-        _zoomedMapPrefab        = Utility.LoadObjectFromPath(path + "InGame/ZoomedMap");
-    }
-
-    private void LoadMainMenuUI()
-    {
-        // TODO
-    }
-
-    private void LoadInGameUI()
-    {
+        PlayerEvents.spawned += OnPlayerSpawned;
+        GameEvents.gameLoadStarted += OnGameLoadStarted;
+        GameEvents.gameLoadEnded += OnGameLoadEnded;
+        
         InputActionAsset IAAsset = FindObjectOfType<InputSystemUIInputModule>().actionsAsset;
         _UIIAMap = IAAsset.FindActionMap("UI");
+        _UIIAMap.FindAction("Close").performed += OnClose;
+        _UIIAMap.FindAction("CloseMap").performed += OnCloseMap;
+        _UIIAMap.FindAction("Navigate").performed += OnNavigate;
+        _UIIAMap.FindAction("Navigate").canceled += OnNavigate;
+        _UIIAMap.FindAction("Reset").performed += OnReset;
+        _UIIAMap.FindAction("Zoom").performed += OnZoom;
+        _UIIAMap.FindAction("Zoom").canceled += OnZoom;
+    }
+
+    public void UseUIControl()
+    {
+        if (_playerIAMap != null) _playerIAMap.Disable();
+        _UIIAMap.Enable();
+    }
+
+    private void OnGameLoadStarted()
+    {
+        _loadingScreenUI.SetActive(true);
+        _UIIAMap.Enable();
+        if (_playerIAMap != null) _playerIAMap.Disable();
         
         _focusedOverlay     = Instantiate(_focusedOverlayPrefab, Vector3.zero, Quaternion.identity).GameObject();
         _defeatedUI         = Instantiate(_defeatedUIPrefab, Vector3.zero, Quaternion.identity).GameObject();
@@ -102,27 +75,59 @@ public class UIManager : Singleton<UIManager>
         _mapController      = _zoomedMap.GetComponent<MapController>();
         _playerHPSlider     = _inGameCombatUI.GetComponentInChildren<Slider>();
         _zoomedMap.SetActive(false);
-
         _inGameCombatUI.SetActive(true);
-
-        // TEMP 지금은 mainscene->ingame 순서가 아니라 디버깅용이라 여기서 하면 오류
-        //_metalContractUI.GetComponent<MetalContractUI>().Initialize();
     }
-
-    private void OnPlayerAdded()
+    
+    private void OnGameLoadEnded()
     {
-        InputActionAsset IAAsset = FindObjectOfType<PlayerInput>().actions;
-        _playerIAMap = IAAsset.FindActionMap("Player");
-        _playerHPSlider.value = FindObjectOfType<PlayerDamageReceiver>().GetHPRatio();
-        
-        // TODO in scene manager perhaps?
-        PlayerAttackManager.Instance.InitInGameVariables();
+        _loadingScreenUI.SetActive(false);
+        _playerIAMap.Enable();
+        _UIIAMap.Disable();
+    }
+    
+    private void OnPlayerHPChanged(float changeAmount, float hpRatio)
+    {
+        _playerHPSlider.value = hpRatio;
     }
 
-    private void LoadDefeatedUI()
+    private void OnPlayerDefeated()
     {
         CloseFocusedUI();
-        _defeatedUI.SetActive(true);
+        _playerIAMap.Disable();
+        StartCoroutine(GameOverCoroutine());
+    }
+    
+    private void LoadAllUIPrefabs()
+    {
+        string path = "Prefabs/UI/";
+        _focusedOverlayPrefab   = Utility.LoadObjectFromPath(path + "InGame/FocusedCanvas");
+        _defeatedUIPrefab       = Utility.LoadObjectFromPath(path + "InGame/GameOverCanvas");
+        _inGameCombatPrefab     = Utility.LoadObjectFromPath(path + "InGame/CombatCanvas");
+        _metalContractUIPrefab  = Utility.LoadObjectFromPath(path + "InGame/Ability/MetalContractCanvas");
+        _zoomedMapPrefab        = Utility.LoadObjectFromPath(path + "InGame/ZoomedMap");
+        _loadingScreenPrefab    = Utility.LoadObjectFromPath(path + "LoadingCanvas");
+        
+        _loadingScreenUI = Instantiate(_loadingScreenPrefab, Vector3.zero, Quaternion.identity).GameObject();
+        DontDestroyOnLoad(_loadingScreenUI);
+    }
+
+    private void LoadMainMenuUI()
+    {
+        // TODO
+    }
+
+    private void OnPlayerSpawned()
+    {
+        _playerHPSlider.value = FindObjectOfType<PlayerDamageReceiver>().GetHPRatio();
+        _playerIAMap = FindObjectOfType<PlayerInput>().actions.FindActionMap("Player");
+        _playerIAMap.Enable();
+        _UIIAMap.Disable();
+    }
+
+    private IEnumerator GameOverCoroutine()
+    {
+        yield return new WaitForSeconds(Define.GameOverDelayTime);
+        OpenFocusedUI(_defeatedUI);
     }
 
     private void OpenFocusedUI(GameObject uiObject, bool shouldShowOverlay = false)
@@ -132,12 +137,13 @@ public class UIManager : Singleton<UIManager>
         _UIIAMap.Enable();
         _activeFocusedUI = uiObject;
         uiObject.SetActive(true);
-        Debug.Log("Enabled");
     }
 
-    public void CloseFocusedUI()
+    private void CloseFocusedUI()
     {
-        _playerIAMap.Enable();
+        //TODO remove null check
+        if (_playerIAMap != null) _playerIAMap.Enable();
+        
         _UIIAMap.Disable();
         _focusedOverlay.SetActive(false);
         if (_activeFocusedUI)

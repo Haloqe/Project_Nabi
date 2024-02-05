@@ -41,6 +41,8 @@ public class PlayerMovement : MonoBehaviour
     
     private void Start()
     {
+        GameEvents.restarted += OnRestarted;
+        
         _animator = GetComponent<Animator>();
         _rigidbody2D = GetComponent<Rigidbody2D>();
         _moveSpeed = DefaultMoveSpeed;
@@ -52,6 +54,18 @@ public class PlayerMovement : MonoBehaviour
         _mainCollider = GetComponents<BoxCollider2D>()[0];
         _defaultBounciness = _mainCollider.sharedMaterial.bounciness;
         _defaultFriction = _mainCollider.sharedMaterial.friction;
+    }
+
+    private void OnRestarted()
+    {
+        RemoveDebuffs();
+        ResetFriction();
+        ResetBounciness();
+        _isAttacking = false;
+        _isDashing = false;
+        IsAreaAttacking = false;
+        _jumpCounter = 0;
+        _isJumping = false;
     }
 
     private void Update()

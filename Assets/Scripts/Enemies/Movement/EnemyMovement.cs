@@ -83,26 +83,4 @@ public abstract class EnemyMovement : MonoBehaviour
     {
         _isFlippable = true;
     }
-
-    // public void EnablePulling(float pullDuration)
-    // {
-    //     StartCoroutine(OnPull(pullDuration));
-    // }
-
-    // IEnumerator OnPull(float pullDuration)
-    // {
-    //     //everything needs to be done on pull:
-    //     //could change the pulling time later - hardcoded for now
-    //     float remainingTime = pullDuration;
-    //     float deltaTime = Time.deltaTime;
-
-    //     while (remainingTime > 0)
-    //     {
-    //         transform.position = Vector3.Lerp(transform.position, _target.position, smoothing * Time.deltaTime);
-    //         remainingTime -= deltaTime;
-    //         yield return null;
-    //     }
-
-    //     Debug.Log("Pulling finished.");
-    // }
 }

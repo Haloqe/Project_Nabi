@@ -25,7 +25,7 @@ public class MapController : MonoBehaviour
 
     private void Awake()
     {
-        _mapCamera = GameObject.Find("Cameras").transform.Find("Map Camera");
+        _mapCamera = GameObject.Find("InGameCameras").transform.Find("Map Camera");
         _minimapCamera = Camera.main.transform.Find("Minimap Camera");
         _mapCameraComponent = _mapCamera.GetComponent<Camera>();
         _defaultCamSize = _mapCameraComponent.orthographicSize;

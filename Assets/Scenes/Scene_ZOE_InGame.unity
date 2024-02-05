@@ -774,6 +774,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7298965470491366097, guid: bcce88540dedd4b4684fa476862a58ad, type: 3}
+      propertyPath: m_SortingLayer
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7298965470491366097, guid: bcce88540dedd4b4684fa476862a58ad, type: 3}
+      propertyPath: m_SortingLayerID
+      value: 45253025
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -7308,7 +7316,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MoveType: 0
   DebuffEffects: []
-  _drowsinessStackCoolTime: 5
+  SommerReducedSpeed: 0.3
+  SommerReducedDamage: 0.3
+  SleepDuration: 5
+  SleepBaseStrength: 1
   Health: 30
 --- !u!1001 &8432598201982792108
 PrefabInstance:

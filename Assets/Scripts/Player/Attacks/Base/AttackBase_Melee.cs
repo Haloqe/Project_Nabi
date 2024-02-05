@@ -59,12 +59,7 @@ public class AttackBase_Melee : AttackBase
         _damageCombo = _damageInitCombo;
         _affectedEnemies.Clear();
 
-        ResetVFXs();
-    }
-
-    public override void ResetVFXs()
-    {
-        base.ResetVFXs();
+        // VFX
         VFXObjCombo.GetComponent<ParticleSystemRenderer>().sharedMaterial = _defaultVFXComboMaterial;
     }
 

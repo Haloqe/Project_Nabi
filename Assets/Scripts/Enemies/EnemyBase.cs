@@ -34,7 +34,6 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     [SerializeField] private float SommerReducedDamage = 0.3f;
     [SerializeField] private float SleepDuration = 5f;
     [SerializeField] private float SleepBaseStrength = 1f; // idk what this does
-
     
     //Enemy health attribute
     public SDamageInfo _damageInfoTEMP;
@@ -56,8 +55,13 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
             Damages = new List<SDamage>() { new SDamage(EDamageType.Base, 5) },
             StatusEffects = new List<SStatusEffect>(),
         };
+        PlayerEvents.defeated += OnPlayerDefeated;
 
         Initialise();         
+    }
+    private void OnPlayerDefeated()
+    {
+        
     }
 
     protected virtual void FixedUpdate()

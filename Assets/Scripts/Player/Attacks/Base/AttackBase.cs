@@ -24,11 +24,6 @@ public abstract class AttackBase : MonoBehaviour
     public virtual void Reset()
     {
         _damageBase = _damageInitBase;
-        ResetVFXs();
-    }
-
-    public virtual void ResetVFXs()
-    {
         VFXObject.GetComponent<ParticleSystemRenderer>().sharedMaterial = _defaultVFXMaterial;
     }
     
@@ -61,9 +56,9 @@ public abstract class AttackBase : MonoBehaviour
         _damageDealer.OnAttackEnd_PostDelay();
     }
 
-    public virtual void IsActiveBound()
+    public virtual bool IsActiveBound()
     {
-
+        return _activeLegacy == null;
     }
 
     public void BindActiveLegacy(LegacySO legacyAsset)

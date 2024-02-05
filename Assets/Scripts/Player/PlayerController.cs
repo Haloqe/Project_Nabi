@@ -1,13 +1,9 @@
-using Cinemachine;
-using System;
-using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.SceneManagement;
 
 public class PlayerController : Singleton<PlayerController>
 {
+    private Animator _animator;
     private PlayerInput _playerInput;
     private PlayerMovement _playerMovement;
     private PlayerDamageReceiver _playerCombat;
@@ -16,20 +12,28 @@ public class PlayerController : Singleton<PlayerController>
     protected override void Awake()
     {
         base.Awake();
-        Debug.Log("PlayerController::Awake");
+        if (_toBeDestroyed) return;
+        
         _playerInput = GetComponent<PlayerInput>();
         _playerMovement = GetComponent<PlayerMovement>();
         _playerCombat = GetComponent<PlayerDamageReceiver>();
         _playerAttack = GetComponent<PlayerDamageDealer>();
-    }
-
-    private void Start()
-    {
+        _animator = GetComponent<Animator>();
+        
         // Input Binding for Attacks
         _playerInput.actions["Attack_Melee"].performed += _ => _playerAttack.OnAttack(0);
         _playerInput.actions["Attack_Range"].performed += _ => _playerAttack.OnAttack(1);
         _playerInput.actions["Attack_Dash"].performed += _ => _playerAttack.OnAttack(2);
         _playerInput.actions["Attack_Area"].performed += _ => _playerAttack.OnAttack(3);
+        
+        // Events binding
+        GameEvents.restarted += OnRestarted;
+    }
+    
+    private void OnRestarted()
+    {
+        _animator.Rebind();
+        _animator.Update(0f);
     }
 
     void OnMove(InputValue value)
@@ -55,17 +59,6 @@ public class PlayerController : Singleton<PlayerController>
             // PlayerAttackManager.Instance.CollectLegacy(2); // dash
             count++;
         }
-
-        // count++;
-        // for (int attackIdx = 0; attackIdx < 3; attackIdx++)
-        // {
-        //     PlayerAttackManager.Instance.UpdateAttackVFX((EWarrior)count, (ELegacyType)attackIdx);
-        // }
-        // if (count == 3)
-        // {
-        //     count = -1;
-        //     PlayerAttackManager.Instance.ResetAttackVFXs();
-        // }
     }
     
     private void OnOpenMap(InputValue value)

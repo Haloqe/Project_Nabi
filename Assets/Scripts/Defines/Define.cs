@@ -2,6 +2,7 @@ using System.Collections.Generic;
 
 public static class Define
 {
+    public static float GameOverDelayTime = 3.7f;
     public static float HoldInteractionTime = 2.0f;
     public static float DefaultDamageTick = 0.5f;
     // Cumulative

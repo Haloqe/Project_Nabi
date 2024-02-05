@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
@@ -10,7 +11,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
     
     // Legacy
     private int[] _statusEffectLevels;
-
+    
     private void Start()
     {
         _statusEffectLevels = new int[(int)EWarrior.MAX];
@@ -23,6 +24,13 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
             GetComponent<AttackBase_Dash>(),
             GetComponent<AttackBase_Area>()
         };
+        GameEvents.restarted += OnRestarted;
+    }
+    
+    private void OnRestarted()
+    {
+        foreach (var attack in AttackBases) attack.Reset();
+        CurrAttackIdx = -1;
     }
 
     public bool CanAttack(int attackIdx)

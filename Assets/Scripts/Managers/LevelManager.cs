@@ -1,9 +1,12 @@
+using System;
 using Cinemachine;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using Object = UnityEngine.Object;
+using Random = UnityEngine.Random;
 
 public class LevelManager : Singleton<LevelManager>
 { 
@@ -20,7 +23,9 @@ public class LevelManager : Singleton<LevelManager>
     private List<List<SDoorInfo>> _openDoorInfos;
 
     private LevelGraph _levelGraph;
-
+    // TODO remove TEMP
+    private Vector3 _playerSpawnPos = Vector3.back;
+    
     private Tilemap _mapTilemap;
     private Tilemap _superWallTilemap;
     public TileBase WallRuleTile;
@@ -34,6 +39,8 @@ public class LevelManager : Singleton<LevelManager>
     protected override void Awake()
     {
         base.Awake();
+        if (_toBeDestroyed) return;
+        
         _maxHeight = 1000;
         _maxWidth = 1000;
         _superGrid = new ECellType[_maxHeight, _maxWidth];
@@ -52,19 +59,24 @@ public class LevelManager : Singleton<LevelManager>
             Vector3Int.left, Vector3Int.right
         };
         _generatedRooms = new List<GameObject>();
+        
+        InitialiseRooms();
+        GenerateLevelGraph();
+    }
+    
+    public void Generate()
+    {
+        // Reset values
+        Array.Clear(_superGrid, 0, _superGrid.Length);
+        _corridors[0].Clear();
+        _corridors[1].Clear();
+        _generatedRooms.Clear();
         _roomsContainer = GameObject.Find("Rooms").transform;
         _mapTilemap = GameObject.Find("Map").GetComponent<Tilemap>();
         _superWallTilemap = GameObject.FindWithTag("Ground").GetComponent<Tilemap>();
-        InitialiseRooms();
-    }
-
-    public void Generate()
-    {
-        GenerateLevelGraph();
-
-        // Traverse level graph
+        
+        // Level generation
         GenerateLevel();
-
         PostProcessLevel();
     }
 
@@ -418,7 +430,6 @@ public class LevelManager : Singleton<LevelManager>
     private void PostProcessLevel()
     {
         //AddSurroundingWallTiles();
-        SetPlayerSpawnPosition();
         GenerateMinimap();
     }
 
@@ -463,14 +474,37 @@ public class LevelManager : Singleton<LevelManager>
         }
     }
 
-    private void SetPlayerSpawnPosition()
+    public void SpawnPlayer()
     {
-        var playerStart = _generatedRooms[0].transform.Find("PlayerStart");
-        var player = PlayerController.Instance == null ? 
-            Instantiate(GameManager.Instance.Player) : PlayerController.Instance.gameObject;
-        player.transform.position = playerStart.position;
-        GameObject.Find("Virtual Camera").GetComponent<CinemachineVirtualCamera>().Follow = player.transform;
-        PlayerEvents.playerAddedToScene.Invoke();
+        // TODO commented for debug
+        // var playerStart = _generatedRooms[0].transform.Find("PlayerStart");
+        // var player = PlayerController.Instance == null ? 
+        //     Instantiate(GameManager.Instance.Player) : PlayerController.Instance.gameObject;
+        // player.transform.position = playerStart.position;
+        // GameObject.Find("Virtual Camera").GetComponent<CinemachineVirtualCamera>().Follow = player.transform;
+        // PlayerEvents.spawned.Invoke();
+
+        // DEBUG TEMP CODE FROM HERE
+        PlayerController playerController = PlayerController.Instance;
+        Transform playerObject = null;
+        
+        if (playerController == null)
+        {
+            playerObject = Instantiate(GameManager.Instance.Player).gameObject.transform;
+            _playerSpawnPos = GameObject.Find("PlayerStart").transform.position;
+        }
+        else
+        {
+            playerObject = playerController.gameObject.transform;
+    
+            // If player spawn pos undefined (first game run + not random generated map (debug map))
+            if (_playerSpawnPos == Vector3.back)
+                _playerSpawnPos = playerObject.position;
+        }
+        playerObject.position = _playerSpawnPos;
+        GameObject.Find("Virtual Camera").GetComponent<CinemachineVirtualCamera>().Follow = playerObject;
+        
+        PlayerEvents.spawned.Invoke();
     }
 
     private void GenerateMinimap()

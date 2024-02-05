@@ -1,7 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerDamageReceiver : MonoBehaviour, IDamageable
@@ -11,7 +11,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
 
     // TEMP health attributes
     private float _health = 200;
-    private float _maxHealth = 200;
+    private float _maxHealth = 1;
 
     // status effect attributes
     public bool IsSilenced { get; private set; }
@@ -22,16 +22,36 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     private float[] _effectRemainingTimes;
     private SortedDictionary<float, float> _slowRemainingTimes; // str,time
 
+    public bool TempIsDead = false;
+    private Animator _animator;
+    
+    private void Awake()
+    {
+        _animator = GetComponent<Animator>();
+    }
+    
+    private void OnRestarted()
+    {
+        Array.Clear(_effectRemainingTimes, 0, _effectRemainingTimes.Length);
+        Array.Clear(_activeDOTCounts, 0, _activeDOTCounts.Length);
+        _slowRemainingTimes.Clear();
+        _health = _maxHealth;
+        IsSilenced = false;
+        IsSilencedExceptCleanse = false;
+        TempIsDead = false;
+    }
+    
     private void Start()
     {
         PlayerEvents.defeated += OnDefeated;
+        GameEvents.restarted += OnRestarted;
+        
         _playerMovement = GetComponent<PlayerMovement>();
         _effectRemainingTimes = new float[(int)EStatusEffect.MAX];
         _slowRemainingTimes = new SortedDictionary<float, float>(
             Comparer<float>.Create(delegate (float x, float y) { return y.CompareTo(x); })
         );
         _activeDOTCounts = new int[(int)EDamageType.MAX];
-        Debug.Assert(DebuffEffects.Length == 6);
     }
 
     private void Update()
@@ -132,10 +152,14 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     
     
     // IDamageable Override
+    
     public void TakeDamage(SDamageInfo damageInfo)
     {
+        // TODO Remove when monster fixed
+        if (TempIsDead) return;
+        
         // TEMP CODE
-        Utility.PrintDamageInfo("player", damageInfo);
+        Utility.PrintDamageInfo("Player", damageInfo);
         HandleNewDamages(damageInfo.Damages);
         HandleNewStatusEffects(damageInfo.StatusEffects);
     }    
@@ -151,9 +175,10 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     private void OnDefeated()
     {
         StopAllCoroutines();
-        Debug.Log("Player died.");
+        _animator.SetBool("IsDead", true);
+        TempIsDead = true;
+
         // TODO should save info somewhere, do progressive updates
-        Destroy(gameObject);
     }
 
     private IEnumerator DamageCoroutine(SDamage damage)
@@ -211,7 +236,11 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         _health = Mathf.Clamp(_health + amount, 0, _maxHealth);
         PlayerEvents.HPChanged.Invoke(amount, GetHPRatio());
         Debug.Log("Player HP: " + _health.ToString("0.00") + " (" + amount + ")");
-        if (_health == 0) PlayerEvents.defeated.Invoke();
+        if (_health == 0)
+        {
+            PlayerEvents.defeated.Invoke();
+            GameManager.Instance.IsFirstRun = false;
+        }
     }
 
     public float GetHPRatio()

@@ -19,7 +19,6 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     private LegacySO[][] _activeLegacySOByWarrior; //probs discard later
     private Dictionary<int, LegacySO> _activeLegacySODictionary;
     
-    
     private Texture2D[][] _vfxTexturesByWarrior;
     private GameObject[] _bulletsByWarrior;
     
@@ -32,6 +31,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     protected override void Awake()
     {
         base.Awake();
+        if (_toBeDestroyed) return;
         _legacyIconSpriteSheet = Resources.LoadAll<Sprite>("Sprites/Icons/Abilities/PlayerAbilitySpritesheet");
     }
 
@@ -317,14 +317,6 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     public EStatusEffect GetWarriorStatusEffect(EWarrior warrior, int level)
     {
         return _warriors[(int)warrior].Effects[level];
-    }
-    
-    public void ResetAttackVFXs()
-    {
-        for (int i = 0; i < 3; i++)
-        {
-            _playerDamageDealer.AttackBases[i].ResetVFXs();
-        }
     }
     
     public void UpdateAttackVFX(EWarrior warrior, ELegacyType attackType)
