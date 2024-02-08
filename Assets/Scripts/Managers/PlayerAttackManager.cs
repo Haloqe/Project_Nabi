@@ -196,21 +196,18 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
 #endif
     }
 
-
+#region Ability Collection
     //------------------------------------------------------------------------------------
-
-    public bool IsAbilityAlreadyBound(int abilityIdx)
+    public bool IsLegacyBound(int legacyIdx)
     {
-        //foreach (var activeAbility in _activeAbilities)
-        //{
-        //    if (activeAbility == null) continue;
-        //    if (activeAbility._data.Id == abilityIdx) return true;
-        //}
-        //foreach (var passiveAbility in _passiveAbilities)
-        //{
-        //    if (passiveAbility == null) continue;
-        //    if (passiveAbility._data.Id == abilityIdx) return true;
-        //}
+        foreach (var activeIdx in _collectedLegacies_Active)
+        {
+            if (activeIdx == legacyIdx) return true;
+        }
+        foreach (var passiveIdx in _collectedLegacies_Passive)
+        {
+            if (passiveIdx == legacyIdx) return true;
+        }
         return false;
     }
     
@@ -218,17 +215,22 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     {
         var legacyData = _legacies[legacyID];
         
-        // TODO Handle passive legacy
-        if (legacyData.Type == ELegacyType.Passive) return; 
-        
-        // Find and bind legacy SO
-        var legacyAsset = _activeLegacySODictionary[legacyID];
-        _playerDamageDealer.AttackBases[(int)legacyData.Type].BindActiveLegacy(legacyAsset);
+        if (legacyData.Type == ELegacyType.Passive)
+        {
+            // TODO Handle passive legacy
+        }
+        else
+        {
+            // Find and bind legacy SO
+            var legacyAsset = _activeLegacySODictionary[legacyID];
+            _playerDamageDealer.AttackBases[(int)legacyData.Type].BindActiveLegacy(legacyAsset);
 
-        // Update VFX
-        UpdateAttackVFX(legacyData.Warrior, legacyData.Type);
+            // Update VFX
+            UpdateAttackVFX(legacyData.Warrior, legacyData.Type);    
+        }
         
         // TODO Update UI
+        
     }
 
     public void BindActiveLegacy(int legacyID)
@@ -308,7 +310,8 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     {
         return _legacyIconSpriteSheet[_legacies[legacyID].IconIndex];
     }
-
+#endregion
+    
     public Texture2D GetWarriorVFXTexture(EWarrior warrior, EPlayerAttackType attack)
     {
         return _vfxTexturesByWarrior[(int)warrior][(int)attack];
