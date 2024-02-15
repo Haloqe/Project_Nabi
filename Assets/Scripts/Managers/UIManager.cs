@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -11,20 +10,21 @@ public class UIManager : Singleton<UIManager>
     private InputActionMap _playerIAMap;
     private InputActionMap _UIIAMap;
 
-    private UnityEngine.Object _defeatedUIPrefab;
-    private UnityEngine.Object _inGameCombatPrefab;
-    private UnityEngine.Object _metalContractUIPrefab;
-    private UnityEngine.Object _focusedOverlayPrefab;
-    private UnityEngine.Object _zoomedMapPrefab;
-    private UnityEngine.Object _loadingScreenPrefab;
+    private GameObject _defeatedUIPrefab;
+    private GameObject _inGameCombatPrefab;
+    private GameObject _focusedOverlayPrefab;
+    private GameObject _zoomedMapPrefab;
+    private GameObject _loadingScreenPrefab;
+    private GameObject[] _warriorUIPrefabs;
 
     private GameObject _defeatedUI;
     private GameObject _inGameCombatUI;
-    private GameObject _metalContractUI;
+    private GameObject _warriorUIObject;
     private GameObject _focusedOverlay;
     private GameObject _zoomedMap;
     private GameObject _loadingScreenUI;
-    
+
+    private WarriorUI _warriorUI;
     private MapController _mapController;
     private Slider _playerHPSlider;
     
@@ -53,6 +53,7 @@ public class UIManager : Singleton<UIManager>
         _UIIAMap.FindAction("Reset").performed += OnReset;
         _UIIAMap.FindAction("Zoom").performed += OnZoom;
         _UIIAMap.FindAction("Zoom").canceled += OnZoom;
+        _UIIAMap.FindAction("Submit").performed += OnSubmit;
     }
 
     public void UseUIControl()
@@ -70,7 +71,6 @@ public class UIManager : Singleton<UIManager>
         _focusedOverlay     = Instantiate(_focusedOverlayPrefab, Vector3.zero, Quaternion.identity).GameObject();
         _defeatedUI         = Instantiate(_defeatedUIPrefab, Vector3.zero, Quaternion.identity).GameObject();
         _inGameCombatUI     = Instantiate(_inGameCombatPrefab, Vector3.zero, Quaternion.identity).GameObject();
-        _metalContractUI    = Instantiate(_metalContractUIPrefab, Vector3.zero, Quaternion.identity).GameObject();
         _zoomedMap          = Instantiate(_zoomedMapPrefab, Vector3.zero, Quaternion.identity).GameObject();
         _mapController      = _zoomedMap.GetComponent<MapController>();
         _playerHPSlider     = _inGameCombatUI.GetComponentInChildren<Slider>();
@@ -100,13 +100,17 @@ public class UIManager : Singleton<UIManager>
     private void LoadAllUIPrefabs()
     {
         string path = "Prefabs/UI/";
-        _focusedOverlayPrefab   = Utility.LoadObjectFromPath(path + "InGame/FocusedCanvas");
-        _defeatedUIPrefab       = Utility.LoadObjectFromPath(path + "InGame/GameOverCanvas");
-        _inGameCombatPrefab     = Utility.LoadObjectFromPath(path + "InGame/CombatCanvas");
-        _metalContractUIPrefab  = Utility.LoadObjectFromPath(path + "InGame/Ability/MetalContractCanvas");
-        _zoomedMapPrefab        = Utility.LoadObjectFromPath(path + "InGame/ZoomedMap");
-        _loadingScreenPrefab    = Utility.LoadObjectFromPath(path + "LoadingCanvas");
+        _focusedOverlayPrefab   = Utility.LoadGameObjectFromPath(path + "InGame/FocusedCanvas");
+        _defeatedUIPrefab       = Utility.LoadGameObjectFromPath(path + "InGame/GameOverCanvas");
+        _inGameCombatPrefab     = Utility.LoadGameObjectFromPath(path + "InGame/CombatCanvas");
+        _zoomedMapPrefab        = Utility.LoadGameObjectFromPath(path + "InGame/ZoomedMap");
+        _loadingScreenPrefab    = Utility.LoadGameObjectFromPath(path + "LoadingCanvas");
         
+        _warriorUIPrefabs = new GameObject[(int)EWarrior.MAX];
+        for (int i = 0; i < (int)EWarrior.MAX; i++)
+        {
+            _warriorUIPrefabs[i] = Utility.LoadGameObjectFromPath(path + "InGame/WarriorUI_" + (EWarrior)i);
+        }
         _loadingScreenUI = Instantiate(_loadingScreenPrefab, Vector3.zero, Quaternion.identity).GameObject();
         DontDestroyOnLoad(_loadingScreenUI);
     }
@@ -139,24 +143,26 @@ public class UIManager : Singleton<UIManager>
         uiObject.SetActive(true);
     }
 
-    private void CloseFocusedUI()
+    public void CloseFocusedUI()
     {
-        //TODO remove null check
-        if (_playerIAMap != null) _playerIAMap.Enable();
+        if (!_activeFocusedUI) return;
         
+        if (_playerIAMap != null) _playerIAMap.Enable();
         _UIIAMap.Disable();
         _focusedOverlay.SetActive(false);
-        if (_activeFocusedUI)
-        {
-            _activeFocusedUI.SetActive(false);
-            _activeFocusedUI = null;
-        }
+        _activeFocusedUI.SetActive(false);
+        if (_activeFocusedUI == _warriorUIObject) Destroy(_warriorUIObject);
+        _activeFocusedUI = null;
     }
 
-    // public void LoadMetalContractUI(MetalContractItem contractItem)
-    // {
-    //     OpenFocusedUI(_metalContractUI);
-    // }
+    public void OpenWarriorUI(WarriorClockworkInteractor interactor)
+    {
+        _warriorUIObject = Instantiate(_warriorUIPrefabs[(int)interactor.warrior], Vector3.zero, Quaternion.identity).GameObject();
+        _warriorUI = _warriorUIObject.GetComponent<WarriorUI>();
+        _warriorUI.Initialize();
+        OpenFocusedUI(_warriorUIObject);
+        Destroy(interactor.gameObject);
+    }
 
     public void ToggleMap()
     {
@@ -175,7 +181,11 @@ public class UIManager : Singleton<UIManager>
     private void OnClose(InputAction.CallbackContext obj)
     {
         Debug.Log("UIManager::OnClose");
-        if (_activeFocusedUI)
+        if (_activeFocusedUI == _warriorUIObject)
+        {
+            _warriorUI.OnCancel();
+        }
+        else if (_activeFocusedUI)
         {
             CloseFocusedUI();
         }
@@ -186,6 +196,7 @@ public class UIManager : Singleton<UIManager>
     {
         var value = obj.ReadValue<Vector2>();
         if (_activeFocusedUI == _zoomedMap) _mapController.OnNavigate(value);
+        else if (_activeFocusedUI == _warriorUIObject) _warriorUI.OnNavigate(value); 
     }
     
     private void OnZoom(InputAction.CallbackContext obj)
@@ -199,6 +210,14 @@ public class UIManager : Singleton<UIManager>
         if (_activeFocusedUI == _zoomedMap)
         {
             _mapController.ResetMapCamera(true);
+        }
+    }
+
+    private void OnSubmit(InputAction.CallbackContext obj)
+    {
+        if (_activeFocusedUI == _warriorUIObject)
+        {
+            _warriorUI.OnSubmit();
         }
     }
 }

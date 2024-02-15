@@ -24,12 +24,12 @@ public static class Utility
         return false;
     }
 
-    public static UnityEngine.Object LoadObjectFromPath(string path)
+    public static Object LoadObjectFromPath(string path)
     {
         var loadedObject = Resources.Load(path);
         if (loadedObject == null)
         {
-            throw new FileNotFoundException("Object Load Failed " + path);
+            //throw new FileNotFoundException("Object Load Failed " + path);
         }
         return loadedObject;
     }

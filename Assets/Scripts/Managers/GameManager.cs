@@ -63,8 +63,8 @@ public class GameManager : Singleton<GameManager>
         if (!IsFirstRun) GameEvents.restarted.Invoke();
 
         // When all set, spawn player 
-        PlayerAttackManager.Instance.InitInGameVariables();
         LevelManager.Instance.SpawnPlayer();
+        PlayerAttackManager.Instance.InitInGameVariables();
         
         // End loading
         GameEvents.gameLoadEnded.Invoke();

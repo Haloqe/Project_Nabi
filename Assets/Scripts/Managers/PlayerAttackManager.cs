@@ -4,6 +4,7 @@ using System.IO;
 using UnityEngine.InputSystem;
 using UnityEngine;
 using System;
+using System.Linq;
 using UnityEngine.UI;
 using UnityEditor;
 
@@ -21,9 +22,9 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     
     private Texture2D[][] _vfxTexturesByWarrior;
     private GameObject[] _bulletsByWarrior;
-    
-    private List<int> _collectedLegacies_Active = new List<int>();
-    private List<int> _collectedLegacies_Passive = new List<int>();
+
+    private HashSet<int> _collectedLegacyIDs;
+    private int[] _boundActiveLegacyIDs;
     
     private Sprite[] _legacyIconSpriteSheet;
     private Image[] _activeLegacyIcons = new Image[4];
@@ -33,6 +34,8 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         base.Awake();
         if (_toBeDestroyed) return;
         _legacyIconSpriteSheet = Resources.LoadAll<Sprite>("Sprites/Icons/Abilities/PlayerAbilitySpritesheet");
+        _collectedLegacyIDs = new HashSet<int>();
+        _boundActiveLegacyIDs = new int[] {-1,-1,-1};
     }
 
     public void InitInGameVariables()
@@ -198,22 +201,21 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
 
 #region Ability Collection
     //------------------------------------------------------------------------------------
-    public bool IsLegacyBound(int legacyIdx)
+    public string GetBoundActiveLegacyName(ELegacyType legacyType)
     {
-        foreach (var activeIdx in _collectedLegacies_Active)
-        {
-            if (activeIdx == legacyIdx) return true;
-        }
-        foreach (var passiveIdx in _collectedLegacies_Passive)
-        {
-            if (passiveIdx == legacyIdx) return true;
-        }
-        return false;
+        int id = _boundActiveLegacyIDs[(int)legacyType];
+        return id == -1 ? String.Empty : _legacies[id].Names[(int)Define.Localisation];
+    }
+    
+    public bool IsLegacyCollected(int legacyIdx)
+    {
+        return _collectedLegacyIDs.Contains(legacyIdx);
     }
     
     public void CollectLegacy(int legacyID)
     {
         var legacyData = _legacies[legacyID];
+        Debug.Log("CollectLegacy: " + legacyData.Names[0]);
         
         if (legacyData.Type == ELegacyType.Passive)
         {
@@ -230,45 +232,6 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         }
         
         // TODO Update UI
-        
-    }
-
-    public void BindActiveLegacy(int legacyID)
-    {
-        //Debug.Log("Attempting to bind ability [" + abilityIdx + "] to action index [" + actionIdx + "]");
-        //Debug.Assert(actionIdx >= 0 && actionIdx < 5 && abilityIdx <= _abilities.Count());
-        //Debug.Assert(_abilities[abilityIdx].Type == ELegacyType.Active);
-
-        //// Return if already bound (probably not needed in the future when we have ui)
-        //if (IsAbilityAlreadyBound(abilityIdx))
-        //{
-        //    Debug.Log("The same action is already bound!");
-        //    return;
-        //}
-
-        //// Update input action
-        //UnbindAbility(actionIdx);
-        //ChangeActionBinding(actionIdx, null, _abilities[abilityIdx].Interaction.ToString());
-
-        //// Add the ability to the ability list
-        //_activeAbilities[actionIdx] = (ActiveAbilityBase)InitiateAbility(abilityIdx);
-
-        //// Set variables of the ability
-        //_activeAbilities[actionIdx]._data = _abilities[abilityIdx];
-        //_activeAbilities[actionIdx].BoundIndex = actionIdx;
-
-        //// Update UI
-        //_activeLegacyIcons[actionIdx].sprite = GetAbilityIconSprite(abilityIdx);
-        //_activeLegacyIcons[actionIdx].color = Color.white;
-
-        //// Register callbacks
-        //// TODO Later pass context as parameter if needed
-        //InputAction action = _playerInput.actions["Cast_" + actionIdx];
-        //action.started += _ => _activeAbilities[actionIdx].Activate();
-        //action.performed += _ => _activeAbilities[actionIdx].OnPerformed();
-        //action.canceled += _ => _activeAbilities[actionIdx].OnCanceled();
-
-        //Debug.Log("Successfully bound ability [" + abilityIdx + "] to action index [" + actionIdx + "]");
     }
 
     public void ChangeActionBinding(int actionIdx, string newBinding, string newInteraction)
@@ -281,32 +244,20 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         });
     }
 
-    private void UnbindAbility(int actionIdx)
+    public List<SLegacyData> GetBindableLegaciesByWarrior(EWarrior warrior)
     {
-        //if (_activeAbilities[actionIdx] == null) return;
-
-        //// Remove previous input action settings
-        //InputAction action = _playerInput.actions["Cast_" + actionIdx];
-        //action.RemoveAllBindingOverrides();
-        //action.started -= _ => _activeAbilities[actionIdx].Activate();
-        //action.performed -= _ => _activeAbilities[actionIdx].OnPerformed();
-        //action.canceled -= _ => _activeAbilities[actionIdx].OnCanceled();
-
-        //// Update UI
-        //_activeLegacyIcons[actionIdx].sprite = null;
-        //_activeLegacyIcons[actionIdx].color = Color.clear;
-
-        //// Remove ability component
-        //_activeAbilities[actionIdx].CleanUpAbility();
-        //_activeAbilities[actionIdx] = null;
+        // TODO prerequisite
+        
+        var legacies = _legaciesByWarrior[(int)warrior];
+        foreach (var legacy in legacies)
+        {
+            if (IsLegacyCollected(legacy.ID))
+                legacies.Remove(legacy);
+        }
+        return legacies;
     }
 
-    public List<SLegacyData> GetAbilitiesByWarrior(EWarrior warrior)
-    {
-        return _legaciesByWarrior[(int)warrior];    
-    }
-
-    public Sprite GetAbilityIconSprite(int legacyID)
+    public Sprite GetLegacyIcon(int legacyID)
     {
         return _legacyIconSpriteSheet[_legacies[legacyID].IconIndex];
     }

@@ -7,7 +7,7 @@ public abstract class Interactor : MonoBehaviour
 {
     private InputAction _interactAction;
 
-    private void Awake()
+    private void OnEnable()
     {
         _interactAction = FindObjectOfType<PlayerInput>().actions["Player/Interact"];
     }
