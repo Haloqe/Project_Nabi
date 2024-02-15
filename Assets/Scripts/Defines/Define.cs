@@ -24,6 +24,19 @@ public static class Define
         8,      // Intact
         10,     // Pristine
     };
+    public static string[,] WarriorNames = new string[,]
+    {
+        { "Sommer", "Euphoria", "Turbela", "Vernon", "NightShade" },
+        { "소머", "유포리아", "투르벨라", "버논", "나이트셰이드" },
+    };
+    public static Color[] WarriorMainColours = new Color[]
+    {
+        new Color(0.3686275f, 0.5727299f, 0.5960785f, 1f),
+        new Color(0.8962264f, 0.1070962f, 0.3534198f, 1f),
+        new Color(0.5811201f, 0.3677168f, 0.6320754f, 1f),
+        new Color(0.6778889f, 0.144654f, 0.8679245f, 1f),
+        new Color(0.505518f, 0.5366948f, 0.5660378f, 1f),
+    };
     public static string[,] LegacyPreservationNames = new string[,]
     {
         { "Weathered", "Tarnished", "Intact", "Pristine" },
@@ -32,8 +45,8 @@ public static class Define
     public static Color[] LegacyPreservationColors = new Color[]
     {
         new Color(0.6981132f, 0.4484543f, 0.05049241f, 1f),
-        new Color(0.5848541f, 0.764151f, 0.1057315f, 1f),
-        new Color(0.4980392f, 0.772549f, 1.0f, 1f),
-        new Color(1.0f, 0.8561112f, 1.0f, 1f),
+        new Color(0.5499584f, 0.581f, 0.584f, 1f),
+        new Color(0.8584906f, 0.73f, 0.37f, 1f),
+        new Color(0.663f, 0.89f, 0.941f, 1f),
     };
 }

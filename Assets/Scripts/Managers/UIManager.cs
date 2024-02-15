@@ -3,13 +3,19 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class UIManager : Singleton<UIManager>
 {
+    // Input Actions
+    private InputSystemUIInputModule _uiInputModule;
     private InputActionMap _playerIAMap;
     private InputActionMap _UIIAMap;
-
+    private InputActionReference _uiPointIARef;
+    private InputActionReference _playerPointIARef;
+    
+    // Prefabs
     private GameObject _defeatedUIPrefab;
     private GameObject _inGameCombatPrefab;
     private GameObject _focusedOverlayPrefab;
@@ -17,15 +23,19 @@ public class UIManager : Singleton<UIManager>
     private GameObject _loadingScreenPrefab;
     private GameObject[] _warriorUIPrefabs;
 
+    // UI Instantiated Objects
+    public GameObject inGameCombatUI;
     private GameObject _defeatedUI;
-    private GameObject _inGameCombatUI;
     private GameObject _warriorUIObject;
     private GameObject _focusedOverlay;
     private GameObject _zoomedMap;
     private GameObject _loadingScreenUI;
-
+    
+    // UI Mechanism Script
     private WarriorUI _warriorUI;
     private MapController _mapController;
+    
+    // Minor Controllable Objects
     private Slider _playerHPSlider;
     
     // UI Navigation
@@ -43,8 +53,9 @@ public class UIManager : Singleton<UIManager>
         PlayerEvents.spawned += OnPlayerSpawned;
         GameEvents.gameLoadStarted += OnGameLoadStarted;
         GameEvents.gameLoadEnded += OnGameLoadEnded;
-        
-        InputActionAsset IAAsset = FindObjectOfType<InputSystemUIInputModule>().actionsAsset;
+
+        _uiInputModule = FindObjectOfType<InputSystemUIInputModule>();
+        InputActionAsset IAAsset = _uiInputModule.actionsAsset;
         _UIIAMap = IAAsset.FindActionMap("UI");
         _UIIAMap.FindAction("Close").performed += OnClose;
         _UIIAMap.FindAction("CloseMap").performed += OnCloseMap;
@@ -54,6 +65,9 @@ public class UIManager : Singleton<UIManager>
         _UIIAMap.FindAction("Zoom").performed += OnZoom;
         _UIIAMap.FindAction("Zoom").canceled += OnZoom;
         _UIIAMap.FindAction("Submit").performed += OnSubmit;
+
+        _uiPointIARef = InputActionReference.Create(_UIIAMap.FindAction("Point"));
+        _playerPointIARef = InputActionReference.Create(_uiInputModule.point);
     }
 
     public void UseUIControl()
@@ -70,12 +84,12 @@ public class UIManager : Singleton<UIManager>
         
         _focusedOverlay     = Instantiate(_focusedOverlayPrefab, Vector3.zero, Quaternion.identity).GameObject();
         _defeatedUI         = Instantiate(_defeatedUIPrefab, Vector3.zero, Quaternion.identity).GameObject();
-        _inGameCombatUI     = Instantiate(_inGameCombatPrefab, Vector3.zero, Quaternion.identity).GameObject();
+        inGameCombatUI     = Instantiate(_inGameCombatPrefab, Vector3.zero, Quaternion.identity).GameObject();
         _zoomedMap          = Instantiate(_zoomedMapPrefab, Vector3.zero, Quaternion.identity).GameObject();
         _mapController      = _zoomedMap.GetComponent<MapController>();
-        _playerHPSlider     = _inGameCombatUI.GetComponentInChildren<Slider>();
+        _playerHPSlider     = inGameCombatUI.GetComponentInChildren<Slider>();
         _zoomedMap.SetActive(false);
-        _inGameCombatUI.SetActive(true);
+        inGameCombatUI.SetActive(true);
     }
     
     private void OnGameLoadEnded()
@@ -140,19 +154,21 @@ public class UIManager : Singleton<UIManager>
         _playerIAMap.Disable();
         _UIIAMap.Enable();
         _activeFocusedUI = uiObject;
+        _uiInputModule.point = _uiPointIARef;
         uiObject.SetActive(true);
     }
 
     public void CloseFocusedUI()
     {
         if (!_activeFocusedUI) return;
-        
         if (_playerIAMap != null) _playerIAMap.Enable();
+        if (_activeFocusedUI == _warriorUIObject) Destroy(_warriorUIObject);
+        
         _UIIAMap.Disable();
         _focusedOverlay.SetActive(false);
         _activeFocusedUI.SetActive(false);
-        if (_activeFocusedUI == _warriorUIObject) Destroy(_warriorUIObject);
         _activeFocusedUI = null;
+        _uiInputModule.point = _playerPointIARef;
     }
 
     public void OpenWarriorUI(WarriorClockworkInteractor interactor)

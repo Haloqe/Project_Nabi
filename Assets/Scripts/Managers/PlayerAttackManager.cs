@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 using UnityEngine;
 using System;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine.UI;
 using UnityEditor;
 
@@ -28,6 +29,10 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     
     private Sprite[] _legacyIconSpriteSheet;
     private Image[] _activeLegacyIcons = new Image[4];
+    private Image[] _activeLegacyOverlays = new Image[4];
+    private Transform _passiveLegacyGroup;
+    private GameObject _passiveLegacySlotPrefab;
+    private LegacySlotUI[] _activeLegacySlots = new LegacySlotUI[4];
 
     protected override void Awake()
     {
@@ -36,6 +41,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         _legacyIconSpriteSheet = Resources.LoadAll<Sprite>("Sprites/Icons/Abilities/PlayerAbilitySpritesheet");
         _collectedLegacyIDs = new HashSet<int>();
         _boundActiveLegacyIDs = new int[] {-1,-1,-1};
+        _passiveLegacySlotPrefab = Utility.LoadGameObjectFromPath("Prefabs/UI/InGame/PassiveLegacySlot");
     }
 
     public void InitInGameVariables()
@@ -43,11 +49,17 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         _playerInput = FindObjectOfType<PlayerInput>();
         _playerDamageDealer = FindObjectOfType<PlayerDamageDealer>();
 
-        var abilityGroup = GameObject.Find("AbilityLayoutGroup").transform;
+        // UI 
+        var combatCanvas = UIManager.Instance.inGameCombatUI;
+        var activeLegacyGroup = combatCanvas.transform.Find("ActiveLayoutGroup").transform;
         for (int i = 0; i < 4; i++)
         {
-            _activeLegacyIcons[i] = abilityGroup.Find("Slot_" + i).Find("AbilityIcon").GetComponent<Image>();
+             var slot = activeLegacyGroup.Find("Slot_" + i);
+             _activeLegacyIcons[i] = slot.Find("AbilityIcon").GetComponent<Image>();
+             _activeLegacyOverlays[i] = slot.Find("Overlay").GetComponent<Image>();
+             _activeLegacySlots[i] = slot.AddComponent<LegacySlotUI>();
         }
+        _passiveLegacyGroup = combatCanvas.transform.Find("PassiveLayoutGroup").transform;
     }
     
     public void Init()
@@ -215,23 +227,35 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     public void CollectLegacy(int legacyID)
     {
         var legacyData = _legacies[legacyID];
-        Debug.Log("CollectLegacy: " + legacyData.Names[0]);
+        Debug.Log("CollectLegacy: " + legacyData.Names[1]);
         
         if (legacyData.Type == ELegacyType.Passive)
         {
             // TODO Handle passive legacy
+            
+            // Update UI
+            var slotObj = Instantiate(_passiveLegacySlotPrefab, _passiveLegacyGroup);
+            slotObj.AddComponent<LegacySlotUI>().Init(legacyData.Warrior, legacyData.Names, legacyData.Descs);
+            slotObj.GetComponent<Image>().sprite = GetLegacyIcon(legacyID);
         }
         else
         {
             // Find and bind legacy SO
+            int legacyTypeIdx = (int)legacyData.Type;
             var legacyAsset = _activeLegacySODictionary[legacyID];
-            _playerDamageDealer.AttackBases[(int)legacyData.Type].BindActiveLegacy(legacyAsset);
+            _playerDamageDealer.AttackBases[legacyTypeIdx].BindActiveLegacy(legacyAsset);
+            _boundActiveLegacyIDs[legacyTypeIdx] = legacyID;
 
             // Update VFX
-            UpdateAttackVFX(legacyData.Warrior, legacyData.Type);    
+            UpdateAttackVFX(legacyData.Warrior, legacyData.Type);  
+            
+            // Update UI
+            _activeLegacyIcons[legacyTypeIdx].sprite = GetLegacyIcon(legacyID);
+            _activeLegacyIcons[legacyTypeIdx].color = Color.white;
+            _activeLegacyOverlays[legacyTypeIdx].fillAmount = 0;
+            _activeLegacySlots[legacyTypeIdx].Init(legacyData.Warrior, legacyData.Names, legacyData.Descs);
         }
-        
-        // TODO Update UI
+        _collectedLegacyIDs.Add(legacyID);
     }
 
     public void ChangeActionBinding(int actionIdx, string newBinding, string newInteraction)
@@ -247,14 +271,9 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     public List<SLegacyData> GetBindableLegaciesByWarrior(EWarrior warrior)
     {
         // TODO prerequisite
-        
         var legacies = _legaciesByWarrior[(int)warrior];
-        foreach (var legacy in legacies)
-        {
-            if (IsLegacyCollected(legacy.ID))
-                legacies.Remove(legacy);
-        }
-        return legacies;
+        var bindables = legacies.Where(legacy => !IsLegacyCollected(legacy.ID)).ToList();
+        return bindables;
     }
 
     public Sprite GetLegacyIcon(int legacyID)
