@@ -154,7 +154,6 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                 SLegacyData data = new SLegacyData
                 {
                     ID = int.Parse(csv.GetField("ID")),
-                    AssetName = csv.GetField("AssetName"),
                     Names = names,
                     Descs = descs,
                     IconIndex = int.Parse(csv.GetField("IconIndex")),
@@ -191,7 +190,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                 LegacySO legacyAsset = null;
 #if UNITY_EDITOR
                 // Otherwise, create asset if file does not exist
-                string assetPath = basePath + legacy.AssetName + ".asset";
+                string assetPath = basePath + legacy.Names[(int)ELocalisation.KOR] + ".asset";
                 if (!File.Exists(assetPath))
                 {
                     legacyAsset = (LegacySO)ScriptableObject.CreateInstance("Legacy_" + legacy.Type);
@@ -200,7 +199,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
 #endif
                 // Add asset to array
                 if (legacyAsset == null)
-                    legacyAsset = Resources.Load<LegacySO>("Legacies/"  + (EWarrior)warrior + "/" + legacy.AssetName);
+                    legacyAsset = Resources.Load<LegacySO>("Legacies/"  + (EWarrior)warrior + "/" + legacy.Names[(int)ELocalisation.KOR]);
                 legacyAsset.Warrior = legacy.Warrior;
                 _activeLegacySOByWarrior[warrior][(int)legacy.Type] = legacyAsset;
                 _activeLegacySODictionary.Add(legacy.ID, legacyAsset);

@@ -74,7 +74,6 @@ public struct SWarrior
 public struct SLegacyData
 {
     public int ID;
-    public string AssetName;
     public List<string> Names;
     public List<string> Descs;
     public int IconIndex;
