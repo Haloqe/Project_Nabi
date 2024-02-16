@@ -213,7 +213,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         return id == -1 ? String.Empty : _legacies[id].Names[(int)Define.Localisation];
     }
     
-    public bool IsLegacyCollected(int legacyIdx)
+    private bool IsLegacyCollected(int legacyIdx)
     {
         return _collectedLegacyIDs.Contains(legacyIdx);
     }
@@ -221,11 +221,14 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     public void CollectLegacy(int legacyID, ELegacyPreservation preservation)
     {
         var legacyData = _legacies[legacyID];
-        Debug.Log("CollectLegacy: " + legacyData.Names[1]);
+        int legacyTypeIdx = (int)legacyData.Type;
+        var legacyAsset = _legacySODictionary[legacyID];
+        Debug.Log("CollectLegacy: [" + preservation + "] " + legacyData.Names[1]);
         
         if (legacyData.Type == ELegacyType.Passive)
         {
-            // TODO Handle passive legacy
+            // Find and bind legacy SO
+            BindPassiveLegacy((PassiveLegacySO)legacyAsset, preservation);
             
             // Update UI
             var slotObj = Instantiate(_passiveLegacySlotPrefab, _passiveLegacyGroup);
@@ -235,8 +238,6 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         else
         {
             // Find and bind legacy SO
-            int legacyTypeIdx = (int)legacyData.Type;
-            var legacyAsset = _legacySODictionary[legacyID];
             _playerDamageDealer.AttackBases[legacyTypeIdx].BindActiveLegacy((ActiveLegacySO)legacyAsset, preservation);
             _boundActiveLegacyIDs[legacyTypeIdx] = legacyID;
 
@@ -252,6 +253,33 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         _collectedLegacyIDs.Add(legacyID);
     }
 
+    private void BindPassiveLegacy(PassiveLegacySO legacySO, ELegacyPreservation preservation)
+    {
+        int preservationIdx = (int)preservation;
+        switch (legacySO.BuffType)
+        {
+            case EBuffType.StatusEffectUpgrade:
+                break;
+            
+            case EBuffType.StatUpgrade:
+                break;
+            
+            case EBuffType.HealEfficiency_Food:
+                PlayerController.Instance.HealEfficiency = Utility.GetChangedValue(PlayerController.Instance.HealEfficiency,
+                    legacySO.IncreaseAmounts[preservationIdx], legacySO.IncreaseMethod);
+                break;
+            
+            case EBuffType.SpawnAreaIncrease:
+                break;
+            
+            case EBuffType.EnemyGoldDropRate:
+                break;
+            
+            case EBuffType.EnemyItemDropRate:
+                break;
+        }
+    }
+    
     public void ChangeActionBinding(int actionIdx, string newBinding, string newInteraction)
     {
         InputAction action = _playerInput.actions["Cast_" + actionIdx];

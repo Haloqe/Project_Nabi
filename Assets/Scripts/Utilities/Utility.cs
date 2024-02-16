@@ -119,4 +119,22 @@ public static class Utility
 
         return duration;
     }
+    
+    public static float GetChangedValue(float prevValue, float changeAmount, EIncreaseMethod changeMethod)
+    {
+        switch (changeMethod)
+        {
+            case EIncreaseMethod.Constant:
+                return prevValue + changeAmount;
+            
+            case EIncreaseMethod.Percent:
+                return prevValue + prevValue * (1 + changeAmount);
+            
+            case EIncreaseMethod.PercentPoint:
+                return prevValue + changeAmount;
+            
+            default:
+                return prevValue;
+        }
+    }
 }

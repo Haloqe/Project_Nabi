@@ -11,6 +11,9 @@ public class PlayerController : Singleton<PlayerController>
     private PlayerDamageDealer _playerDamageDealer;
     public PlayerInventory playerInventory;
     
+    // Centrally controlled variables
+    public float HealEfficiency = 1.0f;
+    
     protected override void Awake()
     {
         base.Awake();
@@ -64,6 +67,6 @@ public class PlayerController : Singleton<PlayerController>
     // Heal is exclusively used for increase of health from food items
     public void Heal(float amount)
     {
-        _playerDamageReceiver.ChangeHealthByAmount(amount, false);
+        _playerDamageReceiver.ChangeHealthByAmount(amount * HealEfficiency, false);
     }
 }
