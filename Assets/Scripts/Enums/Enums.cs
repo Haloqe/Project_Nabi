@@ -24,6 +24,8 @@ public enum EDamageType
 
 public enum EStatusEffect
 {
+    None,
+    
     // Base
     Sommer,
     Drowsiness,
@@ -96,6 +98,39 @@ public enum ELegacyPreservation
     [InspectorName(null)]MAX,
 }
 
+public enum EBuffType
+{
+    None,
+    StatusEffectUpgrade,    
+    EnemyItemDropRate,
+    EnemyGoldDropRate,
+    SpawnAreaIncrease,
+    StatUpgrade,
+}
+
+public enum EStatusEffectUpgradeType
+{
+    Duration,
+    Strength,
+    Probability,
+}
+
+public enum EIncreaseMethod
+{
+    Constant,
+    Percent,
+    PercentPoint,
+}
+
+public enum EStat
+{
+    Health,
+    Strength,
+    CriticalChance,
+    Armour,
+    ArmourPenetration,
+}
+
 public enum EWarrior
 {
     Sommer,
@@ -123,6 +158,18 @@ public enum EItemObtainMethod
     Boss    = 8,
 }
 #endregion Legacy
+
+#region Item
+public enum ERarity
+{
+    Undefined,
+    Common, 
+    Uncommon,
+    Rare,
+    Epic,
+    Legendary,
+}
+#endregion
 
 #region Enemy
 public enum EEnemyMoveType

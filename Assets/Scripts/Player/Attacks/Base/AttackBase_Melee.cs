@@ -171,8 +171,8 @@ public class AttackBase_Melee : AttackBase
             PlayerAttackManager.Instance.GetWarriorStatusEffect(_activeLegacy.Warrior,
                 _damageDealer.GetStatusEffectLevel(_activeLegacy.Warrior));
         var newEffect = new SStatusEffect(warriorSpecificEffect,
-            _activeLegacy.StatusEffectStrength[(int)_activeLegacyPreservation],
-            _activeLegacy.StatusEffectDuration[(int)_activeLegacyPreservation]);
+            _activeLegacy.StatusEffectStrengths[(int)_activeLegacyPreservation],
+            _activeLegacy.StatusEffectDurations[(int)_activeLegacyPreservation]);
         newStatusEffectsCombo.Add(newEffect);
         _damageCombo.StatusEffects = newStatusEffectsCombo;
     }

@@ -21,9 +21,10 @@ public class WarriorUI : MonoBehaviour
     private Outline[] _panelOutlines;
     [SerializeField] private GameObject[] _legacyPanels;
     
-    public void Initialize()
+    public void Initialise(EWarrior warrior)
     {
         // Initialise variables
+        _warrior = warrior;
         _legacyPreservations = new ELegacyPreservation[3];
         _panelOutlines = new Outline[4];
         _legacyFullNames = new string[3];
@@ -71,7 +72,7 @@ public class WarriorUI : MonoBehaviour
         
         // Initialise color
         var baseColor = _panelOutlines[0].effectColor;
-        _hoveredColor = new Color(baseColor.r, baseColor.g, baseColor.b , 0.04f);
+        _hoveredColor = new Color(baseColor.r, baseColor.g, baseColor.b , 0.08f);
         _selectedColor = new Color(baseColor.r, baseColor.g, baseColor.b , 0.3f);
         
         // Highlight the first panel by default
@@ -109,7 +110,7 @@ public class WarriorUI : MonoBehaviour
         // Passive
         if (_legacies[index].Type == ELegacyType.Passive)
         {
-            CollectLegacy(_legacies[index].ID);
+            CollectLegacy(index);
             return;
         }
         
@@ -126,9 +127,9 @@ public class WarriorUI : MonoBehaviour
         }
     }
 
-    private void CollectLegacy(int legacyID)
+    private void CollectLegacy(int panelIndex)
     {
-        PlayerAttackManager.Instance.CollectLegacy(legacyID);
+        PlayerAttackManager.Instance.CollectLegacy(_legacies[panelIndex].ID, _legacyPreservations[panelIndex]);
         UIManager.Instance.CloseFocusedUI();   
     }
     

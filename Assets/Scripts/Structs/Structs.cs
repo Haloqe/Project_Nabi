@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -81,6 +82,24 @@ public struct SLegacyData
     public ELegacyType Type;
     public int[] PrerequisiteIDs;
     //EItemObtainMethod ObtainMethod;
+}
+
+[Serializable]
+public struct SLegacyStatusEffectUpgradeData
+{
+    public EStatusEffectUpgradeType UpgradeType;
+    public EIncreaseMethod IncreaseMethod;
+    [NamedArray(typeof(ELegacyPreservation))]
+    public float[] IncreaseAmounts;
+}
+
+[Serializable]
+public struct SLegacyStatUpgradeData
+{
+    public EStat Stat;
+    public EIncreaseMethod IncreaseMethod;
+    [NamedArray(typeof(ELegacyPreservation))]
+    public float[] IncreaseAmounts;
 }
 
 //public struct SRelicData

@@ -175,7 +175,7 @@ public class UIManager : Singleton<UIManager>
     {
         _warriorUIObject = Instantiate(_warriorUIPrefabs[(int)interactor.warrior], Vector3.zero, Quaternion.identity).GameObject();
         _warriorUI = _warriorUIObject.GetComponent<WarriorUI>();
-        _warriorUI.Initialize();
+        _warriorUI.Initialise(interactor.warrior);
         OpenFocusedUI(_warriorUIObject);
         Destroy(interactor.gameObject);
     }

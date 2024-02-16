@@ -18,7 +18,7 @@ public abstract class AttackBase : MonoBehaviour
     private Material _defaultVFXMaterial;
     
     // Legacy
-    protected LegacySO _activeLegacy;
+    protected ActiveLegacySO _activeLegacy;
     protected ELegacyPreservation _activeLegacyPreservation;
     
     public virtual void Reset()
@@ -61,11 +61,11 @@ public abstract class AttackBase : MonoBehaviour
         return _activeLegacy == null;
     }
 
-    public void BindActiveLegacy(LegacySO legacyAsset)
+    public void BindActiveLegacy(ActiveLegacySO legacyAsset, ELegacyPreservation preservation)
     {
-        legacyAsset.PlayerTransform = gameObject.transform;
+        _activeLegacyPreservation = preservation;
         _activeLegacy = legacyAsset;
-        _activeLegacy.Init();
+        _activeLegacy.Init(gameObject.transform);
         OnUpdateLegacyStatusEffect();
         OnUpdateLegacyPreservation();
     }
@@ -82,12 +82,21 @@ public abstract class AttackBase : MonoBehaviour
         // Update status effect of base damage
         var newStatusEffectsBase = _damageBase.StatusEffects;
         var newEffect = new SStatusEffect(warriorSpecificEffect,
-            _activeLegacy.StatusEffectStrength[(int)_activeLegacyPreservation],
-            _activeLegacy.StatusEffectDuration[(int)_activeLegacyPreservation]);
+            _activeLegacy.StatusEffectStrengths[(int)_activeLegacyPreservation],
+            _activeLegacy.StatusEffectDurations[(int)_activeLegacyPreservation]);
         newStatusEffectsBase.Add(newEffect);
-        _damageBase.StatusEffects = newStatusEffectsBase;
+        
+        // Additional status effect
+        if (_activeLegacy.ExtraStatusEffect != EStatusEffect.None)
+        {
+            newEffect = new SStatusEffect(_activeLegacy.ExtraStatusEffect,
+                _activeLegacy.ExtraStatusEffectStrengths[(int)_activeLegacyPreservation],
+                _activeLegacy.ExtraStatusEffectDurations[(int)_activeLegacyPreservation]);
+            newStatusEffectsBase.Add(newEffect);
+        }
         
         // Update status effect of objects spawned from legacy
+        _damageBase.StatusEffects = newStatusEffectsBase;
         _activeLegacy.OnUpdateStatusEffect(warriorSpecificEffect);
     }
 
@@ -97,7 +106,7 @@ public abstract class AttackBase : MonoBehaviour
         if (_damageInitBase.Damages.Count == 0) return;
         
         var newBaseDamage = _damageInitBase.Damages[0];
-        newBaseDamage.TotalAmount *= _activeLegacy.BaseDamageMultiplier[(int)_activeLegacyPreservation];
+        newBaseDamage.TotalAmount *= _activeLegacy.BaseDamageMultipliers[(int)_activeLegacyPreservation];
         _damageBase.Damages[0] = newBaseDamage;
     }
 }

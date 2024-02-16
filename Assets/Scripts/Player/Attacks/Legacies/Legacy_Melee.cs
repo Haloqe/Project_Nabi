@@ -1,8 +1,9 @@
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "LegacyMelee", menuName = "LegacyData/LegacyData_Melee")]
-public class Legacy_Melee : LegacySO
+public class Legacy_Melee : ActiveLegacySO
 {
+    [Header("Attack Type Specific Settings")]
     // Prefab object to spawn upon combo hit attack
     public GameObject ComboHitSpawnObject;
     [NamedArray(typeof(ELegacyPreservation))]
@@ -11,16 +12,18 @@ public class Legacy_Melee : LegacySO
     // Object Spawn positions
     private Vector3[] _comboSpawnOffsets;
     
-    public override void Init()
+    public override void Init(Transform playerTransform)
     {
+        _playerTransform = playerTransform;
+        if (!ComboHitSpawnObject) return;
+        
         // Pre-calculate object spawn positions
         var position = ComboHitSpawnObject.transform.position;
         _comboSpawnOffsets = new Vector3[2]; // [0] left, [1] right
         _comboSpawnOffsets[0] = position;
         _comboSpawnOffsets[1] = new Vector3(-position.x, position.y, 0);
-        if (ComboHitSpawnObject)
-            ComboHitSpawnObject.GetComponent<AttackSpawnObject>().PlayerDamageDealer 
-                = PlayerTransform.gameObject.GetComponent<PlayerDamageDealer>();
+        ComboHitSpawnObject.GetComponent<AttackSpawnObject>().PlayerDamageDealer 
+            = _playerTransform.gameObject.GetComponent<PlayerDamageDealer>();
     }
     public override void OnUpdateStatusEffect(EStatusEffect newEffect)
     {
@@ -36,10 +39,10 @@ public class Legacy_Melee : LegacySO
     // Do something upon combo attack
     public void OnAttack_Combo()
     {
-        if (ComboHitSpawnObject != null)
+        if (ComboHitSpawnObject)
         {
             Instantiate(ComboHitSpawnObject, 
-                PlayerTransform.position + (PlayerTransform.localScale.x > 0 ? _comboSpawnOffsets[0] : _comboSpawnOffsets[1]),
+                _playerTransform.position + (_playerTransform.localScale.x > 0 ? _comboSpawnOffsets[0] : _comboSpawnOffsets[1]),
                 Quaternion.identity);
         }
     } 

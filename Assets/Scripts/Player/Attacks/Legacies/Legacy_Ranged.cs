@@ -2,8 +2,9 @@ using UnityEngine;
 using UnityEngine.Serialization;
 
 [CreateAssetMenu(fileName = "LegacyData_Ranged", menuName = "LegacyData/LegacyData_Ranged")]
-public class Legacy_Ranged : LegacySO
+public class Legacy_Ranged : ActiveLegacySO
 {
+    [Header("Attack Type Specific Settings")]
     // 플레이어의 위치를 원점으로, 총알이 나갈 때 생성할 오브젝트
     public GameObject AttackSpawnObject;
     
@@ -12,9 +13,10 @@ public class Legacy_Ranged : LegacySO
     
     public float BulletSpeedMultiplier = 1.0f;
 
-    public override void Init()
+    public override void Init(Transform playerTransform)
     {
-        var player = PlayerTransform.gameObject.GetComponent<PlayerDamageDealer>();
+        _playerTransform = playerTransform;
+        var player = _playerTransform.gameObject.GetComponent<PlayerDamageDealer>();
         if (AttackSpawnObject)
             AttackSpawnObject.GetComponent<AttackSpawnObject>().PlayerDamageDealer = player;
         if (BulletDestroySpawnObject)

@@ -18,8 +18,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     private Dictionary<int, SLegacyData> _legacies;
     private List<List<SLegacyData>> _legaciesByWarrior;
     
-    private LegacySO[][] _activeLegacySOByWarrior; //probs discard later
-    private Dictionary<int, LegacySO> _activeLegacySODictionary;
+    private Dictionary<int, LegacySO> _legacySODictionary;
     
     private Texture2D[][] _vfxTexturesByWarrior;
     private GameObject[] _bulletsByWarrior;
@@ -174,35 +173,31 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
 
     private void Init_LegacySOs()
     {
-        _activeLegacySOByWarrior = new LegacySO[(int)EWarrior.MAX][];
-        _activeLegacySODictionary = new Dictionary<int, LegacySO>((int)EWarrior.MAX * 3); // melee, ranged, dash for each warrior
+        _legacySODictionary = new Dictionary<int, LegacySO>();
         
-        // Create Assets
-        // Values uninitialised
+        // Create scriptable object assets with values uninitialised
         for (int warrior = 0; warrior < (int)EWarrior.MAX; warrior++)
         {
-            _activeLegacySOByWarrior[warrior] = new LegacySO[3];
             string basePath = "Assets/Resources/Legacies/" + (EWarrior)warrior + "/";
             foreach (var legacy in _legaciesByWarrior[warrior])
             {
-                // Do not create scriptable object asset for passive legacies
-                if (legacy.Type == ELegacyType.Passive) continue;
                 LegacySO legacyAsset = null;
-#if UNITY_EDITOR
-                // Otherwise, create asset if file does not exist
                 string assetPath = basePath + legacy.Names[(int)ELocalisation.KOR] + ".asset";
+#if UNITY_EDITOR
+                // Create scriptable object asset if file does not exist
                 if (!File.Exists(assetPath))
                 {
-                    legacyAsset = (LegacySO)ScriptableObject.CreateInstance("Legacy_" + legacy.Type);
+                    string className = legacy.Type == ELegacyType.Passive ? "PassiveLegacySO" : "Legacy_" + legacy.Type;
+                    legacyAsset = (LegacySO)ScriptableObject.CreateInstance(className);
                     AssetDatabase.CreateAsset(legacyAsset, assetPath);
                 }
 #endif
                 // Add asset to array
                 if (legacyAsset == null)
                     legacyAsset = Resources.Load<LegacySO>("Legacies/"  + (EWarrior)warrior + "/" + legacy.Names[(int)ELocalisation.KOR]);
+                Debug.Assert(legacyAsset);
                 legacyAsset.Warrior = legacy.Warrior;
-                _activeLegacySOByWarrior[warrior][(int)legacy.Type] = legacyAsset;
-                _activeLegacySODictionary.Add(legacy.ID, legacyAsset);
+                _legacySODictionary.Add(legacy.ID, legacyAsset);
             }
         }
 #if UNITY_EDITOR
@@ -223,7 +218,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         return _collectedLegacyIDs.Contains(legacyIdx);
     }
     
-    public void CollectLegacy(int legacyID)
+    public void CollectLegacy(int legacyID, ELegacyPreservation preservation)
     {
         var legacyData = _legacies[legacyID];
         Debug.Log("CollectLegacy: " + legacyData.Names[1]);
@@ -241,8 +236,8 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         {
             // Find and bind legacy SO
             int legacyTypeIdx = (int)legacyData.Type;
-            var legacyAsset = _activeLegacySODictionary[legacyID];
-            _playerDamageDealer.AttackBases[legacyTypeIdx].BindActiveLegacy(legacyAsset);
+            var legacyAsset = _legacySODictionary[legacyID];
+            _playerDamageDealer.AttackBases[legacyTypeIdx].BindActiveLegacy((ActiveLegacySO)legacyAsset, preservation);
             _boundActiveLegacyIDs[legacyTypeIdx] = legacyID;
 
             // Update VFX
