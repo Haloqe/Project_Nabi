@@ -4,7 +4,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "LegacyData_Dash", menuName = "LegacyData/LegacyData_Dash")]
 public class Legacy_Dash : ActiveLegacySO
 {
-    [Header("Attack Type Specific Settings")]
+    [Space(15)][Header("Attack Type Specific Settings")]
     public GameObject SpawnObject_Pre;
     public GameObject SpawnObject_Peri;
     public GameObject SpawnObject_Post;

@@ -3,7 +3,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "LegacyMelee", menuName = "LegacyData/LegacyData_Melee")]
 public class Legacy_Melee : ActiveLegacySO
 {
-    [Header("Attack Type Specific Settings")]
+    [Space(15)][Header("Attack Type Specific Settings")]
     // Prefab object to spawn upon combo hit attack
     public GameObject ComboHitSpawnObject;
     [NamedArray(typeof(ELegacyPreservation))]

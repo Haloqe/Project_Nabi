@@ -4,10 +4,13 @@ using UnityEngine.Serialization;
 public abstract class ActiveLegacySO : LegacySO
 {
     protected Transform _playerTransform;
-    
-    [Header("Warrior Base Damage")]
+
+    [Space(10)][Header("Damage")] 
+    public EIncreaseMethod DamageIncreaseMethod;
     [NamedArray(typeof(ELegacyPreservation))] public float[] 
-        BaseDamageMultipliers = new float[4]{1,1,1,1};
+        AdditionalDamage = new float[4]{1,1,1,1};
+    
+    [Space(10)][Header("Default Status Effect")]
     [NamedArray(typeof(ELegacyPreservation))] public float[] 
         StatusEffectDurations = new float[4]{0,0,0,0};
     [NamedArray(typeof(ELegacyPreservation))] public float[] 
@@ -15,7 +18,7 @@ public abstract class ActiveLegacySO : LegacySO
     [NamedArray(typeof(ELegacyPreservation))] public float[] 
         StatusEffectProbabilites = new float[4]{0,0,0,0};
     
-    [Header("Additional Status Effect")]
+    [Space(10)][Header("Additional Status Effect")]
     public EStatusEffect ExtraStatusEffect;
     [NamedArray(typeof(ELegacyPreservation))] public float[] 
         ExtraStatusEffectDurations = new float[4]{0,0,0,0};

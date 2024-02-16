@@ -3,11 +3,13 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : Singleton<PlayerController>
 {
+    // Reference to other player components
     private Animator _animator;
     private PlayerInput _playerInput;
     private PlayerMovement _playerMovement;
-    private PlayerDamageReceiver _playerCombat;
-    private PlayerDamageDealer _playerAttack;
+    private PlayerDamageReceiver _playerDamageReceiver;
+    private PlayerDamageDealer _playerDamageDealer;
+    public PlayerInventory playerInventory;
     
     protected override void Awake()
     {
@@ -16,15 +18,16 @@ public class PlayerController : Singleton<PlayerController>
         
         _playerInput = GetComponent<PlayerInput>();
         _playerMovement = GetComponent<PlayerMovement>();
-        _playerCombat = GetComponent<PlayerDamageReceiver>();
-        _playerAttack = GetComponent<PlayerDamageDealer>();
+        _playerDamageReceiver = GetComponent<PlayerDamageReceiver>();
+        _playerDamageDealer = GetComponent<PlayerDamageDealer>();
+        playerInventory = GetComponent<PlayerInventory>();
         _animator = GetComponent<Animator>();
         
         // Input Binding for Attacks
-        _playerInput.actions["Attack_Melee"].performed += _ => _playerAttack.OnAttack(0);
-        _playerInput.actions["Attack_Range"].performed += _ => _playerAttack.OnAttack(1);
-        _playerInput.actions["Attack_Dash"].performed += _ => _playerAttack.OnAttack(2);
-        _playerInput.actions["Attack_Area"].performed += _ => _playerAttack.OnAttack(3);
+        _playerInput.actions["Attack_Melee"].performed += _ => _playerDamageDealer.OnAttack(0);
+        _playerInput.actions["Attack_Range"].performed += _ => _playerDamageDealer.OnAttack(1);
+        _playerInput.actions["Attack_Dash"].performed += _ => _playerDamageDealer.OnAttack(2);
+        _playerInput.actions["Attack_Area"].performed += _ => _playerDamageDealer.OnAttack(3);
         
         // Events binding
         GameEvents.restarted += OnRestarted;
@@ -49,20 +52,18 @@ public class PlayerController : Singleton<PlayerController>
     private int count = -1;
     void OnTestAction(InputValue value)
     {
-        if (count == -1)
-        {
-            PlayerAttackManager.Instance.UpdateAttackVFX(EWarrior.Vernon, ELegacyType.Melee);
-            PlayerAttackManager.Instance.UpdateAttackVFX(EWarrior.Vernon, ELegacyType.Ranged);
-            PlayerAttackManager.Instance.UpdateAttackVFX(EWarrior.Vernon, ELegacyType.Dash);
-            // PlayerAttackManager.Instance.CollectLegacy(0); // melee
-            // PlayerAttackManager.Instance.CollectLegacy(1); // range
-            // PlayerAttackManager.Instance.CollectLegacy(2); // dash
-            count++;
-        }
+        playerInventory.ChangeGoldByAmount(100);
     }
     
     private void OnOpenMap(InputValue value)
     {
         UIManager.Instance.ToggleMap();
+    }
+    
+    
+    // Heal is exclusively used for increase of health from food items
+    public void Heal(float amount)
+    {
+        _playerDamageReceiver.ChangeHealthByAmount(amount, false);
     }
 }

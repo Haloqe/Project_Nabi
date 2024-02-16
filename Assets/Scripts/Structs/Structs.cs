@@ -167,7 +167,7 @@ public struct SFoodInfo
     public string Name;
     public string Description;
     public float HealthPoint;
-    public float Price;
+    public int Price;
     public int SpriteIndex;
 }
 #endregion

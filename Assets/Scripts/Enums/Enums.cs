@@ -10,6 +10,8 @@ public enum ELocalisation
 }
 #endregion Settings
 
+//--------------------------------------------------------------------------------
+
 #region Common
 public enum EDamageType
 {
@@ -54,6 +56,8 @@ public enum EStatusEffect
 }
 #endregion Common
 
+//--------------------------------------------------------------------------------
+
 #region Legacy
 public enum ELegacyType
 {
@@ -64,7 +68,63 @@ public enum ELegacyType
     [InspectorName(null)]Passive,
     [InspectorName(null)]MAX,
 }
+public enum ELegacyPreservation
+{
+    Weathered,  // 닳은
+    Tarnished,  // 빛바랜
+    Intact,     // 온전한
+    Pristine,   // 완벽한
+    
+    [InspectorName(null)]MAX,
+}
 
+public enum EBuffType
+{
+    None,
+    StatusEffectUpgrade,    
+    StatUpgrade,
+    EnemyItemDropRate,
+    EnemyGoldDropRate,
+    SpawnAreaIncrease,
+    HealEfficiency_Food,
+}
+
+public enum EStatusEffectUpgradeType
+{
+    Duration,
+    Strength,
+    Probability,
+}
+
+public enum EIncreaseMethod
+{
+    Constant,
+    Percent,
+    PercentPoint,
+}
+
+public enum EWarrior
+{
+    Sommer,
+    Euphoria,
+    Turbela,
+    Vernon,
+    Shade,
+    
+    [InspectorName(null)]MAX,
+}
+
+public enum ETiming
+{
+    Before,
+    After,
+    With,
+}
+#endregion Legacy
+
+//--------------------------------------------------------------------------------
+
+#region Player
 public enum EPlayerAttackType
 {
     Melee_Base,
@@ -88,40 +148,6 @@ public enum EInteraction
     None,
 }
 
-public enum ELegacyPreservation
-{
-    Weathered,  // 닳은
-    Tarnished,  // 빛바랜
-    Intact,     // 온전한
-    Pristine,   // 완벽한
-    
-    [InspectorName(null)]MAX,
-}
-
-public enum EBuffType
-{
-    None,
-    StatusEffectUpgrade,    
-    EnemyItemDropRate,
-    EnemyGoldDropRate,
-    SpawnAreaIncrease,
-    StatUpgrade,
-}
-
-public enum EStatusEffectUpgradeType
-{
-    Duration,
-    Strength,
-    Probability,
-}
-
-public enum EIncreaseMethod
-{
-    Constant,
-    Percent,
-    PercentPoint,
-}
-
 public enum EStat
 {
     Health,
@@ -130,34 +156,9 @@ public enum EStat
     Armour,
     ArmourPenetration,
 }
+#endregion
 
-public enum EWarrior
-{
-    Sommer,
-    Euphoria,
-    Turbela,
-    Vernon,
-    Shade,
-    
-    [InspectorName(null)]MAX,
-}
-
-public enum ETiming
-{
-    Before,
-    After,
-    With,
-}
-
-[Flags] 
-public enum EItemObtainMethod
-{
-    Field   = 1,
-    Store   = 2,
-    Monster = 4,
-    Boss    = 8,
-}
-#endregion Legacy
+//--------------------------------------------------------------------------------
 
 #region Item
 public enum ERarity
@@ -169,8 +170,18 @@ public enum ERarity
     Epic,
     Legendary,
 }
+
+[Flags] 
+public enum EItemObtainMethod
+{
+    Field   = 1,
+    Store   = 2,
+    Monster = 4,
+    Boss    = 8,
+}
 #endregion
 
+//--------------------------------------------------------------------------------
 #region Enemy
 public enum EEnemyMoveType
 {

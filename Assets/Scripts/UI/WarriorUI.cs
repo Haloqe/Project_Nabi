@@ -94,12 +94,12 @@ public class WarriorUI : MonoBehaviour
         _hoveredPanelIdx = -1;
     }
 
-    public void OnPointerClickPanel(int index)
+    public void OnPointerClickPanel(int panelIndex)
     {
-        SelectPanel(index);
+        SelectPanel(panelIndex);
         
         // 다른 태엽 보존도 높이기 옵션
-        if (index == 3)
+        if (panelIndex == 3)
         {
             Debug.Log("태엽 보존도 높이기: NOT IMPLEMENTED");
             UIManager.Instance.CloseFocusedUI();
@@ -108,17 +108,17 @@ public class WarriorUI : MonoBehaviour
         
         // Legacy selected
         // Passive
-        if (_legacies[index].Type == ELegacyType.Passive)
+        if (_legacies[panelIndex].Type == ELegacyType.Passive)
         {
-            CollectLegacy(index);
+            CollectLegacy(panelIndex);
             return;
         }
         
         // Active
-        string boundLegacyName = PlayerAttackManager.Instance.GetBoundActiveLegacyName(_legacies[index].Type);
+        string boundLegacyName = PlayerAttackManager.Instance.GetBoundActiveLegacyName(_legacies[panelIndex].Type);
         if (boundLegacyName.Equals(String.Empty))
         {
-            CollectLegacy(_legacies[index].ID); 
+            CollectLegacy(panelIndex); 
         }
         else
         {
@@ -138,7 +138,7 @@ public class WarriorUI : MonoBehaviour
         if (_confirmPanel.activeSelf)
         {
             _confirmPanel.SetActive(false);
-            CollectLegacy(_legacies[_selectedPanelIdx].ID);
+            CollectLegacy(_selectedPanelIdx);
         }
         else
         {

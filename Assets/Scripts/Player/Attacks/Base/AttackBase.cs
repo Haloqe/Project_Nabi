@@ -105,8 +105,9 @@ public abstract class AttackBase : MonoBehaviour
         if (_activeLegacy == null) return;
         if (_damageInitBase.Damages.Count == 0) return;
         
+        // TODO by increase method
         var newBaseDamage = _damageInitBase.Damages[0];
-        newBaseDamage.TotalAmount *= _activeLegacy.BaseDamageMultipliers[(int)_activeLegacyPreservation];
+        newBaseDamage.TotalAmount *= _activeLegacy.AdditionalDamage[(int)_activeLegacyPreservation];
         _damageBase.Damages[0] = newBaseDamage;
     }
 }

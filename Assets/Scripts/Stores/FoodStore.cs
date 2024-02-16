@@ -81,13 +81,19 @@ public class FoodStore : MonoBehaviour
     {
         if (_activeFillRoutine != null)
         {
-            int activeIdx = _activeFoodIdx;
-            Debug.Log("Bought item");
             if (_activeFillRoutine != null)
             {
                 StopCoroutine(_activeFillRoutine);
                 _activeFillRoutine = null;
             }
+            
+            // Try buy
+            int activeIdx = _activeFoodIdx;
+            bool buySucceeded = PlayerController.Instance.playerInventory.TryBuyItem(_foodsToSell[activeIdx].Price);
+            if (!buySucceeded) return;
+            PlayerController.Instance.Heal(_foodsToSell[activeIdx].HealthPoint);
+            
+            // Remove food after purchase
             Destroy(_foodObjects[activeIdx]);
             _foodObjects[activeIdx] = null;
         }

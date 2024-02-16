@@ -230,7 +230,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         }
     }
 
-    private void ChangeHealthByAmount(float amount)
+    public void ChangeHealthByAmount(float amount, bool byEnemy = true)
     {
         // TODO hit/heal effect
         _health = Mathf.Clamp(_health + amount, 0, _maxHealth);

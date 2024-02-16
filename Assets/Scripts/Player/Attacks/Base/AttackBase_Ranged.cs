@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class AttackBase_Ranged : AttackBase
 {
-    [SerializeField] private Transform FireTransform;
+    [Space(15)][SerializeField] private Transform FireTransform;
     private GameObject _bulletObject;
 
     public override void Start()

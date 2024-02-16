@@ -11,7 +11,7 @@ public class PassiveLegacySO : LegacySO
     // If BuffType == StatUpgrade
     public SLegacyStatUpgradeData[] StatUpgrades;
     
-    // If BuffType == EnemyItemDropRate || EnemyGoldDropRate || SpawnAreaIncrease
+    // If BuffType == EnemyItemDropRate || EnemyGoldDropRate || SpawnAreaIncrease || HealEfficiency_Food
     public EIncreaseMethod IncreaseMethod;
     [NamedArray(typeof(ELegacyPreservation))] 
     public float[] IncreaseAmounts = new float[4];
