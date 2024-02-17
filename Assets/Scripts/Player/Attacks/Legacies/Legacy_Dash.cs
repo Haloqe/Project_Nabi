@@ -13,6 +13,7 @@ public class Legacy_Dash : ActiveLegacySO
 
     public override void Init(Transform playerTransform)
     {
+        _spawnScaleMultiplier = 1.0f;
         _playerTransform = playerTransform;
         var player = _playerTransform.gameObject.GetComponent<PlayerDamageDealer>();
         if (SpawnObject_Pre)
@@ -32,21 +33,21 @@ public class Legacy_Dash : ActiveLegacySO
         if (SpawnObject_Post)
             SpawnObject_Post.GetComponent<AttackSpawnObject>().StatusEffect = newEffect;
     }
-    
+
     public void OnDashBegin()
     {
         if (SpawnObject_Pre == null) return;
-        Instantiate(SpawnObject_Pre, 
-            _playerTransform.position + SpawnObject_Pre.transform.position,
-            Quaternion.identity);
+        var obj = Instantiate(SpawnObject_Pre, _playerTransform.position + SpawnObject_Pre.transform.position, Quaternion.identity);
+        var localScale = obj.transform.localScale;
+        obj.transform.localScale = new Vector3(localScale.x * _spawnScaleMultiplier, localScale.y * _spawnScaleMultiplier, localScale.z);
     }
-
+    
     public void OnDashEnd()
     {
         if (SpawnObject_Post == null) return;
-        Instantiate(SpawnObject_Post, 
-            _playerTransform.position + SpawnObject_Post.transform.position,
-            Quaternion.identity);
+        var obj = Instantiate(SpawnObject_Post, _playerTransform.position + SpawnObject_Post.transform.position, Quaternion.identity);
+        var localScale = obj.transform.localScale;
+        obj.transform.localScale = new Vector3(localScale.x * _spawnScaleMultiplier, localScale.y * _spawnScaleMultiplier, localScale.z);
     }
 
     // A coroutine to spawn objects during dash
@@ -60,9 +61,9 @@ public class Legacy_Dash : ActiveLegacySO
             timer += Time.deltaTime;
             if (timer >= PeriSpawnInterval)
             {
-                Instantiate(SpawnObject_Peri,
-                    _playerTransform.position + SpawnObject_Peri.transform.position,
-                    Quaternion.identity);
+                var obj = Instantiate(SpawnObject_Peri, _playerTransform.position + SpawnObject_Peri.transform.position, Quaternion.identity);
+                var localScale = obj.transform.localScale;
+                obj.transform.localScale = new Vector3(localScale.x * _spawnScaleMultiplier, localScale.y * _spawnScaleMultiplier, localScale.z);
                 timer = 0.0f;
             }
             yield return null;

@@ -15,6 +15,7 @@ public class Legacy_Ranged : ActiveLegacySO
 
     public override void Init(Transform playerTransform)
     {
+        _spawnScaleMultiplier = 1.0f;
         _playerTransform = playerTransform;
         var player = _playerTransform.gameObject.GetComponent<PlayerDamageDealer>();
         if (AttackSpawnObject)
@@ -43,7 +44,9 @@ public class Legacy_Ranged : ActiveLegacySO
 
     public void OnBulletDestroy(Vector3 bulletPos)
     {
-        if (BulletDestroySpawnObject)
-            Instantiate(BulletDestroySpawnObject, bulletPos, Quaternion.identity);
+        if (BulletDestroySpawnObject == null) return;
+        var obj = Instantiate(BulletDestroySpawnObject, bulletPos, Quaternion.identity);
+        var localScale = obj.transform.localScale;
+        obj.transform.localScale = new Vector3(localScale.x * _spawnScaleMultiplier, localScale.y * _spawnScaleMultiplier, localScale.z);
     }
 }

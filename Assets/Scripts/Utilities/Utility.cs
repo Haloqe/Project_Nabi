@@ -128,7 +128,7 @@ public static class Utility
                 return prevValue + changeAmount;
             
             case EIncreaseMethod.Percent:
-                return prevValue + prevValue * (1 + changeAmount);
+                return prevValue + prevValue * changeAmount;
             
             case EIncreaseMethod.PercentPoint:
                 return prevValue + changeAmount;

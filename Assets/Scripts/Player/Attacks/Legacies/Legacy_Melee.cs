@@ -14,6 +14,7 @@ public class Legacy_Melee : ActiveLegacySO
     
     public override void Init(Transform playerTransform)
     {
+        _spawnScaleMultiplier = 1.0f;
         _playerTransform = playerTransform;
         if (!ComboHitSpawnObject) return;
         
@@ -41,9 +42,11 @@ public class Legacy_Melee : ActiveLegacySO
     {
         if (ComboHitSpawnObject)
         {
-            Instantiate(ComboHitSpawnObject, 
+            var obj = Instantiate(ComboHitSpawnObject, 
                 _playerTransform.position + (_playerTransform.localScale.x > 0 ? _comboSpawnOffsets[0] : _comboSpawnOffsets[1]),
                 Quaternion.identity);
+            var localScale = obj.transform.localScale;
+            obj.transform.localScale = new Vector3(localScale.x * _spawnScaleMultiplier, localScale.y * _spawnScaleMultiplier, localScale.z);
         }
     } 
     

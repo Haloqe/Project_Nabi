@@ -13,19 +13,24 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
 {
     private PlayerInput _playerInput;
     private PlayerDamageDealer _playerDamageDealer;
-
     private List<SWarrior> _warriors;
+    
+    // All legacies
     private Dictionary<int, SLegacyData> _legacies;
     private List<List<SLegacyData>> _legaciesByWarrior;
-    
     private Dictionary<int, LegacySO> _legacySODictionary;
     
-    private Texture2D[][] _vfxTexturesByWarrior;
-    private GameObject[] _bulletsByWarrior;
-
+    // Collected legacies
     private HashSet<int> _collectedLegacyIDs;
+    private List<int> _collectedPassiveIDs;
+    private Dictionary<int, ELegacyPreservation> _collectedLegacyPreservations;
     private int[] _boundActiveLegacyIDs;
     
+    // Attack visual related
+    private Texture2D[][] _vfxTexturesByWarrior;
+    private GameObject[] _bulletsByWarrior;
+    
+    // UI related
     private Sprite[] _legacyIconSpriteSheet;
     private Image[] _activeLegacyIcons = new Image[4];
     private Image[] _activeLegacyOverlays = new Image[4];
@@ -39,6 +44,8 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         if (_toBeDestroyed) return;
         _legacyIconSpriteSheet = Resources.LoadAll<Sprite>("Sprites/Icons/Abilities/PlayerAbilitySpritesheet");
         _collectedLegacyIDs = new HashSet<int>();
+        _collectedPassiveIDs = new List<int>();
+        _collectedLegacyPreservations = new Dictionary<int, ELegacyPreservation>();
         _boundActiveLegacyIDs = new int[] {-1,-1,-1};
         _passiveLegacySlotPrefab = Utility.LoadGameObjectFromPath("Prefabs/UI/InGame/PassiveLegacySlot");
     }
@@ -229,6 +236,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         {
             // Find and bind legacy SO
             BindPassiveLegacy((PassiveLegacySO)legacyAsset, preservation);
+            _collectedPassiveIDs.Add(legacyID);
             
             // Update UI
             var slotObj = Instantiate(_passiveLegacySlotPrefab, _passiveLegacyGroup);
@@ -240,7 +248,8 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
             // Find and bind legacy SO
             _playerDamageDealer.AttackBases[legacyTypeIdx].BindActiveLegacy((ActiveLegacySO)legacyAsset, preservation);
             _boundActiveLegacyIDs[legacyTypeIdx] = legacyID;
-
+            CheckRelevantPassiveLegacies((ActiveLegacySO)legacyAsset);
+            
             // Update VFX
             UpdateAttackVFX(legacyData.Warrior, legacyData.Type);  
             
@@ -251,6 +260,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
             _activeLegacySlots[legacyTypeIdx].Init(legacyData.Warrior, legacyData.Names, legacyData.Descs);
         }
         _collectedLegacyIDs.Add(legacyID);
+        _collectedLegacyPreservations.Add(legacyID, preservation);
     }
 
     private void BindPassiveLegacy(PassiveLegacySO legacySO, ELegacyPreservation preservation)
@@ -270,6 +280,13 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                 break;
             
             case EBuffType.SpawnAreaIncrease:
+                foreach (var attackBase in _playerDamageDealer.AttackBases)
+                {
+                    if (attackBase.activeWarrior == legacySO.Warrior)
+                    {
+                        attackBase.UpdateSpawnSize(legacySO.IncreaseAmounts[preservationIdx], legacySO.IncreaseMethod);
+                    }
+                }
                 break;
             
             case EBuffType.EnemyGoldDropRate:
@@ -277,6 +294,30 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
             
             case EBuffType.EnemyItemDropRate:
                 break;
+        }
+    }
+
+    // 새로운 액티브 유산이 바인딩 되었을 경우, 이전에 바인딩 된 패시브에 따라 업그레이드 해야 할 부분이 있는지 확인한다.
+    private void CheckRelevantPassiveLegacies(ActiveLegacySO newActiveLegacy)
+    {
+        foreach (int passiveID in _collectedPassiveIDs)
+        {
+            var legacySO = (PassiveLegacySO)_legacySODictionary[passiveID];
+            if (legacySO.Warrior != newActiveLegacy.Warrior) continue;
+            int passivePreservation = (int)_collectedLegacyPreservations[passiveID]; 
+            
+            switch (legacySO.BuffType)
+            {
+                case EBuffType.StatusEffectUpgrade:
+                    break;
+            
+                case EBuffType.SpawnAreaIncrease:
+                    foreach (var attackBase in _playerDamageDealer.AttackBases)
+                    {
+                        attackBase.UpdateSpawnSize(legacySO.IncreaseAmounts[passivePreservation], legacySO.IncreaseMethod);
+                    }
+                    break;
+            }
         }
     }
     

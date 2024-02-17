@@ -1,14 +1,15 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 public class PlayerController : Singleton<PlayerController>
 {
     // Reference to other player components
     private Animator _animator;
     private PlayerInput _playerInput;
-    private PlayerMovement _playerMovement;
-    private PlayerDamageReceiver _playerDamageReceiver;
-    private PlayerDamageDealer _playerDamageDealer;
+    public PlayerMovement playerMovement;
+    public PlayerDamageReceiver playerDamageReceiver;
+    public PlayerDamageDealer playerDamageDealer;
     public PlayerInventory playerInventory;
     
     // Centrally controlled variables
@@ -20,17 +21,17 @@ public class PlayerController : Singleton<PlayerController>
         if (_toBeDestroyed) return;
         
         _playerInput = GetComponent<PlayerInput>();
-        _playerMovement = GetComponent<PlayerMovement>();
-        _playerDamageReceiver = GetComponent<PlayerDamageReceiver>();
-        _playerDamageDealer = GetComponent<PlayerDamageDealer>();
+        playerMovement = GetComponent<PlayerMovement>();
+        playerDamageReceiver = GetComponent<PlayerDamageReceiver>();
+        playerDamageDealer = GetComponent<PlayerDamageDealer>();
         playerInventory = GetComponent<PlayerInventory>();
         _animator = GetComponent<Animator>();
         
         // Input Binding for Attacks
-        _playerInput.actions["Attack_Melee"].performed += _ => _playerDamageDealer.OnAttack(0);
-        _playerInput.actions["Attack_Range"].performed += _ => _playerDamageDealer.OnAttack(1);
-        _playerInput.actions["Attack_Dash"].performed += _ => _playerDamageDealer.OnAttack(2);
-        _playerInput.actions["Attack_Area"].performed += _ => _playerDamageDealer.OnAttack(3);
+        _playerInput.actions["Attack_Melee"].performed += _ => playerDamageDealer.OnAttack(0);
+        _playerInput.actions["Attack_Range"].performed += _ => playerDamageDealer.OnAttack(1);
+        _playerInput.actions["Attack_Dash"].performed += _ => playerDamageDealer.OnAttack(2);
+        _playerInput.actions["Attack_Area"].performed += _ => playerDamageDealer.OnAttack(3);
         
         // Events binding
         GameEvents.restarted += OnRestarted;
@@ -44,12 +45,12 @@ public class PlayerController : Singleton<PlayerController>
 
     void OnMove(InputValue value)
     {
-        _playerMovement.SetMoveDirection(value.Get<Vector2>());
+        playerMovement.SetMoveDirection(value.Get<Vector2>());
     }
 
     void OnJump(InputValue value)
     {
-        _playerMovement.SetJump(value.isPressed);
+        playerMovement.SetJump(value.isPressed);
     }
 
     private int count = -1;
@@ -67,6 +68,6 @@ public class PlayerController : Singleton<PlayerController>
     // Heal is exclusively used for increase of health from food items
     public void Heal(float amount)
     {
-        _playerDamageReceiver.ChangeHealthByAmount(amount * HealEfficiency, false);
+        playerDamageReceiver.ChangeHealthByAmount(amount * HealEfficiency, false);
     }
 }

@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public abstract class AttackBase : MonoBehaviour
 {
@@ -18,6 +19,7 @@ public abstract class AttackBase : MonoBehaviour
     private Material _defaultVFXMaterial;
     
     // Legacy
+    public EWarrior activeWarrior;
     protected ActiveLegacySO _activeLegacy;
     protected ELegacyPreservation _activeLegacyPreservation;
     
@@ -63,11 +65,17 @@ public abstract class AttackBase : MonoBehaviour
 
     public void BindActiveLegacy(ActiveLegacySO legacyAsset, ELegacyPreservation preservation)
     {
+        activeWarrior = legacyAsset.Warrior;
         _activeLegacyPreservation = preservation;
         _activeLegacy = legacyAsset;
         _activeLegacy.Init(gameObject.transform);
         OnUpdateLegacyStatusEffect();
         OnUpdateLegacyPreservation();
+    }
+
+    public void UpdateSpawnSize(float increaseAmount, EIncreaseMethod method)
+    {
+        if (_activeLegacy) _activeLegacy.UpdateSpawnSize(method, increaseAmount);
     }
 
     public virtual void OnUpdateLegacyStatusEffect()

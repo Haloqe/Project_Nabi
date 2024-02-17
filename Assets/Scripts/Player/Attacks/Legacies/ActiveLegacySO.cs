@@ -4,6 +4,7 @@ using UnityEngine.Serialization;
 public abstract class ActiveLegacySO : LegacySO
 {
     protected Transform _playerTransform;
+    protected float _spawnScaleMultiplier = 1.0f;
 
     [Space(10)][Header("Damage")] 
     public EIncreaseMethod DamageIncreaseMethod;
@@ -29,4 +30,8 @@ public abstract class ActiveLegacySO : LegacySO
     
     public virtual void Init(Transform playerTransform) { }
     public abstract void OnUpdateStatusEffect(EStatusEffect newEffect);
+    public void UpdateSpawnSize(EIncreaseMethod method, float increaseAmount)
+    {
+        _spawnScaleMultiplier = Utility.GetChangedValue(_spawnScaleMultiplier, increaseAmount, method);
+    }
 }
