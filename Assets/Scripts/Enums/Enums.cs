@@ -109,7 +109,7 @@ public enum EWarrior
     Euphoria,
     Turbela,
     Vernon,
-    Shade,
+    NightShade,
     
     [InspectorName(null)]MAX,
 }

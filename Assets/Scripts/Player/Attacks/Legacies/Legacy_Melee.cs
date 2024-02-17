@@ -5,7 +5,7 @@ public class Legacy_Melee : ActiveLegacySO
 {
     [Space(15)][Header("Attack Type Specific Settings")]
     // Prefab object to spawn upon combo hit attack
-    public GameObject ComboHitSpawnObject;
+    public AttackSpawnObject ComboHitSpawnObject;
     [NamedArray(typeof(ELegacyPreservation))]
     public float[] ComboDamageMultiplier = new float[4]{1,1,1,1};
     
@@ -23,13 +23,12 @@ public class Legacy_Melee : ActiveLegacySO
         _comboSpawnOffsets = new Vector3[2]; // [0] left, [1] right
         _comboSpawnOffsets[0] = position;
         _comboSpawnOffsets[1] = new Vector3(-position.x, position.y, 0);
-        ComboHitSpawnObject.GetComponent<AttackSpawnObject>().PlayerDamageDealer 
-            = _playerTransform.gameObject.GetComponent<PlayerDamageDealer>();
+        ComboHitSpawnObject.PlayerDamageDealer = _playerTransform.gameObject.GetComponent<PlayerDamageDealer>();
     }
     public override void OnUpdateStatusEffect(EStatusEffect newEffect)
     {
         if (ComboHitSpawnObject)
-            ComboHitSpawnObject.GetComponent<AttackSpawnObject>().StatusEffect = newEffect;
+            ComboHitSpawnObject.StatusEffect = newEffect;
     }
 
     // Do something upon base attack
@@ -40,14 +39,15 @@ public class Legacy_Melee : ActiveLegacySO
     // Do something upon combo attack
     public void OnAttack_Combo()
     {
-        if (ComboHitSpawnObject)
-        {
-            var obj = Instantiate(ComboHitSpawnObject, 
-                _playerTransform.position + (_playerTransform.localScale.x > 0 ? _comboSpawnOffsets[0] : _comboSpawnOffsets[1]),
-                Quaternion.identity);
-            var localScale = obj.transform.localScale;
-            obj.transform.localScale = new Vector3(localScale.x * _spawnScaleMultiplier, localScale.y * _spawnScaleMultiplier, localScale.z);
-        }
+        if (!ComboHitSpawnObject) return;
+        
+        var obj = Instantiate(ComboHitSpawnObject, 
+            _playerTransform.position + (_playerTransform.localScale.x > 0 ? _comboSpawnOffsets[0] : _comboSpawnOffsets[1]),
+            Quaternion.identity);
+        obj.SetPreservation(_preservation);
+        var transform = obj.transform;
+        var localScale = transform.localScale;
+        transform.localScale = new Vector3(localScale.x * _spawnScaleMultiplier, localScale.y * _spawnScaleMultiplier, localScale.z);
     } 
     
     // Do something upon base attack hit success

@@ -69,6 +69,7 @@ public abstract class AttackBase : MonoBehaviour
         _activeLegacyPreservation = preservation;
         _activeLegacy = legacyAsset;
         _activeLegacy.Init(gameObject.transform);
+        _activeLegacy.SetPreservation(preservation);
         OnUpdateLegacyStatusEffect();
         OnUpdateLegacyPreservation();
     }

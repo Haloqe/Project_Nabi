@@ -24,11 +24,22 @@ public static class Define
         8,      // Intact
         10,     // Pristine
     };
+    
     public static string[,] WarriorNames = new string[,]
     {
         { "Sommer", "Euphoria", "Turbela", "Vernon", "NightShade" },
         { "소머", "유포리아", "투르벨라", "버논", "나이트셰이드" },
     };
+    
+    public static EStatusEffect[,] StatusEffectByWarrior =
+    {
+        { EStatusEffect.Sommer, EStatusEffect.Sleep },          // 소머
+        { EStatusEffect.Drugged, EStatusEffect.Indoctrinated }, // 유포리아
+        { EStatusEffect.Swarm, EStatusEffect.Cloud },           // 투르벨라
+        { EStatusEffect.Poison, EStatusEffect.Leech },          // 버논
+        { EStatusEffect.Evade, EStatusEffect.Camouflage },      // 나이트셰이드
+    };
+    
     public static Color[] WarriorMainColours = new Color[]
     {
         new Color(0.3686275f, 0.5727299f, 0.5960785f, 1f),

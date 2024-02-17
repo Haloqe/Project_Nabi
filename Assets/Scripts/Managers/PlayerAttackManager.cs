@@ -13,7 +13,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
 {
     private PlayerInput _playerInput;
     private PlayerDamageDealer _playerDamageDealer;
-    private List<SWarrior> _warriors;
+    private SWarrior[] _warriors;
     
     // All legacies
     private Dictionary<int, SLegacyData> _legacies;
@@ -70,7 +70,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     
     public void Init()
     {
-        Init_WarriorData();
+        //Init_WarriorData();
         Init_LegacyData();
         Init_LegacySOs();
         Init_WarriorVFXs();
@@ -95,7 +95,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
 
     private void Init_WarriorData()
     {
-        _warriors = new List<SWarrior>((int)EWarrior.MAX);
+        _warriors = new SWarrior[(int)EWarrior.MAX];
         string dataPath = Application.dataPath + "/Tables/WarriorsTable.csv";
         Debug.Assert(File.Exists(dataPath));
 
@@ -118,8 +118,9 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                 data.Effects = new EStatusEffect[] 
                     {(EStatusEffect)Enum.Parse(typeof(EStatusEffect), csv.GetField("Effect_Base")),
                      (EStatusEffect)Enum.Parse(typeof(EStatusEffect), csv.GetField("Effect_Upgraded"))};
-                
-                _warriors.Add(data);
+
+                EWarrior warrior = Enum.Parse<EWarrior>(data.Names[(int)ELocalisation.ENG].Replace(" ", ""));
+                _warriors[(int)warrior] = data;
             }
         }
     }
@@ -352,7 +353,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
 
     public EStatusEffect GetWarriorStatusEffect(EWarrior warrior, int level)
     {
-        return _warriors[(int)warrior].Effects[level];
+        return Define.StatusEffectByWarrior[(int)warrior, level];
     }
     
     public void UpdateAttackVFX(EWarrior warrior, ELegacyType attackType)
