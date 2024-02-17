@@ -8,14 +8,16 @@ public class Legacy_Melee : ActiveLegacySO
     public AttackSpawnObject ComboHitSpawnObject;
     [NamedArray(typeof(ELegacyPreservation))]
     public float[] ComboDamageMultiplier = new float[4]{1,1,1,1};
+    [NamedArray(typeof(ELegacyPreservation))]
+    public StatusEffectInfo[] StatusEffectInfos = new StatusEffectInfo[4];
     
     // Object Spawn positions
     private Vector3[] _comboSpawnOffsets;
     
     public override void Init(Transform playerTransform)
     {
+        base.Init(playerTransform);
         _spawnScaleMultiplier = 1.0f;
-        _playerTransform = playerTransform;
         if (!ComboHitSpawnObject) return;
         
         // Pre-calculate object spawn positions
@@ -28,7 +30,7 @@ public class Legacy_Melee : ActiveLegacySO
     public override void OnUpdateStatusEffect(EStatusEffect newEffect)
     {
         if (ComboHitSpawnObject)
-            ComboHitSpawnObject.StatusEffect = newEffect;
+            ComboHitSpawnObject.SetStatusEffect(newEffect);
     }
 
     // Do something upon base attack

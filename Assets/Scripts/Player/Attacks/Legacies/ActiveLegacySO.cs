@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -11,25 +12,26 @@ public abstract class ActiveLegacySO : LegacySO
     public EIncreaseMethod DamageIncreaseMethod;
     [NamedArray(typeof(ELegacyPreservation))] public float[] 
         AdditionalDamage = new float[4]{1,1,1,1};
+
+    [Space(10)][Header("Status Effects")] 
+    [NamedArray(typeof(ELegacyPreservation))]
+    public StatusEffectInfo[] StatusEffects;
+    [NamedArray(typeof(ELegacyPreservation))]
+    public StatusEffectInfo[] ExtraStatusEffects;
+
+    public override void SetWarrior(EWarrior warrior)
+    {
+        Warrior = warrior;
+        var effect = PlayerAttackManager.Instance.GetWarriorStatusEffect(Warrior, 0);
+        StatusEffects = Enumerable.Repeat(new StatusEffectInfo(effect), 4).ToArray();
+        ExtraStatusEffects = new StatusEffectInfo[4];
+    }
     
-    [Space(10)][Header("Default Status Effect")]
-    [NamedArray(typeof(ELegacyPreservation))] public float[] 
-        StatusEffectDurations = new float[4]{0,0,0,0};
-    [NamedArray(typeof(ELegacyPreservation))] public float[] 
-        StatusEffectStrengths = new float[4]{0,0,0,0};
-    [NamedArray(typeof(ELegacyPreservation))] public float[] 
-        StatusEffectProbabilites = new float[4]{0,0,0,0};
+    public virtual void Init(Transform playerTransform)
+    {
+        _playerTransform = playerTransform;
+    }
     
-    [Space(10)][Header("Additional Status Effect")]
-    public EStatusEffect ExtraStatusEffect;
-    [NamedArray(typeof(ELegacyPreservation))] public float[] 
-        ExtraStatusEffectDurations = new float[4]{0,0,0,0};
-    [NamedArray(typeof(ELegacyPreservation))] public float[] 
-        ExtraStatusEffectStrengths = new float[4]{0,0,0,0};
-    [NamedArray(typeof(ELegacyPreservation))] public float[] 
-        ExtraStatusEffectProbabilites = new float[4]{0,0,0,0};
-    
-    public virtual void Init(Transform playerTransform) { }
     public abstract void OnUpdateStatusEffect(EStatusEffect newEffect);
     public void SetPreservation(ELegacyPreservation preservation)
     {

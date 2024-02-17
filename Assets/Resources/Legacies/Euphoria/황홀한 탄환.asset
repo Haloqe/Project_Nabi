@@ -19,37 +19,40 @@ MonoBehaviour:
   - 0.2
   - 0.4
   - 0.5
-  StatusEffectDurations:
-  - 2
-  - 2
-  - 2
-  - 2
-  StatusEffectStrengths:
-  - 0
-  - 0
-  - 0
-  - 0
-  StatusEffectProbabilites:
-  - 1
-  - 1
-  - 1
-  - 1
-  ExtraStatusEffect: 18
-  ExtraStatusEffectDurations:
-  - 2
-  - 2.5
-  - 3
-  - 4
-  ExtraStatusEffectStrengths:
-  - 0
-  - 0
-  - 0
-  - 0
-  ExtraStatusEffectProbabilites:
-  - 1
-  - 1
-  - 1
-  - 1
+  StatusEffects:
+  - Effect: 4
+    Strength: 0
+    Duration: 1
+    Chance: 0.5
+  - Effect: 4
+    Strength: 0
+    Duration: 1
+    Chance: 0.5
+  - Effect: 4
+    Strength: 0
+    Duration: 1
+    Chance: 0.5
+  - Effect: 4
+    Strength: 0
+    Duration: 1
+    Chance: 1
+  ExtraStatusEffects:
+  - Effect: 18
+    Strength: 0
+    Duration: 1
+    Chance: 0.5
+  - Effect: 18
+    Strength: 0
+    Duration: 1
+    Chance: 0.5
+  - Effect: 18
+    Strength: 0
+    Duration: 1
+    Chance: 0.5
+  - Effect: 18
+    Strength: 0
+    Duration: 1
+    Chance: 0.5
   AttackSpawnObject: {fileID: 0}
   BulletDestroySpawnObject: {fileID: 0}
   BulletSpeedMultiplier: 1

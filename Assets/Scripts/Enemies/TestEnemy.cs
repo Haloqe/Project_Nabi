@@ -26,7 +26,7 @@ public class TestEnemy : EnemyBase
 
     private GameObject _attacker;
     private int _attackCount = 0;
-    private SDamageInfo _damageInfo;
+    private AttackInfo _attackInfo;
     private bool _isAttackDOTInArea = false;
     private Coroutine _activeDOTRoutine = null;
 
@@ -35,13 +35,13 @@ public class TestEnemy : EnemyBase
         _target = PlayerController.Instance.transform;
         _targetDamageable = _target.gameObject.GetComponent<IDamageable>();
         _attacker = transform.Find("AttackRange").gameObject;
-        _damageInfo = new SDamageInfo
+        _attackInfo = new AttackInfo
         {
-            Damages = new List<SDamage>() { new SDamage(DamageType, DamageAmount, DamageDuration, DamageTick) },
-            StatusEffects = new List<SStatusEffect> { new SStatusEffect(StatusEffect, EffectStrength, EffectDuration) }
+            Damages = new List<DamageInfo>() { new DamageInfo(DamageType, DamageAmount, DamageDuration, DamageTick) },
+            StatusEffects = new List<StatusEffectInfo> { new StatusEffectInfo(StatusEffect, EffectStrength, EffectDuration) }
         };
         // TEMP
-        foreach (var damage in _damageInfo.Damages)
+        foreach (var damage in _attackInfo.Damages)
         {
             if (damage.Duration == 0 && damage.Tick != 0)
             {
@@ -85,8 +85,8 @@ public class TestEnemy : EnemyBase
         while (true)
         {
             // Wait for a tick time and take damage repeatedly
-            DealDamage(_targetDamageable, _damageInfo);
-            yield return new WaitForSeconds(_damageInfo.Damages[0].Tick);
+            DealDamage(_targetDamageable, _attackInfo);
+            yield return new WaitForSeconds(_attackInfo.Damages[0].Tick);
         }
     }
 

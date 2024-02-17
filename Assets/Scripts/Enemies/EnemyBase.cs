@@ -36,7 +36,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     [SerializeField] private float SleepBaseStrength = 1f; // idk what this does
     
     //Enemy health attribute
-    public SDamageInfo _damageInfoTEMP;
+    public AttackInfo _damageInfoTEMP;
     [SerializeField] protected float Health = 1000f;
 
     protected virtual void Start()
@@ -50,11 +50,8 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         DebuffEffects = new GameObject[(int)EStatusEffect.MAX];
         if (MoveType != EEnemyMoveType.None) _movement = GetComponent<EnemyMovement>();
 
-        _damageInfoTEMP = new SDamageInfo
-        {
-            Damages = new List<SDamage>() { new SDamage(EDamageType.Base, 5) },
-            StatusEffects = new List<SStatusEffect>(),
-        };
+        _damageInfoTEMP = new AttackInfo();
+        _damageInfoTEMP.Damages.Add(new DamageInfo(EDamageType.Base, 5));
         PlayerEvents.defeated += OnPlayerDefeated;
 
         Initialise();         
@@ -72,13 +69,22 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     protected virtual void Initialise() { }
 
     #region Status Effects imposed by the player handling
-    private void HandleNewStatusEffects(List<SStatusEffect> statusEffects)
+    private void HandleNewStatusEffects(List<StatusEffectInfo> statusEffects)
     {
         if (statusEffects == null) return;
 
-        //SStatusEffect has three instance variables: effect, strength, duration
+        //StatusEffectInfo has three instance variables: effect, strength, duration
         foreach (var statusEffect in statusEffects)
         {
+            // Handle chance
+            var randVal = UnityEngine.Random.value;
+            Debug.Log("Status Effect [" + statusEffect.Effect + "] is " + (randVal > statusEffect.Chance ? "not " : "") + "applied " +
+                "(Chance " + statusEffect.Chance + ", val: " + randVal.ToString("F2") + ")");
+            if (randVal > statusEffect.Chance)
+            {
+                continue;
+            }
+                
             // handle SLOW separately
             if (statusEffect.Effect == EStatusEffect.Slow)
             {
@@ -103,7 +109,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
                 case EStatusEffect.Sommer:
                     _movement.ChangeSpeedByPercentage(SommerReducedSpeed);
                     // assumed that there's only 1 element in the list. might need edits
-                    _damageInfoTEMP.Damages[0] = new SDamage(EDamageType.Base, _damageInfoTEMP.Damages[0].TotalAmount * SommerReducedDamage);
+                    _damageInfoTEMP.Damages[0] = new DamageInfo(EDamageType.Base, _damageInfoTEMP.Damages[0].TotalAmount * SommerReducedDamage);
                     _sommerStackCount++;
                     _sommerTimeSinceStacked = 0f;
                     break;
@@ -225,12 +231,12 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         {
             _sommerTimeSinceStacked = 0;
             _sommerStackCount = 0;
-            HandleNewStatusEffects(new List<SStatusEffect> { new SStatusEffect(EStatusEffect.Sleep, SleepBaseStrength, SleepDuration) });
+            HandleNewStatusEffects(new List<StatusEffectInfo> { new StatusEffectInfo(EStatusEffect.Sleep, SleepBaseStrength, SleepDuration) });
         }
         else if (_sommerStackCount <= 0)
         {
             _movement.ChangeSpeedByPercentage(1f);
-            _damageInfoTEMP.Damages[0] = new SDamage(EDamageType.Base, _damageInfoTEMP.Damages[0].TotalAmount);
+            _damageInfoTEMP.Damages[0] = new DamageInfo(EDamageType.Base, _damageInfoTEMP.Damages[0].TotalAmount);
             _effectRemainingTimes[(int)EStatusEffect.Sommer] = 0;
         }
     }
@@ -317,21 +323,21 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
     #region Damage Dealing and Receiving
     // Dealing damage to the player Handling
-    public virtual void DealDamage(IDamageable target, SDamageInfo damageInfo)
+    public virtual void DealDamage(IDamageable target, AttackInfo damageInfo)
     {
         //damageInfo.DamageSource = gameObject.GetInstanceID();
         target.TakeDamage(damageInfo);
     }
 
     // Received Damage Handling
-    public void TakeDamage(SDamageInfo damageInfo)
+    public void TakeDamage(AttackInfo damageInfo)
     {
         Utility.PrintDamageInfo(gameObject.name, damageInfo);
         HandleNewDamages(damageInfo.Damages);
         HandleNewStatusEffects(damageInfo.StatusEffects);
     }
 
-    private void HandleNewDamages(List<SDamage> damages)
+    private void HandleNewDamages(List<DamageInfo> damages)
     {
         int damage = (int)IDamageable.CalculateRoughDamage(damages);
         ReduceHealth(damage);

@@ -4,5 +4,5 @@ using UnityEngine;
 
 public interface IDamageDealer
 {
-    public abstract void DealDamage(IDamageable target, SDamageInfo damageInfo);
+    public abstract void DealDamage(IDamageable target, AttackInfo damageInfo);
 }

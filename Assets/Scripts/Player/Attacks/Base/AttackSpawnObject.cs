@@ -4,46 +4,37 @@ using UnityEngine;
 public class AttackSpawnObject : MonoBehaviour
 {
     public PlayerDamageDealer PlayerDamageDealer;
-    private SDamageInfo _damageInfo;
+    private AttackInfo _attackInfo = new AttackInfo();
     public bool IsAttached;
     public bool ShouldManuallyDestroy;
 
     [Space(10)] [Header("Damage")] 
     public bool ShouldInflictDamage;
-    public EDamageType DamageType;
-    [NamedArray(typeof(ELegacyPreservation))] public float[] 
-        DamageAmounts = new float[4]{0,0,0,0};
-    [NamedArray(typeof(ELegacyPreservation))] public float[] 
-        DamageDurations = new float[4]{0,0,0,0}; // zero if one-shot damage
+    [NamedArray(typeof(ELegacyPreservation))] public DamageInfo[] 
+        DamageInfos = new DamageInfo[4];
 
     [Space(10)] [Header("Status Effect")] 
     public bool ShouldInflictStatusEffect;
-    public EStatusEffect StatusEffect;
-    [NamedArray(typeof(ELegacyPreservation))] public float[] 
-        StatusEffectDurations = new float[4]{0,0,0,0};
-    [NamedArray(typeof(ELegacyPreservation))] public float[] 
-        StatusEffectStrengths = new float[4]{0,0,0,0};
+    [NamedArray(typeof(ELegacyPreservation))] public StatusEffectInfo[] 
+        StatusEffectInfos = new StatusEffectInfo[4];
 
+    public void SetStatusEffect(EStatusEffect statusEffect)
+    {
+        foreach (var info in StatusEffectInfos)
+        {
+            info.Effect = statusEffect;
+        }    
+    }
+    
     public void SetPreservation(ELegacyPreservation preservation)
     {
-        _damageInfo = new SDamageInfo()
-        {
-            Damages = new List<SDamage>(), StatusEffects = new List<SStatusEffect>()
-        };
-        
         if (ShouldInflictDamage)
         {
-            _damageInfo.Damages = new List<SDamage>
-            {
-                new SDamage(DamageType, DamageAmounts[(int)preservation], DamageDurations[(int)preservation])
-            };
+            _attackInfo.Damages.Add(DamageInfos[(int)preservation]);
         }
-        if (ShouldInflictStatusEffect)
+        if (ShouldInflictStatusEffect && Random.value <= StatusEffectInfos[(int)preservation].Chance)
         {
-            _damageInfo.StatusEffects = new List<SStatusEffect>
-            {
-                new SStatusEffect(StatusEffect, StatusEffectStrengths[(int)preservation], StatusEffectDurations[(int)preservation])
-            };
+            _attackInfo.StatusEffects.Add(StatusEffectInfos[(int)preservation]);
         }
     }
     
@@ -52,7 +43,7 @@ public class AttackSpawnObject : MonoBehaviour
         IDamageable target = other.gameObject.GetComponent<IDamageable>();
         if (target != null && (ShouldInflictDamage || ShouldInflictStatusEffect))
         {
-            PlayerDamageDealer.DealDamage(target, _damageInfo);
+            PlayerDamageDealer.DealDamage(target, _attackInfo);
         }
     }
 }

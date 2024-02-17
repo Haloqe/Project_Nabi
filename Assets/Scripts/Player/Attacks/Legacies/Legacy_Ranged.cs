@@ -16,9 +16,9 @@ public class Legacy_Ranged : ActiveLegacySO
 
     public override void Init(Transform playerTransform)
     {
+        base.Init(playerTransform);
         _manualDestroyList = new List<GameObject>();
         _spawnScaleMultiplier = 1.0f;
-        _playerTransform = playerTransform;
         var player = _playerTransform.gameObject.GetComponent<PlayerDamageDealer>();
         if (AttackSpawnObject)
             AttackSpawnObject.PlayerDamageDealer = player;
@@ -29,9 +29,9 @@ public class Legacy_Ranged : ActiveLegacySO
     public override void OnUpdateStatusEffect(EStatusEffect newEffect)
     {
         if (AttackSpawnObject)
-            AttackSpawnObject.StatusEffect = newEffect;
+            AttackSpawnObject.SetStatusEffect(newEffect);
         if (BulletDestroySpawnObject)
-            BulletDestroySpawnObject.StatusEffect = newEffect;
+            BulletDestroySpawnObject.SetStatusEffect(newEffect);
     }
 
     private void OnAttack()

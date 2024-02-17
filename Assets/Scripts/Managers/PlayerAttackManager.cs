@@ -197,14 +197,14 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                 {
                     string className = legacy.Type == ELegacyType.Passive ? "PassiveLegacySO" : "Legacy_" + legacy.Type;
                     legacyAsset = (LegacySO)ScriptableObject.CreateInstance(className);
+                    legacyAsset.SetWarrior(legacy.Warrior);
                     AssetDatabase.CreateAsset(legacyAsset, assetPath);
                 }
 #endif
                 // Add asset to array
                 if (legacyAsset == null)
                     legacyAsset = Resources.Load<LegacySO>("Legacies/"  + (EWarrior)warrior + "/" + legacy.Names[(int)ELocalisation.KOR]);
-                Debug.Assert(legacyAsset);
-                legacyAsset.Warrior = legacy.Warrior;
+
                 _legacySODictionary.Add(legacy.ID, legacyAsset);
             }
         }

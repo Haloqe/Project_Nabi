@@ -153,7 +153,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     
     // IDamageable Override
     
-    public void TakeDamage(SDamageInfo damageInfo)
+    public void TakeDamage(AttackInfo damageInfo)
     {
         // TODO Remove when monster fixed
         if (TempIsDead) return;
@@ -164,7 +164,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         HandleNewStatusEffects(damageInfo.StatusEffects);
     }    
 
-    private void HandleNewDamages(List<SDamage> damages)
+    private void HandleNewDamages(List<DamageInfo> damages)
     {
         foreach (var damage in damages)
         {
@@ -181,7 +181,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         // TODO should save info somewhere, do progressive updates
     }
 
-    private IEnumerator DamageCoroutine(SDamage damage)
+    private IEnumerator DamageCoroutine(DamageInfo damage)
     {
         int damageTypeIdx = (int)damage.Type;
         
@@ -252,7 +252,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
 
     #region Status effects handling
     //TODO
-    private void HandleNewStatusEffects(List<SStatusEffect> statusEffects)
+    private void HandleNewStatusEffects(List<StatusEffectInfo> statusEffects)
     {
         if (statusEffects.Count == 0) return;
         bool shouldDisableMovement = false;

@@ -14,26 +14,21 @@ public class Legacy_Dash : ActiveLegacySO
 
     public override void Init(Transform playerTransform)
     {
+        base.Init(playerTransform);
         _manualDestroyList = new List<GameObject>();
         _spawnScaleMultiplier = 1.0f;
-        _playerTransform = playerTransform;
+        
         var player = _playerTransform.gameObject.GetComponent<PlayerDamageDealer>();
-        if (SpawnObject_Pre)
-            SpawnObject_Pre.PlayerDamageDealer = player;
-        if (SpawnObject_Peri)
-            SpawnObject_Peri.PlayerDamageDealer = player;
-        if (SpawnObject_Post)
-            SpawnObject_Post.PlayerDamageDealer = player;
+        if (SpawnObject_Pre) SpawnObject_Pre.PlayerDamageDealer = player;
+        if (SpawnObject_Peri) SpawnObject_Peri.PlayerDamageDealer = player;
+        if (SpawnObject_Post) SpawnObject_Post.PlayerDamageDealer = player;
     }
     
     public override void OnUpdateStatusEffect(EStatusEffect newEffect)
     {
-        if (SpawnObject_Pre)
-            SpawnObject_Pre.StatusEffect = newEffect;
-        if (SpawnObject_Peri)
-            SpawnObject_Peri.StatusEffect = newEffect;
-        if (SpawnObject_Post)
-            SpawnObject_Post.StatusEffect = newEffect;
+        if (SpawnObject_Pre) SpawnObject_Pre.SetStatusEffect(newEffect);
+        if (SpawnObject_Peri) SpawnObject_Peri.SetStatusEffect(newEffect);
+        if (SpawnObject_Post) SpawnObject_Post.SetStatusEffect(newEffect);
     }
 
     public void OnDashBegin()
@@ -54,7 +49,6 @@ public class Legacy_Dash : ActiveLegacySO
         if (SpawnObject_Pre.ShouldManuallyDestroy)
         {
             _manualDestroyList.Add(spawnedObject.gameObject);
-            Debug.Log("ADDED");
         }
     }
     
@@ -82,7 +76,6 @@ public class Legacy_Dash : ActiveLegacySO
         foreach (var objToDestroy in _manualDestroyList)
         {
             Destroy(objToDestroy);
-            Debug.Log("DESTROYED");
         }
         _manualDestroyList.Clear();
     }

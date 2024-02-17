@@ -17,11 +17,8 @@ public class AttackBase_Area : AttackBase
         _attackType = ELegacyType.Area;
         VFXObject = Utility.LoadGameObjectFromPath("Prefabs/Player/AreaVFX");
         _rigidbody2D = GetComponent<Rigidbody2D>();
-        _damageInitBase = new SDamageInfo
-        {
-            Damages = new List<SDamage> { new SDamage(EDamageType.Base, 15) },
-            StatusEffects = new List<SStatusEffect>(),
-        };
+        _damageInitBase = new AttackInfo();
+        _damageInitBase.Damages.Add(new DamageInfo(EDamageType.Base, 15));
         base.Start();
     }
 

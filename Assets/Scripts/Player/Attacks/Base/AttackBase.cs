@@ -10,8 +10,8 @@ public abstract class AttackBase : MonoBehaviour
     
     private float _attackDelay;
     private float _attackSpeedMultiplier;
-    protected SDamageInfo _damageInitBase;
-    protected SDamageInfo _damageBase;
+    protected AttackInfo _damageInitBase;
+    protected AttackInfo _damageBase;
     protected float _attackPostDelay;
     protected ELegacyType _attackType;
     
@@ -70,6 +70,7 @@ public abstract class AttackBase : MonoBehaviour
         _activeLegacy = legacyAsset;
         _activeLegacy.Init(gameObject.transform);
         _activeLegacy.SetPreservation(preservation);
+        OnUpdateLegacyDamage();
         OnUpdateLegacyStatusEffect();
         OnUpdateLegacyPreservation();
     }
@@ -79,7 +80,22 @@ public abstract class AttackBase : MonoBehaviour
         if (_activeLegacy) _activeLegacy.UpdateSpawnSize(method, increaseAmount);
     }
 
-    public virtual void OnUpdateLegacyStatusEffect()
+    protected virtual void OnUpdateLegacyDamage()
+    {
+        if (_activeLegacy == null) return;
+        var changeAmount = _activeLegacy.AdditionalDamage[(int)_activeLegacyPreservation];
+        
+        if (changeAmount != 0)
+        {
+            var method = _activeLegacy.DamageIncreaseMethod;
+            foreach (var damage in _damageBase.Damages)
+            {
+                damage.TotalAmount = Utility.GetChangedValue(damage.TotalAmount, changeAmount, method);
+            }
+        }
+    }
+    
+    protected virtual void OnUpdateLegacyStatusEffect()
     {
         if (_activeLegacy == null) return;
         
@@ -90,17 +106,19 @@ public abstract class AttackBase : MonoBehaviour
         
         // Update status effect of base damage
         var newStatusEffectsBase = _damageBase.StatusEffects;
-        var newEffect = new SStatusEffect(warriorSpecificEffect,
-            _activeLegacy.StatusEffectStrengths[(int)_activeLegacyPreservation],
-            _activeLegacy.StatusEffectDurations[(int)_activeLegacyPreservation]);
+        var newEffect = new StatusEffectInfo(warriorSpecificEffect,
+            _activeLegacy.StatusEffects[(int)_activeLegacyPreservation].Strength,
+            _activeLegacy.StatusEffects[(int)_activeLegacyPreservation].Duration,
+            _activeLegacy.StatusEffects[(int)_activeLegacyPreservation].Chance);
         newStatusEffectsBase.Add(newEffect);
         
         // Additional status effect
-        if (_activeLegacy.ExtraStatusEffect != EStatusEffect.None)
+        if (_activeLegacy.ExtraStatusEffects[(int)_activeLegacyPreservation].Effect != EStatusEffect.None)
         {
-            newEffect = new SStatusEffect(_activeLegacy.ExtraStatusEffect,
-                _activeLegacy.ExtraStatusEffectStrengths[(int)_activeLegacyPreservation],
-                _activeLegacy.ExtraStatusEffectDurations[(int)_activeLegacyPreservation]);
+            newEffect = new StatusEffectInfo(_activeLegacy.ExtraStatusEffects[(int)_activeLegacyPreservation].Effect,
+                _activeLegacy.ExtraStatusEffects[(int)_activeLegacyPreservation].Strength,
+                _activeLegacy.ExtraStatusEffects[(int)_activeLegacyPreservation].Duration,
+                _activeLegacy.StatusEffects[(int)_activeLegacyPreservation].Chance);
             newStatusEffectsBase.Add(newEffect);
         }
         
@@ -113,10 +131,5 @@ public abstract class AttackBase : MonoBehaviour
     {
         if (_activeLegacy == null) return;
         if (_damageInitBase.Damages.Count == 0) return;
-        
-        // TODO by increase method
-        var newBaseDamage = _damageInitBase.Damages[0];
-        newBaseDamage.TotalAmount *= _activeLegacy.AdditionalDamage[(int)_activeLegacyPreservation];
-        _damageBase.Damages[0] = newBaseDamage;
     }
 }

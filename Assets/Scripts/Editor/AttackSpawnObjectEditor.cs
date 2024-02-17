@@ -16,17 +16,13 @@ public class AttackSpawnObjectEditor : Editor
         EditorGUILayout.PropertyField(serializedObject.FindProperty("ShouldInflictDamage"));
         if (obj.ShouldInflictDamage)
         {
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("DamageType"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("DamageAmounts"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("DamageDurations"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("DamageInfos"), true);
         }
         
         EditorGUILayout.PropertyField(serializedObject.FindProperty("ShouldInflictStatusEffect"));
         if (obj.ShouldInflictDamage)
         {
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("StatusEffect"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("StatusEffectDurations"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("StatusEffectStrengths"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("StatusEffectInfos"), true);
         }
         
         // Apply changes to serialized properties

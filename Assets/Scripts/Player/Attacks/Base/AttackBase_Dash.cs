@@ -10,11 +10,7 @@ public class AttackBase_Dash : AttackBase
 
     public override void Start()
     {
-        _damageInitBase = new SDamageInfo
-        {
-            Damages = new List<SDamage>(),
-            StatusEffects = new List<SStatusEffect>(),
-        };
+        _damageInitBase = new AttackInfo();
         base.Start();
     }
     

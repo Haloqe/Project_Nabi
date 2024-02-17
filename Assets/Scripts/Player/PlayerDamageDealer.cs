@@ -75,12 +75,12 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
     }
 
     // IDamageDealer Override
-    public void DealDamage(IDamageable target, SDamageInfo damageInfo)
+    public void DealDamage(IDamageable target, AttackInfo damageInfo)
     {
         target.TakeDamage(AdjustOutgoingDamage(damageInfo));
     }
 
-    private SDamageInfo AdjustOutgoingDamage(SDamageInfo damageInfo)
+    private AttackInfo AdjustOutgoingDamage(AttackInfo damageInfo)
     {
         // make changes to the damage dealt based on attributes
         return damageInfo;

@@ -4,9 +4,9 @@ using UnityEngine;
 
 public interface IDamageable
 {
-    abstract void TakeDamage(SDamageInfo damageInfo);
+    abstract void TakeDamage(AttackInfo damageInfo);
 
-    public static float CalculateRoughDamage(List<SDamage> damages)
+    public static float CalculateRoughDamage(List<DamageInfo> damages)
     {
         if (damages == null) return 0;
 

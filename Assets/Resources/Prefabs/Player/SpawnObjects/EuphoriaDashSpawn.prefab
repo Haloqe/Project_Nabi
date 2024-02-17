@@ -102,29 +102,41 @@ MonoBehaviour:
   IsAttached: 1
   ShouldManuallyDestroy: 1
   ShouldInflictDamage: 1
-  DamageType: 0
-  DamageAmounts:
-  - 3
-  - 5
-  - 8
-  - 10
-  DamageDurations:
-  - 0
-  - 0
-  - 0
-  - 0
+  DamageInfos:
+  - Type: 0
+    TotalAmount: 5
+    Duration: 0
+    Tick: 0
+  - Type: 0
+    TotalAmount: 5
+    Duration: 0
+    Tick: 0
+  - Type: 0
+    TotalAmount: 5
+    Duration: 0
+    Tick: 0
+  - Type: 0
+    TotalAmount: 5
+    Duration: 0
+    Tick: 0
   ShouldInflictStatusEffect: 1
-  StatusEffect: 4
-  StatusEffectDurations:
-  - 1
-  - 2
-  - 3
-  - 4
-  StatusEffectStrengths:
-  - 0
-  - 0
-  - 0
-  - 0
+  StatusEffectInfos:
+  - Effect: 4
+    Strength: 0
+    Duration: 1
+    Chance: 0.5
+  - Effect: 4
+    Strength: 0
+    Duration: 1
+    Chance: 0
+  - Effect: 4
+    Strength: 0
+    Duration: 1
+    Chance: 1
+  - Effect: 4
+    Strength: 0
+    Duration: 1
+    Chance: 1
 --- !u!70 &9051653368056601139
 CapsuleCollider2D:
   m_ObjectHideFlags: 0

@@ -8,11 +8,8 @@ public class AttackBase_Ranged : AttackBase
 
     public override void Start()
     {
-        _damageInitBase = new SDamageInfo
-        {
-            Damages = new List<SDamage> { new SDamage(EDamageType.Base, 3) },
-            StatusEffects = new List<SStatusEffect>(),
-        };
+        _damageInitBase = new AttackInfo();
+        _damageInitBase.Damages.Add(new DamageInfo(EDamageType.Base, 3));
         base.Start();
     }
 
@@ -61,7 +58,7 @@ public class AttackBase_Ranged : AttackBase
         // Deal damage to the target if the bullet is hit
         if (target != null)
         {
-            // TODO: Adjust damage from the legacy
+            Debug.Log(_damageBase.Damages[0].TotalAmount);
             _damageDealer.DealDamage(target, _damageBase);
         }
     }

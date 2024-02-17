@@ -68,7 +68,7 @@ public static class Utility
         return tile;
     }
 
-    public static void PrintDamageInfo(string receiver, SDamageInfo damageInfo)
+    public static void PrintDamageInfo(string receiver, AttackInfo damageInfo)
     {
         string damages = System.String.Empty;
         if (damageInfo.Damages != null) 
@@ -94,7 +94,7 @@ public static class Utility
             foreach (var effect in damageInfo.StatusEffects)
             {
                 statusEffects += effect.Effect.ToString() + " (" + effect.Duration +
-                    "s, " + effect.Strength + ")";
+                    "s, " + effect.Strength + ") ";
             }
         }
 
