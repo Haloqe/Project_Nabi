@@ -9,6 +9,10 @@ public class EnemyMovement_Stationary : EnemyMovement
     [SerializeField] private float _attackRange = 1f;
     private float _actionTimeCounter = 0f;
 
+    private void Awake()
+    {
+        moveType = EEnemyMoveType.Stationary;
+    }
 
     private void Update()
     {

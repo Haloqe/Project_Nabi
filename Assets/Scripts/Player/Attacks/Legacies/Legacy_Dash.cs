@@ -39,7 +39,7 @@ public class Legacy_Dash : ActiveLegacySO
         AttackSpawnObject spawnedObject = null;
         if (SpawnObject_Pre.IsAttached) spawnedObject = Instantiate(SpawnObject_Pre, _playerTransform);
         else spawnedObject = Instantiate(SpawnObject_Pre, _playerTransform.position + SpawnObject_Pre.transform.position, Quaternion.identity);
-        spawnedObject.SetPreservation(_preservation);
+        spawnedObject.SetAttackInfo(_preservation);
         
         // Change scale
         var localScale = spawnedObject.transform.localScale;
@@ -60,7 +60,7 @@ public class Legacy_Dash : ActiveLegacySO
             AttackSpawnObject spawnedObject = null;
             if (SpawnObject_Post.IsAttached) spawnedObject = Instantiate(SpawnObject_Post, _playerTransform);
             else spawnedObject = Instantiate(SpawnObject_Post, _playerTransform.position + SpawnObject_Post.transform.position, Quaternion.identity);
-            spawnedObject.SetPreservation(_preservation);
+            spawnedObject.SetAttackInfo(_preservation);
             
             // Change scale
             var transform = spawnedObject.transform;
@@ -95,7 +95,7 @@ public class Legacy_Dash : ActiveLegacySO
                 AttackSpawnObject spawnedObject = null;
                 if (SpawnObject_Peri.IsAttached) spawnedObject = Instantiate(SpawnObject_Peri, _playerTransform);
                 else spawnedObject = Instantiate(SpawnObject_Peri, _playerTransform.position + SpawnObject_Peri.transform.position, Quaternion.identity);
-                spawnedObject.SetPreservation(_preservation);
+                spawnedObject.SetAttackInfo(_preservation);
                 
                 // Change scale
                 var transform = spawnedObject.transform;

@@ -42,7 +42,7 @@ public class Legacy_Ranged : ActiveLegacySO
         AttackSpawnObject spawnedObject = null;
         if (AttackSpawnObject.IsAttached) spawnedObject = Instantiate(AttackSpawnObject, _playerTransform);
         else spawnedObject = Instantiate(AttackSpawnObject, _playerTransform.position + AttackSpawnObject.transform.position, Quaternion.identity);
-        spawnedObject.SetPreservation(_preservation);
+        spawnedObject.SetAttackInfo(_preservation);
         
         // Change scale
         var transform = spawnedObject.transform;
@@ -63,11 +63,13 @@ public class Legacy_Ranged : ActiveLegacySO
     {
         if (BulletDestroySpawnObject == null) return;
         
+        // Spawn bullet destroy effect
         var obj = Instantiate(BulletDestroySpawnObject, bulletPos, Quaternion.identity);
         var transform = obj.transform;
         var localScale = transform.localScale;
         transform.localScale = new Vector3(localScale.x * _spawnScaleMultiplier, localScale.y * _spawnScaleMultiplier, localScale.z);
-        obj.SetPreservation(_preservation);
+        
+        obj.SetAttackInfo(_preservation);
         
         // Destroy all temporary objects that are manually managed
         foreach (var objToDestroy in _manualDestroyList)

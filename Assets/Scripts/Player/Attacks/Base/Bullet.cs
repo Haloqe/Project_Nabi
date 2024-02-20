@@ -7,6 +7,8 @@ public class Bullet : MonoBehaviour
     private float _lifeTime = 4f;
     private float _timer = 0.0f;
     public float Direction { set; private get; }
+    public AttackInfo attackInfo;
+    private bool _toBeDestroyed;
 
     private void Start()
     {
@@ -26,6 +28,8 @@ public class Bullet : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        if (_toBeDestroyed) return;
+        _toBeDestroyed = true;
         IDamageable target = collision.gameObject.GetComponent<IDamageable>();
         DestroySelf(target);
     }
@@ -34,6 +38,6 @@ public class Bullet : MonoBehaviour
     private void DestroySelf(IDamageable target)
     {
         Destroy(gameObject);
-        Owner.OnBulletDestroy(target, transform.position);
+        Owner.OnBulletDestroy(target, transform.position, attackInfo);
     }
 }

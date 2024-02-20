@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 [Serializable]
 public class AttackInfo
 {
     public List<DamageInfo> Damages;
     public List<StatusEffectInfo> StatusEffects;
+    public int IncomingDirectionX;
 
     public AttackInfo()
     {
@@ -18,10 +20,25 @@ public class AttackInfo
         Damages = damageInfos;
         StatusEffects = statusEffectInfos;
     }
+    
+    public AttackInfo(List<DamageInfo> damageInfos, List<StatusEffectInfo> statusEffectInfos, int dir) : this(damageInfos, statusEffectInfos)
+    {
+        IncomingDirectionX = dir;
+    }
+
+    // Only X is considered
+    public void SetAttackDirToMyFront(GameObject attacker)
+    {
+        // For player, x < 0 is right and x > 0 is left
+        IncomingDirectionX = (int)Mathf.Sign(attacker.transform.localScale.x); 
+
+        // For non-player objects, it is opposite
+        if (!attacker.CompareTag("Player")) IncomingDirectionX *= -1;
+    }
 
     public AttackInfo Clone()
     {
-        return new AttackInfo(Damages, StatusEffects);
+        return new AttackInfo(Damages, StatusEffects, IncomingDirectionX);
     }
 }
 

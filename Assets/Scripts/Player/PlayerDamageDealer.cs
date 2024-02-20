@@ -82,8 +82,10 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
 
     private AttackInfo AdjustOutgoingDamage(AttackInfo damageInfo)
     {
+        var adjusted = damageInfo.Clone();
         // make changes to the damage dealt based on attributes
-        return damageInfo;
+        
+        return adjusted;
     }
 
     public int GetStatusEffectLevel(EWarrior warrior)

@@ -57,6 +57,18 @@ public class PlayerController : Singleton<PlayerController>
     void OnTestAction(InputValue value)
     {
         playerInventory.ChangeGoldByAmount(100);
+        switch (count)
+        {
+         case -1:
+             PlayerAttackManager.Instance.CollectLegacy(9, ELegacyPreservation.Weathered);
+             break;
+         case 0:
+         case 1:
+         case 2:
+             playerDamageDealer.AttackBases[(int)ELegacyType.Ranged].UpdateLegacyPreservation((ELegacyPreservation)(count+1));
+             break;
+        }
+        count++;
     }
     
     private void OnOpenMap(InputValue value)

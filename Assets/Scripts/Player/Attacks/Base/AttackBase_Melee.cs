@@ -75,7 +75,7 @@ public class AttackBase_Melee : AttackBase
     
     protected virtual void OnUpdateLegacyDamage()
     {
-        base.OnUpdateLegacyDamage();
+        base.UpdateLegacyDamage();
         if (_activeLegacy == null) return;
         var changeAmount = _activeLegacy.AdditionalDamage[(int)_activeLegacyPreservation];
         if (changeAmount != 0)
@@ -171,9 +171,9 @@ public class AttackBase_Melee : AttackBase
         _affectedEnemies.Clear();
     }
 
-    protected override void OnUpdateLegacyStatusEffect()
+    protected override void UpdateLegacyStatusEffect()
     {
-        base.OnUpdateLegacyStatusEffect();
+        base.UpdateLegacyStatusEffect();
         
         // Combo attack
         var newStatusEffectsCombo = _damageCombo.StatusEffects;
@@ -186,10 +186,5 @@ public class AttackBase_Melee : AttackBase
             _activeLegacy.StatusEffects[(int)_activeLegacyPreservation].Chance);
         newStatusEffectsCombo.Add(newEffect);
         _damageCombo.StatusEffects = newStatusEffectsCombo;
-    }
-
-    protected override void OnUpdateLegacyPreservation()
-    {
-        base.OnUpdateLegacyPreservation();
     }
 }

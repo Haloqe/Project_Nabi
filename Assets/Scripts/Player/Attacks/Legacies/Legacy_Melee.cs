@@ -46,7 +46,7 @@ public class Legacy_Melee : ActiveLegacySO
         var obj = Instantiate(ComboHitSpawnObject, 
             _playerTransform.position + (_playerTransform.localScale.x > 0 ? _comboSpawnOffsets[0] : _comboSpawnOffsets[1]),
             Quaternion.identity);
-        obj.SetPreservation(_preservation);
+        obj.SetAttackInfo(_preservation);
         var transform = obj.transform;
         var localScale = transform.localScale;
         transform.localScale = new Vector3(localScale.x * _spawnScaleMultiplier, localScale.y * _spawnScaleMultiplier, localScale.z);

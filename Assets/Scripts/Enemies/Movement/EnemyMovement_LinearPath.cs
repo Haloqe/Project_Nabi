@@ -1,10 +1,10 @@
+using System;
 using System.Collections;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class EnemyMovement_LinearPath : EnemyMovement
 {
-    private bool _isOnAir = true;
-    private bool _isMoving = true;
     private bool _isChasingPlayer = false;
 
     [SerializeField] private float _idleProbability = 0.4f; //walkProbability will be 1 - idleProbability
@@ -15,8 +15,12 @@ public class EnemyMovement_LinearPath : EnemyMovement
     [SerializeField] private float _chasePlayerDuration = 5f;
     private float _actionTimeCounter = 0f;
 
-
-    private void Update()
+    private void Awake()
+    {
+        moveType = EEnemyMoveType.LinearPath;
+    }
+    
+    private void FixedUpdate()
     {
         if (_isOnAir) return;
         if (_isRooted) return;
@@ -35,7 +39,6 @@ public class EnemyMovement_LinearPath : EnemyMovement
         if (playerIsInAttackRange)
         {
             Attack();
-            return;
         }
         else if (playerIsInDetectRange)
         {
@@ -70,6 +73,10 @@ public class EnemyMovement_LinearPath : EnemyMovement
 
     private void OnTriggerExit2D(Collider2D other)
     {
+        if (other.CompareTag("Ground"))
+        {
+            _isOnAir = true;
+        }
         //if (_isChasingPlayer) return; needs edits.
         if (_isChasingPlayer) _actionTimeCounter = 0;
         if (other.CompareTag("Ground")) FlipEnemy();
@@ -78,6 +85,7 @@ public class EnemyMovement_LinearPath : EnemyMovement
 
     private void WalkForward()
     {
+        if (_isRooted) return;
         if (transform.localScale.x > Mathf.Epsilon) //if it's facing right
         {
             _rigidBody.velocity = new Vector2(_moveSpeed, 0f);
@@ -107,6 +115,7 @@ public class EnemyMovement_LinearPath : EnemyMovement
         _isChasingPlayer = false;
         if (_actionTimeCounter <= 0) GenerateRandomState();
         if (_isMoving) WalkForward();
+        else _rigidBody.velocity = Vector2.zero;
         _animator.SetBool("IsWalking", _isMoving);
     }
 

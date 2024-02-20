@@ -18,7 +18,7 @@ public abstract class ActiveLegacySO : LegacySO
     public StatusEffectInfo[] StatusEffects;
     [NamedArray(typeof(ELegacyPreservation))]
     public StatusEffectInfo[] ExtraStatusEffects;
-
+    
     public override void SetWarrior(EWarrior warrior)
     {
         Warrior = warrior;
@@ -30,6 +30,7 @@ public abstract class ActiveLegacySO : LegacySO
     public virtual void Init(Transform playerTransform)
     {
         _playerTransform = playerTransform;
+        _spawnScaleMultiplier = 1.0f;
     }
     
     public abstract void OnUpdateStatusEffect(EStatusEffect newEffect);

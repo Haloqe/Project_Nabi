@@ -47,10 +47,12 @@ public class AttackBase_Ranged : AttackBase
             .GetComponent<Bullet>();
         bullet.Direction = -Mathf.Sign(gameObject.transform.localScale.x);
         bullet.Owner = this;
+        bullet.attackInfo = _damageBase.Clone();
+        bullet.attackInfo.SetAttackDirToMyFront(_damageDealer.gameObject);
     }
 
     // Called when a shot bullet is destroyed for any reason
-    public void OnBulletDestroy(IDamageable target, Vector3 bulletPos)
+    public void OnBulletDestroy(IDamageable target, Vector3 bulletPos, AttackInfo savedAttackInfo)
     {
         if (_activeLegacy) 
             ((Legacy_Ranged)_activeLegacy).OnBulletDestroy(bulletPos);
@@ -58,8 +60,8 @@ public class AttackBase_Ranged : AttackBase
         // Deal damage to the target if the bullet is hit
         if (target != null)
         {
-            Debug.Log(_damageBase.Damages[0].TotalAmount);
-            _damageDealer.DealDamage(target, _damageBase);
+            savedAttackInfo.Damages.Clear();
+            _damageDealer.DealDamage(target, savedAttackInfo);
         }
     }
 }

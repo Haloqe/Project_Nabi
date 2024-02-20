@@ -26,15 +26,21 @@ public class AttackSpawnObject : MonoBehaviour
         }    
     }
     
-    public void SetPreservation(ELegacyPreservation preservation)
+    public void SetAttackInfo(ELegacyPreservation preservation)
     {
         if (ShouldInflictDamage)
         {
             _attackInfo.Damages.Add(DamageInfos[(int)preservation]);
         }
-        if (ShouldInflictStatusEffect && Random.value <= StatusEffectInfos[(int)preservation].Chance)
+        if (ShouldInflictStatusEffect)
         {
             _attackInfo.StatusEffects.Add(StatusEffectInfos[(int)preservation]);
+            
+            // For pull effect, need to set direction
+            if (StatusEffectInfos[(int)preservation].Effect == EStatusEffect.Pull)
+            {
+                _attackInfo.SetAttackDirToMyFront(PlayerDamageDealer.gameObject);
+            }
         }
     }
     

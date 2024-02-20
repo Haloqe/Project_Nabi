@@ -8,6 +8,7 @@ using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine.UI;
 using UnityEditor;
+using UnityEngine.Events;
 
 public class PlayerAttackManager : Singleton<PlayerAttackManager>
 {
@@ -48,6 +49,15 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         _collectedLegacyPreservations = new Dictionary<int, ELegacyPreservation>();
         _boundActiveLegacyIDs = new int[] {-1,-1,-1};
         _passiveLegacySlotPrefab = Utility.LoadGameObjectFromPath("Prefabs/UI/InGame/PassiveLegacySlot");
+        GameEvents.restarted += OnRestarted;
+    }
+    
+    private void OnRestarted()
+    {
+        _collectedLegacyIDs = new HashSet<int>();
+        _collectedPassiveIDs = new List<int>();
+        _collectedLegacyPreservations = new Dictionary<int, ELegacyPreservation>();
+        _boundActiveLegacyIDs = new int[] {-1,-1,-1};
     }
 
     public void InitInGameVariables()
@@ -247,9 +257,9 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         else
         {
             // Find and bind legacy SO
-            _playerDamageDealer.AttackBases[legacyTypeIdx].BindActiveLegacy((ActiveLegacySO)legacyAsset, preservation);
-            _boundActiveLegacyIDs[legacyTypeIdx] = legacyID;
             CheckRelevantPassiveLegacies((ActiveLegacySO)legacyAsset);
+            _boundActiveLegacyIDs[legacyTypeIdx] = legacyID;
+            _playerDamageDealer.AttackBases[legacyTypeIdx].BindActiveLegacy((ActiveLegacySO)legacyAsset, preservation);
             
             // Update VFX
             UpdateAttackVFX(legacyData.Warrior, legacyData.Type);  

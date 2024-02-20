@@ -7,18 +7,17 @@ public abstract class EnemyMovement : MonoBehaviour
     protected EnemyBase _enemyBase;
     protected GameObject _target;
     protected IDamageable _targetDamageable;
+    private GameObject _attacker;
+    public EEnemyMoveType moveType;
 
     [SerializeField] protected float DefaultMoveSpeed = 1f;
     protected float _moveSpeed;
     protected bool _isRooted = false;
+    protected bool _isMoving = true;
+    protected bool _isOnAir = true;
     protected Rigidbody2D _rigidBody;
     protected Animator _animator;
     protected bool _isFlippable = true;
-
-    //the speed at which the enemy will be pulled
-    public float smoothing = 1f;
-    // private Transform _target = null;
-    private GameObject _attacker;
 
     protected virtual void Start()
     {
@@ -57,7 +56,6 @@ public abstract class EnemyMovement : MonoBehaviour
         }
     }
 
-
     public virtual void EnableMovement()
     {
         _isRooted = false;
@@ -67,8 +65,6 @@ public abstract class EnemyMovement : MonoBehaviour
     public virtual void DisableMovement()
     {
         _isRooted = true;
-        // _rigidBody.velocity = Vector2.zero;
-        _moveSpeed = 0;
         _animator.SetBool("IsAttacking", false);
         _animator.SetBool("IsWalking", false);
     }
@@ -82,5 +78,37 @@ public abstract class EnemyMovement : MonoBehaviour
     protected virtual void EnableFlip()
     {
         _isFlippable = true;
+    }
+
+    protected Vector2 pullOverallVelocity = Vector2.zero;
+    public void StartPullX(int direction, float strength, float duration)
+    {
+        DisableFlip();
+        _isRooted = true;
+        _isMoving = false;
+        pullOverallVelocity += new Vector2(direction * strength, 0);
+        StartCoroutine(PullXCoroutine(direction, strength, duration));
+    }
+
+    // Currently only considers the x axis; need to change if needed in future
+    protected virtual IEnumerator PullXCoroutine(int direction, float strength, float duration)
+    {
+        float elapsedTime = 0;
+        while (elapsedTime < duration)
+        {
+            _rigidBody.velocity = pullOverallVelocity;
+            elapsedTime += Time.fixedDeltaTime;
+            yield return new WaitForFixedUpdate();
+        }
+        pullOverallVelocity -= new Vector2(direction * strength, 0);
+        _rigidBody.velocity = pullOverallVelocity;
+        if (pullOverallVelocity == Vector2.zero) EnableFlip();
+        
+        // while (elapsedTime < duration)
+        // {
+        //     _rigidBody.AddForce(new Vector2(direction * strength, 0), ForceMode2D.Force);
+        //     elapsedTime += Time.fixedDeltaTime;
+        //     yield return new WaitForFixedUpdate();
+        // }
     }
 }

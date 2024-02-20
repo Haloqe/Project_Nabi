@@ -10,7 +10,6 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     protected Rigidbody2D _rigidbody2D;
     protected Animator _animator;
     protected SEnemyData _data;
-    [SerializeField] protected EEnemyMoveType MoveType;
 
     // Movement
     protected EnemyMovement _movement = null;
@@ -21,7 +20,6 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     [NamedArray(typeof(EStatusEffect))] public GameObject[] DebuffEffects;
     private float[] _effectRemainingTimes;
     private SortedDictionary<float, float> _slowRemainingTimes; // str,time
-    private float _tempPullduration;
 
     // sommer status effect
     private float _sommerStackCount = 0;
@@ -48,7 +46,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
             Comparer<float>.Create(delegate (float x, float y) { return y.CompareTo(x); })
         );
         DebuffEffects = new GameObject[(int)EStatusEffect.MAX];
-        if (MoveType != EEnemyMoveType.None) _movement = GetComponent<EnemyMovement>();
+        _movement = GetComponent<EnemyMovement>();
 
         _damageInfoTEMP = new AttackInfo();
         _damageInfoTEMP.Damages.Add(new DamageInfo(EDamageType.Base, 5));
@@ -69,16 +67,16 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     protected virtual void Initialise() { }
 
     #region Status Effects imposed by the player handling
-    private void HandleNewStatusEffects(List<StatusEffectInfo> statusEffects)
+    private void HandleNewStatusEffects(List<StatusEffectInfo> statusEffects, int incomingDirectionX = 0)
     {
         if (statusEffects == null) return;
 
-        //StatusEffectInfo has three instance variables: effect, strength, duration
+        //StatusEffectInfo has four instance variables: effect, strength, duration, chance
         foreach (var statusEffect in statusEffects)
         {
             // Handle chance
             var randVal = UnityEngine.Random.value;
-            Debug.Log("Status Effect [" + statusEffect.Effect + "] is " + (randVal > statusEffect.Chance ? "not " : "") + "applied " +
+            Debug.Log("[" + gameObject.name + "] " + statusEffect.Effect + " is " + (randVal > statusEffect.Chance ? "not " : "") + "applied " +
                 "(Chance " + statusEffect.Chance + ", val: " + randVal.ToString("F2") + ")");
             if (randVal > statusEffect.Chance)
             {
@@ -91,18 +89,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
                 ApplySlow(statusEffect.Strength, statusEffect.Duration);
                 continue;
             }
-
-            if(statusEffect.Effect == EStatusEffect.Pull)
-            {
-                _tempPullduration = statusEffect.Duration;
-                // _movement.EnablePulling(_tempPullduration);
-            }
-
             //handles status effect other than slow
-            else
-            {
-                UpdateStatusEffectTime(statusEffect.Effect, statusEffect.Duration);
-            }
 
             switch (statusEffect.Effect)
             {
@@ -141,8 +128,15 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
                 case EStatusEffect.Silence: // disable skill
                     IsSilenced = true;
                     break;
-
+                
+                case EStatusEffect.Pull:
+                    if (_movement.moveType == EEnemyMoveType.Stationary) continue;
+                    ShouldDisableMovement = true;
+                    IsSilenced = true;
+                    _movement.StartPullX(incomingDirectionX, statusEffect.Strength, statusEffect.Duration);
+                    break;
             }
+            UpdateStatusEffectTime(statusEffect.Effect, statusEffect.Duration);
         }
 
         if (ShouldDisableMovement)
@@ -161,21 +155,16 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         if (_effectRemainingTimes[effectIdx] == 0)
         {
             SetVFXActive(effectIdx, true);
-            Debug.Log("New " + effect.ToString() + " time: " + duration.ToString("0.0000"));
             _effectRemainingTimes[effectIdx] = duration;
         }
         // or increment effect time
         else
         {
             duration = Mathf.Clamp(duration - _effectRemainingTimes[effectIdx], 0, float.MaxValue);
-            Debug.Log("Previous " + effect.ToString() + " time: " + _effectRemainingTimes[effectIdx] +
-                " Updated time: " + (_effectRemainingTimes[effectIdx] + duration).ToString("0.0000"));
-
-            if (_effectRemainingTimes[effectIdx] <= duration)
-                _effectRemainingTimes[effectIdx] = duration;
+            _effectRemainingTimes[effectIdx] += duration;
         }
-
-        
+        Debug.Log("[" + gameObject.name + "] Apply " + effect + " for " + duration.ToString("F") 
+            + " total: " + _effectRemainingTimes[effectIdx].ToString("F"));
     }
 
     private void UpdateRemainingStatusEffectTimes()
@@ -202,12 +191,14 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
                 
                 _effectRemainingTimes[i] = 0.0f;
 
-                if (currEffect == EStatusEffect.Sleep || currEffect == EStatusEffect.Root || currEffect == EStatusEffect.Airborne || currEffect == EStatusEffect.Stun || currEffect == EStatusEffect.Pull)
+                if (currEffect == EStatusEffect.Sleep || currEffect == EStatusEffect.Root || currEffect == EStatusEffect.Airborne 
+                    || currEffect == EStatusEffect.Stun || currEffect == EStatusEffect.Pull)
                 {
                     _movement.EnableMovement();
                 }
 
-                if (currEffect == EStatusEffect.Airborne || currEffect == EStatusEffect.Stun || currEffect == EStatusEffect.Silence || currEffect == EStatusEffect.Pull)
+                if (currEffect == EStatusEffect.Airborne || currEffect == EStatusEffect.Stun || currEffect == EStatusEffect.Silence 
+                    || currEffect == EStatusEffect.Pull)
                 {
                     IsSilenced = false;
                 }
@@ -231,7 +222,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         {
             _sommerTimeSinceStacked = 0;
             _sommerStackCount = 0;
-            HandleNewStatusEffects(new List<StatusEffectInfo> { new StatusEffectInfo(EStatusEffect.Sleep, SleepBaseStrength, SleepDuration) });
+            HandleNewStatusEffects(new List<StatusEffectInfo> { new StatusEffectInfo(EStatusEffect.Sleep, SleepBaseStrength, SleepDuration) }, 0);
         }
         else if (_sommerStackCount <= 0)
         {
@@ -334,7 +325,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     {
         Utility.PrintDamageInfo(gameObject.name, damageInfo);
         HandleNewDamages(damageInfo.Damages);
-        HandleNewStatusEffects(damageInfo.StatusEffects);
+        HandleNewStatusEffects(damageInfo.StatusEffects, damageInfo.IncomingDirectionX);
     }
 
     private void HandleNewDamages(List<DamageInfo> damages)
