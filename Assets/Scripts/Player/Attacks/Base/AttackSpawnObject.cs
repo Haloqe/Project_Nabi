@@ -1,8 +1,8 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 public class AttackSpawnObject : MonoBehaviour
 {
+    private float _attackerStrength;
     public PlayerDamageDealer PlayerDamageDealer;
     private AttackInfo _attackInfo = new AttackInfo();
     public bool IsAttached;
@@ -10,14 +10,19 @@ public class AttackSpawnObject : MonoBehaviour
 
     [Space(10)] [Header("Damage")] 
     public bool ShouldInflictDamage;
-    [NamedArray(typeof(ELegacyPreservation))] public DamageInfo[] 
-        DamageInfos = new DamageInfo[4];
+    [NamedArray(typeof(ELegacyPreservation))] public SDamageInfo[] 
+        DamageInfo = new SDamageInfo[4];
 
     [Space(10)] [Header("Status Effect")] 
     public bool ShouldInflictStatusEffect;
     [NamedArray(typeof(ELegacyPreservation))] public StatusEffectInfo[] 
         StatusEffectInfos = new StatusEffectInfo[4];
 
+    private void Awake()
+    {
+        _attackerStrength = PlayerController.Instance.Strength;
+    }
+    
     public void SetStatusEffect(EStatusEffect statusEffect)
     {
         foreach (var info in StatusEffectInfos)
@@ -30,7 +35,7 @@ public class AttackSpawnObject : MonoBehaviour
     {
         if (ShouldInflictDamage)
         {
-            _attackInfo.Damages.Add(DamageInfos[(int)preservation]);
+            _attackInfo.Damage.TotalAmount = DamageInfo[(int)preservation].BaseDamage + _attackerStrength * DamageInfo[(int)preservation].RelativeDamage;
         }
         if (ShouldInflictStatusEffect)
         {

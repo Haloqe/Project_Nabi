@@ -9,9 +9,8 @@ public abstract class ActiveLegacySO : LegacySO
     protected float _spawnScaleMultiplier = 1.0f;
 
     [Space(10)][Header("Damage")] 
-    public EIncreaseMethod DamageIncreaseMethod;
-    [NamedArray(typeof(ELegacyPreservation))] public float[] 
-        AdditionalDamage = new float[4]{1,1,1,1};
+    [NamedArray(typeof(ELegacyPreservation))] public SDamageInfo[] 
+        DamageInfos = new SDamageInfo[4];
 
     [Space(10)][Header("Status Effects")] 
     [NamedArray(typeof(ELegacyPreservation))]

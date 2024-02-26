@@ -77,15 +77,9 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
     // IDamageDealer Override
     public void DealDamage(IDamageable target, AttackInfo damageInfo)
     {
-        target.TakeDamage(AdjustOutgoingDamage(damageInfo));
-    }
-
-    private AttackInfo AdjustOutgoingDamage(AttackInfo damageInfo)
-    {
-        var adjusted = damageInfo.Clone();
-        // make changes to the damage dealt based on attributes
-        
-        return adjusted;
+        AttackInfo infoToSend = damageInfo.Clone();
+        infoToSend.AttackerArmourPenetration = PlayerController.Instance.ArmourPenetration;
+        target.TakeDamage(infoToSend);
     }
 
     public int GetStatusEffectLevel(EWarrior warrior)

@@ -68,37 +68,32 @@ public static class Utility
         return tile;
     }
 
-    public static void PrintDamageInfo(string receiver, AttackInfo damageInfo)
+    public static void PrintDamageInfo(string receiver, AttackInfo attackInfo)
     {
-        string damages = System.String.Empty;
-        if (damageInfo.Damages != null) 
+        string damageInfo = System.String.Empty;
+        if (attackInfo.Damage != null)
         {
-            foreach (var damage in damageInfo.Damages)
+            var damage = attackInfo.Damage;
+            if (damage.Duration == 0)
             {
-                if (damage.Duration == 0)
-                {
-                    damages += damage.Type.ToString() + " (" + damage.TotalAmount + ")";
-                }
-                else
-                {
-                    float perTick = damage.TotalAmount / (damage.Duration / damage.Tick + 1);
-                    damages += damage.Type.ToString() + " (" + perTick +
-                        " / " + damage.Tick + "s for " + damage.Duration + "s)";
-                }
+                damageInfo += damage.Type + " (" + damage.TotalAmount + ")";
+            }
+            else
+            {
+                float perTick = damage.TotalAmount / (damage.Duration / damage.Tick + 1);
+                damageInfo += damage.Type + " (" + perTick + " / " + damage.Tick + "s for " + damage.Duration + "s)";
             }
         }
         
-        string statusEffects = System.String.Empty;
-        if (damageInfo.StatusEffects != null)
+        string statusEffectInfo = System.String.Empty;
+        if (attackInfo.StatusEffects != null)
         {
-            foreach (var effect in damageInfo.StatusEffects)
+            foreach (var effect in attackInfo.StatusEffects)
             {
-                statusEffects += effect.Effect.ToString() + " (" + effect.Duration +
-                    "s, " + effect.Strength + ") ";
+                statusEffectInfo += effect.Effect + " (" + effect.Duration + "s, " + effect.Strength + ") ";
             }
         }
-
-        Debug.Log("[Damage Types] " + damages + " [Status Effects] " + statusEffects);
+        Debug.Log("[Damage] " + damageInfo + " [Status Effects] " + statusEffectInfo);
     }
 
     public static float GetLongestParticleDuration(GameObject obj)

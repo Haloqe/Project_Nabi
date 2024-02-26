@@ -283,11 +283,12 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                 break;
             
             case EBuffType.StatUpgrade:
+                PlayerController.Instance.UpgradeStats(legacySO.StatUpgrades, preservation);
                 break;
             
             case EBuffType.HealEfficiency_Food:
                 PlayerController.Instance.HealEfficiency = Utility.GetChangedValue(PlayerController.Instance.HealEfficiency,
-                    legacySO.IncreaseAmounts[preservationIdx], legacySO.IncreaseMethod);
+                    legacySO.BuffIncreaseAmounts[preservationIdx], legacySO.BuffIncreaseMethod);
                 break;
             
             case EBuffType.SpawnAreaIncrease:
@@ -295,7 +296,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                 {
                     if (attackBase.activeWarrior == legacySO.Warrior)
                     {
-                        attackBase.UpdateSpawnSize(legacySO.IncreaseAmounts[preservationIdx], legacySO.IncreaseMethod);
+                        attackBase.UpdateSpawnSize(legacySO.BuffIncreaseAmounts[preservationIdx], legacySO.BuffIncreaseMethod);
                     }
                 }
                 break;
@@ -325,7 +326,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                 case EBuffType.SpawnAreaIncrease:
                     foreach (var attackBase in _playerDamageDealer.AttackBases)
                     {
-                        attackBase.UpdateSpawnSize(legacySO.IncreaseAmounts[passivePreservation], legacySO.IncreaseMethod);
+                        attackBase.UpdateSpawnSize(legacySO.BuffIncreaseAmounts[passivePreservation], legacySO.BuffIncreaseMethod);
                     }
                     break;
             }

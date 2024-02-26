@@ -149,8 +149,6 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     }
 
     #region Damage Dealing and Receiving
-    
-    
     // IDamageable Override
     
     public void TakeDamage(AttackInfo damageInfo)
@@ -160,16 +158,13 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         
         // TEMP CODE
         Utility.PrintDamageInfo("Player", damageInfo);
-        HandleNewDamages(damageInfo.Damages);
+        HandleNewDamage(damageInfo.Damage);
         HandleNewStatusEffects(damageInfo.StatusEffects);
     }    
 
-    private void HandleNewDamages(List<DamageInfo> damages)
+    private void HandleNewDamage(DamageInfo damage)
     {
-        foreach (var damage in damages)
-        {
-            StartCoroutine(DamageCoroutine(damage));
-        }      
+        StartCoroutine(DamageCoroutine(damage));
     }
 
     private void OnDefeated()

@@ -13,9 +13,39 @@ MonoBehaviour:
   m_Name: "\uC0AC\uB791\uC758 \uCC29\uCDE8"
   m_EditorClassIdentifier: 
   Warrior: 1
-  BuffType: 0
-  StatusEffectUpgrades: []
-  StatUpgrades: []
+  BuffType: 2
+  StatusEffectUpgrades:
+  - UpgradeType: 0
+    IncreaseMethod: 2
+    IncreaseAmounts:
+    - 1
+    - 2
+    - 3
+    - 4
+  - UpgradeType: 1
+    IncreaseMethod: 1
+    IncreaseAmounts:
+    - 10
+    - 30
+    - 0
+    - 0
+  StatUpgrades:
+  - Stat: 3
+    IncreaseMethod: 0
+    IncreaseAmounts:
+    - 2
+    - 2
+    - 3
+    - 23
+  - Stat: 0
+    IncreaseMethod: 0
+    IncreaseAmounts: []
+  - Stat: 0
+    IncreaseMethod: 0
+    IncreaseAmounts: []
+  - Stat: 0
+    IncreaseMethod: 0
+    IncreaseAmounts: []
   IncreaseMethod: 0
   IncreaseAmounts:
   - 0

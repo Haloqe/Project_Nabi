@@ -16,7 +16,7 @@ public class AttackSpawnObjectEditor : Editor
         EditorGUILayout.PropertyField(serializedObject.FindProperty("ShouldInflictDamage"));
         if (obj.ShouldInflictDamage)
         {
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("DamageInfos"), true);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("DamageInfo"), true);
         }
         
         EditorGUILayout.PropertyField(serializedObject.FindProperty("ShouldInflictStatusEffect"));

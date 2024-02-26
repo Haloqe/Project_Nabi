@@ -10,7 +10,7 @@ public class AttackBase_Dash : AttackBase
 
     public override void Start()
     {
-        _damageInitBase = new AttackInfo();
+        _attackInfoInit = new AttackInfo();
         base.Start();
     }
     

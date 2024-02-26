@@ -7,7 +7,7 @@ public class Legacy_Melee : ActiveLegacySO
     // Prefab object to spawn upon combo hit attack
     public AttackSpawnObject ComboHitSpawnObject;
     [NamedArray(typeof(ELegacyPreservation))]
-    public float[] ComboDamageMultiplier = new float[4]{1,1,1,1};
+    public SDamageInfo[] ComboDamageInfo = new SDamageInfo[4];
     [NamedArray(typeof(ELegacyPreservation))]
     public StatusEffectInfo[] StatusEffectInfos = new StatusEffectInfo[4];
     

@@ -8,8 +8,8 @@ public class AttackBase_Ranged : AttackBase
 
     public override void Start()
     {
-        _damageInitBase = new AttackInfo();
-        _damageInitBase.Damages.Add(new DamageInfo(EDamageType.Base, 3));
+        _damageInfoInit.BaseDamage = 3.0f;
+        _attackInfoInit.Damage.TotalAmount = _damageInfoInit.BaseDamage + PlayerController.Instance.Strength * _damageInfoInit.RelativeDamage;
         base.Start();
     }
 
@@ -47,7 +47,7 @@ public class AttackBase_Ranged : AttackBase
             .GetComponent<Bullet>();
         bullet.Direction = -Mathf.Sign(gameObject.transform.localScale.x);
         bullet.Owner = this;
-        bullet.attackInfo = _damageBase.Clone();
+        bullet.attackInfo = _attackInfo.Clone();
         bullet.attackInfo.SetAttackDirToMyFront(_damageDealer.gameObject);
     }
 
@@ -60,7 +60,6 @@ public class AttackBase_Ranged : AttackBase
         // Deal damage to the target if the bullet is hit
         if (target != null)
         {
-            savedAttackInfo.Damages.Clear();
             _damageDealer.DealDamage(target, savedAttackInfo);
         }
     }

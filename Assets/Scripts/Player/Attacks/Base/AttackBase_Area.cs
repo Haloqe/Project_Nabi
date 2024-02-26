@@ -17,8 +17,10 @@ public class AttackBase_Area : AttackBase
         _attackType = ELegacyType.Area;
         VFXObject = Utility.LoadGameObjectFromPath("Prefabs/Player/AreaVFX");
         _rigidbody2D = GetComponent<Rigidbody2D>();
-        _damageInitBase = new AttackInfo();
-        _damageInitBase.Damages.Add(new DamageInfo(EDamageType.Base, 15));
+        _attackInfoInit = new AttackInfo
+        {
+            Damage = new DamageInfo(EDamageType.Base, 15),
+        };
         base.Start();
     }
 
@@ -61,6 +63,6 @@ public class AttackBase_Area : AttackBase
 
     public void DealDamage(IDamageable target)
     {
-        _damageDealer.DealDamage(target, _damageBase);
+        _damageDealer.DealDamage(target, _attackInfo);
     }
 }

@@ -1,27 +1,29 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [Serializable]
 public class AttackInfo
 {
-    public List<DamageInfo> Damages;
+    public DamageInfo Damage;
     public List<StatusEffectInfo> StatusEffects;
     public int IncomingDirectionX;
+    public float AttackerArmourPenetration;
 
     public AttackInfo()
     {
-        Damages = new List<DamageInfo>();
+        Damage = new DamageInfo();
         StatusEffects = new List<StatusEffectInfo>();
     }
     
-    public AttackInfo(List<DamageInfo> damageInfos, List<StatusEffectInfo> statusEffectInfos)
+    public AttackInfo(DamageInfo damageInfo, List<StatusEffectInfo> statusEffectInfos)
     {
-        Damages = damageInfos;
+        Damage = damageInfo;
         StatusEffects = statusEffectInfos;
     }
     
-    public AttackInfo(List<DamageInfo> damageInfos, List<StatusEffectInfo> statusEffectInfos, int dir) : this(damageInfos, statusEffectInfos)
+    public AttackInfo(DamageInfo damageInfo, List<StatusEffectInfo> statusEffectInfos, int dir) : this(damageInfo, statusEffectInfos)
     {
         IncomingDirectionX = dir;
     }
@@ -38,7 +40,7 @@ public class AttackInfo
 
     public AttackInfo Clone()
     {
-        return new AttackInfo(Damages, StatusEffects, IncomingDirectionX);
+        return new AttackInfo(Damage, StatusEffects, IncomingDirectionX);
     }
 }
 

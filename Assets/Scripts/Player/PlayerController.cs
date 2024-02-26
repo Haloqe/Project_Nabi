@@ -14,6 +14,9 @@ public class PlayerController : Singleton<PlayerController>
     
     // Centrally controlled variables
     public float HealEfficiency = 1.0f;
+    public float Strength = 0.0f;
+    public float Armour = 0.0f;
+    public float ArmourPenetration = 0.0f;
     
     protected override void Awake()
     {
@@ -81,5 +84,22 @@ public class PlayerController : Singleton<PlayerController>
     public void Heal(float amount)
     {
         playerDamageReceiver.ChangeHealthByAmount(amount * HealEfficiency, false);
+    }
+    
+    public void UpgradeStats(SLegacyStatUpgradeData[] upgradeData, ELegacyPreservation preservation)
+    {
+        foreach (var data in upgradeData)
+        {
+            switch (data.Stat)
+            {
+                case EStat.ArmourPenetration:
+                    ArmourPenetration = Utility.GetChangedValue(ArmourPenetration, data.IncreaseAmounts[(int)preservation], data.IncreaseMethod);
+                    break;
+                
+                // TODO
+                default:
+                    break;
+            }
+        }
     }
 }

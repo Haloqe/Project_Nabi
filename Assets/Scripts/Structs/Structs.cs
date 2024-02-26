@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 #region Player
 public struct SWarrior
@@ -25,7 +26,6 @@ public struct SLegacyStatusEffectUpgradeData
 {
     public EStatusEffectUpgradeType UpgradeType;
     public EIncreaseMethod IncreaseMethod;
-    [NamedArray(typeof(ELegacyPreservation))]
     public float[] IncreaseAmounts;
 }
 
@@ -34,7 +34,6 @@ public struct SLegacyStatUpgradeData
 {
     public EStat Stat;
     public EIncreaseMethod IncreaseMethod;
-    [NamedArray(typeof(ELegacyPreservation))]
     public float[] IncreaseAmounts;
 }
 
@@ -50,6 +49,13 @@ public struct SLegacyStatUpgradeData
 //    public EAbilityRarity Rarity;
 //    public int[] Locations;
 //}
+
+[Serializable]
+public struct SDamageInfo
+{
+    public float BaseDamage;
+    [FormerlySerializedAs("StrengthRelativeDamage")] public float RelativeDamage;
+}
 #endregion Player
 
 #region Enemy

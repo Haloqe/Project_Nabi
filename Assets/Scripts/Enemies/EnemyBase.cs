@@ -49,7 +49,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         _movement = GetComponent<EnemyMovement>();
 
         _damageInfoTEMP = new AttackInfo();
-        _damageInfoTEMP.Damages.Add(new DamageInfo(EDamageType.Base, 5));
+        _damageInfoTEMP.Damage = new DamageInfo(EDamageType.Base, 5);
         PlayerEvents.defeated += OnPlayerDefeated;
 
         Initialise();         
@@ -95,8 +95,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
             {
                 case EStatusEffect.Sommer:
                     _movement.ChangeSpeedByPercentage(SommerReducedSpeed);
-                    // assumed that there's only 1 element in the list. might need edits
-                    _damageInfoTEMP.Damages[0] = new DamageInfo(EDamageType.Base, _damageInfoTEMP.Damages[0].TotalAmount * SommerReducedDamage);
+                    _damageInfoTEMP.Damage = new DamageInfo(EDamageType.Base, _damageInfoTEMP.Damage.TotalAmount * SommerReducedDamage);
                     _sommerStackCount++;
                     _sommerTimeSinceStacked = 0f;
                     break;
@@ -227,7 +226,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         else if (_sommerStackCount <= 0)
         {
             _movement.ChangeSpeedByPercentage(1f);
-            _damageInfoTEMP.Damages[0] = new DamageInfo(EDamageType.Base, _damageInfoTEMP.Damages[0].TotalAmount);
+            _damageInfoTEMP.Damage = new DamageInfo(EDamageType.Base, _damageInfoTEMP.Damage.TotalAmount);
             _effectRemainingTimes[(int)EStatusEffect.Sommer] = 0;
         }
     }
@@ -324,14 +323,13 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     public void TakeDamage(AttackInfo damageInfo)
     {
         Utility.PrintDamageInfo(gameObject.name, damageInfo);
-        HandleNewDamages(damageInfo.Damages);
+        HandleNewDamage(damageInfo.Damage);
         HandleNewStatusEffects(damageInfo.StatusEffects, damageInfo.IncomingDirectionX);
     }
 
-    private void HandleNewDamages(List<DamageInfo> damages)
+    private void HandleNewDamage(DamageInfo damage)
     {
-        int damage = (int)IDamageable.CalculateRoughDamage(damages);
-        ReduceHealth(damage);
+        ReduceHealth(damage.TotalAmount);
 
         // if (asleep) then wake up
         if (_effectRemainingTimes[(int)EStatusEffect.Sleep] > 0)

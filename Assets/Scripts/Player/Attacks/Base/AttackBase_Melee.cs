@@ -21,8 +21,10 @@ public class AttackBase_Melee : AttackBase
     private float _baseDelay;
 
     // Damage
-    private AttackInfo _damageCombo;
-    private AttackInfo _damageInitCombo;
+    private AttackInfo _attackCombo = new AttackInfo();
+    private AttackInfo _attackComboInit = new AttackInfo();
+    private SDamageInfo _damageInfoCombo = new SDamageInfo();
+    private SDamageInfo _damageInfoComboInit = new SDamageInfo();
 
     public override void Start()
     {
@@ -31,11 +33,13 @@ public class AttackBase_Melee : AttackBase
         _colliderBase = VFXObject.GetComponent<BoxCollider2D>();
         _colliderCombo = VFXObjCombo.GetComponent<BoxCollider2D>();
         _affectedEnemies = new List<int>();
+
+        // Damage
+        _damageInfoInit.BaseDamage = 5.0f;
+        _damageInfoComboInit = new SDamageInfo() { BaseDamage = 5.0f, RelativeDamage = 0.0f, };
+        _attackComboInit.Damage.TotalAmount = _damageInfoComboInit.BaseDamage + PlayerController.Instance.Strength * _damageInfoComboInit.RelativeDamage;
+        _attackInfoInit.Damage.TotalAmount = _damageInfoInit.BaseDamage + PlayerController.Instance.Strength * _damageInfoInit.RelativeDamage;
         
-        _damageInitBase = new AttackInfo();
-        _damageInitBase.Damages.Add(new DamageInfo(EDamageType.Base, 5));
-        _damageInitCombo = new AttackInfo();
-        _damageInitCombo.Damages.Add(new DamageInfo(EDamageType.Base, 10));
         base.Start();
     }
 
@@ -50,8 +54,8 @@ public class AttackBase_Melee : AttackBase
         
         // Damage
         _activeLegacy = null;
-        _damageBase = _damageInitBase;
-        _damageCombo = _damageInitCombo;
+        _attackInfo = _attackInfoInit;
+        _attackCombo = _attackComboInit;
         _affectedEnemies.Clear();
 
         // VFX
@@ -77,15 +81,9 @@ public class AttackBase_Melee : AttackBase
     {
         base.UpdateLegacyDamage();
         if (_activeLegacy == null) return;
-        var changeAmount = _activeLegacy.AdditionalDamage[(int)_activeLegacyPreservation];
-        if (changeAmount != 0)
-        {
-            var method = _activeLegacy.DamageIncreaseMethod;
-            foreach (var damage in _damageCombo.Damages)
-            {
-                damage.TotalAmount = Utility.GetChangedValue(damage.TotalAmount, changeAmount, method);
-            }
-        }
+        _damageInfoCombo.BaseDamage = _activeLegacy.DamageInfos[(int)_activeLegacyPreservation].BaseDamage;
+        _damageInfoCombo.RelativeDamage = _activeLegacy.DamageInfos[(int)_activeLegacyPreservation].RelativeDamage;
+        _attackCombo.Damage.TotalAmount = _damageInfo.BaseDamage + PlayerController.Instance.Strength * _damageInfo.RelativeDamage;
     }
 
     public override void Attack()
@@ -162,7 +160,7 @@ public class AttackBase_Melee : AttackBase
         if (target == null) return;
 
         _affectedEnemies.Add(collision.gameObject.GetInstanceID());
-        _damageDealer.DealDamage(target, _comboStack == 0 ? _damageCombo : _damageBase);
+        _damageDealer.DealDamage(target, _comboStack == 0 ? _attackCombo : _attackInfo);
     }
 
     protected override void OnAttackEnd_PreDelay()
@@ -176,7 +174,7 @@ public class AttackBase_Melee : AttackBase
         base.UpdateLegacyStatusEffect();
         
         // Combo attack
-        var newStatusEffectsCombo = _damageCombo.StatusEffects;
+        var newStatusEffectsCombo = _attackCombo.StatusEffects;
         EStatusEffect warriorSpecificEffect =
             PlayerAttackManager.Instance.GetWarriorStatusEffect(_activeLegacy.Warrior,
                 _damageDealer.GetStatusEffectLevel(_activeLegacy.Warrior));
@@ -185,6 +183,6 @@ public class AttackBase_Melee : AttackBase
             _activeLegacy.StatusEffects[(int)_activeLegacyPreservation].Duration,
             _activeLegacy.StatusEffects[(int)_activeLegacyPreservation].Chance);
         newStatusEffectsCombo.Add(newEffect);
-        _damageCombo.StatusEffects = newStatusEffectsCombo;
+        _attackCombo.StatusEffects = newStatusEffectsCombo;
     }
 }

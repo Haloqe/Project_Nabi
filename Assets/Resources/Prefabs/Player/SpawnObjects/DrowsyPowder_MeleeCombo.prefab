@@ -4971,27 +4971,41 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PlayerDamageDealer: {fileID: 0}
+  IsAttached: 0
+  ShouldManuallyDestroy: 0
   ShouldInflictDamage: 1
-  DamageType: 0
-  DamageAmounts:
-  - 1
-  - 1
-  - 1
-  - 1
-  DamageDurations:
-  - 0
-  - 0
-  - 0
-  - 0
+  DamageInfos:
+  - Type: 0
+    TotalAmount: 10
+    Duration: 0
+    Tick: 0
+  - Type: 0
+    TotalAmount: 0
+    Duration: 0
+    Tick: 0
+  - Type: 0
+    TotalAmount: 0
+    Duration: 0
+    Tick: 0
+  - Type: 0
+    TotalAmount: 0
+    Duration: 0
+    Tick: 0
   ShouldInflictStatusEffect: 1
-  StatusEffect: 1
-  StatusEffectDurations:
-  - 1
-  - 1
-  - 1
-  - 1
-  StatusEffectStrengths:
-  - 0
-  - 0
-  - 0
-  - 0
+  StatusEffectInfos:
+  - Effect: 0
+    Strength: 0
+    Duration: 0
+    Chance: 0
+  - Effect: 0
+    Strength: 0
+    Duration: 0
+    Chance: 0
+  - Effect: 0
+    Strength: 0
+    Duration: 0
+    Chance: 0
+  - Effect: 0
+    Strength: 0
+    Duration: 0
+    Chance: 0

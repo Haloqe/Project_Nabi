@@ -10,13 +10,17 @@ public abstract class AttackBase : MonoBehaviour
     
     private float _attackDelay;
     private float _attackSpeedMultiplier;
-    protected AttackInfo _damageInitBase;
-    protected AttackInfo _damageBase;
     protected float _attackPostDelay;
     protected ELegacyType _attackType;
     
     public GameObject VFXObject;
     private Material _defaultVFXMaterial;
+    
+    // Damage
+    protected AttackInfo _attackInfo = new AttackInfo();
+    protected AttackInfo _attackInfoInit = new AttackInfo();
+    protected SDamageInfo _damageInfo = new SDamageInfo();
+    protected SDamageInfo _damageInfoInit = new SDamageInfo();
     
     // Legacy
     public EWarrior activeWarrior;
@@ -25,7 +29,8 @@ public abstract class AttackBase : MonoBehaviour
     
     public virtual void Reset()
     {
-        _damageBase = _damageInitBase;
+        _attackInfo = _attackInfoInit.Clone();
+        _damageInfo = _damageInfoInit;
         VFXObject.GetComponent<ParticleSystemRenderer>().sharedMaterial = _defaultVFXMaterial;
     }
     
@@ -80,16 +85,9 @@ public abstract class AttackBase : MonoBehaviour
     protected virtual void UpdateLegacyDamage()
     {
         if (_activeLegacy == null) return;
-        var changeAmount = _activeLegacy.AdditionalDamage[(int)_activeLegacyPreservation];
-        
-        if (changeAmount != 0)
-        {
-            var method = _activeLegacy.DamageIncreaseMethod;
-            foreach (var damage in _damageBase.Damages)
-            {
-                damage.TotalAmount = Utility.GetChangedValue(damage.TotalAmount, changeAmount, method);
-            }
-        }
+        _damageInfo.BaseDamage = _activeLegacy.DamageInfos[(int)_activeLegacyPreservation].BaseDamage;
+        _damageInfo.RelativeDamage = _activeLegacy.DamageInfos[(int)_activeLegacyPreservation].RelativeDamage;
+        _attackInfo.Damage.TotalAmount = _damageInfo.BaseDamage + PlayerController.Instance.Strength * _damageInfo.RelativeDamage;
     }
     
     protected virtual void UpdateLegacyStatusEffect()
@@ -102,7 +100,7 @@ public abstract class AttackBase : MonoBehaviour
                 _damageDealer.GetStatusEffectLevel(_activeLegacy.Warrior));
         
         // Update status effect of base damage
-        var newStatusEffectsBase = _damageBase.StatusEffects;
+        var newStatusEffectsBase = _attackInfo.StatusEffects;
         var newEffect = new StatusEffectInfo(warriorSpecificEffect,
             _activeLegacy.StatusEffects[(int)_activeLegacyPreservation].Strength,
             _activeLegacy.StatusEffects[(int)_activeLegacyPreservation].Duration,
@@ -120,7 +118,7 @@ public abstract class AttackBase : MonoBehaviour
         }
         
         // Update status effect of objects spawned from legacy
-        _damageBase.StatusEffects = newStatusEffectsBase;
+        _attackInfo.StatusEffects = newStatusEffectsBase;
         _activeLegacy.OnUpdateStatusEffect(warriorSpecificEffect);
     }
 
