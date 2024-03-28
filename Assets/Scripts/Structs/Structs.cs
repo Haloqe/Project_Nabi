@@ -112,4 +112,11 @@ public struct SFoodInfo
     public int Price;
     public int SpriteIndex;
 }
+
+public struct SFlowerInfo
+{
+    public string Name;
+    public string Description;
+    public int SpriteIndex;
+}
 #endregion

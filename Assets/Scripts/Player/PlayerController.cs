@@ -1,6 +1,8 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
+using UnityEngine.SocialPlatforms.Impl;
 
 public class PlayerController : Singleton<PlayerController>
 {
@@ -11,6 +13,9 @@ public class PlayerController : Singleton<PlayerController>
     public PlayerDamageReceiver playerDamageReceiver;
     public PlayerDamageDealer playerDamageDealer;
     public PlayerInventory playerInventory;
+    //(Variables for FlowerBomb)
+    private int[] _flowerNumbers = new int[5];
+    [SerializeField] TextMeshProUGUI[] flowerText = new TextMeshProUGUI[5];
     
     // Centrally controlled variables
     public float HealEfficiency = 1.0f;
@@ -84,6 +89,13 @@ public class PlayerController : Singleton<PlayerController>
     public void Heal(float amount)
     {
         playerDamageReceiver.ChangeHealthByAmount(amount * HealEfficiency, false);
+    }
+
+    // Store the number of flower bombs the player owns
+    public void AddToFlower(int flowerIndex)
+    {
+        _flowerNumbers[flowerIndex] += 1;
+        flowerText[flowerIndex].text = _flowerNumbers[flowerIndex].ToString();
     }
     
     public void UpgradeStats(SLegacyStatUpgradeData[] upgradeData, ELegacyPreservation preservation)
