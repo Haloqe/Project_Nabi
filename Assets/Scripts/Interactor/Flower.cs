@@ -32,7 +32,7 @@ public class Flower : MonoBehaviour
             {
                 if(gameObject.name == _flowerIdentification[i].Name)
                 {
-                    int check = FindObjectOfType<PlayerController>().NumberOfFlowers(_flowerIdentification[i].SpriteIndex);
+                    int check = FindObjectOfType<PlayerController>().GetNumberOfFlowers(_flowerIdentification[i].SpriteIndex);
 
                     if (check <= _maxNumberOfFlowers - 1)
                     {

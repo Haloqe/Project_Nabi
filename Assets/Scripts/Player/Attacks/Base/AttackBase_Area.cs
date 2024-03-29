@@ -6,16 +6,28 @@ public class AttackBase_Area : AttackBase
 {
     private float _areaRadius;
     private float _areaRadiusMultiplier;
+    private List<SBombInfo> _bombIdentification = new List<SBombInfo>
+        {
+            new SBombInfo {Name = "NectarFlower", Description = "체력 회복.", SpriteIndex = 0},
+            new SBombInfo {Name = "IncendiaryBombVFX", Description = "적을 불태운다.", SpriteIndex = 1},
+            new SBombInfo {Name = "StickyBombVFX", Description = "슬로우 제공.", SpriteIndex = 2},
+            new SBombInfo {Name = "BlizzardBombVFX", Description = "스턴 제공.", SpriteIndex = 3},
+            new SBombInfo {Name = "GravityBombVFX", Description = "끌어당김.", SpriteIndex = 4}};
 
     // Stopping player movement
     private float _prevGravity;
     private Vector3 _prevVelocity;
     private Rigidbody2D _rigidbody2D;
 
+    //detecting which flower to use
+    public int currentSelectedFlowerIndex;
+    public string vfxName;
+
     public override void Start()
     {
         _attackType = ELegacyType.Area;
-        VFXObject = Utility.LoadGameObjectFromPath("Prefabs/Player/BombVFX/AreaVFX");
+        //currentFlowerInit();
+        VFXObject = Utility.LoadGameObjectFromPath("Prefabs/Player/BombVFX/StickyBombVFX");
         _rigidbody2D = GetComponent<Rigidbody2D>();
         _attackInfoInit = new AttackInfo
         {
@@ -23,7 +35,24 @@ public class AttackBase_Area : AttackBase
         };
         base.Start();
     }
+    public void currentFlowerInit()
+    {
+        currentSelectedFlowerIndex = FindObjectOfType<PlayerController>().GetCurrentSelectedFlower();
+        int number = FindObjectOfType<PlayerController>().GetNumberOfFlowers(currentSelectedFlowerIndex);
 
+        if (number > 0)
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                if (_bombIdentification[i].SpriteIndex == currentSelectedFlowerIndex)
+                {
+                    vfxName = _bombIdentification[i].Name;
+                    break;
+                }
+            }
+        }
+    }
+        
     public override void Reset()
     {
         base.Reset();

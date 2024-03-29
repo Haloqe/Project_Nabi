@@ -130,7 +130,7 @@ public class PlayerController : Singleton<PlayerController>
     }
 
     // Return the number of flower bombs currently stored
-    public int NumberOfFlowers(int flowerIndex)
+    public int GetNumberOfFlowers(int flowerIndex)
     {
         return _flowerNumbers[flowerIndex];
     }

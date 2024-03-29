@@ -119,4 +119,11 @@ public struct SFlowerInfo
     public string Description;
     public int SpriteIndex;
 }
+
+public struct SBombInfo
+{
+    public string Name;
+    public string Description;
+    public int SpriteIndex;
+}
 #endregion
