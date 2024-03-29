@@ -5,9 +5,9 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
-
 public class Flower : MonoBehaviour
 {
+    private int _maxNumberOfFlowers = 2;
     private Sprite[] _flowerSprites;
     private SFlowerInfo _flowerInfo;
     private List<SFlowerInfo> _flowerIdentification = new List<SFlowerInfo>
@@ -32,11 +32,18 @@ public class Flower : MonoBehaviour
             {
                 if(gameObject.name == _flowerIdentification[i].Name)
                 {
-                    FindObjectOfType<PlayerController>().AddToFlower(_flowerIdentification[i].SpriteIndex);
+                    int check = FindObjectOfType<PlayerController>().NumberOfFlowers(_flowerIdentification[i].SpriteIndex);
+
+                    if (check <= _maxNumberOfFlowers - 1)
+                    {
+                        FindObjectOfType<PlayerController>().AddToFlower(_flowerIdentification[i].SpriteIndex);
+                        Destroy(gameObject);
+                    }
+                        
                 }
             }
             
-            Destroy(gameObject);
+            
             //increase the number of a certain flower bomb in the UI
         }
     }

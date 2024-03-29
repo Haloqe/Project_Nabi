@@ -15,7 +15,7 @@ public class AttackBase_Area : AttackBase
     public override void Start()
     {
         _attackType = ELegacyType.Area;
-        VFXObject = Utility.LoadGameObjectFromPath("Prefabs/Player/AreaVFX");
+        VFXObject = Utility.LoadGameObjectFromPath("Prefabs/Player/BombVFX/AreaVFX");
         _rigidbody2D = GetComponent<Rigidbody2D>();
         _attackInfoInit = new AttackInfo
         {
