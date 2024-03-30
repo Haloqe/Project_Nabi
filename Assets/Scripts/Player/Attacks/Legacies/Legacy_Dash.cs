@@ -17,18 +17,6 @@ public class Legacy_Dash : ActiveLegacySO
         base.Init(playerTransform);
         _manualDestroyList = new List<GameObject>();
         _spawnScaleMultiplier = 1.0f;
-        
-        var player = _playerTransform.gameObject.GetComponent<PlayerDamageDealer>();
-        if (SpawnObject_Pre) SpawnObject_Pre.PlayerDamageDealer = player;
-        if (SpawnObject_Peri) SpawnObject_Peri.PlayerDamageDealer = player;
-        if (SpawnObject_Post) SpawnObject_Post.PlayerDamageDealer = player;
-    }
-    
-    public override void OnUpdateStatusEffect(EStatusEffect newEffect)
-    {
-        if (SpawnObject_Pre) SpawnObject_Pre.SetStatusEffect(newEffect);
-        if (SpawnObject_Peri) SpawnObject_Peri.SetStatusEffect(newEffect);
-        if (SpawnObject_Post) SpawnObject_Post.SetStatusEffect(newEffect);
     }
 
     public void OnDashBegin()
@@ -39,7 +27,6 @@ public class Legacy_Dash : ActiveLegacySO
         AttackSpawnObject spawnedObject = null;
         if (SpawnObject_Pre.IsAttached) spawnedObject = Instantiate(SpawnObject_Pre, _playerTransform);
         else spawnedObject = Instantiate(SpawnObject_Pre, _playerTransform.position + SpawnObject_Pre.transform.position, Quaternion.identity);
-        spawnedObject.SetAttackInfo(_preservation);
         
         // Change scale
         var localScale = spawnedObject.transform.localScale;
@@ -60,7 +47,6 @@ public class Legacy_Dash : ActiveLegacySO
             AttackSpawnObject spawnedObject = null;
             if (SpawnObject_Post.IsAttached) spawnedObject = Instantiate(SpawnObject_Post, _playerTransform);
             else spawnedObject = Instantiate(SpawnObject_Post, _playerTransform.position + SpawnObject_Post.transform.position, Quaternion.identity);
-            spawnedObject.SetAttackInfo(_preservation);
             
             // Change scale
             var transform = spawnedObject.transform;
@@ -68,7 +54,7 @@ public class Legacy_Dash : ActiveLegacySO
             transform.localScale = new Vector3(localScale.x * _spawnScaleMultiplier, localScale.y * _spawnScaleMultiplier, localScale.z);
 
             // Handle destruction manually?
-            if (SpawnObject_Pre.ShouldManuallyDestroy)
+            if (SpawnObject_Post.ShouldManuallyDestroy)
                 _manualDestroyList.Add(spawnedObject.gameObject);
         }
         
@@ -81,7 +67,7 @@ public class Legacy_Dash : ActiveLegacySO
     }
 
     // A coroutine to spawn objects during dash
-    public IEnumerator DashCoroutine()
+    public IEnumerator DashSpawnCoroutine()
     {
         if (SpawnObject_Peri == null) yield break;
         
@@ -95,7 +81,6 @@ public class Legacy_Dash : ActiveLegacySO
                 AttackSpawnObject spawnedObject = null;
                 if (SpawnObject_Peri.IsAttached) spawnedObject = Instantiate(SpawnObject_Peri, _playerTransform);
                 else spawnedObject = Instantiate(SpawnObject_Peri, _playerTransform.position + SpawnObject_Peri.transform.position, Quaternion.identity);
-                spawnedObject.SetAttackInfo(_preservation);
                 
                 // Change scale
                 var transform = spawnedObject.transform;
@@ -103,7 +88,7 @@ public class Legacy_Dash : ActiveLegacySO
                 transform.localScale = new Vector3(localScale.x * _spawnScaleMultiplier, localScale.y * _spawnScaleMultiplier, localScale.z);
         
                 // Handle destruction manually?
-                if (SpawnObject_Pre.ShouldManuallyDestroy) 
+                if (SpawnObject_Peri.ShouldManuallyDestroy) 
                     _manualDestroyList.Add(spawnedObject.gameObject);
                 
                 timer = 0.0f;

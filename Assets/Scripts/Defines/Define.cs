@@ -19,10 +19,10 @@ public static class Define
     };
     public static int[] LegacyPriceByRarity = new int[]
     {
-        1,      // Weathered
-        4,      // Tarnished
-        8,      // Intact
-        10,     // Pristine
+        1,              // Weathered
+        4,              // Tarnished
+        8,              // Intact
+        10,             // Pristine
     };
     
     public static string[,] WarriorNames = new string[,]
@@ -33,8 +33,8 @@ public static class Define
     
     public static EStatusEffect[,] StatusEffectByWarrior =
     {
-        { EStatusEffect.Sommer, EStatusEffect.Sleep },          // 소머
-        { EStatusEffect.Drugged, EStatusEffect.Indoctrinated }, // 유포리아
+        { EStatusEffect.Sommer, EStatusEffect.UpgradedSommer },          // 소머
+        { EStatusEffect.Drugged, EStatusEffect.UpgradedDrugged }, // 유포리아
         { EStatusEffect.Swarm, EStatusEffect.Cloud },           // 투르벨라
         { EStatusEffect.Poison, EStatusEffect.Leech },          // 버논
         { EStatusEffect.Evade, EStatusEffect.Camouflage },      // 나이트셰이드

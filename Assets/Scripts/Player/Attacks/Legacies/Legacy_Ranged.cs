@@ -11,7 +11,6 @@ public class Legacy_Ranged : ActiveLegacySO
     // 총알의 위치를 원점으로, 총알이 사라질 때 생성할 오브젝트
     public AttackSpawnObject BulletDestroySpawnObject;
     
-    public float BulletSpeedMultiplier = 1.0f;
     private List<GameObject> _manualDestroyList;
 
     public override void Init(Transform playerTransform)
@@ -19,19 +18,6 @@ public class Legacy_Ranged : ActiveLegacySO
         base.Init(playerTransform);
         _manualDestroyList = new List<GameObject>();
         _spawnScaleMultiplier = 1.0f;
-        var player = _playerTransform.gameObject.GetComponent<PlayerDamageDealer>();
-        if (AttackSpawnObject)
-            AttackSpawnObject.PlayerDamageDealer = player;
-        if (BulletDestroySpawnObject)
-            BulletDestroySpawnObject.PlayerDamageDealer = player;
-    }
-    
-    public override void OnUpdateStatusEffect(EStatusEffect newEffect)
-    {
-        if (AttackSpawnObject)
-            AttackSpawnObject.SetStatusEffect(newEffect);
-        if (BulletDestroySpawnObject)
-            BulletDestroySpawnObject.SetStatusEffect(newEffect);
     }
 
     private void OnAttack()
@@ -42,7 +28,6 @@ public class Legacy_Ranged : ActiveLegacySO
         AttackSpawnObject spawnedObject = null;
         if (AttackSpawnObject.IsAttached) spawnedObject = Instantiate(AttackSpawnObject, _playerTransform);
         else spawnedObject = Instantiate(AttackSpawnObject, _playerTransform.position + AttackSpawnObject.transform.position, Quaternion.identity);
-        spawnedObject.SetAttackInfo(_preservation);
         
         // Change scale
         var transform = spawnedObject.transform;
@@ -68,8 +53,6 @@ public class Legacy_Ranged : ActiveLegacySO
         var transform = obj.transform;
         var localScale = transform.localScale;
         transform.localScale = new Vector3(localScale.x * _spawnScaleMultiplier, localScale.y * _spawnScaleMultiplier, localScale.z);
-        
-        obj.SetAttackInfo(_preservation);
         
         // Destroy all temporary objects that are manually managed
         foreach (var objToDestroy in _manualDestroyList)

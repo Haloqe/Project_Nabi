@@ -7,7 +7,7 @@ public class PlayerInventory : MonoBehaviour
     public void ChangeGoldByAmount(int amount)
     {
         _gold += amount;
-        Debug.Log("Current gold: " + _gold + " (" + amount + ")");
+        PlayerEvents.goldChanged.Invoke(_gold);
     }
 
     public bool TryBuyItem(int price)

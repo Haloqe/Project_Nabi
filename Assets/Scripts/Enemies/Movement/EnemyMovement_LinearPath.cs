@@ -58,11 +58,6 @@ public class EnemyMovement_LinearPath : EnemyMovement
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Ground"))
-        {
-            _isOnAir = false;
-        }
-
         // dealing damage to target
         // may have to edit to only take the child collider into account
         if (other.CompareTag(_target.tag))
@@ -70,16 +65,11 @@ public class EnemyMovement_LinearPath : EnemyMovement
             _enemyBase.DealDamage(_targetDamageable, _enemyBase._damageInfoTEMP);
         }
     }
-
+    
     private void OnTriggerExit2D(Collider2D other)
     {
-        if (other.CompareTag("Ground"))
-        {
-            _isOnAir = true;
-        }
         //if (_isChasingPlayer) return; needs edits.
         if (_isChasingPlayer) _actionTimeCounter = 0;
-        if (other.CompareTag("Ground")) FlipEnemy();
     }
 
 

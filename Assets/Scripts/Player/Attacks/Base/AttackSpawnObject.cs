@@ -2,16 +2,17 @@ using UnityEngine;
 
 public class AttackSpawnObject : MonoBehaviour
 {
-    private float _attackerStrength;
-    public PlayerDamageDealer PlayerDamageDealer;
+    public ELegacyType attackParentType;    // The attackBase type that spawned this object
+    private PlayerDamageDealer _playerDamageDealer;
+    
     private AttackInfo _attackInfo = new AttackInfo();
     public bool IsAttached;
     public bool ShouldManuallyDestroy;
 
     [Space(10)] [Header("Damage")] 
     public bool ShouldInflictDamage;
-    [NamedArray(typeof(ELegacyPreservation))] public SDamageInfo[] 
-        DamageInfo = new SDamageInfo[4];
+    [NamedArray(typeof(ELegacyPreservation))] public float[] 
+        relativeDamages = new float[4];
 
     [Space(10)] [Header("Status Effect")] 
     public bool ShouldInflictStatusEffect;
@@ -20,22 +21,27 @@ public class AttackSpawnObject : MonoBehaviour
 
     private void Awake()
     {
-        _attackerStrength = PlayerController.Instance.Strength;
+        _playerDamageDealer = PlayerController.Instance.playerDamageDealer;
+        var activeLegacy = _playerDamageDealer.AttackBases[(int)attackParentType].activeLegacy;
+        EStatusEffect warriorSpecificEffect = PlayerAttackManager.Instance
+            .GetWarriorStatusEffect(activeLegacy.warrior, _playerDamageDealer.GetStatusEffectLevel(activeLegacy.warrior));
+        SetAttackInfo(_playerDamageDealer.AttackBases[(int)attackParentType].activeLegacy.preservation);
+        SetStatusEffect(warriorSpecificEffect);
     }
     
-    public void SetStatusEffect(EStatusEffect statusEffect)
+    protected void SetStatusEffect(EStatusEffect statusEffect)
     {
         foreach (var info in StatusEffectInfos)
         {
             info.Effect = statusEffect;
         }    
     }
-    
-    public void SetAttackInfo(ELegacyPreservation preservation)
+
+    private void SetAttackInfo(ELegacyPreservation preservation)
     {
         if (ShouldInflictDamage)
         {
-            _attackInfo.Damage.TotalAmount = DamageInfo[(int)preservation].BaseDamage + _attackerStrength * DamageInfo[(int)preservation].RelativeDamage;
+            _attackInfo.Damage.TotalAmount = PlayerController.Instance.Strength * relativeDamages[(int)preservation];
         }
         if (ShouldInflictStatusEffect)
         {
@@ -44,7 +50,7 @@ public class AttackSpawnObject : MonoBehaviour
             // For pull effect, need to set direction
             if (StatusEffectInfos[(int)preservation].Effect == EStatusEffect.Pull)
             {
-                _attackInfo.SetAttackDirToMyFront(PlayerDamageDealer.gameObject);
+                _attackInfo.SetAttackDirToMyFront(_playerDamageDealer.gameObject);
             }
         }
     }
@@ -54,7 +60,7 @@ public class AttackSpawnObject : MonoBehaviour
         IDamageable target = other.gameObject.GetComponent<IDamageable>();
         if (target != null && (ShouldInflictDamage || ShouldInflictStatusEffect))
         {
-            PlayerDamageDealer.DealDamage(target, _attackInfo);
+            _playerDamageDealer.DealDamage(target, _attackInfo);
         }
     }
 }

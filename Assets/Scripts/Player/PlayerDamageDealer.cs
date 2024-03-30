@@ -1,20 +1,27 @@
-using System;
+using System.Collections.Generic;
 using UnityEngine;
+using Unity.VisualScripting;
 
 public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
 {
     private Animator _animator;
     private PlayerMovement _playerMovement;
-    public AttackBase[] AttackBases { get; set; }
+    public AttackBase[] AttackBases { get; private set; }
     public int CurrAttackIdx = -1;
     public bool IsUnderAttackDelay = false;
     
-    // Legacy
-    private int[] _statusEffectLevels;
+    // Turbela Butterfly
+    public List<GameObject> spawnedButterflies;
+    private int _butterflySpawnLimit = 6;
     
+    // Legacy
+    private ELegacyPreservation[] _bindingSkillPreservations;
+    private readonly static int AttackIndex = Animator.StringToHash("AttackIndex");
+
     private void Start()
     {
-        _statusEffectLevels = new int[(int)EWarrior.MAX];
+        spawnedButterflies = new List<GameObject>();
+        _bindingSkillPreservations = new ELegacyPreservation[(int)EWarrior.MAX];
         _animator = GetComponent<Animator>();
         _playerMovement = GetComponent<PlayerMovement>();
         AttackBases = new AttackBase[]
@@ -31,9 +38,12 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
     {
         foreach (var attack in AttackBases) attack.Reset();
         CurrAttackIdx = -1;
+        foreach (var butterfly in spawnedButterflies) Destroy(butterfly);
+        spawnedButterflies.Clear();
+        for (int i = 0; i < (int)EWarrior.MAX; i++) _bindingSkillPreservations[i] = ELegacyPreservation.MAX;
     }
 
-    public bool CanAttack(int attackIdx)
+    private bool CanAttack(int attackIdx)
     {
         // TODO Movement check
         return CurrAttackIdx == -1 && !IsUnderAttackDelay;
@@ -48,9 +58,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
             if (attackIdx != (int)ELegacyType.Dash)
                 _playerMovement.DisableMovement(false);
             else
-            {
                 _playerMovement.SetDash();
-            }
 
             IsUnderAttackDelay = true;
             CurrAttackIdx = attackIdx;
@@ -62,7 +70,8 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
     {
         // 막은거 풀기
         CurrAttackIdx = -1;
-        _animator.SetInteger("AttackIndex", CurrAttackIdx);
+        _animator.SetInteger(AttackIndex, CurrAttackIdx);
+        if (attackType == ELegacyType.Melee) AttackBases[(int)attackType].VFXObject.SetActive(false);
         StartCoroutine(AttackBases[(int)attackType].AttackPostDelayCoroutine());
         _playerMovement._isDashing = false;
     }
@@ -84,6 +93,21 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
 
     public int GetStatusEffectLevel(EWarrior warrior)
     {
-        return _statusEffectLevels[(int)warrior];
+        return _bindingSkillPreservations[(int)warrior] == ELegacyPreservation.MAX ? 0 : 1;
+    }
+
+    public void UpgradeStatusEffectLevel(EWarrior warrior, ELegacyPreservation preservation)
+    {
+        _bindingSkillPreservations[(int)warrior] = preservation;
+        foreach (var attack in AttackBases) attack.UpdateLegacyStatusEffect();
+    }
+    
+    public void SpawnTurbelaButterfly()
+    {
+        if (spawnedButterflies.Count >= _butterflySpawnLimit) return;
+        
+        var butterfly = Resources.Load("Prefabs/Player/SpawnObjects/Butterfly").GameObject();
+        var obj = Instantiate(butterfly);
+        spawnedButterflies.Add(obj);
     }
 }

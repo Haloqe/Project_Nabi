@@ -12,8 +12,10 @@ using UnityEngine.Events;
 
 public class PlayerAttackManager : Singleton<PlayerAttackManager>
 {
+    private PlayerController _playerController;
     private PlayerInput _playerInput;
     private PlayerDamageDealer _playerDamageDealer;
+    private PlayerDamageReceiver _playerDamageReceiver;
     private SWarrior[] _warriors;
     
     // All legacies
@@ -62,8 +64,10 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
 
     public void InitInGameVariables()
     {
+        _playerController = PlayerController.Instance;
         _playerInput = FindObjectOfType<PlayerInput>();
         _playerDamageDealer = FindObjectOfType<PlayerDamageDealer>();
+        _playerDamageReceiver = FindObjectOfType<PlayerDamageReceiver>();
 
         // UI 
         var combatCanvas = UIManager.Instance.inGameCombatUI;
@@ -180,8 +184,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
 
                 // Prerequisites and Stats
                 string prerequisites = csv.GetField("Prerequisites");
-                if (prerequisites != "")
-                    data.PrerequisiteIDs = Array.ConvertAll(prerequisites.Split('|'), int.Parse);
+                data.PrerequisiteIDs = prerequisites == "" ? Array.Empty<int>() : Array.ConvertAll(prerequisites.Split(','), int.Parse);
 
                 _legacies.Add(data.ID, data);
                 _legaciesByWarrior[(int)data.Warrior].Add(data);
@@ -215,6 +218,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                 if (legacyAsset == null)
                     legacyAsset = Resources.Load<LegacySO>("Legacies/"  + (EWarrior)warrior + "/" + legacy.Names[(int)ELocalisation.KOR]);
 
+                legacyAsset.SetWarrior((EWarrior)warrior);
                 _legacySODictionary.Add(legacy.ID, legacyAsset);
             }
         }
@@ -246,7 +250,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         if (legacyData.Type == ELegacyType.Passive)
         {
             // Find and bind legacy SO
-            BindPassiveLegacy((PassiveLegacySO)legacyAsset, preservation);
+            BindPassiveLegacy(legacyID, (PassiveLegacySO)legacyAsset, preservation);
             _collectedPassiveIDs.Add(legacyID);
             
             // Update UI
@@ -274,37 +278,41 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         _collectedLegacyPreservations.Add(legacyID, preservation);
     }
 
-    private void BindPassiveLegacy(PassiveLegacySO legacySO, ELegacyPreservation preservation)
+    private void BindPassiveLegacy(int legacyID, PassiveLegacySO legacySO, ELegacyPreservation preservation)
     {
         int preservationIdx = (int)preservation;
         switch (legacySO.BuffType)
         {
-            case EBuffType.StatusEffectUpgrade:
-                break;
-            
             case EBuffType.StatUpgrade:
-                PlayerController.Instance.UpgradeStats(legacySO.StatUpgrades, preservation);
+                _playerController.UpgradeStat(legacyID, legacySO.StatUpgradeData, preservation);
                 break;
             
-            case EBuffType.HealEfficiency_Food:
-                PlayerController.Instance.HealEfficiency = Utility.GetChangedValue(PlayerController.Instance.HealEfficiency,
+            case EBuffType.FoodHealEfficiency:
+                _playerController.HealEfficiency = Utility.GetChangedValue(_playerController.HealEfficiency,
                     legacySO.BuffIncreaseAmounts[preservationIdx], legacySO.BuffIncreaseMethod);
                 break;
             
             case EBuffType.SpawnAreaIncrease:
                 foreach (var attackBase in _playerDamageDealer.AttackBases)
                 {
-                    if (attackBase.activeWarrior == legacySO.Warrior)
+                    if (attackBase.activeWarrior == legacySO.warrior)
                     {
                         attackBase.UpdateSpawnSize(legacySO.BuffIncreaseAmounts[preservationIdx], legacySO.BuffIncreaseMethod);
                     }
                 }
-                break;
-            
-            case EBuffType.EnemyGoldDropRate:
-                break;
+                break;            
             
             case EBuffType.EnemyItemDropRate:
+                break;
+            
+            case EBuffType.BindingSkillUpgrade:
+                _playerDamageDealer.UpgradeStatusEffectLevel(legacySO.warrior, preservation);
+                break;
+            
+            case EBuffType.EnemyGoldDropBuff:
+            case EBuffType.DruggedEffectBuff:
+            case EBuffType.HypHallucination:
+                _playerController.ActivateBuffByName(legacySO.BuffType, preservation);
                 break;
         }
     }
@@ -315,20 +323,19 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         foreach (int passiveID in _collectedPassiveIDs)
         {
             var legacySO = (PassiveLegacySO)_legacySODictionary[passiveID];
-            if (legacySO.Warrior != newActiveLegacy.Warrior) continue;
+            if (legacySO.warrior != newActiveLegacy.warrior) continue;
             int passivePreservation = (int)_collectedLegacyPreservations[passiveID]; 
             
             switch (legacySO.BuffType)
             {
-                case EBuffType.StatusEffectUpgrade:
-                    break;
-            
                 case EBuffType.SpawnAreaIncrease:
                     foreach (var attackBase in _playerDamageDealer.AttackBases)
                     {
                         attackBase.UpdateSpawnSize(legacySO.BuffIncreaseAmounts[passivePreservation], legacySO.BuffIncreaseMethod);
                     }
                     break;
+                
+                // TODO
             }
         }
     }
@@ -345,9 +352,19 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
 
     public List<SLegacyData> GetBindableLegaciesByWarrior(EWarrior warrior)
     {
-        // TODO prerequisite
+        // Function to check if all prerequisites are met
+        bool ArePrerequisitesMet(SLegacyData legacyToCollect)
+        {
+            foreach (var prereq in legacyToCollect.PrerequisiteIDs)
+            {
+                if (IsLegacyCollected(prereq)) return true;
+            }
+            return legacyToCollect.PrerequisiteIDs.Length == 0;
+        }
+        
+        // Return all collectable legacies
         var legacies = _legaciesByWarrior[(int)warrior];
-        var bindables = legacies.Where(legacy => !IsLegacyCollected(legacy.ID)).ToList();
+        var bindables = legacies.Where(legacy => !IsLegacyCollected(legacy.ID) && ArePrerequisitesMet(legacy)).ToList();
         return bindables;
     }
 

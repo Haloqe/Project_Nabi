@@ -9,6 +9,7 @@ public class Bullet : MonoBehaviour
     public float Direction { set; private get; }
     public AttackInfo attackInfo;
     private bool _toBeDestroyed;
+    [SerializeField] private bool _shouldRotate;
 
     private void Start()
     {
@@ -24,6 +25,12 @@ public class Bullet : MonoBehaviour
         // Kill if lifeTime ended
         _timer += Time.deltaTime;
         if (_timer > _lifeTime) DestroySelf(null);
+        
+        // Animation
+        if (_shouldRotate)
+        {
+            transform.Rotate(0,0,5f);
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)

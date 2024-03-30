@@ -28,7 +28,7 @@ public class AttackBase_Area : AttackBase
     {
         base.Reset();
         _areaRadiusMultiplier = 1f;
-        _activeLegacy = null;
+        activeLegacy = null;
         _attackPostDelay = 0.0f;
     }
 

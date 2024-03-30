@@ -234,7 +234,7 @@ public class PlayerMovement : MonoBehaviour
         Vector2 playerCentre = new Vector2(transform.position.x, transform.position.y + 0.1f);
         Vector2 faceDir = new Vector2(-Mathf.Sign(gameObject.transform.localScale.x), 0f);
         RaycastHit2D hit = Physics2D.Raycast(playerCentre, faceDir, 1.0f);
-        Debug.DrawRay(playerCentre, faceDir, Color.white, 2.0f);
+        //Debug.DrawRay(playerCentre, faceDir, Color.white, 2.0f);
         if (hit.collider != null && hit.collider.gameObject.layer == LayerMask.NameToLayer("Platform"))
         {
             Debug.Log("Hit wall");

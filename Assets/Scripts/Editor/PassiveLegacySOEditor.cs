@@ -1,5 +1,4 @@
 using UnityEditor;
-using UnityEngine;
 
 [CustomEditor(typeof(PassiveLegacySO))]
 public class PassiveLegacySOEditor : Editor
@@ -17,20 +16,24 @@ public class PassiveLegacySOEditor : Editor
             case EBuffType.None:
                 break;
             
-            case EBuffType.StatusEffectUpgrade:
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("StatusEffectUpgrades"), true);
-                break;
+            //case EBuffType.StatusEffectUpgrade:
+                // EditorGUILayout.PropertyField(serializedObject.FindProperty("StatusEffectUpgrade"), true);
+                //break;
             
             case EBuffType.StatUpgrade:
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("StatUpgrades"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("StatUpgradeData"), true);
                 break;
             
             case EBuffType.EnemyItemDropRate:
-            case EBuffType.EnemyGoldDropRate:
             case EBuffType.SpawnAreaIncrease:
-            case EBuffType.HealEfficiency_Food:
+            case EBuffType.FoodHealEfficiency:
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("BuffIncreaseMethod"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("BuffIncreaseAmounts"), true);
+                break;
+            
+            case EBuffType.EnemyGoldDropBuff:
+            case EBuffType.DruggedEffectBuff:
+            case EBuffType.HypHallucination:
                 break;
         }
 

@@ -111,4 +111,15 @@ public abstract class EnemyMovement : MonoBehaviour
         //     yield return new WaitForFixedUpdate();
         // }
     }
+    
+    public void OnGroundExit()
+    {
+        _isOnAir = true;
+        FlipEnemy();
+    }
+    
+    public void OnGroundEnter()
+    {
+        _isOnAir = false;
+    }
 }

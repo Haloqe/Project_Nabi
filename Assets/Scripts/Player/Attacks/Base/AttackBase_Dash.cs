@@ -7,11 +7,13 @@ public class AttackBase_Dash : AttackBase
 {
     private Rigidbody2D _rigidbody2D;
     private float _dashStrength = 8;
+    private readonly static int AttackIndex = Animator.StringToHash("AttackIndex");
 
     public override void Start()
     {
-        _attackInfoInit = new AttackInfo();
         base.Start();
+        _attackInfoInit = new AttackInfo();
+        Reset();
     }
     
     public override void Reset()
@@ -24,7 +26,7 @@ public class AttackBase_Dash : AttackBase
 
     public override void Attack()
     {
-        _animator.SetInteger("AttackIndex", (int)ELegacyType.Dash);
+        _animator.SetInteger(AttackIndex, (int)ELegacyType.Dash);
         VFXObject.transform.localScale = new Vector3(Mathf.Sign(gameObject.transform.localScale.x), 1.0f, 1.0f);
         VFXObject.SetActive(true);
         StartCoroutine(Dash());
@@ -37,10 +39,10 @@ public class AttackBase_Dash : AttackBase
         _rigidbody2D.gravityScale = 0f;
         _rigidbody2D.velocity = new Vector2(-transform.localScale.x * _dashStrength, 0f);
         Coroutine legacyCoroutine = null;
-        if (_activeLegacy != null)
+        if (activeLegacy)
         {
-            ((Legacy_Dash)_activeLegacy).OnDashBegin();
-            legacyCoroutine = StartCoroutine(((Legacy_Dash)_activeLegacy).DashCoroutine());
+            ((Legacy_Dash)activeLegacy).OnDashBegin();
+            legacyCoroutine = StartCoroutine(((Legacy_Dash)activeLegacy).DashSpawnCoroutine());
         }
         yield return new WaitForSeconds(0.35f);
 
@@ -48,9 +50,9 @@ public class AttackBase_Dash : AttackBase
         VFXObject.SetActive(false);
         _damageDealer.OnAttackEnd(ELegacyType.Dash);
         _rigidbody2D.gravityScale = prevGravity;
-        if (_activeLegacy != null)
+        if (activeLegacy)
         {
-            ((Legacy_Dash)_activeLegacy).OnDashEnd();
+            ((Legacy_Dash)activeLegacy).OnDashEnd();
             if (legacyCoroutine != null) StopCoroutine(legacyCoroutine);
         }
     }

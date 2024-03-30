@@ -10,8 +10,8 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     private PlayerMovement _playerMovement;
 
     // TEMP health attributes
-    private float _health = 100;
-    private float _maxHealth = 100;
+    private float _health = 300;
+    private float _maxHealth = 300;
 
     // status effect attributes
     public bool IsSilenced { get; private set; }
@@ -230,7 +230,6 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         // TODO hit/heal effect
         _health = Mathf.Clamp(_health + amount, 0, _maxHealth);
         PlayerEvents.HPChanged.Invoke(amount, GetHPRatio());
-        Debug.Log("Player HP: " + _health.ToString("0.00") + " (" + amount + ")");
         if (_health == 0)
         {
             PlayerEvents.defeated.Invoke();
@@ -390,4 +389,8 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         _playerMovement.ChangeSpeedByPercentage(strength);
     }
     #endregion Status effects handling
+
+    #region StatUpgrade
+    
+    #endregion
 }

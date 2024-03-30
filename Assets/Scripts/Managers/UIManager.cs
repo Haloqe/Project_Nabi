@@ -123,7 +123,7 @@ public class UIManager : Singleton<UIManager>
         _warriorUIPrefabs = new GameObject[(int)EWarrior.MAX];
         for (int i = 0; i < (int)EWarrior.MAX; i++)
         {
-            _warriorUIPrefabs[i] = Utility.LoadGameObjectFromPath(path + "InGame/WarriorUI_" + (EWarrior)i);
+            _warriorUIPrefabs[i] = Utility.LoadGameObjectFromPath(path + "InGame/Warrior/" + (EWarrior)i);
         }
         _loadingScreenUI = Instantiate(_loadingScreenPrefab, Vector3.zero, Quaternion.identity).GameObject();
         DontDestroyOnLoad(_loadingScreenUI);
@@ -174,6 +174,7 @@ public class UIManager : Singleton<UIManager>
     public void OpenWarriorUI(WarriorClockworkInteractor interactor)
     {
         _warriorUIObject = Instantiate(_warriorUIPrefabs[(int)interactor.warrior], Vector3.zero, Quaternion.identity).GameObject();
+        _warriorUIObject.GetComponent<Canvas>().worldCamera = GameObject.Find("UI Camera").GetComponent<Camera>();
         _warriorUI = _warriorUIObject.GetComponent<WarriorUI>();
         _warriorUI.Initialise(interactor.warrior);
         OpenFocusedUI(_warriorUIObject);

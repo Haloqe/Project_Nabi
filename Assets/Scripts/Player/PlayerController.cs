@@ -1,6 +1,8 @@
+using System.Collections.Generic;
+using FullscreenEditor;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Serialization;
 
 public class PlayerController : Singleton<PlayerController>
 {
@@ -17,6 +19,21 @@ public class PlayerController : Singleton<PlayerController>
     public float Strength = 0.0f;
     public float Armour = 0.0f;
     public float ArmourPenetration = 0.0f;
+    public float EvasionRate = 0.0f;
+    private int _slayedEnemiesCount = 0;
+    
+    public float StrengthMultiplier = 1.0f;
+    public float ArmourMultiplier = 1.0f;
+    public float ArmourPenetrationMultiplier = 1.0f;
+    public float EvasionRateMultiplier = 1.0f;  
+    
+    // Legacy related
+    public ELegacyPreservation EnemyGoldDropBuff { private set; get; }
+    public ELegacyPreservation DruggedEffectBuff { private set; get; }
+    public ELegacyPreservation HypHallucination { private set; get; }
+
+    // Upgrades
+    private Dictionary<EStat, List<(int legacyID, SLegacyStatUpgradeData data)>> _appliedStatUpgrades;
     
     protected override void Awake()
     {
@@ -29,6 +46,7 @@ public class PlayerController : Singleton<PlayerController>
         playerDamageDealer = GetComponent<PlayerDamageDealer>();
         playerInventory = GetComponent<PlayerInventory>();
         _animator = GetComponent<Animator>();
+        _appliedStatUpgrades = new Dictionary<EStat, List<(int legacyID, SLegacyStatUpgradeData data)>>();
         
         // Input Binding for Attacks
         _playerInput.actions["Attack_Melee"].performed += _ => playerDamageDealer.OnAttack(0);
@@ -38,12 +56,26 @@ public class PlayerController : Singleton<PlayerController>
         
         // Events binding
         GameEvents.restarted += OnRestarted;
+        PlayerEvents.ValueChanged += OnValueChanged;
     }
     
     private void OnRestarted()
     {
         _animator.Rebind();
         _animator.Update(0f);
+        _appliedStatUpgrades.Clear();
+        HealEfficiency = 1.0f;
+        Strength = 0.0f;
+        Armour = 0.0f;
+        ArmourPenetration = 0.0f;
+        EvasionRate = 0.0f;
+        StrengthMultiplier = 1.0f;
+        ArmourMultiplier = 1.0f;
+        ArmourPenetrationMultiplier = 1.0f;
+        EvasionRateMultiplier = 1.0f;
+        EnemyGoldDropBuff = ELegacyPreservation.MAX;
+        DruggedEffectBuff = ELegacyPreservation.MAX;
+        HypHallucination = ELegacyPreservation.MAX; 
     }
 
     void OnMove(InputValue value)
@@ -59,19 +91,17 @@ public class PlayerController : Singleton<PlayerController>
     private int count = -1;
     void OnTestAction(InputValue value)
     {
-        playerInventory.ChangeGoldByAmount(100);
-        switch (count)
+        
+    }
+
+    private void OnValueChanged(ECondition condition, float changeAmount)
+    {
+        switch (condition)
         {
-         case -1:
-             PlayerAttackManager.Instance.CollectLegacy(9, ELegacyPreservation.Weathered);
-             break;
-         case 0:
-         case 1:
-         case 2:
-             playerDamageDealer.AttackBases[(int)ELegacyType.Ranged].UpdateLegacyPreservation((ELegacyPreservation)(count+1));
-             break;
+            case ECondition.SlayedEnemiesCount:
+                _slayedEnemiesCount += (int)changeAmount;
+                break;
         }
-        count++;
     }
     
     private void OnOpenMap(InputValue value)
@@ -86,20 +116,62 @@ public class PlayerController : Singleton<PlayerController>
         playerDamageReceiver.ChangeHealthByAmount(amount * HealEfficiency, false);
     }
     
-    public void UpgradeStats(SLegacyStatUpgradeData[] upgradeData, ELegacyPreservation preservation)
+    // TODO 구현 방식 고민좀해봐야겠음
+    public void UpgradeStat(int legacyID, SLegacyStatUpgradeData upgradeData, ELegacyPreservation preservation)
     {
-        foreach (var data in upgradeData)
+        // Add to applied stat upgrades
+        if (!_appliedStatUpgrades.TryGetValue(upgradeData.Stat, out List<(int legacyID, SLegacyStatUpgradeData data)> list))
         {
-            switch (data.Stat)
+            list.Add((legacyID, upgradeData));
+        }
+        else
+        {
+            _appliedStatUpgrades.Add(upgradeData.Stat, new List<(int legacyID, SLegacyStatUpgradeData data)>{(legacyID, upgradeData)});
+        }
+
+        if (upgradeData.HasUpdateCondition)
+        {
+            
+        }
+
+        if (upgradeData.HasApplyCondition)
+        {
+            var applyCond = upgradeData.UpgradeApplyCondition;
+            if (applyCond.condition == ECondition.PlayerHealth)
             {
-                case EStat.ArmourPenetration:
-                    ArmourPenetration = Utility.GetChangedValue(ArmourPenetration, data.IncreaseAmounts[(int)preservation], data.IncreaseMethod);
-                    break;
-                
-                // TODO
-                default:
-                    break;
+                // HP는 현재 ratio로만 다루고 있음.
+                PlayerEvents.HPChanged += (changeAmount, hpRatio) =>
+                {
+                    if (Utility.Compare(hpRatio, applyCond.comparator, applyCond.targetValue))
+                    {
+                        
+                    }
+                };
             }
         }
+        
+        // Update value
+        var fieldInfo = GetType().GetField(upgradeData.Stat.ToString());
+        var prevValue = (float)fieldInfo.GetValue(this);
+        
+        // Constant? -> Instant apply
+        if (upgradeData.IncreaseMethod == EIncreaseMethod.Constant)
+        {
+            var newValue = Utility.GetChangedValue(prevValue, upgradeData.IncreaseAmounts[(int)preservation], upgradeData.IncreaseMethod);
+            fieldInfo.SetValue(this, newValue);
+        }
+        // Multiplier? -> Update multiplier
+        else
+        {
+            var multiplierFieldInfo = GetType().GetField(upgradeData.Stat + "Multiplier");
+            multiplierFieldInfo.SetValue(this, (float)multiplierFieldInfo.GetValue(this) + upgradeData.IncreaseAmounts[(int)preservation]);
+        }
+    }
+    
+    // Enum 이름에 해당하는 boolean 값을 찾아서 activate
+    public void ActivateBuffByName(EBuffType legacyBuff, ELegacyPreservation preservation)
+    {
+        var fieldInfo = GetType().GetField(legacyBuff.ToString());
+        fieldInfo.SetValue(this, preservation);
     }
 }

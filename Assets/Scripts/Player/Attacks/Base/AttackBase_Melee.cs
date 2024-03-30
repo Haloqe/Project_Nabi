@@ -21,13 +21,19 @@ public class AttackBase_Melee : AttackBase
     private float _baseDelay;
 
     // Damage
-    private AttackInfo _attackCombo = new AttackInfo();
+    private AttackInfo _attackComboInfo = new AttackInfo();
     private AttackInfo _attackComboInit = new AttackInfo();
-    private SDamageInfo _damageInfoCombo = new SDamageInfo();
+    private SDamageInfo _damageComboInfo = new SDamageInfo();
     private SDamageInfo _damageInfoComboInit = new SDamageInfo();
+    
+    // Animator variables
+    private readonly static int IsMeleeCombo = Animator.StringToHash("IsMeleeCombo");
+    private readonly static int AttackIndex = Animator.StringToHash("AttackIndex");
 
     public override void Start()
     {
+        base.Start();
+        
         _baseDelay = 0.0f;
         _defaultVFXComboMaterial = VFXObjCombo.GetComponent<ParticleSystemRenderer>().sharedMaterial;
         _colliderBase = VFXObject.GetComponent<BoxCollider2D>();
@@ -37,10 +43,9 @@ public class AttackBase_Melee : AttackBase
         // Damage
         _damageInfoInit.BaseDamage = 5.0f;
         _damageInfoComboInit = new SDamageInfo() { BaseDamage = 5.0f, RelativeDamage = 0.0f, };
-        _attackComboInit.Damage.TotalAmount = _damageInfoComboInit.BaseDamage + PlayerController.Instance.Strength * _damageInfoComboInit.RelativeDamage;
-        _attackInfoInit.Damage.TotalAmount = _damageInfoInit.BaseDamage + PlayerController.Instance.Strength * _damageInfoInit.RelativeDamage;
-        
-        base.Start();
+        _attackComboInit.Damage.TotalAmount = _damageInfoComboInit.BaseDamage + _playerController.Strength * _damageInfoComboInit.RelativeDamage;
+        _attackInfoInit.Damage.TotalAmount = _damageInfoInit.BaseDamage + _playerController.Strength * _damageInfoInit.RelativeDamage;
+        Reset();
     }
 
     public override void Reset()
@@ -53,9 +58,9 @@ public class AttackBase_Melee : AttackBase
         _comboStack = 0;
         
         // Damage
-        _activeLegacy = null;
+        activeLegacy = null;
         _attackInfo = _attackInfoInit;
-        _attackCombo = _attackComboInit;
+        _attackComboInfo = _attackComboInit;
         _affectedEnemies.Clear();
 
         // VFX
@@ -76,15 +81,6 @@ public class AttackBase_Melee : AttackBase
             _comboTimer = 0.0f;
         }        
     }
-    
-    protected virtual void OnUpdateLegacyDamage()
-    {
-        base.UpdateLegacyDamage();
-        if (_activeLegacy == null) return;
-        _damageInfoCombo.BaseDamage = _activeLegacy.DamageInfos[(int)_activeLegacyPreservation].BaseDamage;
-        _damageInfoCombo.RelativeDamage = _activeLegacy.DamageInfos[(int)_activeLegacyPreservation].RelativeDamage;
-        _attackCombo.Damage.TotalAmount = _damageInfo.BaseDamage + PlayerController.Instance.Strength * _damageInfo.RelativeDamage;
-    }
 
     public override void Attack()
     {
@@ -98,7 +94,7 @@ public class AttackBase_Melee : AttackBase
         // Combo Attack
         if (_comboStack == 3)
         {
-            _animator.SetBool("IsMeleeCombo", true);
+            _animator.SetBool(IsMeleeCombo, true);
             _attackPostDelay = _comboDelay;
             _comboStack = 0; // Reset combo stack
             VFXObjCombo.GetComponent<ParticleSystemRenderer>().flip = (dir < 0 ? Vector3.right : Vector3.zero);
@@ -107,20 +103,20 @@ public class AttackBase_Melee : AttackBase
         // Base Attack
         else
         {
-            _animator.SetBool("IsMeleeCombo", false);
+            _animator.SetBool(IsMeleeCombo, false);
             _attackPostDelay = _baseDelay;
             VFXObject.GetComponent<ParticleSystemRenderer>().flip = (dir < 0 ? Vector3.right : Vector3.zero);
             VFXObject.SetActive(true);
-            if (_activeLegacy) ((Legacy_Melee)_activeLegacy).OnAttack_Base();
+            if (activeLegacy) ((Legacy_Melee)activeLegacy).OnAttack_Base();
         }      
 
-        _animator.SetInteger("AttackIndex", (int)_attackType);
+        _animator.SetInteger(AttackIndex, (int)_attackType);
     }
 
     public void OnComboHit()
     {
         FindObjectOfType<TestCameraShake>().OnComboAttack();
-        if (_activeLegacy) ((Legacy_Melee)_activeLegacy).OnAttack_Combo();
+        if (activeLegacy) ((Legacy_Melee)activeLegacy).OnAttack_Combo();
     }
 
     public void ActivateCollider()
@@ -153,14 +149,19 @@ public class AttackBase_Melee : AttackBase
 
     public void OnTriggerEnter2D(Collider2D collision)
     {
+        // Check if the hit target is valid
         if (collision.gameObject.CompareTag("Enemy") == false) return;
         if (Utility.IsObjectInList(collision.gameObject, _affectedEnemies)) return;
-
         IDamageable target = collision.gameObject.GetComponent<IDamageable>();
         if (target == null) return;
 
+        // Recalculate damage based on current player strength
+        _attackComboInfo.Damage.TotalAmount = _damageComboInfo.BaseDamage + _playerController.Strength * _damageComboInfo.RelativeDamage;
+        _attackInfo.Damage.TotalAmount = _damageInfo.BaseDamage + _playerController.Strength * _damageInfo.RelativeDamage;
+        
+        // Do damage
         _affectedEnemies.Add(collision.gameObject.GetInstanceID());
-        _damageDealer.DealDamage(target, _comboStack == 0 ? _attackCombo : _attackInfo);
+        _damageDealer.DealDamage(target, _comboStack == 0 ? _attackComboInfo : _attackInfo);
     }
 
     protected override void OnAttackEnd_PreDelay()
@@ -169,20 +170,37 @@ public class AttackBase_Melee : AttackBase
         _affectedEnemies.Clear();
     }
 
-    protected override void UpdateLegacyStatusEffect()
+    public override void RecalculateDamage()
     {
+        base.RecalculateDamage();
+        
+        // Combo - Calculate the damage with the newest player strength and damage information
+        _attackComboInfo.Damage.TotalAmount = _damageComboInfo.BaseDamage + _playerController.Strength * _damageComboInfo.RelativeDamage;
+        
+        // Combo - Damage multiplier and additional damage from active legacy
+        if (activeLegacy)
+        {
+            var legacyPreservation = (int)activeLegacy.preservation;
+            _attackComboInfo.Damage.TotalAmount *= activeLegacy.damageMultipliers[legacyPreservation];
+            var extra = activeLegacy.extraDamages[legacyPreservation];
+            _attackComboInfo.Damage.TotalAmount += extra.BaseDamage + _playerController.Strength * extra.RelativeDamage;
+        }
+    }
+
+    public override void UpdateLegacyStatusEffect()
+    {
+        if (!activeLegacy) return;
         base.UpdateLegacyStatusEffect();
         
         // Combo attack
-        var newStatusEffectsCombo = _attackCombo.StatusEffects;
-        EStatusEffect warriorSpecificEffect =
-            PlayerAttackManager.Instance.GetWarriorStatusEffect(_activeLegacy.Warrior,
-                _damageDealer.GetStatusEffectLevel(_activeLegacy.Warrior));
+        var legacyPreservation = (int)activeLegacy.preservation;
+        var newStatusEffectsCombo = _attackComboInfo.StatusEffects;
+        EStatusEffect warriorSpecificEffect = PlayerAttackManager.Instance.GetWarriorStatusEffect(activeLegacy.warrior, _damageDealer.GetStatusEffectLevel(activeLegacy.warrior));
         var newEffect = new StatusEffectInfo(warriorSpecificEffect,
-            _activeLegacy.StatusEffects[(int)_activeLegacyPreservation].Strength,
-            _activeLegacy.StatusEffects[(int)_activeLegacyPreservation].Duration,
-            _activeLegacy.StatusEffects[(int)_activeLegacyPreservation].Chance);
+            activeLegacy.StatusEffects[legacyPreservation].Strength,
+            activeLegacy.StatusEffects[legacyPreservation].Duration,
+            activeLegacy.StatusEffects[legacyPreservation].Chance);
         newStatusEffectsCombo.Add(newEffect);
-        _attackCombo.StatusEffects = newStatusEffectsCombo;
+        _attackComboInfo.StatusEffects = newStatusEffectsCombo;
     }
 }

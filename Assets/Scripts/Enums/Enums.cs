@@ -30,20 +30,20 @@ public enum EStatusEffect
     
     // Base
     Sommer,
-    Drowsiness,
     Poison,
     Drugged,
-    Swarm,
+    [InspectorName(null)] Swarm,
     Evade,
 
     // Upgraded
-    Sleep,
-    Leech,
-    Indoctrinated,
-    Cloud,
+    [InspectorName(null)] UpgradedSommer,
+    [InspectorName(null)] UpgradedDrugged,
+    [InspectorName(null)] Leech,
+    [InspectorName(null)] Cloud,
     Camouflage,
 
     // Others
+    Sleep,
     Blind,
     Stun,
     Slow,
@@ -52,7 +52,7 @@ public enum EStatusEffect
     Root,
     Pull,
 
-    MAX,
+    [InspectorName(null)] MAX,
 }
 #endregion Common
 
@@ -68,6 +68,8 @@ public enum ELegacyType
     [InspectorName(null)]Passive,
     [InspectorName(null)]MAX,
 }
+
+[Serializable]
 public enum ELegacyPreservation
 {
     Weathered,  // 닳은
@@ -80,13 +82,15 @@ public enum ELegacyPreservation
 
 public enum EBuffType
 {
-    None,
-    StatusEffectUpgrade,    
+    None, 
     StatUpgrade,
-    EnemyItemDropRate,
-    EnemyGoldDropRate,
     SpawnAreaIncrease,
-    HealEfficiency_Food,
+    FoodHealEfficiency,
+    BindingSkillUpgrade,
+    EnemyItemDropRate,
+    EnemyGoldDropBuff,      // 유포리아 - 사랑의 착취
+    DruggedEffectBuff,      // 유포리아 - 뇌쇄술
+    HypHallucination,       // 소머 - 입면 환각
 }
 
 public enum EStatusEffectUpgradeType
@@ -101,6 +105,29 @@ public enum EIncreaseMethod
     Constant,
     Percent,
     PercentPoint,
+}
+
+public enum EUpgradeFrequency
+{
+    OnceWhenConditionMet,
+    RepeatedlyWhenConditionMet,
+}
+
+public enum ECondition
+{
+    None,
+    SlayedEnemiesCount,
+    PlayerHealth,
+}
+
+public enum EComparator
+{
+    IsLessThan,
+    IsLessOrEqualTo,
+    IsEqualTo,
+    IsGreaterOrEqualTo,
+    IsGreaterThan,
+    IncreasesBy,
 }
 
 public enum EWarrior
@@ -155,6 +182,7 @@ public enum EStat
     CriticalChance,
     Armour,
     ArmourPenetration,
+    EvasionRate,
 }
 #endregion
 

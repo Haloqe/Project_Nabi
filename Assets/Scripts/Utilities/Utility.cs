@@ -1,9 +1,10 @@
+using System;
 using System.Collections.Generic;
-using System.IO;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Tilemaps;
+using Object = UnityEngine.Object;
 
 public static class Utility
 {
@@ -93,7 +94,7 @@ public static class Utility
                 statusEffectInfo += effect.Effect + " (" + effect.Duration + "s, " + effect.Strength + ") ";
             }
         }
-        Debug.Log("[Damage] " + damageInfo + " [Status Effects] " + statusEffectInfo);
+        //Debug.Log("[Damage] " + damageInfo + " [Status Effects] " + statusEffectInfo);
     }
 
     public static float GetLongestParticleDuration(GameObject obj)
@@ -131,5 +132,25 @@ public static class Utility
             default:
                 return prevValue;
         }
+    }
+
+    public static bool Compare(float left, EComparator comparator, float right)
+    {
+        switch (comparator)
+        {
+            case EComparator.IsLessThan:
+                return left < right;
+            case EComparator.IsLessOrEqualTo:
+                return left <= right;
+            case EComparator.IsEqualTo:
+                return Math.Abs(left - right) < 0.0001f;
+            case EComparator.IsGreaterOrEqualTo:
+                return left >= right;
+            case EComparator.IsGreaterThan:
+                return left >= right;
+            case EComparator.IncreasesBy:
+                return Math.Abs(left - right) < 0.0001f;
+        }
+        return false;
     }
 }

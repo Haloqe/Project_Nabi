@@ -6,10 +6,9 @@ public class Legacy_Melee : ActiveLegacySO
     [Space(15)][Header("Attack Type Specific Settings")]
     // Prefab object to spawn upon combo hit attack
     public AttackSpawnObject ComboHitSpawnObject;
-    [NamedArray(typeof(ELegacyPreservation))]
-    public SDamageInfo[] ComboDamageInfo = new SDamageInfo[4];
-    [NamedArray(typeof(ELegacyPreservation))]
-    public StatusEffectInfo[] StatusEffectInfos = new StatusEffectInfo[4];
+    
+    // Damage
+    [NamedArray(typeof(ELegacyPreservation))] public StatusEffectInfo[] comboStatusEffects = new StatusEffectInfo[4];
     
     // Object Spawn positions
     private Vector3[] _comboSpawnOffsets;
@@ -25,12 +24,6 @@ public class Legacy_Melee : ActiveLegacySO
         _comboSpawnOffsets = new Vector3[2]; // [0] left, [1] right
         _comboSpawnOffsets[0] = position;
         _comboSpawnOffsets[1] = new Vector3(-position.x, position.y, 0);
-        ComboHitSpawnObject.PlayerDamageDealer = _playerTransform.gameObject.GetComponent<PlayerDamageDealer>();
-    }
-    public override void OnUpdateStatusEffect(EStatusEffect newEffect)
-    {
-        if (ComboHitSpawnObject)
-            ComboHitSpawnObject.SetStatusEffect(newEffect);
     }
 
     // Do something upon base attack
@@ -46,7 +39,6 @@ public class Legacy_Melee : ActiveLegacySO
         var obj = Instantiate(ComboHitSpawnObject, 
             _playerTransform.position + (_playerTransform.localScale.x > 0 ? _comboSpawnOffsets[0] : _comboSpawnOffsets[1]),
             Quaternion.identity);
-        obj.SetAttackInfo(_preservation);
         var transform = obj.transform;
         var localScale = transform.localScale;
         transform.localScale = new Vector3(localScale.x * _spawnScaleMultiplier, localScale.y * _spawnScaleMultiplier, localScale.z);

@@ -4,6 +4,7 @@ using UnityEngine.Serialization;
 
 public abstract class AttackBase : MonoBehaviour
 {
+    protected PlayerController _playerController;
     protected PlayerDamageDealer _damageDealer;
     protected PlayerMovement _playerMovement;
     protected Animator _animator;
@@ -24,9 +25,8 @@ public abstract class AttackBase : MonoBehaviour
     
     // Legacy
     public EWarrior activeWarrior;
-    protected ActiveLegacySO _activeLegacy;
-    protected ELegacyPreservation _activeLegacyPreservation;
-    
+    public ActiveLegacySO activeLegacy { get; protected set; }
+
     public virtual void Reset()
     {
         _attackInfo = _attackInfoInit.Clone();
@@ -36,11 +36,11 @@ public abstract class AttackBase : MonoBehaviour
     
     public virtual void Start()
     {
+        _playerController = PlayerController.Instance;
         _defaultVFXMaterial = VFXObject.GetComponent<ParticleSystemRenderer>().sharedMaterial;
         _animator = GetComponent<Animator>();
         _damageDealer = GetComponent<PlayerDamageDealer>();
         _playerMovement = GetComponent<PlayerMovement>();
-        Reset();
     }
     
     public abstract void Attack();
@@ -65,69 +65,74 @@ public abstract class AttackBase : MonoBehaviour
 
     public virtual bool IsActiveBound()
     {
-        return _activeLegacy == null;
+        return activeLegacy == null;
     }
 
     public void BindActiveLegacy(ActiveLegacySO legacyAsset, ELegacyPreservation preservation)
     {
-        activeWarrior = legacyAsset.Warrior;
-        _activeLegacyPreservation = preservation;
-        _activeLegacy = legacyAsset;
-        _activeLegacy.Init(gameObject.transform);
-        UpdateLegacyPreservation(preservation);
+        activeWarrior = legacyAsset.warrior;
+        activeLegacy = legacyAsset;
+        activeLegacy.preservation = preservation;
+        activeLegacy.Init(gameObject.transform);
+        UpdateActiveLegacyPreservation(preservation);
     }
 
     public void UpdateSpawnSize(float increaseAmount, EIncreaseMethod method)
     {
-        if (_activeLegacy) _activeLegacy.UpdateSpawnSize(method, increaseAmount);
+        if (activeLegacy) activeLegacy.UpdateSpawnSize(method, increaseAmount);
     }
 
-    protected virtual void UpdateLegacyDamage()
+    public virtual void RecalculateDamage()
     {
-        if (_activeLegacy == null) return;
-        _damageInfo.BaseDamage = _activeLegacy.DamageInfos[(int)_activeLegacyPreservation].BaseDamage;
-        _damageInfo.RelativeDamage = _activeLegacy.DamageInfos[(int)_activeLegacyPreservation].RelativeDamage;
-        _attackInfo.Damage.TotalAmount = _damageInfo.BaseDamage + PlayerController.Instance.Strength * _damageInfo.RelativeDamage;
+        // Calculate the damage with the newest player strength and damage information
+        _attackInfo.Damage.TotalAmount = _damageInfo.BaseDamage + _playerController.Strength * _damageInfo.RelativeDamage;
+        
+        // Damage multiplier and additional damage from active legacy
+        if (activeLegacy)
+        {
+            var legacyPreservation = (int)activeLegacy.preservation;
+            _attackInfo.Damage.TotalAmount *= activeLegacy.damageMultipliers[legacyPreservation];
+            var extra = activeLegacy.extraDamages[legacyPreservation];
+            _attackInfo.Damage.TotalAmount += extra.BaseDamage + _playerController.Strength * extra.RelativeDamage;
+        }
     }
     
-    protected virtual void UpdateLegacyStatusEffect()
+    public virtual void UpdateLegacyStatusEffect()
     {
-        if (_activeLegacy == null) return;
+        if (activeLegacy == null) return;
+        var legacyPreservation = (int)activeLegacy.preservation;
         
-        // Get status effect
+        // Get the newest status effect
         EStatusEffect warriorSpecificEffect = PlayerAttackManager.Instance
-            .GetWarriorStatusEffect(_activeLegacy.Warrior,
-                _damageDealer.GetStatusEffectLevel(_activeLegacy.Warrior));
+            .GetWarriorStatusEffect(activeLegacy.warrior, _damageDealer.GetStatusEffectLevel(activeLegacy.warrior));
         
         // Update status effect of base damage
         var newStatusEffectsBase = _attackInfo.StatusEffects;
         var newEffect = new StatusEffectInfo(warriorSpecificEffect,
-            _activeLegacy.StatusEffects[(int)_activeLegacyPreservation].Strength,
-            _activeLegacy.StatusEffects[(int)_activeLegacyPreservation].Duration,
-            _activeLegacy.StatusEffects[(int)_activeLegacyPreservation].Chance);
+            activeLegacy.StatusEffects[legacyPreservation].Strength,
+            activeLegacy.StatusEffects[legacyPreservation].Duration,
+            activeLegacy.StatusEffects[legacyPreservation].Chance);
         newStatusEffectsBase.Add(newEffect);
         
         // Additional status effect
-        if (_activeLegacy.ExtraStatusEffects[(int)_activeLegacyPreservation].Effect != EStatusEffect.None)
+        if (activeLegacy.ExtraStatusEffects.Length != 0 
+            && activeLegacy.ExtraStatusEffects[legacyPreservation].Effect != EStatusEffect.None)
         {
-            newEffect = new StatusEffectInfo(_activeLegacy.ExtraStatusEffects[(int)_activeLegacyPreservation].Effect,
-                _activeLegacy.ExtraStatusEffects[(int)_activeLegacyPreservation].Strength,
-                _activeLegacy.ExtraStatusEffects[(int)_activeLegacyPreservation].Duration,
-                _activeLegacy.ExtraStatusEffects[(int)_activeLegacyPreservation].Chance);
+            newEffect = new StatusEffectInfo(activeLegacy.ExtraStatusEffects[legacyPreservation].Effect,
+                activeLegacy.ExtraStatusEffects[legacyPreservation].Strength,
+                activeLegacy.ExtraStatusEffects[legacyPreservation].Duration,
+                activeLegacy.ExtraStatusEffects[legacyPreservation].Chance);
             newStatusEffectsBase.Add(newEffect);
         }
         
         // Update status effect of objects spawned from legacy
         _attackInfo.StatusEffects = newStatusEffectsBase;
-        _activeLegacy.OnUpdateStatusEffect(warriorSpecificEffect);
     }
 
-    public virtual void UpdateLegacyPreservation(ELegacyPreservation preservation)
+    public virtual void UpdateActiveLegacyPreservation(ELegacyPreservation preservation)
     {
-        if (_activeLegacy == null) return;
-        Debug.Log(PlayerAttackManager.Instance.GetBoundActiveLegacyName(ELegacyType.Ranged) + " updated to " + preservation);
-        _activeLegacy.SetPreservation(preservation);
-        UpdateLegacyDamage();
+        if (activeLegacy == null) return;
+        RecalculateDamage();
         UpdateLegacyStatusEffect();
     }
 }

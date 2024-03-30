@@ -2,15 +2,21 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
- 
+using Random = UnityEngine.Random;
+
 public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 {
     // reference to other components
     protected Rigidbody2D _rigidbody2D;
     protected Animator _animator;
     protected SEnemyData _data;
-
+    private EnemyVisibilityChecker _visibilityChecker;
+    
+    // Drops
+    private GameObject _coinPrefab;
+    
     // Movement
     protected EnemyMovement _movement = null;
 
@@ -28,6 +34,9 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
     // 이런것들 나중에 엑셀으로 뺴면 좋을듯
     // [SerializeField] private float SommerStackCoolTime = 10f;
+    private int _enemyTypeID;
+    [SerializeField] private int _coinsMin = 30;
+    [SerializeField] private int _coinsMax = 70;
     [SerializeField] private float SommerReducedSpeed = 0.3f;
     [SerializeField] private float SommerReducedDamage = 0.3f;
     [SerializeField] private float SleepDuration = 5f;
@@ -36,9 +45,16 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     //Enemy health attribute
     public AttackInfo _damageInfoTEMP;
     [SerializeField] protected float Health = 1000f;
+    private SpriteRenderer _spriteRenderer;
 
+    private void Awake()
+    {
+        _spriteRenderer = GetComponent<SpriteRenderer>();
+    }
     protected virtual void Start()
-    { 
+    {
+        _visibilityChecker = Camera.main.GetComponent<EnemyVisibilityChecker>();
+        _coinPrefab = Resources.Load("Prefabs/Items/Coin").GameObject();
         _rigidbody2D = GetComponent<Rigidbody2D>();
         _animator = GetComponent<Animator>();
         _effectRemainingTimes = new float[(int)EStatusEffect.MAX];
@@ -342,25 +358,64 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     private void ReduceHealth(float reduceAmount)
     {
         Health -= reduceAmount;
-        Debug.Log(gameObject.name + "'s Current health: " + Health + "(-" + reduceAmount + ")");
-        if (Health <= 0) { Die(); }
         StartCoroutine(DamagedRoutine());
+        if (Health <= 0) Die();
     }
     
     // TEMP TODO FIX: For damage visualisation
     private IEnumerator DamagedRoutine()
     {
-        GetComponent<SpriteRenderer>().color = new Color(0.6f, 0.05f, 0.05f);
+        _spriteRenderer.color = new Color(0.6f, 0.05f, 0.05f);
         yield return new WaitForSeconds(0.1f);
-        GetComponent<SpriteRenderer>().color = Color.white;
+        _spriteRenderer.color = Color.white;
     }
 
     private void Die()
     {
         StopAllCoroutines();
         Destroy(gameObject);
-        // TEMP code
-        Debug.Log(gameObject.name + " died.");
+        InGameEvents.EnemySlayed.Invoke(_enemyTypeID);
+        PlayerEvents.ValueChanged.Invoke(ECondition.SlayedEnemiesCount, +1);
+        DropGold();
+    }
+
+    private void DropGold()
+    {
+        // Calculate how much gold to drop
+        int goldToDrop = 0;
+        switch (PlayerController.Instance.EnemyGoldDropBuff)
+        {
+            case ELegacyPreservation.MAX:
+                goldToDrop = Random.Range(_coinsMin, _coinsMax);
+                break;
+            
+            case ELegacyPreservation.Weathered:
+            case ELegacyPreservation.Tarnished:
+            case ELegacyPreservation.Intact:
+            case ELegacyPreservation.Pristine:
+                //TODO by preservation
+                float random = Mathf.Pow(Random.value, 2);
+                goldToDrop = _coinsMin + Mathf.RoundToInt(random * (_coinsMax - _coinsMin));
+                break;
+        }
+        
+        // Drop coins
+        for (int i = 0; i < goldToDrop / 10 + 1; i++)
+        {
+            // Instantiate a coin at the enemy's position
+            var coin = Instantiate(_coinPrefab, transform.position, Quaternion.identity).GetComponent<Coin>();
+            coin.value = (i < goldToDrop / 10) ? 10 : goldToDrop % 10;
+        }
     }
     #endregion Damage Dealing and Receiving
+
+    private void OnBecameVisible()
+    {
+        _visibilityChecker.AddEnemyToVisibleList(gameObject);
+    }
+
+    private void OnBecameInvisible()
+    {
+        _visibilityChecker.RemoveEnemyFromVisibleList(gameObject);
+    }
 }

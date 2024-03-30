@@ -5,12 +5,14 @@ public class AttackBase_Ranged : AttackBase
 {
     [Space(15)][SerializeField] private Transform FireTransform;
     private GameObject _bulletObject;
+    private readonly static int AttackIndex = Animator.StringToHash("AttackIndex");
 
     public override void Start()
     {
-        _damageInfoInit.BaseDamage = 3.0f;
-        _attackInfoInit.Damage.TotalAmount = _damageInfoInit.BaseDamage + PlayerController.Instance.Strength * _damageInfoInit.RelativeDamage;
         base.Start();
+        _damageInfoInit.BaseDamage = 3.0f;
+        _attackInfoInit.Damage.TotalAmount = _damageInfoInit.BaseDamage + _playerController.Strength * _damageInfoInit.RelativeDamage;
+        Reset();
     }
 
     public void SetBullet(GameObject bulletPrefab)
@@ -19,7 +21,7 @@ public class AttackBase_Ranged : AttackBase
         else _bulletObject = bulletPrefab;
     }
 
-    public void ResetBulletToDefault()
+    private void ResetBulletToDefault()
     {
         _bulletObject = Resources.Load<GameObject>("Prefabs/Player/Bullets/Bullet_Default");
     }
@@ -27,7 +29,7 @@ public class AttackBase_Ranged : AttackBase
     public override void Reset()
     {
         base.Reset();
-        _activeLegacy = null;    
+        activeLegacy = null;    
         ResetBulletToDefault();
         VFXObject.GetComponent<ParticleSystemRenderer>()
             .material.mainTexture = Resources.Load<Texture2D>("Sprites/Player/VFX/Default/Ranged");
@@ -35,7 +37,7 @@ public class AttackBase_Ranged : AttackBase
 
     public override void Attack()
     {
-        _animator.SetInteger("AttackIndex", (int)ELegacyType.Ranged);
+        _animator.SetInteger(AttackIndex, (int)ELegacyType.Ranged);
         VFXObject.GetComponent<ParticleSystemRenderer>().flip = 
             (Mathf.Sign(gameObject.transform.localScale.x) < 0 ? Vector3.right : Vector3.zero);
         VFXObject.SetActive(true);
@@ -43,8 +45,7 @@ public class AttackBase_Ranged : AttackBase
 
     public void Fire()
     {
-        var bullet = Instantiate(_bulletObject, FireTransform.position, Quaternion.identity)
-            .GetComponent<Bullet>();
+        var bullet = Instantiate(_bulletObject, FireTransform.position, Quaternion.identity).GetComponent<Bullet>();
         bullet.Direction = -Mathf.Sign(gameObject.transform.localScale.x);
         bullet.Owner = this;
         bullet.attackInfo = _attackInfo.Clone();
@@ -54,13 +55,11 @@ public class AttackBase_Ranged : AttackBase
     // Called when a shot bullet is destroyed for any reason
     public void OnBulletDestroy(IDamageable target, Vector3 bulletPos, AttackInfo savedAttackInfo)
     {
-        if (_activeLegacy) 
-            ((Legacy_Ranged)_activeLegacy).OnBulletDestroy(bulletPos);
+        if (activeLegacy) 
+            ((Legacy_Ranged)activeLegacy).OnBulletDestroy(bulletPos);
         
         // Deal damage to the target if the bullet is hit
         if (target != null)
-        {
             _damageDealer.DealDamage(target, savedAttackInfo);
-        }
     }
 }

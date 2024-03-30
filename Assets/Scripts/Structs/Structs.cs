@@ -34,7 +34,24 @@ public struct SLegacyStatUpgradeData
 {
     public EStat Stat;
     public EIncreaseMethod IncreaseMethod;
-    public float[] IncreaseAmounts;
+    [NamedArray(typeof(ELegacyPreservation))] public float[] IncreaseAmounts;
+
+    public bool HasUpdateCondition;
+    public SCondition StatUpdateCondition;          // 스탯이 업데이트 되는 조건
+    
+    public bool HasApplyCondition;
+    public SCondition UpgradeApplyCondition;        // 업데이트된 스탯이 적용되는 조건
+    public bool UndoUpgradeWhenConditionNotMet;     // 조건에 부합하지 않을 경우 적용된 업그레이드를 캔슬할 것인가?
+}
+
+[Serializable]
+public struct SCondition
+{
+    public EUpgradeFrequency updateFrequency;
+    public ECondition condition;
+    public EComparator comparator;
+    public float targetValue;
+    public bool isValueRatio;
 }
 
 //public struct SRelicData
