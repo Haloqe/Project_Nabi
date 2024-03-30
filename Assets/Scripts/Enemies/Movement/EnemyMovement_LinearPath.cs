@@ -5,87 +5,23 @@ using Random = UnityEngine.Random;
 
 public class EnemyMovement_LinearPath : EnemyMovement
 {
-    private bool _isChasingPlayer = false;
 
-    [SerializeField] private float _idleProbability = 0.4f; //walkProbability will be 1 - idleProbability
-    [SerializeField] private float _idleAverageDuration = 1f;
-    [SerializeField] private float _walkAverageDuration = 0.8f;
-    [SerializeField] private float _detectRange = 3f;
-    [SerializeField] private float _attackRange = 1f;
-    [SerializeField] private float _chasePlayerDuration = 5f;
-    private float _actionTimeCounter = 0f;
-
+    // Ground detection
+    [SerializeField] Vector2 _groundColliderSize;
+    public LayerMask _groundLayer;
+    public Collider2D _groundInFrontCollider;
+    public Collider2D _ceilingInFrontCollider;
     private void Awake()
     {
         moveType = EEnemyMoveType.LinearPath;
     }
-    
-    private void FixedUpdate()
-    {
-        if (_isOnAir) return;
-        if (_isRooted) return;
-        if (_target == null)
-        {
-            Patrol();
-            return;
-        }
-
-        bool playerIsInAttackRange = Mathf.Abs(transform.position.x - _target.transform.position.x) <= _attackRange 
-            && _target.transform.position.y - transform.position.y <= 1f;
-
-        bool playerIsInDetectRange = Mathf.Abs(transform.position.x - _target.transform.position.x) <= _detectRange 
-            && _target.transform.position.y - transform.position.y <= 1f;
-        
-        if (playerIsInAttackRange)
-        {
-            Attack();
-        }
-        else if (playerIsInDetectRange)
-        {
-            _isChasingPlayer = true;
-            _actionTimeCounter = _chasePlayerDuration;
-            Chase();
-        }
-        else
-        {
-            if (_isChasingPlayer) Chase();
-            else Patrol();
-        }
-
-        _actionTimeCounter -= Time.deltaTime;
-    }
-
-
-    private void OnTriggerEnter2D(Collider2D other)
-    {
-        if (other.CompareTag("Ground"))
-        {
-            _isOnAir = false;
-        }
-
-        // dealing damage to target
-        // may have to edit to only take the child collider into account
-        if (other.CompareTag(_target.tag))
-        {
-            _enemyBase.DealDamage(_targetDamageable, _enemyBase._damageInfoTEMP);
-        }
-    }
-
-    private void OnTriggerExit2D(Collider2D other)
-    {
-        if (other.CompareTag("Ground"))
-        {
-            _isOnAir = true;
-        }
-        //if (_isChasingPlayer) return; needs edits.
-        if (_isChasingPlayer) _actionTimeCounter = 0;
-        if (other.CompareTag("Ground")) FlipEnemy();
-    }
-
 
     private void WalkForward()
     {
-        if (_isRooted) return;
+        if (IsRooted) return;
+        if (!IsGrounded()) return;
+        if (IsAtEdge()) FlipEnemy();
+
         if (transform.localScale.x > Mathf.Epsilon) //if it's facing right
         {
             _rigidBody.velocity = new Vector2(_moveSpeed, 0f);
@@ -96,34 +32,48 @@ public class EnemyMovement_LinearPath : EnemyMovement
 
     private void GenerateRandomState()
     {
-        if (Random.Range(0.0f, 1.0f) <= _idleProbability)
+        if (Random.Range(0.0f, 1.0f) <= _enemyBase.EnemyData.IdleProbability)
         {
-            _isMoving = false;
-            _actionTimeCounter = Random.Range(_idleAverageDuration * 0.5f, _idleAverageDuration * 1.5f);
+            IsMoving = false;
+            _enemyBase.ActionTimeCounter = Random.Range(_enemyBase.EnemyData.IdleAverageDuration * 0.5f, _enemyBase.EnemyData.IdleAverageDuration * 1.5f);
         } else
         {
-            _isMoving = true;
-            _actionTimeCounter = Random.Range(_walkAverageDuration * 0.5f, _walkAverageDuration * 1.5f);
+            IsMoving = true;
+            _enemyBase.ActionTimeCounter = Random.Range(_enemyBase.EnemyData.WalkAverageDuration * 0.5f, _enemyBase.EnemyData.WalkAverageDuration * 1.5f);
 
-            if (Random.Range(0.0f, 1.0f) <= 0.5f) FlipEnemy();
+            if (Random.Range(0.0f, 1.0f) <= 0.3f) FlipEnemy();
         }
     }
 
-    private void Patrol()
+    public override void Patrol()
     {
+        if (IsAtEdge() && IsChasingPlayer)
+        {
+            _rigidBody.velocity = Vector2.zero;
+            _animator.SetBool("IsWalking", false);
+            return;
+        }
+
         _animator.SetBool("IsAttacking", false);
-        _isChasingPlayer = false;
-        if (_actionTimeCounter <= 0) GenerateRandomState();
-        if (_isMoving) WalkForward();
+        IsChasingPlayer = false;
+        if (_enemyBase.ActionTimeCounter <= 0) GenerateRandomState();
+        if (IsMoving) WalkForward();
         else _rigidBody.velocity = Vector2.zero;
-        _animator.SetBool("IsWalking", _isMoving);
+        _animator.SetBool("IsWalking", IsMoving);
     }
 
-    private void Chase()
+    public override void Chase()
     {
-        if (_actionTimeCounter < 0)
+        if (IsAtEdge())
         {
-            _isChasingPlayer = false;
+            Patrol();
+            FlipEnemyTowardsTarget();
+            return;
+        }
+
+        if (_enemyBase.ActionTimeCounter < 0)
+        {
+            IsChasingPlayer = false;
             return;
         }
         _animator.SetBool("IsAttacking", false);
@@ -133,10 +83,28 @@ public class EnemyMovement_LinearPath : EnemyMovement
         WalkForward();
     }
 
-    private void Attack()
+    public override void Attack()
     {
-        if (_isFlippable) FlipEnemyTowardsTarget();
+        if (IsFlippable) FlipEnemyTowardsTarget();
         _animator.SetBool("IsAttacking", true);
+    }
+
+        public bool IsGrounded()
+    {
+        if (Physics2D.OverlapBox(transform.position, _groundColliderSize, 0, _groundLayer)) return true;
+        else return false;
+    }
+
+    public bool IsAtEdge()
+    {
+        if (_ceilingInFrontCollider.IsTouchingLayers(_groundLayer) || !_groundInFrontCollider.IsTouchingLayers(_groundLayer)) return true;
+        else return false;
+    }
+
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.DrawWireCube(transform.position - transform.up, _groundColliderSize);
     }
 
 }

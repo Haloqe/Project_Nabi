@@ -3,21 +3,28 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Random = UnityEngine.Random;
  
 public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 {
     // reference to other components
+    // public Collider2D _groundCollider;
     protected Rigidbody2D _rigidbody2D;
     protected Animator _animator;
-    protected SEnemyData _data;
+    public GameObject Manager;
+    public SEnemyData EnemyData;
+    public int _enemyID;
 
     // Movement
-    protected EnemyMovement _movement = null;
-
+    protected EnemyMovement _movement;
+    public GameObject Target;
+    protected IDamageable _targetDamageable;
+    public float ActionTimeCounter = 0f;
+ 
     //Status effect attributes
     public bool IsSilenced { get; private set; }
     public bool ShouldDisableMovement { get; private set; }
-    [NamedArray(typeof(EStatusEffect))] public GameObject[] DebuffEffects;
+    [NamedArray(typeof(EStatusEffect))] public ParticleSystem[] DebuffEffects;
     private float[] _effectRemainingTimes;
     private SortedDictionary<float, float> _slowRemainingTimes; // str,time
 
@@ -26,34 +33,39 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     private float _sommerTimeSinceStacked = 0f;
     private int _sommerSubtractedStackPerSecond = 1;
 
-    // 이런것들 나중에 엑셀으로 뺴면 좋을듯
-    // [SerializeField] private float SommerStackCoolTime = 10f;
-    [SerializeField] private float SommerReducedSpeed = 0.3f;
-    [SerializeField] private float SommerReducedDamage = 0.3f;
-    [SerializeField] private float SleepDuration = 5f;
-    [SerializeField] private float SleepBaseStrength = 1f; // idk what this does
-    
+    // sommer 압면환각
+    private bool _TEMPSommerHypHallucination = false;
+    [SerializeField] Vector2 _neighboringEnemyColliderSize;
+    [SerializeField] float _neighboringEnemyColliderHeight;
+
     //Enemy health attribute
-    public AttackInfo _damageInfoTEMP;
-    [SerializeField] protected float Health = 1000f;
+    public AttackInfo _damageInfo;
+    protected float Health;
 
     protected virtual void Start()
-    { 
+    {
         _rigidbody2D = GetComponent<Rigidbody2D>();
         _animator = GetComponent<Animator>();
+        Manager = GameObject.Find("Manager");
+        EnemyData = Manager.GetComponent<EnemyManager>().GetEnemyData(_enemyID);
         _effectRemainingTimes = new float[(int)EStatusEffect.MAX];
         _slowRemainingTimes = new SortedDictionary<float, float> (
             Comparer<float>.Create(delegate (float x, float y) { return y.CompareTo(x); })
         );
-        DebuffEffects = new GameObject[(int)EStatusEffect.MAX];
+        // DebuffEffects = new GameObject[(int)EStatusEffect.MAX];
         _movement = GetComponent<EnemyMovement>();
 
-        _damageInfoTEMP = new AttackInfo();
-        _damageInfoTEMP.Damage = new DamageInfo(EDamageType.Base, 5);
+        _damageInfo = new AttackInfo();
+        _damageInfo.Damage = new DamageInfo((EDamageType)Enum.Parse(typeof(EDamageType), EnemyData.Type), EnemyData.DefaultDamage);
         PlayerEvents.defeated += OnPlayerDefeated;
 
-        Initialise();         
+        Target = GameObject.FindWithTag("Player");
+        _targetDamageable = Target.gameObject.GetComponent<IDamageable>();
+        _movement.Init();
+
+        Health = EnemyData.MaxHealth;
     }
+    
     private void OnPlayerDefeated()
     {
         
@@ -62,6 +74,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     protected virtual void FixedUpdate()
     {
         UpdateRemainingStatusEffectTimes();
+        UpdateMovementState();
     }
 
     protected virtual void Initialise() { }
@@ -90,14 +103,17 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
                 continue;
             }
             //handles status effect other than slow
-
             switch (statusEffect.Effect)
             {
                 case EStatusEffect.Sommer:
-                    _movement.ChangeSpeedByPercentage(SommerReducedSpeed);
-                    _damageInfoTEMP.Damage = new DamageInfo(EDamageType.Base, _damageInfoTEMP.Damage.TotalAmount * SommerReducedDamage);
+                    SetVFXActive(EStatusEffect.Sommer, true);
+                    _movement.ChangeSpeedByPercentage(Define.SommerReducedSpeed);
+                    _damageInfo.Damage.TotalAmount *= Define.SommerReducedDamage;
                     _sommerStackCount++;
                     _sommerTimeSinceStacked = 0f;
+                    break;
+
+                case EStatusEffect.Drugged:
                     break;
 
                 case EStatusEffect.Sleep:
@@ -201,6 +217,11 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
                 {
                     IsSilenced = false;
                 }
+
+                if (_TEMPSommerHypHallucination && currEffect == EStatusEffect.Drugged)
+                {
+                    _damageInfo.Damage.TotalAmount *= 0.75f;
+                }
             }
         }
 
@@ -221,12 +242,15 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         {
             _sommerTimeSinceStacked = 0;
             _sommerStackCount = 0;
-            HandleNewStatusEffects(new List<StatusEffectInfo> { new StatusEffectInfo(EStatusEffect.Sleep, SleepBaseStrength, SleepDuration) }, 0);
+            HandleNewStatusEffects(new List<StatusEffectInfo> { new StatusEffectInfo(EStatusEffect.Sleep, 1, Define.SleepDuration) }, 0);
         }
         else if (_sommerStackCount <= 0)
         {
+            if (_TEMPSommerHypHallucination) _damageInfo.Damage.TotalAmount *= 0.75f;
+
+            SetVFXActive((int)EStatusEffect.Sommer, false);
             _movement.ChangeSpeedByPercentage(1f);
-            _damageInfoTEMP.Damage = new DamageInfo(EDamageType.Base, _damageInfoTEMP.Damage.TotalAmount);
+            _damageInfo.Damage.TotalAmount *= 1 / Define.SommerReducedDamage;
             _effectRemainingTimes[(int)EStatusEffect.Sommer] = 0;
         }
     }
@@ -302,7 +326,13 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     private void SetVFXActive(int effectIdx, bool setActive)
     {
         if (DebuffEffects[effectIdx] == null) return;
-        DebuffEffects[effectIdx].SetActive(setActive);
+        // DebuffEffects[effectIdx].SetActive(setActive);
+        if (setActive)
+        {
+            DebuffEffects[effectIdx].Play();
+        } else {
+            DebuffEffects[effectIdx].Stop();
+        }
     }
 
     #endregion Status Effects imposed by the player handling
@@ -312,6 +342,31 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     #endregion Status Effects imposing on the player handling
 
     #region Damage Dealing and Receiving
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.CompareTag(Target.tag))
+        {
+            // 황홀경 status effect
+            if (_animator.GetBool("IsAttacking") == true && _effectRemainingTimes[(int)EStatusEffect.Drugged] > 0)
+            {
+                if (Random.Range(0.0f, 1.0f) <= 0.5)
+                {
+                    Debug.Log(gameObject.name + " missed!");
+                    Collider2D[] foesToDamage = Physics2D.OverlapBoxAll(transform.position + new Vector3 (0, _neighboringEnemyColliderHeight, 0), _neighboringEnemyColliderSize, 0, LayerMask.GetMask("Enemy"));
+                    AttackInfo damageToFoes = _damageInfo;
+                    damageToFoes.Damage.TotalAmount *= 0.25f;
+                    foreach (Collider2D col in foesToDamage)
+                    {
+                        DealDamage(col.gameObject.GetComponent<IDamageable>(), damageToFoes);
+                    }
+                    return;
+                }
+            }
+            DealDamage(_targetDamageable, _damageInfo);
+        }
+    }
+
     // Dealing damage to the player Handling
     public virtual void DealDamage(IDamageable target, AttackInfo damageInfo)
     {
@@ -323,8 +378,15 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     public void TakeDamage(AttackInfo damageInfo)
     {
         Utility.PrintDamageInfo(gameObject.name, damageInfo);
-        HandleNewDamage(damageInfo.Damage);
         HandleNewStatusEffects(damageInfo.StatusEffects, damageInfo.IncomingDirectionX);
+        if (_TEMPSommerHypHallucination && _sommerStackCount <= 0)
+        {
+            AttackInfo boostedDamageInfo = damageInfo;
+            boostedDamageInfo.Damage.TotalAmount *= 1.5f;
+            HandleNewDamage(boostedDamageInfo.Damage);
+            return;
+        }
+        HandleNewDamage(damageInfo.Damage);
     }
 
     private void HandleNewDamage(DamageInfo damage)
@@ -363,4 +425,48 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         Debug.Log(gameObject.name + " died.");
     }
     #endregion Damage Dealing and Receiving
+
+    #region Enemy Movement
+    private void UpdateMovementState()
+    {
+        if (_movement.IsRooted) return;
+        if (Target == null)
+        {
+            _movement.Patrol();
+            return;
+        }
+
+        bool playerIsInAttackRange = Mathf.Abs(transform.position.x - Target.transform.position.x) <= EnemyData.AttackRangeX 
+            && Target.transform.position.y - transform.position.y <= EnemyData.AttackRangeY;
+
+        bool playerIsInDetectRange = Mathf.Abs(transform.position.x - Target.transform.position.x) <= EnemyData.DetectRangeX 
+            && Target.transform.position.y - transform.position.y <= EnemyData.DetectRangeY;
+        
+        if (playerIsInAttackRange)
+        {
+            _movement.Attack();
+        }
+        else if (playerIsInDetectRange)
+        {
+            _movement.IsChasingPlayer = true;
+            ActionTimeCounter = EnemyData.ChasePlayerDuration;
+            _movement.Chase();
+        }
+        else
+        {
+            if (_movement.IsChasingPlayer){
+                _movement.Chase();
+            } else {
+                _movement.Patrol();
+            }
+        }
+
+        ActionTimeCounter -= Time.deltaTime;
+    }
+    #endregion Enemy Movement
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.DrawWireCube(transform.position - transform.up + new Vector3 (0, _neighboringEnemyColliderHeight, 0), _neighboringEnemyColliderSize);
+    }
 }

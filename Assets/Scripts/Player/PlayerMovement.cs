@@ -185,7 +185,10 @@ public class PlayerMovement : MonoBehaviour
     public void SetJump(bool value)
     {
         if (_isDashing) return;
-        if (_jumpCounter > 1) _jumpBufferTimeCounter = _jumpBufferTime;
+        if (_jumpCounter > 1) {
+            _jumpBufferTimeCounter = _jumpBufferTime;
+            _animator.SetBool("IsDoubleJumping", true);
+        }
 
         if (_isRooted || _isAttacking) return;
         if (_coyoteTimeCounter < 0f && _jumpCounter >= 2) return;
@@ -204,6 +207,7 @@ public class PlayerMovement : MonoBehaviour
             _jumpCounter = 0;
             _coyoteTimeCounter = _coyoteTime;
             _animator.SetBool("IsJumping", _isJumping);
+            _animator.SetBool("IsDoubleJumping", _isJumping);
             if (_jumpBufferTimeCounter > 0f) SetJump(true);
         }
     }

@@ -39,7 +39,11 @@ public static class Define
         { EStatusEffect.Poison, EStatusEffect.Leech },          // 버논
         { EStatusEffect.Evade, EStatusEffect.Camouflage },      // 나이트셰이드
     };
-    
+
+    public static float SommerReducedSpeed = 0.3f;
+    public static float SommerReducedDamage = 0.3f;
+    public static float SleepDuration = 5f;
+
     public static Color[] WarriorMainColours = new Color[]
     {
         new Color(0.3686275f, 0.5727299f, 0.5960785f, 1f),

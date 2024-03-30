@@ -30,6 +30,8 @@ public enum EStatusEffect
     
     // Base
     Sommer,
+    Ecstacy,
+
     Drowsiness,
     Poison,
     Drugged,
@@ -183,12 +185,26 @@ public enum EItemObtainMethod
 
 //--------------------------------------------------------------------------------
 #region Enemy
+public enum EEnemyName
+{
+    VoidMantis,
+    Insectivore,
+}
 public enum EEnemyMoveType
 {
     None,
     FollowStraightPath,
     LinearPath,
     Stationary,
+}
+
+public enum EEnemyState
+{
+    Idle,
+    Walk,
+    Chase,
+    Telegraph,
+    Attack,
 }
 #endregion Enemy
 

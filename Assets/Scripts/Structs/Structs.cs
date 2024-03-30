@@ -66,6 +66,16 @@ public struct SEnemyData
     public string PrefabPath;
     public float DefaultMoveSpeed;
     public float MaxHealth;
+    public float DefaultDamage;
+    public string Type;
+    public float IdleProbability;
+    public float IdleAverageDuration;
+    public float WalkAverageDuration;
+    public float ChasePlayerDuration;
+    public float DetectRangeX;
+    public float DetectRangeY;
+    public float AttackRangeX;
+    public float AttackRangeY;
     // amount of gold to drop
     // percentage of drop
     // rank

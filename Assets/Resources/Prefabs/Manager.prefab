@@ -63,6 +63,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e930125bbb2f124eb1160e0f05f0469, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  EnemyPrefabs:
+  - {fileID: 4544565889094152930, guid: 24f2ac7d64b07408296c15269855757f, type: 3}
+  - {fileID: 2594149972786258606, guid: bcce88540dedd4b4684fa476862a58ad, type: 3}
 --- !u!114 &1161937486761566454
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -87,6 +90,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a65cdcc228e218541947df78b79aec7c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  inGameCombatUI: {fileID: 0}
 --- !u!114 &7962455665489443107
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -99,10 +103,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c342c1f68a6e294ebf8205edc357c15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ShouldRandomGenerateMap: 1
+  _shouldRandomGenerateMap: 0
   Player: {fileID: 539064456449143768, guid: ec642c166e291f1408ac64a18e7704f4, type: 3}
   PrevStage: 0
   CurrStage: 0
+  IsFirstRun: 1
 --- !u!114 &993175973461698046
 MonoBehaviour:
   m_ObjectHideFlags: 0

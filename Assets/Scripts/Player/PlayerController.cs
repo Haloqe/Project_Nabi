@@ -63,7 +63,7 @@ public class PlayerController : Singleton<PlayerController>
         switch (count)
         {
          case -1:
-             PlayerAttackManager.Instance.CollectLegacy(9, ELegacyPreservation.Weathered);
+             PlayerAttackManager.Instance.CollectLegacy(0, ELegacyPreservation.Weathered);
              break;
          case 0:
          case 1:
