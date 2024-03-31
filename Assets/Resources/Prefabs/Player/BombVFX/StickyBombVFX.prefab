@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 5967098410392690084}
   - component: {fileID: 5052011348145430785}
   - component: {fileID: 5871400123677516134}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: StickyBombVFX
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4843,9 +4843,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Owner: {fileID: 0}
-  ExplodeStartSpriteIndex: 3
-  ExplodeEndSpriteIndex: 4
-  ExplodeMaxRadius: 6.5
+  ExplodeStartSpriteIndex: 8
+  ExplodeEndSpriteIndex: 11
+  ExplodeMaxRadius: 2.65
 --- !u!58 &5871400123677516134
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -4853,7 +4853,7 @@ CircleCollider2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4140790007910586798}
-  m_Enabled: 1
+  m_Enabled: 0
   m_Density: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -4878,6 +4878,6 @@ CircleCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: 0.3, y: -0.3}
   serializedVersion: 2
-  m_Radius: 0.5
+  m_Radius: 0.25

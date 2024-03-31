@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 5664653380730297488}
   - component: {fileID: 18786477344320114}
   - component: {fileID: 7294095990464768692}
-  m_Layer: 7
+  m_Layer: 3
   m_Name: IncendiaryBombVFX
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4843,9 +4843,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Owner: {fileID: 0}
-  ExplodeStartSpriteIndex: 0
-  ExplodeEndSpriteIndex: 0
-  ExplodeMaxRadius: 0
+  ExplodeStartSpriteIndex: 6
+  ExplodeEndSpriteIndex: 9
+  ExplodeMaxRadius: 2.65
 --- !u!58 &7294095990464768692
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -4853,7 +4853,7 @@ CircleCollider2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1679955423923665243}
-  m_Enabled: 1
+  m_Enabled: 0
   m_Density: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -4878,6 +4878,6 @@ CircleCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: 0.3, y: -0.3}
   serializedVersion: 2
-  m_Radius: 0.0001
+  m_Radius: 0.25

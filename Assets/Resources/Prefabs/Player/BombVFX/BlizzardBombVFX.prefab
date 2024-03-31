@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 4321329910762188400}
   - component: {fileID: 3060070718977325818}
   - component: {fileID: 934195745365903818}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: BlizzardBombVFX
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4837,7 +4837,7 @@ CircleCollider2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5279777549672157941}
-  m_Enabled: 1
+  m_Enabled: 0
   m_Density: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -4862,9 +4862,9 @@ CircleCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: 0.3, y: -0.3}
   serializedVersion: 2
-  m_Radius: 0.5
+  m_Radius: 0.25
 --- !u!114 &934195745365903818
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4878,6 +4878,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Owner: {fileID: 0}
-  ExplodeStartSpriteIndex: 0
-  ExplodeEndSpriteIndex: 0
-  ExplodeMaxRadius: 0
+  ExplodeStartSpriteIndex: 8
+  ExplodeEndSpriteIndex: 11
+  ExplodeMaxRadius: 2.65
