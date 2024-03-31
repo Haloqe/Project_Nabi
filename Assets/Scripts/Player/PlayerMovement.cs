@@ -1,5 +1,7 @@
+using System;
 using Cinemachine;
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
@@ -38,6 +40,7 @@ public class PlayerMovement : MonoBehaviour
     private Rigidbody2D _rigidbody2D;
     private Animator _animator;
     private Vector2 _additionalVelocity;
+
     
     private void Start()
     {
@@ -185,7 +188,10 @@ public class PlayerMovement : MonoBehaviour
     public void SetJump(bool value)
     {
         if (_isDashing) return;
-        if (_jumpCounter > 1) _jumpBufferTimeCounter = _jumpBufferTime;
+        if (_jumpCounter > 1) {
+            _jumpBufferTimeCounter = _jumpBufferTime;
+            _animator.SetBool("IsDoubleJumping", true);
+        }
 
         if (_isRooted || _isAttacking) return;
         if (_coyoteTimeCounter < 0f && _jumpCounter >= 2) return;
@@ -204,6 +210,7 @@ public class PlayerMovement : MonoBehaviour
             _jumpCounter = 0;
             _coyoteTimeCounter = _coyoteTime;
             _animator.SetBool("IsJumping", _isJumping);
+            _animator.SetBool("IsDoubleJumping", _isJumping);
             if (_jumpBufferTimeCounter > 0f) SetJump(true);
         }
     }
@@ -225,8 +232,8 @@ public class PlayerMovement : MonoBehaviour
     }
 
     #region Animation Event Handlers
-    // Move vertically to the direction the character is facing
-    public void AnimEvent_StartMoveVertical(float xVelocity)
+    // Move horizontally to the direction the character is facing
+    public void AnimEvent_StartMoveHorizontal(float xVelocity)
     {
         if (_isRooted) return;
 
@@ -234,10 +241,8 @@ public class PlayerMovement : MonoBehaviour
         Vector2 playerCentre = new Vector2(transform.position.x, transform.position.y + 0.1f);
         Vector2 faceDir = new Vector2(-Mathf.Sign(gameObject.transform.localScale.x), 0f);
         RaycastHit2D hit = Physics2D.Raycast(playerCentre, faceDir, 1.0f);
-        //Debug.DrawRay(playerCentre, faceDir, Color.white, 2.0f);
         if (hit.collider != null && hit.collider.gameObject.layer == LayerMask.NameToLayer("Platform"))
         {
-            Debug.Log("Hit wall");
             return;
         }
 
@@ -245,18 +250,18 @@ public class PlayerMovement : MonoBehaviour
         float dir = -Mathf.Sign(gameObject.transform.localScale.x);
         _additionalVelocity = new Vector2(_additionalVelocity.x + dir * xVelocity, _additionalVelocity.y);
     }
-
-    public void AnimEvent_StartMoveHorizontal(float yVelocity)
+    
+    public void AnimEvent_StartMoveVertical(float yVelocity)
     {
         _additionalVelocity = new Vector2(_additionalVelocity.x, yVelocity);
     }
 
-    public void AnimEvent_StopMoveVertical()
+    public void AnimEvent_StopMoveHorizontal()
     {
         _additionalVelocity = new Vector2(0, _additionalVelocity.y);
     }
 
-    public void AnimEvent_StopMoveHorizontal()
+    public void AnimEvent_StopMoveVertical()
     {
         _additionalVelocity = new Vector2(_additionalVelocity.x, 0);
     }

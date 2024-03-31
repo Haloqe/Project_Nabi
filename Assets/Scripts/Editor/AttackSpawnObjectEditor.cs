@@ -9,18 +9,19 @@ public class AttackSpawnObjectEditor : Editor
         // Get a reference to the target 
         AttackSpawnObject obj = target as AttackSpawnObject;
         serializedObject.Update();
-        EditorGUILayout.PropertyField(serializedObject.FindProperty("IsAttached"));
-        EditorGUILayout.PropertyField(serializedObject.FindProperty("ShouldManuallyDestroy"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("IsAttachedToPlayer"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("AutoDestroy"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("DealInterval"));
         
         // Conditionally display additional fields
-        EditorGUILayout.PropertyField(serializedObject.FindProperty("ShouldInflictDamage"));
-        if (obj.ShouldInflictDamage)
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("HasDamage"));
+        if (obj.HasDamage)
         {
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("DamageInfo"), true);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("relativeDamages"), true);
         }
         
-        EditorGUILayout.PropertyField(serializedObject.FindProperty("ShouldInflictStatusEffect"));
-        if (obj.ShouldInflictDamage)
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("HasStatusEffect"));
+        if (obj.HasStatusEffect)
         {
             EditorGUILayout.PropertyField(serializedObject.FindProperty("StatusEffectInfos"), true);
         }

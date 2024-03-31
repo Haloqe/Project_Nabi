@@ -18,6 +18,7 @@ public class Legacy_Melee : ActiveLegacySO
         base.Init(playerTransform);
         _spawnScaleMultiplier = 1.0f;
         if (!ComboHitSpawnObject) return;
+        ComboHitSpawnObject.attackParentType = ELegacyType.Melee;
         
         // Pre-calculate object spawn positions
         var position = ComboHitSpawnObject.transform.position;

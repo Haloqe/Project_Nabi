@@ -1,6 +1,3 @@
-using UnityEngine;
-using UnityEngine.Serialization;
-
 public class PassiveLegacySO : LegacySO
 {
     public EBuffType BuffType;

@@ -16,10 +16,6 @@ public class PassiveLegacySOEditor : Editor
             case EBuffType.None:
                 break;
             
-            //case EBuffType.StatusEffectUpgrade:
-                // EditorGUILayout.PropertyField(serializedObject.FindProperty("StatusEffectUpgrade"), true);
-                //break;
-            
             case EBuffType.StatUpgrade:
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("StatUpgradeData"), true);
                 break;
@@ -34,6 +30,12 @@ public class PassiveLegacySOEditor : Editor
             case EBuffType.EnemyGoldDropBuff:
             case EBuffType.DruggedEffectBuff:
             case EBuffType.HypHallucination:
+                break;
+            
+            case EBuffType.TurbelaMaxButterfly:
+            case EBuffType.TurbelaDoubleButterfly:
+            case EBuffType.TurbelaButterflyCrit:
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("BuffIncreaseAmounts"), true);
                 break;
         }
 

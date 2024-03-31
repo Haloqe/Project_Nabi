@@ -31,13 +31,13 @@ public enum EStatusEffect
     // Base
     Sommer,
     Poison,
-    Drugged,
-    [InspectorName(null)] Swarm,
+    Ecstasy,
+    Swarm,
     Evade,
 
     // Upgraded
     [InspectorName(null)] UpgradedSommer,
-    [InspectorName(null)] UpgradedDrugged,
+    [InspectorName(null)] UpgradedEcstasy,
     [InspectorName(null)] Leech,
     [InspectorName(null)] Cloud,
     Camouflage,
@@ -87,10 +87,16 @@ public enum EBuffType
     SpawnAreaIncrease,
     FoodHealEfficiency,
     BindingSkillUpgrade,
-    EnemyItemDropRate,
-    EnemyGoldDropBuff,      // 유포리아 - 사랑의 착취
-    DruggedEffectBuff,      // 유포리아 - 뇌쇄술
-    HypHallucination,       // 소머 - 입면 환각
+    
+    EnemyGoldDropBuff,              // 유포리아 - 사랑의 착취
+    DruggedEffectBuff,              // 유포리아 - 뇌쇄술
+            
+    EnemyItemDropRate,              // 소머 - 무기력한 자장가
+    HypHallucination,               // 소머 - 입면 환각
+            
+    TurbelaMaxButterfly,            // 투르벨라 - 군락지 소환
+    TurbelaDoubleButterfly,         // 투르벨라 - 집단 폭행
+    TurbelaButterflyCrit,           // 투르벨라 - 탄막 폭격
 }
 
 public enum EStatusEffectUpgradeType
@@ -135,7 +141,7 @@ public enum EWarrior
     Sommer,
     Euphoria,
     Turbela,
-    Vernon,
+    //Vernon,
     NightShade,
     
     [InspectorName(null)]MAX,
@@ -211,12 +217,26 @@ public enum EItemObtainMethod
 
 //--------------------------------------------------------------------------------
 #region Enemy
+public enum EEnemyName
+{
+    VoidMantis,
+    Insectivore,
+}
 public enum EEnemyMoveType
 {
     None,
     FollowStraightPath,
     LinearPath,
     Stationary,
+}
+
+public enum EEnemyState
+{
+    Idle,
+    Walk,
+    Chase,
+    Telegraph,
+    Attack,
 }
 #endregion Enemy
 

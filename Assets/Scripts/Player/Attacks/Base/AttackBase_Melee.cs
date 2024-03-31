@@ -41,10 +41,10 @@ public class AttackBase_Melee : AttackBase
         _affectedEnemies = new List<int>();
 
         // Damage
-        _damageInfoInit.BaseDamage = 5.0f;
-        _damageInfoComboInit = new SDamageInfo() { BaseDamage = 5.0f, RelativeDamage = 0.0f, };
-        _attackComboInit.Damage.TotalAmount = _damageInfoComboInit.BaseDamage + _playerController.Strength * _damageInfoComboInit.RelativeDamage;
+        _damageInfoInit = new SDamageInfo() { BaseDamage = 3.0f, RelativeDamage = 1.0f, };
+        _damageInfoComboInit = new SDamageInfo() { BaseDamage = 5.0f, RelativeDamage = 3.0f, };
         _attackInfoInit.Damage.TotalAmount = _damageInfoInit.BaseDamage + _playerController.Strength * _damageInfoInit.RelativeDamage;
+        _attackComboInit.Damage.TotalAmount = _damageInfoComboInit.BaseDamage + _playerController.Strength * _damageInfoComboInit.RelativeDamage;
         Reset();
     }
 

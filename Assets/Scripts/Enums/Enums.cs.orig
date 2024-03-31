@@ -1,0 +1,295 @@
+using System;
+using UnityEngine;
+
+#region Settings
+public enum ELocalisation
+{
+    ENG,
+    KOR,
+    MAX,
+}
+#endregion Settings
+
+//--------------------------------------------------------------------------------
+
+#region Common
+public enum EDamageType
+{
+    Base,
+    Light,
+    Fire,
+    Poison,
+    Stench, // TODO change name
+    Electric,
+    MAX,
+}
+
+public enum EStatusEffect
+{
+    None,
+    
+    // Base
+    Sommer,
+<<<<<<< HEAD
+=======
+    Ecstacy,
+
+    Drowsiness,
+>>>>>>> origin/march-sprint-2
+    Poison,
+    Drugged,
+    [InspectorName(null)] Swarm,
+    Evade,
+
+    // Upgraded
+    [InspectorName(null)] UpgradedSommer,
+    [InspectorName(null)] UpgradedDrugged,
+    [InspectorName(null)] Leech,
+    [InspectorName(null)] Cloud,
+    Camouflage,
+
+    // Others
+    Sleep,
+    Blind,
+    Stun,
+    Slow,
+    Airborne,
+    Silence,
+    Root,
+    Pull,
+
+    [InspectorName(null)] MAX,
+}
+#endregion Common
+
+//--------------------------------------------------------------------------------
+
+#region Legacy
+public enum ELegacyType
+{
+    Melee,
+    Ranged,
+    Dash,
+    [InspectorName(null)]Area,
+    [InspectorName(null)]Passive,
+    [InspectorName(null)]MAX,
+}
+
+[Serializable]
+public enum ELegacyPreservation
+{
+    Weathered,  // 닳은
+    Tarnished,  // 빛바랜
+    Intact,     // 온전한
+    Pristine,   // 완벽한
+    
+    [InspectorName(null)]MAX,
+}
+
+public enum EBuffType
+{
+    None, 
+    StatUpgrade,
+    SpawnAreaIncrease,
+    FoodHealEfficiency,
+    BindingSkillUpgrade,
+    EnemyItemDropRate,
+    EnemyGoldDropBuff,      // 유포리아 - 사랑의 착취
+    DruggedEffectBuff,      // 유포리아 - 뇌쇄술
+    HypHallucination,       // 소머 - 입면 환각
+}
+
+public enum EStatusEffectUpgradeType
+{
+    Duration,
+    Strength,
+    Probability,
+}
+
+public enum EIncreaseMethod
+{
+    Constant,
+    Percent,
+    PercentPoint,
+}
+
+public enum EUpgradeFrequency
+{
+    OnceWhenConditionMet,
+    RepeatedlyWhenConditionMet,
+}
+
+public enum ECondition
+{
+    None,
+    SlayedEnemiesCount,
+    PlayerHealth,
+}
+
+public enum EComparator
+{
+    IsLessThan,
+    IsLessOrEqualTo,
+    IsEqualTo,
+    IsGreaterOrEqualTo,
+    IsGreaterThan,
+    IncreasesBy,
+}
+
+public enum EWarrior
+{
+    Sommer,
+    Euphoria,
+    Turbela,
+    Vernon,
+    NightShade,
+    
+    [InspectorName(null)]MAX,
+}
+
+public enum ETiming
+{
+    Before,
+    After,
+    With,
+}
+#endregion Legacy
+
+//--------------------------------------------------------------------------------
+
+#region Player
+public enum EPlayerAttackType
+{
+    Melee_Base,
+    Melee_Combo,
+    Ranged,
+    Dash,
+    MAX,
+}
+
+public enum EAttackState
+{
+    Ready,
+    Active,
+    Cooldown,
+} 
+
+public enum EInteraction
+{
+    Press,
+    Hold,
+    None,
+}
+
+public enum EStat
+{
+    Health,
+    Strength,
+    CriticalChance,
+    Armour,
+    ArmourPenetration,
+    EvasionRate,
+}
+#endregion
+
+//--------------------------------------------------------------------------------
+
+#region Item
+public enum ERarity
+{
+    Undefined,
+    Common, 
+    Uncommon,
+    Rare,
+    Epic,
+    Legendary,
+}
+
+[Flags] 
+public enum EItemObtainMethod
+{
+    Field   = 1,
+    Store   = 2,
+    Monster = 4,
+    Boss    = 8,
+}
+#endregion
+
+//--------------------------------------------------------------------------------
+#region Enemy
+public enum EEnemyName
+{
+    VoidMantis,
+    Insectivore,
+}
+public enum EEnemyMoveType
+{
+    None,
+    FollowStraightPath,
+    LinearPath,
+    Stationary,
+}
+
+public enum EEnemyState
+{
+    Idle,
+    Walk,
+    Chase,
+    Telegraph,
+    Attack,
+}
+#endregion Enemy
+
+#region Interaction
+public enum EPortalType
+{
+    GeneralStore,
+    FoodStore,
+    NextLevel,
+}
+#endregion Interaction
+
+#region LevelGeneration
+public enum ERoomType
+{
+    Normal,
+    Corridor,
+    Entrance,
+    Teleport,
+    Treasure,
+    Shop,
+    MAX,
+}
+
+public enum EConnectionType
+{
+    Horizontal,
+    Vertical,
+}
+
+public enum ECellType
+{
+    Empty,
+    Filled,
+    ToBeFilled,
+}
+
+public enum ETilemapType
+{
+    Wall,
+    Collideable,
+    Background,
+    Other1,
+    Other2,
+    Other3,
+    MAX,
+}
+
+public enum EDoorDirection
+{
+    Up,
+    Down,
+    Left,
+    Right,
+}
+#endregion

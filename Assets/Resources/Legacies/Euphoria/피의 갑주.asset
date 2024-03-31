@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d6cb223189a2411ea1ce6a186661cf57, type: 3}
   m_Name: "\uD53C\uC758 \uAC11\uC8FC"
   m_EditorClassIdentifier: 
-  warrior: 0
+  warrior: 1
   preservation: 0
   BuffType: 2
   StatUpgradeData:
-    Stat: 0
+    Stat: 3
     IncreaseMethod: 0
     IncreaseAmounts:
     - 0.5
@@ -28,14 +28,14 @@ MonoBehaviour:
       updateFrequency: 1
       condition: 1
       comparator: 5
-      value: 1
+      targetValue: 1
       isValueRatio: 0
     HasApplyCondition: 1
     UpgradeApplyCondition:
       updateFrequency: 0
       condition: 2
       comparator: 1
-      value: 0.5
+      targetValue: 0.5
       isValueRatio: 1
     UndoUpgradeWhenConditionNotMet: 1
   BuffIncreaseMethod: 0

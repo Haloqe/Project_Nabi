@@ -54,19 +54,6 @@ public struct SCondition
     public bool isValueRatio;
 }
 
-//public struct SRelicData
-//{
-//    public int AbilityId;
-//    public string Name_EN;
-//    public string Name_KO;
-//    public string Des_EN;
-//    public string Des_KO;
-//    public int SpriteIndex;
-//    public EItemObtainMethod ObtainMethod;
-//    public EAbilityRarity Rarity;
-//    public int[] Locations;
-//}
-
 [Serializable]
 public struct SDamageInfo
 {
@@ -83,9 +70,18 @@ public struct SEnemyData
     public string PrefabPath;
     public float DefaultMoveSpeed;
     public float MaxHealth;
-    // amount of gold to drop
-    // percentage of drop
-    // rank
+    public float DefaultDamage;
+    public string DamageType;
+    public float IdleProbability;
+    public float IdleAverageDuration;
+    public float WalkAverageDuration;
+    public float ChasePlayerDuration;
+    public float DetectRangeX;
+    public float DetectRangeY;
+    public float AttackRangeX;
+    public float AttackRangeY;
+    public int MinGoldRange;
+    public int MaxGoldRange;
 }
 #endregion Enemy
 

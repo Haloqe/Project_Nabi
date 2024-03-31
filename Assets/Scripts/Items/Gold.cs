@@ -3,7 +3,7 @@ using System.Collections;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-public class Coin : MonoBehaviour
+public class Gold : MonoBehaviour
 {
     public int value;
     private Rigidbody2D _rb;

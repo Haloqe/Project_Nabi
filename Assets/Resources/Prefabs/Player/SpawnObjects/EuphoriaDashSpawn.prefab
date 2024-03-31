@@ -98,45 +98,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c9ef8778b553f2f46882c0683c11c1d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PlayerDamageDealer: {fileID: 0}
-  IsAttached: 1
-  ShouldManuallyDestroy: 1
-  ShouldInflictDamage: 1
-  DamageInfos:
-  - Type: 0
-    TotalAmount: 5
-    Duration: 0
-    Tick: 0
-  - Type: 0
-    TotalAmount: 5
-    Duration: 0
-    Tick: 0
-  - Type: 0
-    TotalAmount: 5
-    Duration: 0
-    Tick: 0
-  - Type: 0
-    TotalAmount: 5
-    Duration: 0
-    Tick: 0
-  ShouldInflictStatusEffect: 1
+  attackParentType: 0
+  IsAttachedToPlayer: 0
+  AutoDestroy: 0
+  DealInterval: -1
+  HasDamage: 1
+  relativeDamages:
+  - 0.1
+  - 0.1
+  - 0.1
+  - 0.1
+  HasStatusEffect: 1
   StatusEffectInfos:
-  - Effect: 4
+  - Effect: 3
     Strength: 0
     Duration: 1
-    Chance: 0.5
-  - Effect: 4
+    Chance: 0.1
+  - Effect: 3
     Strength: 0
     Duration: 1
-    Chance: 0
-  - Effect: 4
+    Chance: 0.1
+  - Effect: 3
     Strength: 0
     Duration: 1
-    Chance: 1
-  - Effect: 4
+    Chance: 0.1
+  - Effect: 3
     Strength: 0
     Duration: 1
-    Chance: 1
+    Chance: 0.1
 --- !u!70 &9051653368056601139
 CapsuleCollider2D:
   m_ObjectHideFlags: 0

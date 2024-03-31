@@ -6,6 +6,7 @@ using UnityEngine.InputSystem;
 public abstract class Interactor : MonoBehaviour
 {
     private InputAction _interactAction;
+    protected bool _isInteracting;
 
     private void OnEnable()
     {

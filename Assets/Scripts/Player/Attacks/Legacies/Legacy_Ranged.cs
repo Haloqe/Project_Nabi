@@ -18,6 +18,8 @@ public class Legacy_Ranged : ActiveLegacySO
         base.Init(playerTransform);
         _manualDestroyList = new List<GameObject>();
         _spawnScaleMultiplier = 1.0f;
+        if (AttackSpawnObject) AttackSpawnObject.attackParentType = ELegacyType.Ranged;
+        if (BulletDestroySpawnObject) BulletDestroySpawnObject.attackParentType = ELegacyType.Ranged;
     }
 
     private void OnAttack()
@@ -26,7 +28,7 @@ public class Legacy_Ranged : ActiveLegacySO
         
         // Spawn object
         AttackSpawnObject spawnedObject = null;
-        if (AttackSpawnObject.IsAttached) spawnedObject = Instantiate(AttackSpawnObject, _playerTransform);
+        if (AttackSpawnObject.IsAttachedToPlayer) spawnedObject = Instantiate(AttackSpawnObject, _playerTransform);
         else spawnedObject = Instantiate(AttackSpawnObject, _playerTransform.position + AttackSpawnObject.transform.position, Quaternion.identity);
         
         // Change scale
@@ -35,7 +37,7 @@ public class Legacy_Ranged : ActiveLegacySO
         transform.localScale = new Vector3(localScale.x * _spawnScaleMultiplier, localScale.y * _spawnScaleMultiplier, localScale.z);
         
         // Handle destruction manually?
-        if (AttackSpawnObject.ShouldManuallyDestroy) 
+        if (!AttackSpawnObject.AutoDestroy) 
             _manualDestroyList.Add(spawnedObject.gameObject);
     }
 

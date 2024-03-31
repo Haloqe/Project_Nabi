@@ -1,8 +1,10 @@
 using System.Collections.Generic;
+using System.Reflection;
 using FullscreenEditor;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 public class PlayerController : Singleton<PlayerController>
 {
@@ -16,21 +18,31 @@ public class PlayerController : Singleton<PlayerController>
     
     // Centrally controlled variables
     public float HealEfficiency = 1.0f;
-    public float Strength = 0.0f;
-    public float Armour = 0.0f;
-    public float ArmourPenetration = 0.0f;
-    public float EvasionRate = 0.0f;
     private int _slayedEnemiesCount = 0;
     
-    public float StrengthMultiplier = 1.0f;
-    public float ArmourMultiplier = 1.0f;
-    public float ArmourPenetrationMultiplier = 1.0f;
-    public float EvasionRateMultiplier = 1.0f;  
+    public float Strength => _baseStrength * _strengthMultiplier;
+    public float Armour => _baseArmour * _armourMultiplier;
+    public float ArmourPenetration => _baseArmourPenetration * _armourPenetrationMultiplier;
+    public float EvasionRate => _baseEvasionRate * _evasionRateMultiplier;
+    public float CriticalRate => _baseCritcalRate * _criticalRateMultiplier;
+
+    private float _baseStrength = 0.0f;
+    private float _baseArmour = 0.0f;
+    private float _baseArmourPenetration = 0.0f;
+    private float _baseEvasionRate = 0.0f;
+    private float _baseCritcalRate = 0.0f;
+    
+    private float _strengthMultiplier = 1.0f;
+    private float _armourMultiplier = 1.0f;
+    private float _armourPenetrationMultiplier = 1.0f;
+    private float _evasionRateMultiplier = 1.0f;  
+    private float _criticalRateMultiplier = 1.0f;  
     
     // Legacy related
     public ELegacyPreservation EnemyGoldDropBuff { private set; get; }
     public ELegacyPreservation DruggedEffectBuff { private set; get; }
     public ELegacyPreservation HypHallucination { private set; get; }
+    
 
     // Upgrades
     private Dictionary<EStat, List<(int legacyID, SLegacyStatUpgradeData data)>> _appliedStatUpgrades;
@@ -57,6 +69,7 @@ public class PlayerController : Singleton<PlayerController>
         // Events binding
         GameEvents.restarted += OnRestarted;
         PlayerEvents.ValueChanged += OnValueChanged;
+        OnRestarted();
     }
     
     private void OnRestarted()
@@ -65,14 +78,14 @@ public class PlayerController : Singleton<PlayerController>
         _animator.Update(0f);
         _appliedStatUpgrades.Clear();
         HealEfficiency = 1.0f;
-        Strength = 0.0f;
-        Armour = 0.0f;
-        ArmourPenetration = 0.0f;
-        EvasionRate = 0.0f;
-        StrengthMultiplier = 1.0f;
-        ArmourMultiplier = 1.0f;
-        ArmourPenetrationMultiplier = 1.0f;
-        EvasionRateMultiplier = 1.0f;
+        _baseStrength = 0.0f;
+        _baseArmour = 0.0f;
+        _baseArmourPenetration = 0.0f;
+        _baseEvasionRate = 0.0f;
+        _strengthMultiplier = 1.0f;
+        _armourMultiplier = 1.0f;
+        _armourPenetrationMultiplier = 1.0f;
+        _evasionRateMultiplier = 1.0f;
         EnemyGoldDropBuff = ELegacyPreservation.MAX;
         DruggedEffectBuff = ELegacyPreservation.MAX;
         HypHallucination = ELegacyPreservation.MAX; 
@@ -168,10 +181,11 @@ public class PlayerController : Singleton<PlayerController>
         }
     }
     
-    // Enum 이름에 해당하는 boolean 값을 찾아서 activate
+    // Legacy - Enum 이름에 해당하는 boolean 값을 찾아서 activate
     public void ActivateBuffByName(EBuffType legacyBuff, ELegacyPreservation preservation)
     {
-        var fieldInfo = GetType().GetField(legacyBuff.ToString());
+        var fieldInfo = GetType().GetField($"<{legacyBuff}>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.IgnoreCase | BindingFlags.Public);
         fieldInfo.SetValue(this, preservation);
+        Debug.Log(fieldInfo.GetValue(this));
     }
 }

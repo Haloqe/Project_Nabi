@@ -87,6 +87,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a65cdcc228e218541947df78b79aec7c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  inGameCombatUI: {fileID: 0}
 --- !u!114 &7962455665489443107
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -99,10 +100,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c342c1f68a6e294ebf8205edc357c15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ShouldRandomGenerateMap: 1
+  _shouldRandomGenerateMap: 0
   Player: {fileID: 539064456449143768, guid: ec642c166e291f1408ac64a18e7704f4, type: 3}
   PrevStage: 0
   CurrStage: 0
+  IsFirstRun: 1
 --- !u!114 &993175973461698046
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -152,7 +154,7 @@ MonoBehaviour:
   m_MoveRepeatRate: 0.1
   m_XRTrackingOrigin: {fileID: 0}
   m_ActionsAsset: {fileID: -944628639613478452, guid: 6bf0aedc5ba04624da4b5b9ce4e4d79a, type: 3}
-  m_PointAction: {fileID: 7970806967786153344, guid: 6bf0aedc5ba04624da4b5b9ce4e4d79a, type: 3}
+  m_PointAction: {fileID: 4791533117604866356, guid: 6bf0aedc5ba04624da4b5b9ce4e4d79a, type: 3}
   m_MoveAction: {fileID: -1410875197298813780, guid: 6bf0aedc5ba04624da4b5b9ce4e4d79a, type: 3}
   m_SubmitAction: {fileID: 4403909570384843862, guid: 6bf0aedc5ba04624da4b5b9ce4e4d79a, type: 3}
   m_CancelAction: {fileID: -8150178695478642910, guid: 6bf0aedc5ba04624da4b5b9ce4e4d79a, type: 3}

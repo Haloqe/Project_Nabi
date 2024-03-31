@@ -4944,28 +4944,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c9ef8778b553f2f46882c0683c11c1d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PlayerDamageDealer: {fileID: 0}
-  ShouldInflictDamage: 1
-  DamageType: 0
-  DamageAmounts:
-  - 1
-  - 1
-  - 1
-  - 1
-  DamageDurations:
+  attackParentType: 0
+  IsAttachedToPlayer: 0
+  AutoDestroy: 1
+  DealInterval: 0.5
+  HasDamage: 0
+  relativeDamages:
   - 0
   - 0
   - 0
   - 0
-  ShouldInflictStatusEffect: 1
-  StatusEffect: 1
-  StatusEffectDurations:
-  - 1
-  - 1
-  - 1
-  - 1
-  StatusEffectStrengths:
-  - 0
-  - 0
-  - 0
-  - 0
+  HasStatusEffect: 1
+  StatusEffectInfos:
+  - Effect: 1
+    Strength: 0.1
+    Duration: 0.5
+    Chance: 1
+  - Effect: 1
+    Strength: 0.1
+    Duration: 0.5
+    Chance: 1
+  - Effect: 1
+    Strength: 0.1
+    Duration: 0.5
+    Chance: 1
+  - Effect: 1
+    Strength: 0.1
+    Duration: 0.5
+    Chance: 1

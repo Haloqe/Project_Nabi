@@ -12,8 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6da7a8baa1830134897aeb9880117f9c, type: 3}
   m_Name: "\uD611\uB3D9 \uD0C0\uACA9"
   m_EditorClassIdentifier: 
-  Warrior: 2
-  DamageInfos:
+  warrior: 2
+  preservation: 0
+  damageMultipliers:
+  - 2
+  - 2
+  - 2
+  - 2
+  extraDamages:
   - BaseDamage: 0
     RelativeDamage: 0
   - BaseDamage: 0
@@ -23,19 +29,19 @@ MonoBehaviour:
   - BaseDamage: 0
     RelativeDamage: 0
   StatusEffects:
-  - Effect: 5
+  - Effect: 0
     Strength: 1
     Duration: 0
     Chance: 1
-  - Effect: 5
+  - Effect: 0
     Strength: 1
     Duration: 0
     Chance: 1
-  - Effect: 5
+  - Effect: 0
     Strength: 1
     Duration: 0
     Chance: 1
-  - Effect: 5
+  - Effect: 0
     Strength: 1
     Duration: 0
     Chance: 1
@@ -57,29 +63,20 @@ MonoBehaviour:
     Duration: 0
     Chance: 0
   ComboHitSpawnObject: {fileID: 0}
-  ComboDamageInfo:
-  - BaseDamage: 0
-    RelativeDamage: 0
-  - BaseDamage: 0
-    RelativeDamage: 0
-  - BaseDamage: 0
-    RelativeDamage: 0
-  - BaseDamage: 0
-    RelativeDamage: 0
-  StatusEffectInfos:
-  - Effect: 0
+  comboStatusEffects:
+  - Effect: 4
     Strength: 0
     Duration: 0
-    Chance: 0
-  - Effect: 0
+    Chance: 1
+  - Effect: 4
     Strength: 0
     Duration: 0
-    Chance: 0
-  - Effect: 0
+    Chance: 1
+  - Effect: 4
     Strength: 0
     Duration: 0
-    Chance: 0
-  - Effect: 0
+    Chance: 1
+  - Effect: 4
     Strength: 0
     Duration: 0
-    Chance: 0
+    Chance: 1

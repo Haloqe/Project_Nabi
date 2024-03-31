@@ -41,6 +41,7 @@ public class UIManager : Singleton<UIManager>
     // UI Navigation
     private GameObject _activeFocusedUI;
     int temp = 0;
+    private Camera _uiCamera;
 
     protected override void Awake()
     {
@@ -78,6 +79,7 @@ public class UIManager : Singleton<UIManager>
 
     private void OnGameLoadStarted()
     {
+        _uiCamera = GameObject.Find("UI Camera").GetComponent<Camera>();
         _loadingScreenUI.SetActive(true);
         _UIIAMap.Enable();
         if (_playerIAMap != null) _playerIAMap.Disable();
@@ -90,6 +92,7 @@ public class UIManager : Singleton<UIManager>
         _playerHPSlider     = inGameCombatUI.GetComponentInChildren<Slider>();
         _zoomedMap.SetActive(false);
         inGameCombatUI.SetActive(true);
+        inGameCombatUI.GetComponent<Canvas>().worldCamera = _uiCamera;
     }
     
     private void OnGameLoadEnded()
@@ -174,7 +177,7 @@ public class UIManager : Singleton<UIManager>
     public void OpenWarriorUI(WarriorClockworkInteractor interactor)
     {
         _warriorUIObject = Instantiate(_warriorUIPrefabs[(int)interactor.warrior], Vector3.zero, Quaternion.identity).GameObject();
-        _warriorUIObject.GetComponent<Canvas>().worldCamera = GameObject.Find("UI Camera").GetComponent<Camera>();
+        _warriorUIObject.GetComponent<Canvas>().worldCamera = _uiCamera;
         _warriorUI = _warriorUIObject.GetComponent<WarriorUI>();
         _warriorUI.Initialise(interactor.warrior);
         OpenFocusedUI(_warriorUIObject);

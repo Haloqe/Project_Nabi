@@ -24,10 +24,12 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
 
     public bool TempIsDead = false;
     private Animator _animator;
+    private SpriteRenderer _spriteRenderer;
     
     private void Awake()
     {
         _animator = GetComponent<Animator>();
+        _spriteRenderer = GetComponent<SpriteRenderer>();
     }
     
     private void OnRestarted()
@@ -228,6 +230,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     public void ChangeHealthByAmount(float amount, bool byEnemy = true)
     {
         // TODO hit/heal effect
+        if (amount < 0) StartCoroutine(DamagedRoutine());
         _health = Mathf.Clamp(_health + amount, 0, _maxHealth);
         PlayerEvents.HPChanged.Invoke(amount, GetHPRatio());
         if (_health == 0)
@@ -235,6 +238,14 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
             PlayerEvents.defeated.Invoke();
             GameManager.Instance.IsFirstRun = false;
         }
+    }
+    
+    // TODO FIX: damage visualisation
+    private IEnumerator DamagedRoutine()
+    {
+        _spriteRenderer.color = new Color(0.6f, 0.05f, 0.05f);
+        yield return new WaitForSeconds(0.1f);
+        _spriteRenderer.color = Color.white;
     }
 
     public float GetHPRatio()

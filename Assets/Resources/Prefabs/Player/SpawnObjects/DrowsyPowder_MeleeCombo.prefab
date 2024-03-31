@@ -43,7 +43,7 @@ ParticleSystem:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4889142468014804746}
   serializedVersion: 8
-  lengthInSec: 3
+  lengthInSec: 3.5
   simulationSpeed: 1
   stopAction: 2
   cullingMode: 0
@@ -118,7 +118,7 @@ ParticleSystem:
     startLifetime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 3
+      scalar: 3.5
       minScalar: 5
       maxCurve:
         serializedVersion: 2
@@ -4970,42 +4970,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c9ef8778b553f2f46882c0683c11c1d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PlayerDamageDealer: {fileID: 0}
-  IsAttached: 0
-  ShouldManuallyDestroy: 0
-  ShouldInflictDamage: 1
-  DamageInfos:
-  - Type: 0
-    TotalAmount: 10
-    Duration: 0
-    Tick: 0
-  - Type: 0
-    TotalAmount: 0
-    Duration: 0
-    Tick: 0
-  - Type: 0
-    TotalAmount: 0
-    Duration: 0
-    Tick: 0
-  - Type: 0
-    TotalAmount: 0
-    Duration: 0
-    Tick: 0
-  ShouldInflictStatusEffect: 1
+  attackParentType: 0
+  IsAttachedToPlayer: 0
+  AutoDestroy: 1
+  DealInterval: 0.5
+  HasDamage: 0
+  relativeDamages:
+  - 0
+  - 0
+  - 0
+  - 0
+  HasStatusEffect: 1
   StatusEffectInfos:
-  - Effect: 0
-    Strength: 0
-    Duration: 0
-    Chance: 0
-  - Effect: 0
-    Strength: 0
-    Duration: 0
-    Chance: 0
-  - Effect: 0
-    Strength: 0
-    Duration: 0
-    Chance: 0
-  - Effect: 0
-    Strength: 0
-    Duration: 0
-    Chance: 0
+  - Effect: 1
+    Strength: 0.1
+    Duration: 0.5
+    Chance: 1
+  - Effect: 1
+    Strength: 0.1
+    Duration: 0.5
+    Chance: 1
+  - Effect: 1
+    Strength: 0.1
+    Duration: 0.5
+    Chance: 1
+  - Effect: 1
+    Strength: 0.1
+    Duration: 0.5
+    Chance: 1

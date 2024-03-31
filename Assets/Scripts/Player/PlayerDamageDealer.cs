@@ -11,7 +11,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
     public bool IsUnderAttackDelay = false;
     
     // Turbela Butterfly
-    public List<GameObject> spawnedButterflies;
+    public List<Butterfly> spawnedButterflies;
     private int _butterflySpawnLimit = 6;
     
     // Legacy
@@ -20,8 +20,9 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
 
     private void Start()
     {
-        spawnedButterflies = new List<GameObject>();
+        spawnedButterflies = new List<Butterfly>();
         _bindingSkillPreservations = new ELegacyPreservation[(int)EWarrior.MAX];
+        for (int i = 0; i < (int)EWarrior.MAX; i++) _bindingSkillPreservations[i] = ELegacyPreservation.MAX;
         _animator = GetComponent<Animator>();
         _playerMovement = GetComponent<PlayerMovement>();
         AttackBases = new AttackBase[]
@@ -87,7 +88,26 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
     public void DealDamage(IDamageable target, AttackInfo damageInfo)
     {
         AttackInfo infoToSend = damageInfo.Clone();
+        
+        // 방어 관통력 처리
         infoToSend.AttackerArmourPenetration = PlayerController.Instance.ArmourPenetration;
+        
+        // 크리티컬 처리
+        if (Random.value <= PlayerController.Instance.CriticalRate)
+        {
+            infoToSend.Damage.TotalAmount *= 2;
+        }
+        
+        // 투르벨라 나비 처리
+        if (damageInfo.StatusEffects.Count > 0 && 
+            damageInfo.StatusEffects[^1].Effect is EStatusEffect.Swarm or EStatusEffect.Cloud)
+        {
+            if (Random.value <= damageInfo.StatusEffects[^1].Chance)
+            {
+                SpawnTurbelaButterfly();
+            }
+        }
+            
         target.TakeDamage(infoToSend);
     }
 
@@ -107,7 +127,8 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         if (spawnedButterflies.Count >= _butterflySpawnLimit) return;
         
         var butterfly = Resources.Load("Prefabs/Player/SpawnObjects/Butterfly").GameObject();
-        var obj = Instantiate(butterfly);
+        var obj = Instantiate(butterfly).GetComponent<Butterfly>();
+        obj.attackTwiceChance = Define.TurbelaButterflyAttackTwiceChances[(int)_bindingSkillPreservations[(int)EWarrior.Turbela]];
         spawnedButterflies.Add(obj);
     }
 }

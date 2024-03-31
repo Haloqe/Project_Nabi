@@ -115,16 +115,16 @@ public abstract class AttackBase : MonoBehaviour
         newStatusEffectsBase.Add(newEffect);
         
         // Additional status effect
-        if (activeLegacy.ExtraStatusEffects.Length != 0 
-            && activeLegacy.ExtraStatusEffects[legacyPreservation].Effect != EStatusEffect.None)
+        if (activeLegacy.ExtraStatusEffects != null && activeLegacy.ExtraStatusEffects.Length > 0)
         {
-            newEffect = new StatusEffectInfo(activeLegacy.ExtraStatusEffects[legacyPreservation].Effect,
-                activeLegacy.ExtraStatusEffects[legacyPreservation].Strength,
-                activeLegacy.ExtraStatusEffects[legacyPreservation].Duration,
-                activeLegacy.ExtraStatusEffects[legacyPreservation].Chance);
-            newStatusEffectsBase.Add(newEffect);
+            var extraCC = activeLegacy.ExtraStatusEffects[legacyPreservation];
+            if (extraCC != null && extraCC.Effect != EStatusEffect.None)
+            {
+                newEffect = new StatusEffectInfo(extraCC.Effect, extraCC.Strength, extraCC.Duration, extraCC.Chance);
+                newStatusEffectsBase.Add(newEffect);
+            }
         }
-        
+
         // Update status effect of objects spawned from legacy
         _attackInfo.StatusEffects = newStatusEffectsBase;
     }

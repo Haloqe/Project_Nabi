@@ -13,6 +13,7 @@ public class Butterfly : MonoBehaviour
     private readonly float _flySpeed = 0.022f;      // Speed of the butterfly while traveling towards target
     private readonly float _cloverSize = 1.7f;      // Size of the clover leaves
     private float _theta = 0f;                      // Angle for the parametric equation
+    public float attackTwiceChance = 0.0f;
     
     // Targets
     private Transform _enemy;                       // The enemy the butterfly is targeting
@@ -25,14 +26,17 @@ public class Butterfly : MonoBehaviour
     private Coroutine _flyCoroutine;
     
     // References
+    public float relativeDamage;
     private EnemyVisibilityChecker _visibilityChecker;
-    private AttackInfo _attackInfo; // TEMP 학회용
+    private AttackInfo _attackInfo;
+    private PlayerDamageDealer _playerDamageDealer;
 
     private void Awake()
     {
-        _attackInfo = new AttackInfo(new DamageInfo(EDamageType.Base, 1.0f), new List<StatusEffectInfo>());
+        _attackInfo = new AttackInfo(new DamageInfo(EDamageType.Base, PlayerController.Instance.Strength * relativeDamage), new List<StatusEffectInfo>());
         _visibilityChecker = Camera.main.GetComponent<EnemyVisibilityChecker>();
         _player = PlayerController.Instance.transform;
+        _playerDamageDealer = PlayerController.Instance.playerDamageDealer;
         transform.position = _player.position + GetRandomOffsetNearPlayer();
     }
 
@@ -71,7 +75,6 @@ public class Butterfly : MonoBehaviour
             Transform enemy = GetRandomEnemyInRange();
             if (enemy)
             {
-                Debug.Log("Detected " + enemy.name);
                 // If it was on its way to the player, stop flying to the player and fly to the new target
                 _detectCoroutine = null;
                 if (_flyCoroutine != null) StopCoroutine(_flyCoroutine);
@@ -92,7 +95,6 @@ public class Butterfly : MonoBehaviour
     // Fly towards the target from its current position
     private IEnumerator FlyCoroutine(Transform target)
     { 
-        Debug.Log("Flying to " + target.name);
         // Compute a position to move to
         if (target == _player)
         {
@@ -118,7 +120,6 @@ public class Butterfly : MonoBehaviour
             // If enemy goes out of the screen, stop travelling
             if (target != _player && !_visibilityChecker.visibleEnemies.Contains(target.gameObject))
             {
-                Debug.Log("Enemy out of the screen while flying towards it");
                 target = null;
                 break;
             }
@@ -129,13 +130,11 @@ public class Butterfly : MonoBehaviour
         // If enemy goes out of the screen or dies, return to player
         if (target == null)
         {
-            Debug.Log("Stop flying; target null");
             _flyCoroutine = StartCoroutine(FlyCoroutine(_player));
         }
         // Target is reached; stop flying
         else
         {
-            Debug.Log("Arrived at " + target.name);
             transform.position = target.position + _targetOffset;
             _flyCoroutine = null;
             
@@ -144,7 +143,7 @@ public class Butterfly : MonoBehaviour
             {
                 _enemy = target;
                 _isAttacking = true;
-                PlayerController.Instance.playerDamageDealer.DealDamage(_enemy.GetComponent<IDamageable>(), _attackInfo);
+                Attack();
             }
             // Player reached
             else
@@ -174,7 +173,7 @@ public class Butterfly : MonoBehaviour
         // Attack enemy when at the centre
         if (_timer >= Mathf.PI / (2 * _attackSpeed)) // use the calculated time interval
         {
-            PlayerController.Instance.playerDamageDealer.DealDamage(_enemy.GetComponent<IDamageable>(), _attackInfo);
+            Attack();
             _timer = 0;
         }
     }
@@ -187,7 +186,6 @@ public class Butterfly : MonoBehaviour
         _enemy = null;
         if (enemy)
         {
-            Debug.Log("Invisible - another enemy found");
             _isAttacking = false;
             if (_flyCoroutine != null) StopCoroutine(_flyCoroutine);
             _flyCoroutine = StartCoroutine(FlyCoroutine(enemy));
@@ -195,7 +193,6 @@ public class Butterfly : MonoBehaviour
         // If no other enemy to fly to, fly to the player
         else
         {
-            Debug.Log("Invisible - return to player");
             if (isActiveAndEnabled) _flyCoroutine = StartCoroutine(FlyCoroutine(_player));
             _isAttacking = false;
         }
@@ -216,7 +213,7 @@ public class Butterfly : MonoBehaviour
     private IEnumerator LifeTimeCoroutine()
     {
         yield return new WaitForSeconds(_lifeTime);
-        StartCoroutine(DieCoroutine());
+        Die();
     }
 
     private IEnumerator DieCoroutine()
@@ -228,7 +225,21 @@ public class Butterfly : MonoBehaviour
             spRenderer.color -= changeAmount;
             yield return null;
         }
-        PlayerController.Instance.playerDamageDealer.spawnedButterflies.Remove(gameObject);
+        PlayerController.Instance.playerDamageDealer.spawnedButterflies.Remove(this);
         Destroy(gameObject);
+    }
+
+    public void Die()
+    {
+        StartCoroutine(DieCoroutine());
+    }
+
+    private void Attack()
+    {
+        _playerDamageDealer.DealDamage(_enemy.GetComponent<IDamageable>(), _attackInfo);
+        
+        // Attack twice?
+        if (Random.value <= attackTwiceChance)
+            _playerDamageDealer.DealDamage(_enemy.GetComponent<IDamageable>(), _attackInfo);
     }
 }

@@ -8,7 +8,6 @@ using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine.UI;
 using UnityEditor;
-using UnityEngine.Events;
 
 public class PlayerAttackManager : Singleton<PlayerAttackManager>
 {
@@ -410,16 +409,16 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                     attackBase.VFXObject.GetComponent<ParticleSystemRenderer>()
                         .material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Ranged);
                     var main = attackBase.VFXObject.GetComponent<ParticleSystem>().main;
-                    if (warrior == EWarrior.Vernon)
-                    {
-                        main.startSize = 6.5f;
-                        attackBase.VFXObject.transform.localPosition = new Vector3(0.04f, 0.945f, 0);
-                    }
-                    else
-                    {
-                        main.startSize = 4f;
-                        attackBase.VFXObject.transform.localPosition = new Vector3(-0.02f, 0.9f, 0);
-                    }
+                    // if (warrior == EWarrior.Vernon)
+                    // {
+                    //     main.startSize = 6.5f;
+                    //     attackBase.VFXObject.transform.localPosition = new Vector3(0.04f, 0.945f, 0);
+                    // }
+                    // else
+                    // {
+                    //     main.startSize = 4f;
+                    //     attackBase.VFXObject.transform.localPosition = new Vector3(-0.02f, 0.9f, 0);
+                    // }
                     
                     // bullet
                     attackBase.SetBullet(_bulletsByWarrior[(int)warrior]);
