@@ -55,6 +55,7 @@ public class AttackBase_Ranged : AttackBase
     // Called when a shot bullet is destroyed for any reason
     public void OnBulletDestroy(IDamageable target, Vector3 bulletPos, AttackInfo savedAttackInfo)
     {
+        Debug.Log(target);
         if (activeLegacy) 
             ((Legacy_Ranged)activeLegacy).OnBulletDestroy(bulletPos);
         

@@ -37,7 +37,7 @@ public class Bullet : MonoBehaviour
     {
         if (_toBeDestroyed) return;
         _toBeDestroyed = true;
-        IDamageable target = collision.gameObject.GetComponent<IDamageable>();
+        IDamageable target = collision.gameObject.GetComponentInParent<IDamageable>();
         DestroySelf(target);
     }
 
