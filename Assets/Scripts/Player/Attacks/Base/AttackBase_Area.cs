@@ -37,13 +37,11 @@ public class AttackBase_Area : AttackBase
         base.Start();
     }
 
-    public void SetFlower()
+    //call this function whens
+    public void SwitchVFX()
     {
         CheckCurrentFlower();
-        if (CheckNumberOfCurrentFlower() == 0)
-            return;
-
-        currentFlowerInit();
+        ReassignVFXAddress();
         Debug.Log(vfxAddress);
         VFXObject = Utility.LoadGameObjectFromPath(vfxAddress);
     }
@@ -61,7 +59,7 @@ public class AttackBase_Area : AttackBase
         int number = FindObjectOfType<PlayerController>().GetNumberOfFlowers(currentSelectedFlowerIndex);
         return number;
     }
-    public void currentFlowerInit()
+    public void ReassignVFXAddress()
     {  
         switch (currentSelectedFlowerIndex)
         {
@@ -86,7 +84,6 @@ public class AttackBase_Area : AttackBase
                 vfxAddress = "Prefabs/Player/BombVFX/GravityBombVFX";
                 break;
         }
-
         
     }
         
@@ -102,12 +99,18 @@ public class AttackBase_Area : AttackBase
     {
         _animator.SetInteger("AttackIndex", (int)ELegacyType.Area);
 
+        CheckCurrentFlower();
+        if (CheckNumberOfCurrentFlower() <= 0)
+        {
+            Debug.Log("There is no flower bomb to use!");
+            return;
+        }
+            
         // Zero out movement
         _prevGravity = _rigidbody2D.gravityScale;
         _prevVelocity = _rigidbody2D.velocity;
         _rigidbody2D.gravityScale = 0.0f;
         _rigidbody2D.velocity = Vector3.zero;
-        //R 모션 실행시킴
         GetComponent<PlayerMovement>().IsAreaAttacking = true; 
 
         // Instantiate VFX
@@ -119,6 +122,8 @@ public class AttackBase_Area : AttackBase
         VFXObject.transform.localScale = new Vector3(dir, 1.0f, 1.0f);
         var vfx = Instantiate(VFXObject, position, Quaternion.identity);
         vfx.GetComponent<Bomb>().Owner = this;
+
+        FindObjectOfType<PlayerController>().DecreaseToFlower(currentSelectedFlowerIndex);
     }
 
     protected override void OnAttackEnd_PreDelay()

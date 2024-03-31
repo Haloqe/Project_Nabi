@@ -143,7 +143,7 @@ public class PlayerController : Singleton<PlayerController>
         {
             _currentSelectedFlower = flowerIndex;
             Debug.Log("Flower Number" + flowerIndex + "is selected!");
-            FindObjectOfType<AttackBase_Area>().SetFlower();
+            FindObjectOfType<AttackBase_Area>().SwitchVFX();
         }
     }
 
