@@ -64,5 +64,7 @@ public static class Define
         new Color(0.663f, 0.89f, 0.941f, 1f),
     };
 
+    // Legacy related
     public static float[] TurbelaButterflyAttackTwiceChances = new float[5];
+    public static float[] HypHallucinationStats = new float[5];
 }

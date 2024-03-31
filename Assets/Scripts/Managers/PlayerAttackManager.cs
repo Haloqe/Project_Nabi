@@ -184,7 +184,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                 // Prerequisites and Stats
                 string prerequisites = csv.GetField("Prerequisites");
                 data.PrerequisiteIDs = prerequisites == "" ? Array.Empty<int>() : Array.ConvertAll(prerequisites.Split(','), int.Parse);
-
+                
                 _legacies.Add(data.ID, data);
                 _legaciesByWarrior[(int)data.Warrior].Add(data);
             }
@@ -217,6 +217,17 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                 if (legacyAsset == null)
                     legacyAsset = Resources.Load<LegacySO>("Legacies/"  + (EWarrior)warrior + "/" + legacy.Names[(int)ELocalisation.KOR]);
 
+                // Save statistics in Define.cs?
+                if (legacy.Type == ELegacyType.Passive)
+                {
+                    var asset = (PassiveLegacySO)legacyAsset;
+                    if (asset.SavedInDefine)
+                    {
+                        var fieldInfo = typeof(Define).GetField($"{asset.BuffType}Stats");
+                        fieldInfo.SetValue(null, asset.Stats);
+                    }
+                }
+                
                 legacyAsset.SetWarrior((EWarrior)warrior);
                 _legacySODictionary.Add(legacy.ID, legacyAsset);
             }

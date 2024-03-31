@@ -38,10 +38,10 @@ public class PlayerController : Singleton<PlayerController>
     private float _evasionRateMultiplier = 1.0f;  
     private float _criticalRateMultiplier = 1.0f;  
     
-    // Legacy related
-    public ELegacyPreservation EnemyGoldDropBuff { private set; get; }
-    public ELegacyPreservation DruggedEffectBuff { private set; get; }
-    public ELegacyPreservation HypHallucination { private set; get; }
+    // Legacy related (Buffs)
+    public ELegacyPreservation EnemyGoldDropBuffPreserv { private set; get; }
+    public ELegacyPreservation DruggedEffectBuffPreserv { private set; get; }
+    public ELegacyPreservation HypHallucinationPreserv { private set; get; }
     
 
     // Upgrades
@@ -86,9 +86,9 @@ public class PlayerController : Singleton<PlayerController>
         _armourMultiplier = 1.0f;
         _armourPenetrationMultiplier = 1.0f;
         _evasionRateMultiplier = 1.0f;
-        EnemyGoldDropBuff = ELegacyPreservation.MAX;
-        DruggedEffectBuff = ELegacyPreservation.MAX;
-        HypHallucination = ELegacyPreservation.MAX; 
+        EnemyGoldDropBuffPreserv = ELegacyPreservation.MAX;
+        DruggedEffectBuffPreserv = ELegacyPreservation.MAX;
+        HypHallucinationPreserv = ELegacyPreservation.MAX; 
     }
 
     void OnMove(InputValue value)
@@ -184,8 +184,8 @@ public class PlayerController : Singleton<PlayerController>
     // Legacy - Enum 이름에 해당하는 boolean 값을 찾아서 activate
     public void ActivateBuffByName(EBuffType legacyBuff, ELegacyPreservation preservation)
     {
-        var fieldInfo = GetType().GetField($"<{legacyBuff}>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.IgnoreCase | BindingFlags.Public);
+        // Activate buff
+        var fieldInfo = GetType().GetField($"<{legacyBuff}Preserv>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.IgnoreCase | BindingFlags.Public);
         fieldInfo.SetValue(this, preservation);
-        Debug.Log(fieldInfo.GetValue(this));
     }
 }

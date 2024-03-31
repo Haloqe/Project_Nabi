@@ -475,7 +475,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         
         // Calculate how much gold to drop
         int goldToDrop = 0;
-        switch (PlayerController.Instance.EnemyGoldDropBuff)
+        switch (PlayerController.Instance.EnemyGoldDropBuffPreserv)
         {
             case ELegacyPreservation.MAX:
                 goldToDrop = Random.Range(minGoldRange, maxGoldRange);
