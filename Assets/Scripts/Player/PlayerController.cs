@@ -16,7 +16,7 @@ public class PlayerController : Singleton<PlayerController>
     public PlayerInventory playerInventory;
     //(Variables for FlowerBomb)
     private int[] _flowerNumbers = new int[5];
-    private int _currentSelectedFlower;
+    private int _currentSelectedFlower = 1;
     [SerializeField] TextMeshProUGUI[] flowerText = new TextMeshProUGUI[5];
 
     // Centrally controlled variables
@@ -143,7 +143,7 @@ public class PlayerController : Singleton<PlayerController>
         {
             _currentSelectedFlower = flowerIndex;
             Debug.Log("Flower Number" + flowerIndex + "is selected!");
-
+            FindObjectOfType<AttackBase_Area>().SetFlower();
         }
     }
 

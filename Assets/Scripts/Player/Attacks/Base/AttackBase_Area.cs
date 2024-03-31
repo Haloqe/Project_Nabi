@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class AttackBase_Area : AttackBase
 {
+    
     private float _areaRadius;
     private float _areaRadiusMultiplier;
     private List<SBombInfo> _bombIdentification = new List<SBombInfo>
@@ -21,13 +22,13 @@ public class AttackBase_Area : AttackBase
 
     //detecting which flower to use
     public int currentSelectedFlowerIndex;
-    public string vfxName;
+    public string vfxAddress;
 
     public override void Start()
     {
-        _attackType = ELegacyType.Area;
-        //currentFlowerInit();
-        VFXObject = Utility.LoadGameObjectFromPath("Prefabs/Player/BombVFX/StickyBombVFX");
+       //_attackType = ELegacyType.Area;
+        vfxAddress = "Prefabs/Player/BombVFX/IncendiaryBombVFX";
+        VFXObject = Utility.LoadGameObjectFromPath(vfxAddress);
         _rigidbody2D = GetComponent<Rigidbody2D>();
         _attackInfoInit = new AttackInfo
         {
@@ -35,22 +36,58 @@ public class AttackBase_Area : AttackBase
         };
         base.Start();
     }
-    public void currentFlowerInit()
+
+    public void SetFlower()
+    {
+        CheckCurrentFlower();
+        if (CheckNumberOfCurrentFlower() == 0)
+            return;
+
+        currentFlowerInit();
+        Debug.Log(vfxAddress);
+        VFXObject = Utility.LoadGameObjectFromPath(vfxAddress);
+    }
+
+    //fetch the address of current selected flower if the number is not 0 
+    public void CheckCurrentFlower()
     {
         currentSelectedFlowerIndex = FindObjectOfType<PlayerController>().GetCurrentSelectedFlower();
-        int number = FindObjectOfType<PlayerController>().GetNumberOfFlowers(currentSelectedFlowerIndex);
+        Debug.Log("current selected flower is: " + currentSelectedFlowerIndex);
 
-        if (number > 0)
+    }
+
+    public int CheckNumberOfCurrentFlower()
+    {
+        int number = FindObjectOfType<PlayerController>().GetNumberOfFlowers(currentSelectedFlowerIndex);
+        return number;
+    }
+    public void currentFlowerInit()
+    {  
+        switch (currentSelectedFlowerIndex)
         {
-            for (int i = 0; i < 5; i++)
-            {
-                if (_bombIdentification[i].SpriteIndex == currentSelectedFlowerIndex)
-                {
-                    vfxName = _bombIdentification[i].Name;
-                    break;
-                }
-            }
+            case 0:
+                Debug.Log("Healed");
+                break;
+
+            case 1:
+                vfxAddress = "Prefabs/Player/BombVFX/IncendiaryBombVFX";
+                Debug.Log(vfxAddress);
+                break;
+
+            case 2:
+                vfxAddress = "Prefabs/Player/BombVFX/StickyBombVFX";
+                break;
+
+            case 3:
+                vfxAddress = "Prefabs/Player/BombVFX/BlizzardBombVFX";
+                break;
+
+            case 4:
+                vfxAddress = "Prefabs/Player/BombVFX/GravityBombVFX";
+                break;
         }
+
+        
     }
         
     public override void Reset()
@@ -63,14 +100,15 @@ public class AttackBase_Area : AttackBase
 
     public override void Attack()
     {
-        _animator.SetInteger("AttackIndex", (int)_attackType);
+        _animator.SetInteger("AttackIndex", (int)ELegacyType.Area);
 
         // Zero out movement
         _prevGravity = _rigidbody2D.gravityScale;
         _prevVelocity = _rigidbody2D.velocity;
         _rigidbody2D.gravityScale = 0.0f;
         _rigidbody2D.velocity = Vector3.zero;
-        GetComponent<PlayerMovement>().IsAreaAttacking = true;
+        //R 모션 실행시킴
+        GetComponent<PlayerMovement>().IsAreaAttacking = true; 
 
         // Instantiate VFX
         float dir = Mathf.Sign(gameObject.transform.localScale.x);
