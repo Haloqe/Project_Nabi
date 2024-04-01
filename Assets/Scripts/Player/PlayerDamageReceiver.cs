@@ -25,7 +25,8 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     public bool TempIsDead = false;
     private Animator _animator;
     private SpriteRenderer _spriteRenderer;
-    
+    private readonly static int IsDead = Animator.StringToHash("IsDead");
+
     private void Awake()
     {
         _animator = GetComponent<Animator>();
@@ -160,20 +161,23 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         
         // TEMP CODE
         Utility.PrintDamageInfo("Player", damageInfo);
-        HandleNewDamage(damageInfo.Damage);
+        HandleNewDamage(damageInfo.Damage, damageInfo.AttackerArmourPenetration);
         HandleNewStatusEffects(damageInfo.StatusEffects);
     }    
 
-    private void HandleNewDamage(DamageInfo damage)
+    private void HandleNewDamage(DamageInfo damage, float attackerArmourPenetration)
     {
+        // 플레이어 방어력 처리
+        damage.TotalAmount = Mathf.Max(damage.TotalAmount - (PlayerController.Instance.Armour - attackerArmourPenetration), 0);
         StartCoroutine(DamageCoroutine(damage));
     }
 
     private void OnDefeated()
     {
         StopAllCoroutines();
-        _animator.SetBool("IsDead", true);
+        _animator.SetBool(IsDead, true);
         TempIsDead = true;
+        _spriteRenderer.color = Color.white;
 
         // TODO should save info somewhere, do progressive updates
     }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using TMPro;
@@ -43,15 +44,17 @@ public class PlayerController : Singleton<PlayerController>
     
     // Legacy related (Buffs)
     public ELegacyPreservation EnemyGoldDropBuffPreserv { private set; get; }
-    public ELegacyPreservation DruggedEffectBuffPreserv { private set; get; }
+    public ELegacyPreservation EcstasyUpgradePreserv { private set; get; }
     public ELegacyPreservation HypHallucinationPreserv { private set; get; }
     
 
     // Upgrades
     private Dictionary<EStat, List<(int legacyID, SLegacyStatUpgradeData data)>> _appliedStatUpgrades;
+    private List<EnemyBase>[] _ecstasyAffected;
 
     protected override void Awake()
     {
+        Debug.Log("Player Awake");
         base.Awake();
         if (_toBeDestroyed) return;
 
@@ -62,7 +65,7 @@ public class PlayerController : Singleton<PlayerController>
         playerInventory = GetComponent<PlayerInventory>();
         _animator = GetComponent<Animator>();
         _appliedStatUpgrades = new Dictionary<EStat, List<(int legacyID, SLegacyStatUpgradeData data)>>();
-
+        
         // Input Binding for Attacks
         _playerInput.actions["Attack_Melee"].performed += _ => playerDamageDealer.OnAttack(0);
         _playerInput.actions["Attack_Range"].performed += _ => playerDamageDealer.OnAttack(1);
@@ -72,7 +75,16 @@ public class PlayerController : Singleton<PlayerController>
         // Events binding
         GameEvents.restarted += OnRestarted;
         PlayerEvents.ValueChanged += OnValueChanged;
+        InGameEvents.EnemySlayed += OnEnemySlayed;
         OnRestarted();
+    }
+
+    private void Start()
+    {
+        Debug.Log(EnemyManager.Instance.NumEnemyTypes);
+        _ecstasyAffected = new List<EnemyBase>[EnemyManager.Instance.NumEnemyTypes];
+        for (int i = 0; i < EnemyManager.Instance.NumEnemyTypes; i++)
+            _ecstasyAffected[i] = new List<EnemyBase>();
     }
 
     private void OnRestarted()
@@ -90,8 +102,13 @@ public class PlayerController : Singleton<PlayerController>
         _armourPenetrationMultiplier = 1.0f;
         _evasionRateMultiplier = 1.0f;
         EnemyGoldDropBuffPreserv = ELegacyPreservation.MAX;
-        DruggedEffectBuffPreserv = ELegacyPreservation.MAX;
+        EcstasyUpgradePreserv = ELegacyPreservation.MAX;
         HypHallucinationPreserv = ELegacyPreservation.MAX; 
+        if (_ecstasyAffected != null)
+            foreach (var enemyList in _ecstasyAffected)
+            {
+                enemyList.Clear();
+            }
     }
 
     void OnMove(InputValue value)
@@ -118,6 +135,11 @@ public class PlayerController : Singleton<PlayerController>
                 _slayedEnemiesCount += (int)changeAmount;
                 break;
         }
+    }
+    
+    private void OnEnemySlayed(EnemyBase slayedEnemy)
+    {
+        PlayerEvents.ValueChanged.Invoke(ECondition.SlayedEnemiesCount, +1);
     }
     
     //Selection of Bombs
@@ -195,6 +217,7 @@ public class PlayerController : Singleton<PlayerController>
     // TODO 구현 방식 고민좀해봐야겠음
     public void UpgradeStat(int legacyID, SLegacyStatUpgradeData upgradeData, ELegacyPreservation preservation)
     {
+        return;
         // Add to applied stat upgrades
         if (!_appliedStatUpgrades.TryGetValue(upgradeData.Stat, out List<(int legacyID, SLegacyStatUpgradeData data)> list))
         {
@@ -250,5 +273,57 @@ public class PlayerController : Singleton<PlayerController>
         // Activate buff
         var fieldInfo = GetType().GetField($"<{legacyBuff}Preserv>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.IgnoreCase | BindingFlags.Public);
         fieldInfo.SetValue(this, preservation);
+    }
+
+    public void ApplyEcstasyBuff(EnemyBase appliedEnemy)
+    {
+        // 유포리아식 위계질서가 없으면 처리 X
+        int preserv = (int)playerDamageDealer.BindingSkillPreservations[(int)EWarrior.Euphoria];
+        if (preserv is (int)ELegacyPreservation.MAX) return;
+
+        // 이미 버프를 받았으면 처리 X
+        var id = appliedEnemy.EnemyData.ID;
+        if (_ecstasyAffected[id].Contains(appliedEnemy)) return;
+        _ecstasyAffected[id].Add(appliedEnemy);
+        if (_ecstasyAffected[id].Count > 1) return;
+        
+        // Apply buff
+        var buffValue = EcstasyUpgradePreserv == ELegacyPreservation.MAX ? 
+            Define.EcstasyBuffStats[id][preserv] : Define.EcstasyUpgradedBuffStats[id][preserv];
+        switch (appliedEnemy.EnemyData.ID)
+        {
+            case 0: // VoidMantis: 방어력 버프
+                _armourMultiplier += buffValue;
+                break;
+            
+            case 1: // Insectivore: 원거리 공격 버프
+                playerDamageDealer.attackDamageMultipliers[(int)EPlayerAttackType.Ranged] += buffValue;
+                break;
+        }
+    }
+
+    public void RemoveEcstasyBuff(EnemyBase appliedEnemy)
+    {
+        // 유포리아식 위계질서가 없으면 처리 X
+        int preserv = (int)playerDamageDealer.BindingSkillPreservations[(int)EWarrior.Euphoria];
+        if (preserv is (int)ELegacyPreservation.MAX) return;
+
+        // Return if this is not the last affected enemy
+        var id = appliedEnemy.EnemyData.ID;
+        if (!_ecstasyAffected[id].Contains(appliedEnemy)) return;
+        _ecstasyAffected[id].Remove(appliedEnemy);
+        if (_ecstasyAffected[id].Count > 0) return;
+        
+        // Remove the applied effect
+        switch (appliedEnemy.EnemyData.ID)
+        {
+            case 0: // VoidMantis
+                _armourMultiplier = 1.0f;
+                break;
+            
+            case 1: // Insectivore
+                playerDamageDealer.attackDamageMultipliers[(int)EPlayerAttackType.Ranged] = 1.0f;
+                break;
+        }
     }
 }

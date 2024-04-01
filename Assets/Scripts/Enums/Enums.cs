@@ -89,7 +89,7 @@ public enum EBuffType
     BindingSkillUpgrade,
     
     EnemyGoldDropBuff,              // 유포리아 - 사랑의 착취
-    DruggedEffectBuff,              // 유포리아 - 뇌쇄술
+    EcstasyUpgrade,                 // 유포리아 - 뇌쇄술
             
     EnemyItemDropRate,              // 소머 - 무기력한 자장가
     HypHallucination,               // 소머 - 입면 환각

@@ -1,12 +1,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.VisualScripting;
+using UnityEngine.Serialization;
 
 public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
 {
     private Animator _animator;
     private PlayerMovement _playerMovement;
     public AttackBase[] AttackBases { get; private set; }
+    public float[] attackDamageMultipliers;
     public int CurrAttackIdx = -1;
     public bool IsUnderAttackDelay = false;
     
@@ -15,14 +17,15 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
     private int _butterflySpawnLimit = 6;
     
     // Legacy
-    private ELegacyPreservation[] _bindingSkillPreservations;
+    public ELegacyPreservation[] BindingSkillPreservations { private set; get; }
     private readonly static int AttackIndex = Animator.StringToHash("AttackIndex");
 
     private void Start()
     {
+        attackDamageMultipliers = new float[] {1,1,1,1,1};
         spawnedButterflies = new List<Butterfly>();
-        _bindingSkillPreservations = new ELegacyPreservation[(int)EWarrior.MAX];
-        for (int i = 0; i < (int)EWarrior.MAX; i++) _bindingSkillPreservations[i] = ELegacyPreservation.MAX;
+        BindingSkillPreservations = new ELegacyPreservation[(int)EWarrior.MAX];
+        for (int i = 0; i < (int)EWarrior.MAX; i++) BindingSkillPreservations[i] = ELegacyPreservation.MAX;
         _animator = GetComponent<Animator>();
         _playerMovement = GetComponent<PlayerMovement>();
         AttackBases = new AttackBase[]
@@ -37,11 +40,12 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
     
     private void OnRestarted()
     {
+        attackDamageMultipliers = new float[] {1,1,1,1,1};
         foreach (var attack in AttackBases) attack.Reset();
         CurrAttackIdx = -1;
         foreach (var butterfly in spawnedButterflies) Destroy(butterfly);
         spawnedButterflies.Clear();
-        for (int i = 0; i < (int)EWarrior.MAX; i++) _bindingSkillPreservations[i] = ELegacyPreservation.MAX;
+        for (int i = 0; i < (int)EWarrior.MAX; i++) BindingSkillPreservations[i] = ELegacyPreservation.MAX;
     }
 
     private bool CanAttack(int attackIdx)
@@ -113,13 +117,23 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
 
     public int GetStatusEffectLevel(EWarrior warrior)
     {
-        return _bindingSkillPreservations[(int)warrior] == ELegacyPreservation.MAX ? 0 : 1;
+        return BindingSkillPreservations[(int)warrior] == ELegacyPreservation.MAX ? 0 : 1;
     }
 
-    public void UpgradeStatusEffectLevel(EWarrior warrior, ELegacyPreservation preservation)
+    public void UpgradeStatusEffectLevel(EWarrior warrior, ELegacyPreservation preservation, float[] stats)
     {
-        _bindingSkillPreservations[(int)warrior] = preservation;
-        foreach (var attack in AttackBases) attack.UpdateLegacyStatusEffect();
+        switch (warrior)
+        {
+            case EWarrior.Sommer:
+                Define.SommerSleepArmourReduceAmounts = stats;
+                break;
+            
+            case EWarrior.Euphoria:
+                // todo
+                break;
+        }
+        BindingSkillPreservations[(int)warrior] = preservation;
+        // foreach (var attack in AttackBases) attack.UpdateLegacyStatusEffect();
     }
     
     public void SpawnTurbelaButterfly()
@@ -128,7 +142,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         
         var butterfly = Resources.Load("Prefabs/Player/SpawnObjects/Butterfly").GameObject();
         var obj = Instantiate(butterfly).GetComponent<Butterfly>();
-        obj.attackTwiceChance = Define.TurbelaButterflyAttackTwiceChances[(int)_bindingSkillPreservations[(int)EWarrior.Turbela]];
+        obj.attackTwiceChance = Define.TurbelaButterflyAttackTwiceChances[(int)BindingSkillPreservations[(int)EWarrior.Turbela]];
         spawnedButterflies.Add(obj);
     }
 }

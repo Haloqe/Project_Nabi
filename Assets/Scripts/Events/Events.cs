@@ -12,7 +12,7 @@ public class PlayerEvents
 
 public class InGameEvents
 {
-    public static UnityAction<int> EnemySlayed;
+    public static UnityAction<EnemyBase> EnemySlayed;
 }
 
 public class GameEvents

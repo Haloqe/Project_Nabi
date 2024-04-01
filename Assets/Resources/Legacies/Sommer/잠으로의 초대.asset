@@ -12,8 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19632be196b57e449bc4e219cc8bd2c2, type: 3}
   m_Name: "\uC7A0\uC73C\uB85C\uC758 \uCD08\uB300"
   m_EditorClassIdentifier: 
-  Warrior: 0
-  DamageInfos:
+  warrior: 0
+  preservation: 0
+  damageMultipliers:
+  - 1.5
+  - 1.75
+  - 2
+  - 2.5
+  extraDamages:
   - BaseDamage: 0
     RelativeDamage: 0
   - BaseDamage: 0
@@ -42,4 +48,3 @@ MonoBehaviour:
   ExtraStatusEffects: []
   AttackSpawnObject: {fileID: 0}
   BulletDestroySpawnObject: {fileID: -8157610483510555470, guid: 80bea6aee257ff449a18c3f8eeb04074, type: 3}
-  BulletSpeedMultiplier: 0

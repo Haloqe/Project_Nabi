@@ -98,22 +98,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c9ef8778b553f2f46882c0683c11c1d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  attackParentType: 0
-  IsAttachedToPlayer: 0
+  attackParentType: 2
+  IsAttachedToPlayer: 1
   AutoDestroy: 0
   DealInterval: -1
   HasDamage: 1
   relativeDamages:
+  - 0.05
   - 0.1
-  - 0.1
-  - 0.1
-  - 0.1
+  - 0.15
+  - 0.2
   HasStatusEffect: 1
   StatusEffectInfos:
   - Effect: 3
     Strength: 0
     Duration: 1
-    Chance: 0.1
+    Chance: 0.05
   - Effect: 3
     Strength: 0
     Duration: 1
@@ -121,11 +121,11 @@ MonoBehaviour:
   - Effect: 3
     Strength: 0
     Duration: 1
-    Chance: 0.1
+    Chance: 0.15
   - Effect: 3
     Strength: 0
     Duration: 1
-    Chance: 0.1
+    Chance: 0.2
 --- !u!70 &9051653368056601139
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -141,7 +141,7 @@ CapsuleCollider2D:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 512
   m_LayerOverridePriority: 0
   m_ForceSendLayers:
     serializedVersion: 2

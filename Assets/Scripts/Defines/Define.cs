@@ -33,9 +33,9 @@ public static class Define
     
     public static EStatusEffect[,] StatusEffectByWarrior =
     {
-        { EStatusEffect.Sommer, EStatusEffect.UpgradedSommer },          // 소머
-        { EStatusEffect.Ecstasy, EStatusEffect.UpgradedEcstasy }, // 유포리아
-        { EStatusEffect.Swarm, EStatusEffect.Cloud },           // 투르벨라
+        { EStatusEffect.Sommer, EStatusEffect.Sommer },   // 소머
+        { EStatusEffect.Ecstasy, EStatusEffect.Ecstasy }, // 유포리아
+        { EStatusEffect.Swarm, EStatusEffect.Cloud },     // 투르벨라
         //{ EStatusEffect.Poison, EStatusEffect.Leech },          // 버논
         { EStatusEffect.Evade, EStatusEffect.Camouflage },      // 나이트셰이드
     };
@@ -65,6 +65,18 @@ public static class Define
     };
 
     // Legacy related
+    public static float[] EuphoriaEnemyGoldDropBuffStats = new float[5];
     public static float[] TurbelaButterflyAttackTwiceChances = new float[5];
-    public static float[] HypHallucinationStats = new float[5];
+    public static float[] SommerHypHallucinationStats = new float[5];
+    public static float[] SommerSleepArmourReduceAmounts = new float[5];
+    public static float[][] EcstasyBuffStats =
+    {
+        new[] {0.5f, 0.75f, 1.0f, 1.25f}, // 사마귀 - 방어력 % 
+        new[] {0.05f, 0.1f, 0.15f, 0.25f}, // 식충 - 원거리 공격의 공격력
+    };
+    public static float[][] EcstasyUpgradedBuffStats =
+    {
+        new[] {0.5f, 0.75f, 1.0f, 1.25f},  // 사마귀 - 방어력 % 
+        new[] {0.05f, 0.1f, 0.15f, 0.25f}, // 식충 - 원거리 공격의 공격력
+    };
 }

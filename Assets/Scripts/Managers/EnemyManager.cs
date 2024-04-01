@@ -6,8 +6,9 @@ using UnityEngine;
 
 public class EnemyManager : Singleton<EnemyManager>
 {
+    public int NumEnemyTypes;
     private Dictionary<int, SEnemyData> _enemies;
-    public GameObject[] EnemyPrefabs { private set; get; }
+    private GameObject[] _enemyPrefabs;
     public GameObject GoldPrefab { private set; get; }
     public EnemyVisibilityChecker VisibilityChecker { private set; get; }
 
@@ -45,6 +46,8 @@ public class EnemyManager : Singleton<EnemyManager>
                     DefaultMoveSpeed = float.Parse(csv.GetField("DefaultMoveSpeed")),
                     MaxHealth = float.Parse(csv.GetField("MaxHealth")),
                     DefaultDamage = float.Parse(csv.GetField("DefaultDamage")),
+                    DefaultArmour = float.Parse(csv.GetField("DefaultArmour")),
+                    DefaultArmourPenetration = float.Parse(csv.GetField("DefaultArmourPenetration")),
                     DamageType = csv.GetField("DamageType"),
                     IdleProbability = float.Parse(csv.GetField("IdleProbability")),
                     IdleAverageDuration = float.Parse(csv.GetField("IdleAverageDuration")),
@@ -63,10 +66,11 @@ public class EnemyManager : Singleton<EnemyManager>
         }
 
         // Save prefabs
-        EnemyPrefabs = new GameObject[_enemies.Count];
+        NumEnemyTypes = _enemies.Count;
+        _enemyPrefabs = new GameObject[NumEnemyTypes];
         foreach (var data in _enemies)
         {
-            EnemyPrefabs[data.Key] = Resources.Load("Prefabs/Enemies/" + data.Value.PrefabPath).GameObject();
+            _enemyPrefabs[data.Key] = Resources.Load("Prefabs/Enemies/" + data.Value.PrefabPath).GameObject();
         }
     }
 
@@ -77,6 +81,6 @@ public class EnemyManager : Singleton<EnemyManager>
 
     public GameObject SpawnEnemy(int enemyID, Vector3 spawnLocation)
     {
-        return Instantiate(EnemyPrefabs[enemyID], spawnLocation, Quaternion.identity).GameObject();
+        return Instantiate(_enemyPrefabs[enemyID], spawnLocation, Quaternion.identity).GameObject();
     }
 }

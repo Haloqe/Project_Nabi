@@ -14,7 +14,7 @@ public class PassiveLegacySOEditor : Editor
         switch (legacySO.BuffType)
         {
             case EBuffType.None:
-            case EBuffType.DruggedEffectBuff:
+            case EBuffType.EcstasyUpgrade:
                 break;
             
             case EBuffType.StatUpgrade:
@@ -28,6 +28,7 @@ public class PassiveLegacySOEditor : Editor
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("BuffIncreaseAmounts"), true);
                 break;
             
+            case EBuffType.BindingSkillUpgrade:
             case EBuffType.EnemyGoldDropBuff:
             case EBuffType.HypHallucination:
             case EBuffType.TurbelaMaxButterfly:

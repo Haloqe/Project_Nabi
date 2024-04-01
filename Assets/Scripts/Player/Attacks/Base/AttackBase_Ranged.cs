@@ -49,6 +49,7 @@ public class AttackBase_Ranged : AttackBase
         bullet.Direction = -Mathf.Sign(gameObject.transform.localScale.x);
         bullet.Owner = this;
         bullet.attackInfo = _attackInfo.Clone();
+        bullet.attackInfo.Damage.TotalAmount *= _damageDealer.attackDamageMultipliers[(int)EPlayerAttackType.Ranged];
         bullet.attackInfo.SetAttackDirToMyFront(_damageDealer.gameObject);
     }
 

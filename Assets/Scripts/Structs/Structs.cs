@@ -71,6 +71,8 @@ public struct SEnemyData
     public float DefaultMoveSpeed;
     public float MaxHealth;
     public float DefaultDamage;
+    public float DefaultArmour;
+    public float DefaultArmourPenetration;
     public string DamageType;
     public float IdleProbability;
     public float IdleAverageDuration;

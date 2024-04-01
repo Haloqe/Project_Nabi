@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   warrior: 0
   preservation: 0
-  BuffType: 5
+  BuffType: 7
   StatUpgradeData:
     Stat: 0
     IncreaseMethod: 0
@@ -34,9 +34,16 @@ MonoBehaviour:
       targetValue: 0
       isValueRatio: 0
     UndoUpgradeWhenConditionNotMet: 0
-  BuffIncreaseMethod: 0
+  BuffIncreaseMethod: 1
   BuffIncreaseAmounts:
+  - 0.05
+  - 0.1
+  - 0.15
+  - 0.2
+  Stats:
   - 0
   - 0
   - 0
   - 0
+  - 0
+  SavedInDefine: 0

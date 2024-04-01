@@ -2,19 +2,19 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
 public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 {
-    public int enemyID;
+    [SerializeField] private int typeID;
     
     // reference to other components
     protected Rigidbody2D _rigidbody2D;
     protected Animator _animator;
     protected EnemyManager _enemyManager;
     public SEnemyData EnemyData;
+    protected PlayerController _player;
     
     // Movement
     protected EnemyMovement _movement;
@@ -35,29 +35,29 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     private int _sommerSubtractedStackPerSecond = 1;
 
     // sommer 입면환각
-    private bool _TEMPSommerHypHallucination = false;
     [SerializeField] Vector2 _neighboringEnemyColliderSize;
     [SerializeField] float _neighboringEnemyColliderHeight;
 
     //Enemy health attribute
     public AttackInfo _damageInfo;
-    protected float Health;
+    private float Health;
     private SpriteRenderer _spriteRenderer;
 
     private void Awake()
     {
-        _spriteRenderer = GetComponent<SpriteRenderer>();
+        _spriteRenderer = GetComponent<SpriteRenderer>(); 
     }
 
     protected virtual void Start()
     {
+        _player = PlayerController.Instance;
         _rigidbody2D = GetComponent<Rigidbody2D>();
         _animator = GetComponent<Animator>();
         _enemyManager = EnemyManager.Instance;
-        EnemyData = _enemyManager.GetEnemyData(enemyID);
+        EnemyData = _enemyManager.GetEnemyData(typeID); 
         _effectRemainingTimes = new float[(int)EStatusEffect.MAX];
         _slowRemainingTimes = new SortedDictionary<float, float> (
-            Comparer<float>.Create(delegate (float x, float y) { return y.CompareTo(x); })
+            Comparer<float>.Create((x, y) => y.CompareTo(x))
         );
         // DebuffEffects = new GameObject[(int)EStatusEffect.MAX];
         _movement = GetComponent<EnemyMovement>();
@@ -119,6 +119,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
                     break;
 
                 case EStatusEffect.Ecstasy:
+                    _player.ApplyEcstasyBuff(this);
                     break;
 
                 case EStatusEffect.Sleep:
@@ -223,9 +224,14 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
                     IsSilenced = false;
                 }
 
-                if (_TEMPSommerHypHallucination && currEffect == EStatusEffect.Ecstasy)
+                if (_player.HypHallucinationPreserv != ELegacyPreservation.MAX && currEffect == EStatusEffect.Ecstasy)
                 {
                     _damageInfo.Damage.TotalAmount *= 0.75f;
+                }
+
+                if (currEffect == EStatusEffect.Ecstasy)
+                {
+                    _player.RemoveEcstasyBuff(this);
                 }
             }
         }
@@ -327,7 +333,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
     private void SetVFXActive(int effectIdx, bool setActive)
     {
-        if (DebuffEffects[effectIdx] == null) return;
+        if (effectIdx >= DebuffEffects.Length || DebuffEffects[effectIdx] == null) return;
         // DebuffEffects[effectIdx].SetActive(setActive);
         if (setActive)
         {
@@ -372,6 +378,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     // Dealing damage to the player Handling
     public virtual void DealDamage(IDamageable target, AttackInfo damageInfo)
     {
+        damageInfo.AttackerArmourPenetration = EnemyData.DefaultArmourPenetration;
         target.TakeDamage(damageInfo);
     }
 
@@ -380,18 +387,27 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     {
         Utility.PrintDamageInfo(gameObject.name, damageInfo);
         HandleNewStatusEffects(damageInfo.StatusEffects, damageInfo.IncomingDirectionX);
-        if (_TEMPSommerHypHallucination && _sommerStackCount <= 0)
+        
+        // 입면 환각
+        var hypHallucinationPreserv = _player.playerDamageDealer.BindingSkillPreservations[(int)EWarrior.Sommer];
+        if (_sommerStackCount <= 0)
         {
             AttackInfo boostedDamageInfo = damageInfo;
-            boostedDamageInfo.Damage.TotalAmount *= 1.5f;
-            HandleNewDamage(boostedDamageInfo.Damage);
-            return;
+            boostedDamageInfo.Damage.TotalAmount += damageInfo.Damage.TotalAmount * Define.SommerHypHallucinationStats[(int)hypHallucinationPreserv];
+            HandleNewDamage(boostedDamageInfo.Damage, boostedDamageInfo.AttackerArmourPenetration);
         }
-        HandleNewDamage(damageInfo.Damage);
+        // 그 외 경우
+        else
+        {
+            HandleNewDamage(damageInfo.Damage, damageInfo.AttackerArmourPenetration);
+        }
     }
 
-    private void HandleNewDamage(DamageInfo damage)
+    private void HandleNewDamage(DamageInfo damage, float attackerArmourPenetration)
     {
+        // 방어력 및 방어관통력 처리
+        damage.TotalAmount -= Mathf.Max(0, damage.TotalAmount - Mathf.Max(GetArmour() - attackerArmourPenetration, 0)); 
+        
         ReduceHealth(damage.TotalAmount);
 
         // if (asleep) then wake up
@@ -400,6 +416,13 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
             _movement.EnableMovement();
             _effectRemainingTimes[(int)EStatusEffect.Sleep] = 0;
         }
+    }
+
+    private float GetArmour()
+    {
+        if (_effectRemainingTimes[(int)EStatusEffect.Sleep] > 0) return EnemyData.DefaultArmour;
+        int sommerPreserv = (int)PlayerController.Instance.playerDamageDealer.BindingSkillPreservations[(int)EWarrior.Sommer];
+        return Mathf.Max(0, EnemyData.DefaultArmour - EnemyData.DefaultArmour * Define.SommerSleepArmourReduceAmounts[sommerPreserv]);
     }
 
     private void ReduceHealth(float reduceAmount)
@@ -419,11 +442,14 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
     private void Die()
     {
+        // Inform player
+        if (_effectRemainingTimes[(int)EStatusEffect.Ecstasy] > 0) 
+            _player.RemoveEcstasyBuff(this);
+        InGameEvents.EnemySlayed?.Invoke(this);
+            
         StopAllCoroutines();
-        Destroy(gameObject);
-        InGameEvents.EnemySlayed?.Invoke(enemyID);
-        PlayerEvents.ValueChanged.Invoke(ECondition.SlayedEnemiesCount, +1);
         DropGold();
+        Destroy(gameObject);
     }
     #endregion Damage Dealing and Receiving
 
@@ -470,24 +496,18 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     private void DropGold()
     {
         int minGoldRange = EnemyData.MinGoldRange;
-        int maxGoldRange = EnemyData.MaxGoldRange;
+        int maxGoldRange = EnemyData.MaxGoldRange + (int)Define.EuphoriaEnemyGoldDropBuffStats[(int)_player.EnemyGoldDropBuffPreserv];
         
         // Calculate how much gold to drop
         int goldToDrop = 0;
-        switch (PlayerController.Instance.EnemyGoldDropBuffPreserv)
+        if (_player.EnemyGoldDropBuffPreserv == ELegacyPreservation.MAX)
         {
-            case ELegacyPreservation.MAX:
-                goldToDrop = Random.Range(minGoldRange, maxGoldRange);
-                break;
-            
-            case ELegacyPreservation.Weathered:
-            case ELegacyPreservation.Tarnished:
-            case ELegacyPreservation.Intact:
-            case ELegacyPreservation.Pristine:
-                //TODO by preservation
-                float random = Mathf.Pow(Random.value, 2);
-                goldToDrop = minGoldRange + Mathf.RoundToInt(random * (maxGoldRange - minGoldRange));
-                break;
+            goldToDrop = Random.Range(minGoldRange, maxGoldRange);
+        }
+        else
+        {
+            float random = Mathf.Pow(Random.value, 2);
+            goldToDrop = minGoldRange + Mathf.RoundToInt(random * (maxGoldRange - minGoldRange));
         }
         
         // Drop coins

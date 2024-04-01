@@ -223,8 +223,8 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                     var asset = (PassiveLegacySO)legacyAsset;
                     if (asset.SavedInDefine)
                     {
-                        var fieldInfo = typeof(Define).GetField($"{asset.BuffType}Stats");
-                        fieldInfo.SetValue(null, asset.Stats);
+                        var fieldInfo = typeof(Define).GetField($"{asset.warrior}{asset.BuffType}Stats");
+                        if (fieldInfo != null) fieldInfo.SetValue(null, asset.Stats);
                     }
                 }
                 
@@ -316,11 +316,11 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                 break;
             
             case EBuffType.BindingSkillUpgrade:
-                _playerDamageDealer.UpgradeStatusEffectLevel(legacySO.warrior, preservation);
+                _playerDamageDealer.UpgradeStatusEffectLevel(legacySO.warrior, preservation, legacySO.Stats);
                 break;
             
             case EBuffType.EnemyGoldDropBuff:
-            case EBuffType.DruggedEffectBuff:
+            case EBuffType.EcstasyUpgrade:
             case EBuffType.HypHallucination:
                 _playerController.ActivateBuffByName(legacySO.BuffType, preservation);
                 break;
