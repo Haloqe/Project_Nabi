@@ -11,6 +11,7 @@ public abstract class EnemyMovement : MonoBehaviour
     public bool IsRooted = false;
     public bool IsMoving = true;
     public bool IsChasingPlayer = false;
+    public bool IsAttackingPlayer = false;
     public bool IsFlippable = true;
     protected Rigidbody2D _rigidBody;
     protected Animator _animator;
@@ -38,6 +39,12 @@ public abstract class EnemyMovement : MonoBehaviour
     {
         transform.localScale = new Vector2(
             -1 * transform.localScale.x, transform.localScale.y);
+    }
+
+    public void FlipEnemyTowardsMovement()
+    {
+        if (_rigidBody.velocity.x >= 0.01f) transform.localScale = new Vector3(1f, 1f, 1f);
+        else transform.localScale = new Vector3(-1f, 1f, 1f);
     }
 
     public void FlipEnemyTowardsTarget()
@@ -109,5 +116,7 @@ public abstract class EnemyMovement : MonoBehaviour
     public virtual void Patrol() {}
     public virtual void Chase() {}
     public virtual void Attack() {}
+    public virtual bool PlayerIsInAttackRange() { return false; }
+    public virtual bool PlayerIsInDetectRange() { return false; }
     
 }

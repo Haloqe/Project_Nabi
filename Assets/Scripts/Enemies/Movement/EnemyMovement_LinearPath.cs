@@ -11,6 +11,7 @@ public class EnemyMovement_LinearPath : EnemyMovement
     public LayerMask _groundLayer;
     public Collider2D _groundInFrontCollider;
     public Collider2D _ceilingInFrontCollider;
+    
     private void Awake()
     {
         moveType = EEnemyMoveType.LinearPath;
@@ -89,7 +90,19 @@ public class EnemyMovement_LinearPath : EnemyMovement
         _animator.SetBool("IsAttacking", true);
     }
 
-        public bool IsGrounded()
+    public override bool PlayerIsInAttackRange()
+    {
+        return Mathf.Abs(transform.position.x - _enemyBase.Target.transform.position.x) <= _enemyBase.EnemyData.AttackRangeX 
+            && _enemyBase.Target.transform.position.y - transform.position.y <= _enemyBase.EnemyData.AttackRangeY;
+    }
+
+    public override bool PlayerIsInDetectRange()
+    {
+        return Mathf.Abs(transform.position.x - _enemyBase.Target.transform.position.x) <= _enemyBase.EnemyData.DetectRangeX 
+            && _enemyBase.Target.transform.position.y - transform.position.y <= _enemyBase.EnemyData.DetectRangeY;
+    }
+
+    public bool IsGrounded()
     {
         if (Physics2D.OverlapBox(transform.position, _groundColliderSize, 0, _groundLayer)) return true;
         else return false;
