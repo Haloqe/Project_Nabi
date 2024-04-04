@@ -26,6 +26,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     public bool IsSilenced { get; private set; }
     public bool ShouldDisableMovement { get; private set; }
     [NamedArray(typeof(EStatusEffect))] public ParticleSystem[] DebuffEffects;
+        private int[] _activeDOTCounts;
     private float[] _effectRemainingTimes;
     private SortedDictionary<float, float> _slowRemainingTimes; // str,time
 
@@ -55,6 +56,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         _animator = GetComponent<Animator>();
         _enemyManager = EnemyManager.Instance;
         EnemyData = _enemyManager.GetEnemyData(typeID); 
+        
         _effectRemainingTimes = new float[(int)EStatusEffect.MAX];
         _slowRemainingTimes = new SortedDictionary<float, float> (
             Comparer<float>.Create((x, y) => y.CompareTo(x))
@@ -408,7 +410,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         // 방어력 및 방어관통력 처리
         damage.TotalAmount -= Mathf.Max(0, damage.TotalAmount - Mathf.Max(GetArmour() - attackerArmourPenetration, 0)); 
         
-        ReduceHealth(damage.TotalAmount);
+        StartCoroutine(DamageCoroutine(damage));
 
         // if (asleep) then wake up
         if (_effectRemainingTimes[(int)EStatusEffect.Sleep] > 0)
@@ -425,11 +427,46 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         return Mathf.Max(0, EnemyData.DefaultArmour - EnemyData.DefaultArmour * Define.SommerSleepArmourReduceAmounts[sommerPreserv]);
     }
 
-    private void ReduceHealth(float reduceAmount)
+    public void ChangeHealthByAmount(float amount)
     {
-        Health -= reduceAmount;
-        StartCoroutine(DamagedRoutine());
-        if (Health <= 0) Die();
+        Debug.Log("[" + gameObject.name + "] got damaged " + amount);
+        if (amount < 0) StartCoroutine(DamagedRoutine());
+        Health = Mathf.Clamp(Health + amount, 0, EnemyData.MaxHealth);
+        if (Health == 0) Die();
+    }
+
+    private IEnumerator DamageCoroutine(DamageInfo damage)
+    {
+        int damageTypeIdx = (int)damage.Type;
+        
+        // One-shot damage
+        if (damage.Duration == 0)
+        {
+            ChangeHealthByAmount(-damage.TotalAmount);
+            yield return null;
+        }
+        // Damage Over Time (DOT) damage
+        // Deals damage.TotalAmount of damage every damage.Tick seconds for damage.Duration
+        else
+        {
+            float damagePerTick = damage.TotalAmount / (damage.Duration / damage.Tick + 1);
+            var damageCoroutine = StartCoroutine(DOTDamageCoroutine(damagePerTick, damage.Tick));
+            yield return new WaitForSeconds(damage.Duration + damage.Tick / 2.0f);
+
+            // Do cleanup
+            // Stop applying damage if the duration is over
+            StopCoroutine(damageCoroutine);
+        }
+    }
+
+    private IEnumerator DOTDamageCoroutine(float damagePerTick, float tick)
+    {
+        while (true)
+        {
+            // Wait for a tick time and take damage repeatedly
+            ChangeHealthByAmount(-damagePerTick);
+            yield return new WaitForSeconds(tick);
+        }
     }
     
     // TODO FIX: damage visualisation
@@ -462,18 +499,12 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
             _movement.Patrol();
             return;
         }
-
-        bool playerIsInAttackRange = Mathf.Abs(transform.position.x - Target.transform.position.x) <= EnemyData.AttackRangeX 
-            && Target.transform.position.y - transform.position.y <= EnemyData.AttackRangeY;
-
-        bool playerIsInDetectRange = Mathf.Abs(transform.position.x - Target.transform.position.x) <= EnemyData.DetectRangeX 
-            && Target.transform.position.y - transform.position.y <= EnemyData.DetectRangeY;
         
-        if (playerIsInAttackRange)
+        if (_movement.PlayerIsInAttackRange())
         {
             _movement.Attack();
         }
-        else if (playerIsInDetectRange)
+        else if (_movement.PlayerIsInDetectRange())
         {
             _movement.IsChasingPlayer = true;
             ActionTimeCounter = EnemyData.ChasePlayerDuration;
@@ -481,7 +512,9 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         }
         else
         {
-            if (_movement.IsChasingPlayer){
+            if (_movement.IsAttackingPlayer) {
+                _movement.Attack();
+            } else if (_movement.IsChasingPlayer) {
                 _movement.Chase();
             } else {
                 _movement.Patrol();

@@ -7,7 +7,7 @@ public class EnemyMovement_Stationary : EnemyMovement
     {
         moveType = EEnemyMoveType.Stationary;
     }
-
+    
     public override void Patrol()
     {
         _animator.SetBool("IsAttacking", false);
@@ -34,6 +34,18 @@ public class EnemyMovement_Stationary : EnemyMovement
     {
         if (IsFlippable) FlipEnemyTowardsTarget();
         _animator.SetBool("IsAttacking", true);
+    }
+
+    public override bool PlayerIsInAttackRange()
+    {
+        return Mathf.Abs(transform.position.x - _enemyBase.Target.transform.position.x) <= _enemyBase.EnemyData.AttackRangeX 
+            && _enemyBase.Target.transform.position.y - transform.position.y <= _enemyBase.EnemyData.AttackRangeY;
+    }
+
+    public override bool PlayerIsInDetectRange()
+    {
+        return Mathf.Abs(transform.position.x - _enemyBase.Target.transform.position.x) <= _enemyBase.EnemyData.DetectRangeX 
+            && _enemyBase.Target.transform.position.y - transform.position.y <= _enemyBase.EnemyData.DetectRangeY;
     }
 
 }

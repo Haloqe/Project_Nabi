@@ -228,6 +228,7 @@ public enum EEnemyMoveType
     FollowStraightPath,
     LinearPath,
     Stationary,
+    Flight,
 }
 
 public enum EEnemyState
