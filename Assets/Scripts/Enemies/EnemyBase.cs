@@ -327,8 +327,10 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
     private void SetVFXActive(int effectIdx, bool setActive)
     {
+        if (effectIdx == 13) return;
         if (DebuffEffects[effectIdx] == null) return;
-        // DebuffEffects[effectIdx].SetActive(setActive);
+        //DebuffEffects[effectIdx].SetActive(setActive);
+
         if (setActive)
         {
             DebuffEffects[effectIdx].Play();

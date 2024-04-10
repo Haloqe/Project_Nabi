@@ -48,8 +48,6 @@ public class Bomb : MonoBehaviour
         if (collision.gameObject.CompareTag("Enemy") == false) return;
         if (Utility.IsObjectInList(collision.gameObject, _affectedEnemies)) return;
 
-        Debug.Log("Enemy Hit!");
-
         IDamageable target = collision.gameObject.GetComponent<IDamageable>();
         if (target != null)
         {
