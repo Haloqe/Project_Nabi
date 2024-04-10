@@ -1,6 +1,5 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 public abstract class AttackBase : MonoBehaviour
 {
@@ -106,22 +105,22 @@ public abstract class AttackBase : MonoBehaviour
         EStatusEffect warriorSpecificEffect = PlayerAttackManager.Instance
             .GetWarriorStatusEffect(activeLegacy.warrior, _damageDealer.GetStatusEffectLevel(activeLegacy.warrior));
         
-        // Update status effect of base damage
+        // Update status effect of base damage)
         var newStatusEffectsBase = _attackInfo.StatusEffects;
         var newEffect = new StatusEffectInfo(warriorSpecificEffect,
             activeLegacy.StatusEffects[legacyPreservation].Strength,
             activeLegacy.StatusEffects[legacyPreservation].Duration,
             activeLegacy.StatusEffects[legacyPreservation].Chance);
-        newStatusEffectsBase.Add(newEffect);
+        newStatusEffectsBase.Add(newEffect);    
         
         // Additional status effect
         if (activeLegacy.ExtraStatusEffects != null && activeLegacy.ExtraStatusEffects.Length > 0)
         {
             var extraCC = activeLegacy.ExtraStatusEffects[legacyPreservation];
-            if (extraCC != null && extraCC.Effect != EStatusEffect.None)
+            if (extraCC is { Effect: not (EStatusEffect.None or EStatusEffect.BuffButterfly) })
             {
-                newEffect = new StatusEffectInfo(extraCC.Effect, extraCC.Strength, extraCC.Duration, extraCC.Chance);
-                newStatusEffectsBase.Add(newEffect);
+                var extraEffect = new StatusEffectInfo(extraCC.Effect, extraCC.Strength, extraCC.Duration, extraCC.Chance);
+                newStatusEffectsBase.Add(extraEffect);
             }
         }
 

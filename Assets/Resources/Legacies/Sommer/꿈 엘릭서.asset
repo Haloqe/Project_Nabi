@@ -14,11 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   warrior: 0
   preservation: 0
-  BuffType: 3
+  BuffType: 1
   StatUpgradeData:
-    Stat: 0
-    IncreaseMethod: 0
-    IncreaseAmounts: []
+    Stat: 6
+    IncreaseAmounts:
+    - 0.5
+    - 0.7
+    - 0.9
+    - 1.5
     HasUpdateCondition: 0
     StatUpdateCondition:
       updateFrequency: 0
@@ -40,3 +43,10 @@ MonoBehaviour:
   - 0.5
   - 0.5
   - 0.5
+  Stats:
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  SavedInDefine: 0

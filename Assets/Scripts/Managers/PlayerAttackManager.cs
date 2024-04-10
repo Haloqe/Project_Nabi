@@ -223,7 +223,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                     var asset = (PassiveLegacySO)legacyAsset;
                     if (asset.SavedInDefine)
                     {
-                        var fieldInfo = typeof(Define).GetField($"{asset.warrior}{asset.BuffType}Stats");
+                        var fieldInfo = typeof(Define).GetField($"{asset.BuffType}Stats");
                         if (fieldInfo != null) fieldInfo.SetValue(null, asset.Stats);
                     }
                 }
@@ -297,11 +297,6 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                 _playerController.UpgradeStat(legacyID, legacySO.StatUpgradeData, preservation);
                 break;
             
-            case EBuffType.FoodHealEfficiency:
-                _playerController.HealEfficiency = Utility.GetChangedValue(_playerController.HealEfficiency,
-                    legacySO.BuffIncreaseAmounts[preservationIdx], legacySO.BuffIncreaseMethod);
-                break;
-            
             case EBuffType.SpawnAreaIncrease:
                 foreach (var attackBase in _playerDamageDealer.AttackBases)
                 {
@@ -319,9 +314,12 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                 _playerDamageDealer.UpgradeStatusEffectLevel(legacySO.warrior, preservation, legacySO.Stats);
                 break;
             
-            case EBuffType.EnemyGoldDropBuff:
-            case EBuffType.EcstasyUpgrade:
-            case EBuffType.HypHallucination:
+            case EBuffType.EuphoriaEnemyGoldDropBuff:
+            case EBuffType.EuphoriaEcstasyUpgrade:
+            case EBuffType.SommerHypHallucination:
+            case EBuffType.TurbelaMaxButterfly:
+            case EBuffType.TurbelaDoubleSpawn:
+            case EBuffType.TurbelaButterflyCrit:
                 _playerController.ActivateBuffByName(legacySO.BuffType, preservation);
                 break;
         }

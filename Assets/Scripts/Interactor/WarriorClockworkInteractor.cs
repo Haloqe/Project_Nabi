@@ -13,7 +13,6 @@ public class WarriorClockworkInteractor : Interactor
     protected override void OnInteract(InputAction.CallbackContext obj)
     {
         if (_isInteracting) return;
-        _isInteracting = true;
-        UIManager.Instance.OpenWarriorUI(this);
+        _isInteracting = UIManager.Instance.OpenWarriorUI(this);
     }
 }

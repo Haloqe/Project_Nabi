@@ -53,13 +53,8 @@ public class AttackSpawnObject : MonoBehaviour
         if (HasStatusEffect)
         {
             _attackInfo.StatusEffects.Add(StatusEffectInfos[(int)preservation]);
-            
-            // For pull effect, need to set direction
-            if (StatusEffectInfos[(int)preservation].Effect == EStatusEffect.Pull)
-            {
-                _attackInfo.SetAttackDirToMyFront(_playerDamageDealer.gameObject);
-            }
         }
+        _attackInfo.SetAttackDirToMyFront(_playerDamageDealer.gameObject);
     }
     
     private void OnTriggerEnter2D(Collider2D other)

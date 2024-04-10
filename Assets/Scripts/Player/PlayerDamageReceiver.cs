@@ -2,12 +2,15 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Mathematics;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class PlayerDamageReceiver : MonoBehaviour, IDamageable
 {
     // reference to other components
     private PlayerMovement _playerMovement;
+    private PlayerController _playerController;
 
     // TEMP health attributes
     private float _health = 300;
@@ -46,6 +49,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     
     private void Start()
     {
+        _playerController = PlayerController.Instance;
         PlayerEvents.defeated += OnDefeated;
         GameEvents.restarted += OnRestarted;
         
@@ -153,13 +157,25 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
 
     #region Damage Dealing and Receiving
     // IDamageable Override
+
+    public GameObject GetGameObject()
+    {
+        return gameObject;
+    }
     
     public void TakeDamage(AttackInfo damageInfo)
     {
         // TODO Remove when monster fixed
         if (TempIsDead) return;
         
-        // TEMP CODE
+        // Evade
+        if (Random.value <= _playerController.EvasionRate)
+        {
+            Instantiate(_playerController.evadeTextUI, transform.position + new Vector3(0, 2.3f, 0), quaternion.identity);
+            return;
+        }
+        
+        // Evade failed?
         Utility.PrintDamageInfo("Player", damageInfo);
         HandleNewDamage(damageInfo.Damage, damageInfo.AttackerArmourPenetration);
         HandleNewStatusEffects(damageInfo.StatusEffects);
@@ -168,7 +184,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     private void HandleNewDamage(DamageInfo damage, float attackerArmourPenetration)
     {
         // 플레이어 방어력 처리
-        damage.TotalAmount = Mathf.Max(damage.TotalAmount - (PlayerController.Instance.Armour - attackerArmourPenetration), 0);
+        damage.TotalAmount = Mathf.Max(damage.TotalAmount - (_playerController.Armour - attackerArmourPenetration), 0);
         StartCoroutine(DamageCoroutine(damage));
     }
 
@@ -369,10 +385,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         Debug.Log("New slow (" + strength + ") time: " + duration.ToString("0.0000"));
     }
 
-    private void SetVFXActive(EStatusEffect effect, bool setActive)
-    {
-        SetVFXActive((int)effect, setActive);
-    }
+    private void SetVFXActive(EStatusEffect effect, bool setActive) => SetVFXActive((int)effect, setActive);
 
     private void SetVFXActive(int effectIdx, bool setActive)
     {

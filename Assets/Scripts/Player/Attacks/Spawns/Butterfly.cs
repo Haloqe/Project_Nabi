@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using FullscreenEditor;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
 public class Butterfly : MonoBehaviour
@@ -12,11 +14,15 @@ public class Butterfly : MonoBehaviour
     private readonly float _attackSpeed = 1f;       // Speed of the butterfly while attacking
     private readonly float _flySpeed = 0.022f;      // Speed of the butterfly while traveling towards target
     private readonly float _cloverSize = 1.7f;      // Size of the clover leaves
+    private float _attackSpeedMultiplier = 1f;
+    private int _buffStack = 0;
     private float _theta = 0f;                      // Angle for the parametric equation
-    public float attackTwiceChance = 0.0f;
+    public float extraRelativeDamage = 0.0f;
+    private bool _isDying;
     
     // Targets
     private Transform _enemy;                       // The enemy the butterfly is targeting
+    private IDamageable _enemyDamageable;
     private Transform _player;
     private Vector3 _targetOffset;                  // Position offset from the target's pivot
     
@@ -30,20 +36,35 @@ public class Butterfly : MonoBehaviour
     private EnemyVisibilityChecker _visibilityChecker;
     private AttackInfo _attackInfo;
     private PlayerDamageDealer _playerDamageDealer;
+    private PlayerController _playerController;
+    private Renderer _renderer;
+    
+    // VFX
+    public ParticleSystem buffVFX;
+    public ParticleSystem attackVFX;
+    public ParticleSystem critVFX;
 
     private void Awake()
     {
-        _attackInfo = new AttackInfo(new DamageInfo(EDamageType.Base, PlayerController.Instance.Strength * relativeDamage), new List<StatusEffectInfo>());
+        // Get references
+        _renderer = GetComponent<Renderer>();
         _visibilityChecker = Camera.main.GetComponent<EnemyVisibilityChecker>();
+        _playerController = PlayerController.Instance;
+        _playerDamageDealer = _playerController.playerDamageDealer;
+        
+        // Initial position
         _player = PlayerController.Instance.transform;
-        _playerDamageDealer = PlayerController.Instance.playerDamageDealer;
         transform.position = _player.position + GetRandomOffsetNearPlayer();
+        
+        // Damage
+        _attackInfo = new AttackInfo();
+        _attackInfo.Damage.TotalAmount = PlayerController.Instance.Strength * (relativeDamage + extraRelativeDamage);
     }
 
     private void Start()
     {
         StartCoroutine(LifeTimeCoroutine());
-        StartCoroutine(DetectCoroutine());
+        _detectCoroutine = StartCoroutine(DetectCoroutine());
     }
 
     private void Update()
@@ -65,6 +86,8 @@ public class Butterfly : MonoBehaviour
         else if (_flyCoroutine == null)
         {
             transform.position = _player.position + _targetOffset;
+
+            if (_detectCoroutine == null) _detectCoroutine = StartCoroutine(DetectCoroutine());
         }
     }
 
@@ -143,6 +166,7 @@ public class Butterfly : MonoBehaviour
             {
                 _enemy = target;
                 _isAttacking = true;
+                _enemyDamageable = _enemy.GetComponent<IDamageable>();
                 Attack();
             }
             // Player reached
@@ -161,34 +185,51 @@ public class Butterfly : MonoBehaviour
         transform.position = _enemy.position + _targetOffset; // _enemy.transform.TransformPoint(_targetOffset);
         
         // Follow trajectory
-        _theta += Time.deltaTime * _attackSpeed;
+        _theta += Time.deltaTime * _attackSpeed * _attackSpeedMultiplier;
         float r = _cloverSize * Mathf.Sin(2 * _theta);
         float x = r * Mathf.Cos(_theta);
         float y = r * Mathf.Sin(_theta);
         transform.position += new Vector3(x, y, 0);
         
         // Update timer
-        _timer += Time.deltaTime;
+        _timer += Time.deltaTime / _attackSpeedMultiplier;
         
         // Attack enemy when at the centre
-        if (_timer >= Mathf.PI / (2 * _attackSpeed)) // use the calculated time interval
+        if (_timer >= Mathf.PI / (2 * _attackSpeed * _attackSpeedMultiplier)) // use the calculated time interval
         {
             Attack();
             _timer = 0;
         }
     }
 
+    private bool _isInvisble;
     // Fly back to player when not seen by the camera
     private void OnBecameInvisible()
     {
+        if (_isInvisble) return;
+        if (!isActiveAndEnabled) return;
+        _isInvisble = true;
+        
+        // Return threshold
+        float timer = 0;
+        while (timer <= 2.0f)
+        {
+            timer += Time.deltaTime;
+            if (_renderer.isVisible)
+            {
+                _isInvisble = false;
+                return;
+            }
+        }
+        
         // Check if it can fly to another enemy
-        Transform enemy = GetRandomEnemyInRange(_enemy);
+        Transform enemy = GetRandomEnemyInRange();
         _enemy = null;
         if (enemy)
         {
             _isAttacking = false;
             if (_flyCoroutine != null) StopCoroutine(_flyCoroutine);
-            _flyCoroutine = StartCoroutine(FlyCoroutine(enemy));
+            if (isActiveAndEnabled) _flyCoroutine = StartCoroutine(FlyCoroutine(enemy));
         }
         // If no other enemy to fly to, fly to the player
         else
@@ -196,6 +237,7 @@ public class Butterfly : MonoBehaviour
             if (isActiveAndEnabled) _flyCoroutine = StartCoroutine(FlyCoroutine(_player));
             _isAttacking = false;
         }
+        _isInvisble = false;
     }
 
     private Vector3 GetRandomOffsetNearPlayer()
@@ -213,11 +255,12 @@ public class Butterfly : MonoBehaviour
     private IEnumerator LifeTimeCoroutine()
     {
         yield return new WaitForSeconds(_lifeTime);
-        Die();
+        _playerDamageDealer.TurbelaKillButterfly(this);
     }
 
-    private IEnumerator DieCoroutine()
+    public IEnumerator DieCoroutine()
     {
+        _isDying = true;
         var spRenderer = GetComponent<SpriteRenderer>();
         var changeAmount = new Color(0, 0, 0, 0.0035f);
         while (spRenderer.color.a >= 0.0f)
@@ -225,21 +268,36 @@ public class Butterfly : MonoBehaviour
             spRenderer.color -= changeAmount;
             yield return null;
         }
-        PlayerController.Instance.playerDamageDealer.spawnedButterflies.Remove(this);
         Destroy(gameObject);
-    }
-
-    public void Die()
-    {
-        StartCoroutine(DieCoroutine());
     }
 
     private void Attack()
     {
-        _playerDamageDealer.DealDamage(_enemy.GetComponent<IDamageable>(), _attackInfo);
+        // Adjust for a critical damage
+        var damageToSend = _attackInfo.Clone();
+        var critChanceExtra = Define.TurbelaButterflyCritStats[(int)_playerController.TurbelaButterflyCritPreserv];
+        if (Random.value <= _playerController.CriticalRate + critChanceExtra)
+        {
+            damageToSend.Damage.TotalAmount *= 2.0f;
+            critVFX.Play();
+        }
+        else attackVFX.Play();
         
-        // Attack twice?
-        if (Random.value <= attackTwiceChance)
-            _playerDamageDealer.DealDamage(_enemy.GetComponent<IDamageable>(), _attackInfo);
+        _playerDamageDealer.DealDamage(_enemyDamageable, damageToSend);
+    }
+
+    public IEnumerator BuffCoroutine(float duration, float speedMultiplier)
+    {
+        // Do not apply buff if it is about to die
+        if (_isDying) yield break;
+        
+        // Start buff
+        buffVFX.Play();
+        _attackSpeedMultiplier = speedMultiplier;
+        _buffStack++;
+        
+        // End buff
+        yield return new WaitForSeconds(duration);
+        if (--_buffStack == 0) _attackSpeedMultiplier = 1.0f;
     }
 }

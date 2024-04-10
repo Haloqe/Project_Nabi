@@ -36,8 +36,6 @@ public enum EStatusEffect
     Evade,
 
     // Upgraded
-    [InspectorName(null)] UpgradedSommer,
-    [InspectorName(null)] UpgradedEcstasy,
     [InspectorName(null)] Leech,
     [InspectorName(null)] Cloud,
     Camouflage,
@@ -51,6 +49,7 @@ public enum EStatusEffect
     Silence,
     Root,
     Pull,
+    BuffButterfly,
 
     [InspectorName(null)] MAX,
 }
@@ -85,17 +84,16 @@ public enum EBuffType
     None, 
     StatUpgrade,
     SpawnAreaIncrease,
-    FoodHealEfficiency,
     BindingSkillUpgrade,
     
-    EnemyGoldDropBuff,              // 유포리아 - 사랑의 착취
-    EcstasyUpgrade,                 // 유포리아 - 뇌쇄술
+    EuphoriaEnemyGoldDropBuff,      // 유포리아 - 사랑의 착취
+    EuphoriaEcstasyUpgrade,         // 유포리아 - 뇌쇄술
             
     EnemyItemDropRate,              // 소머 - 무기력한 자장가
-    HypHallucination,               // 소머 - 입면 환각
+    SommerHypHallucination,         // 소머 - 입면 환각
             
     TurbelaMaxButterfly,            // 투르벨라 - 군락지 소환
-    TurbelaDoubleButterfly,         // 투르벨라 - 집단 폭행
+    TurbelaDoubleSpawn,         // 투르벨라 - 집단 폭행
     TurbelaButterflyCrit,           // 투르벨라 - 탄막 폭격
 }
 
@@ -185,10 +183,11 @@ public enum EStat
 {
     Health,
     Strength,
-    CriticalChance,
+    CriticalRate,
     Armour,
     ArmourPenetration,
     EvasionRate,
+    HealEfficiency,
 }
 #endregion
 

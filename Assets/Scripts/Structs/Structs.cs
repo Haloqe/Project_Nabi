@@ -33,7 +33,7 @@ public struct SLegacyStatusEffectUpgradeData
 public struct SLegacyStatUpgradeData
 {
     public EStat Stat;
-    public EIncreaseMethod IncreaseMethod;
+    //public EIncreaseMethod IncreaseMethod;
     [NamedArray(typeof(ELegacyPreservation))] public float[] IncreaseAmounts;
 
     public bool HasUpdateCondition;

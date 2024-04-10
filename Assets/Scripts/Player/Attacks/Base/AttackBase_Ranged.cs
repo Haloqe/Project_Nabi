@@ -12,6 +12,7 @@ public class AttackBase_Ranged : AttackBase
         base.Start();
         _damageInfoInit.BaseDamage = 3.0f;
         _attackInfoInit.Damage.TotalAmount = _damageInfoInit.BaseDamage + _playerController.Strength * _damageInfoInit.RelativeDamage;
+        _attackInfoInit.CanBeDarkAttack = true;
         Reset();
     }
 
@@ -54,11 +55,10 @@ public class AttackBase_Ranged : AttackBase
     }
 
     // Called when a shot bullet is destroyed for any reason
-    public void OnBulletDestroy(IDamageable target, Vector3 bulletPos, AttackInfo savedAttackInfo)
+    public void OnHit(IDamageable target, Vector3 bulletPos, AttackInfo savedAttackInfo)
     {
-        Debug.Log(target);
         if (activeLegacy) 
-            ((Legacy_Ranged)activeLegacy).OnBulletDestroy(bulletPos);
+            ((Legacy_Ranged)activeLegacy).OnHit(target, bulletPos);
         
         // Deal damage to the target if the bullet is hit
         if (target != null)

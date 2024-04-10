@@ -45,6 +45,8 @@ public class AttackBase_Melee : AttackBase
         _damageInfoComboInit = new SDamageInfo() { BaseDamage = 5.0f, RelativeDamage = 3.0f, };
         _attackInfoInit.Damage.TotalAmount = _damageInfoInit.BaseDamage + _playerController.Strength * _damageInfoInit.RelativeDamage;
         _attackComboInit.Damage.TotalAmount = _damageInfoComboInit.BaseDamage + _playerController.Strength * _damageInfoComboInit.RelativeDamage;
+        _attackInfoInit.CanBeDarkAttack = true;
+        _attackComboInit.CanBeDarkAttack = true;
         Reset();
     }
 
@@ -70,10 +72,11 @@ public class AttackBase_Melee : AttackBase
     private void Update()
     {
         // Return if not attacking
-        if (_comboStack == 0 || _comboStack == 3) return;
+        if (_comboStack is 0 or 3) return;
 
         // Update combo timer if attacking
         _comboTimer += Time.deltaTime;
+        
         // Reset combo stack if time limit reached
         if (_comboTimer > _comboTimeLimit)
         {
@@ -90,6 +93,8 @@ public class AttackBase_Melee : AttackBase
 
         // Dir: Positive if left, negative if right
         float dir = Mathf.Sign(gameObject.transform.localScale.x);
+        _attackInfo.SetAttackDirToMyFront(_damageDealer.gameObject);
+        _attackComboInfo.SetAttackDirToMyFront(_damageDealer.gameObject);
 
         // Combo Attack
         if (_comboStack == 3)

@@ -25,7 +25,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     //Status effect attributes
     public bool IsSilenced { get; private set; }
     public bool ShouldDisableMovement { get; private set; }
-    [NamedArray(typeof(EStatusEffect))] public ParticleSystem[] DebuffEffects;
+    [NamedArray(typeof(EStatusEffect))] public GameObject[] DebuffEffects;
         private int[] _activeDOTCounts;
     private float[] _effectRemainingTimes;
     private SortedDictionary<float, float> _slowRemainingTimes; // str,time
@@ -97,13 +97,10 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         foreach (var statusEffect in statusEffects)
         {
             // Handle chance
-            var randVal = UnityEngine.Random.value;
+            var randVal = Random.value;
             Debug.Log("[" + gameObject.name + "] " + statusEffect.Effect + " is " + (randVal > statusEffect.Chance ? "not " : "") + "applied " +
                 "(Chance " + statusEffect.Chance + ", val: " + randVal.ToString("F2") + ")");
-            if (randVal > statusEffect.Chance)
-            {
-                continue;
-            }
+            if (randVal > statusEffect.Chance) continue;
                 
             // handle SLOW separately
             if (statusEffect.Effect == EStatusEffect.Slow)
@@ -111,6 +108,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
                 ApplySlow(statusEffect.Strength, statusEffect.Duration);
                 continue;
             }
+            
             //handles status effect other than slow
             switch (statusEffect.Effect)
             {
@@ -158,6 +156,10 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
                     IsSilenced = true;
                     _movement.StartPullX(incomingDirectionX, statusEffect.Strength, statusEffect.Duration);
                     break;
+                
+                case EStatusEffect.Evade or EStatusEffect.Camouflage:
+                    if (!_player.AddShadowHost(this)) continue;
+                    break;
             }
             UpdateStatusEffectTime(statusEffect.Effect, statusEffect.Duration);
         }
@@ -186,13 +188,12 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
             duration = Mathf.Clamp(duration - _effectRemainingTimes[effectIdx], 0, float.MaxValue);
             _effectRemainingTimes[effectIdx] += duration;
         }
-        Debug.Log("[" + gameObject.name + "] Apply " + effect + " for " + duration.ToString("F") 
-            + " total: " + _effectRemainingTimes[effectIdx].ToString("F"));
+        // Debug.Log("[" + gameObject.name + "] Apply " + effect + " for " + duration.ToString("F") 
+        //     + " total: " + _effectRemainingTimes[effectIdx].ToString("F"));
     }
 
     private void UpdateRemainingStatusEffectTimes()
     {
-        //아직 다시 움직이게 하는거 , 사일런스 풀리는 것 밖에 구현 안되어있음
         float deltaTime = Time.deltaTime;
         
         for (int i = 0; i < _effectRemainingTimes.Length; i++)
@@ -205,7 +206,6 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
             _effectRemainingTimes[i] -= deltaTime;
             EStatusEffect currEffect = (EStatusEffect)i;
-            //Debug.Log(currEffect + "'s RemainingTime: " + _effectRemainingTimes[i]);
 
             //if there is no remaining time for the status effect imposed on the enemy after calculation
             if (_effectRemainingTimes[i] <= 0)
@@ -214,26 +214,30 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
                 
                 _effectRemainingTimes[i] = 0.0f;
 
-                if (currEffect == EStatusEffect.Sleep || currEffect == EStatusEffect.Root || currEffect == EStatusEffect.Airborne 
-                    || currEffect == EStatusEffect.Stun || currEffect == EStatusEffect.Pull)
+                if (currEffect is EStatusEffect.Sleep or EStatusEffect.Root or EStatusEffect.Airborne or EStatusEffect.Stun or EStatusEffect.Pull)
                 {
                     _movement.EnableMovement();
                 }
 
-                if (currEffect == EStatusEffect.Airborne || currEffect == EStatusEffect.Stun || currEffect == EStatusEffect.Silence 
-                    || currEffect == EStatusEffect.Pull)
+                if (currEffect is EStatusEffect.Airborne or EStatusEffect.Stun or EStatusEffect.Silence or EStatusEffect.Pull)
                 {
                     IsSilenced = false;
                 }
 
-                if (_player.HypHallucinationPreserv != ELegacyPreservation.MAX && currEffect == EStatusEffect.Ecstasy)
+                if (_player.SommerHypHallucinationPreserv != ELegacyPreservation.MAX && currEffect == EStatusEffect.Ecstasy)
                 {
                     _damageInfo.Damage.TotalAmount *= 0.75f;
                 }
 
-                if (currEffect == EStatusEffect.Ecstasy)
+                switch (currEffect)
                 {
-                    _player.RemoveEcstasyBuff(this);
+                    case EStatusEffect.Ecstasy:
+                        _player.RemoveEcstasyBuff(this);
+                        break;
+                    
+                    case EStatusEffect.Evade or EStatusEffect.Camouflage:
+                        _player.RemoveShadowHost(this);
+                        break;
                 }
             }
         }
@@ -328,21 +332,12 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         Debug.Log("New slow (" + strength + ") time: " + duration.ToString("0.0000"));
     }
 
-    private void SetVFXActive(EStatusEffect effect, bool setActive)
-    {
-        SetVFXActive((int)effect, setActive);
-    }
+    private void SetVFXActive(EStatusEffect effect, bool setActive) => SetVFXActive((int)effect, setActive);
 
     private void SetVFXActive(int effectIdx, bool setActive)
     {
         if (effectIdx >= DebuffEffects.Length || DebuffEffects[effectIdx] == null) return;
-        // DebuffEffects[effectIdx].SetActive(setActive);
-        if (setActive)
-        {
-            DebuffEffects[effectIdx].Play();
-        } else {
-            DebuffEffects[effectIdx].Stop();
-        }
+        DebuffEffects[effectIdx].SetActive(setActive);
     }
 
     #endregion Status Effects imposed by the player handling
@@ -385,6 +380,11 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     }
 
     // Received Damage Handling
+    public GameObject GetGameObject()
+    {
+        return gameObject;
+    }
+    
     public void TakeDamage(AttackInfo damageInfo)
     {
         Utility.PrintDamageInfo(gameObject.name, damageInfo);
@@ -529,11 +529,11 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     private void DropGold()
     {
         int minGoldRange = EnemyData.MinGoldRange;
-        int maxGoldRange = EnemyData.MaxGoldRange + (int)Define.EuphoriaEnemyGoldDropBuffStats[(int)_player.EnemyGoldDropBuffPreserv];
+        int maxGoldRange = EnemyData.MaxGoldRange + (int)Define.EuphoriaEnemyGoldDropBuffStats[(int)_player.EuphoriaEnemyGoldDropBuffPreserv];
         
         // Calculate how much gold to drop
         int goldToDrop = 0;
-        if (_player.EnemyGoldDropBuffPreserv == ELegacyPreservation.MAX)
+        if (_player.EuphoriaEnemyGoldDropBuffPreserv == ELegacyPreservation.MAX)
         {
             goldToDrop = Random.Range(minGoldRange, maxGoldRange);
         }
