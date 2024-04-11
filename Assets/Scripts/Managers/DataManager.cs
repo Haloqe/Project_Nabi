@@ -15,10 +15,4 @@ public class DataManager : Singleton<DataManager>
         _playerAttackManager = GetComponent<PlayerAttackManager>();
         _enemyManager = GetComponent<EnemyManager>();
     }
-    
-    private void Start()
-    {
-        _enemyManager.Init(basePath + "EnemyDataTable.csv");
-        _playerAttackManager.Init();
-    }
 }

@@ -68,7 +68,6 @@ public enum ELegacyType
     [InspectorName(null)]MAX,
 }
 
-[Serializable]
 public enum ELegacyPreservation
 {
     Weathered,  // 닳은
@@ -291,5 +290,12 @@ public enum EDoorDirection
     Down,
     Left,
     Right,
+}
+
+public enum EEnemyType
+{
+    VoidMantis,
+    Insectivore,
+    Bee,
 }
 #endregion

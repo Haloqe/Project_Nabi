@@ -51,6 +51,8 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         _boundActiveLegacyIDs = new int[] {-1,-1,-1};
         _passiveLegacySlotPrefab = Utility.LoadGameObjectFromPath("Prefabs/UI/InGame/PassiveLegacySlot");
         GameEvents.restarted += OnRestarted;
+
+        Init();
     }
     
     private void OnRestarted()

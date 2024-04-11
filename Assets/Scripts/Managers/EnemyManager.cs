@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -6,24 +7,45 @@ using UnityEngine;
 
 public class EnemyManager : Singleton<EnemyManager>
 {
-    public int NumEnemyTypes;
+    public int NumEnemyTypes { get; private set; }
     private Dictionary<int, SEnemyData> _enemies;
     private GameObject[] _enemyPrefabs;
     public GameObject GoldPrefab { private set; get; }
     public EnemyVisibilityChecker VisibilityChecker { private set; get; }
+    private List<EnemyBase> _spawnedEnemies;
+    private Transform _enemiesContainer;
 
     protected override void Awake()
     {
         base.Awake();
         if (_toBeDestroyed) return;
         _enemies = new Dictionary<int, SEnemyData>();
+        _spawnedEnemies = new List<EnemyBase>();
         GoldPrefab = Resources.Load("Prefabs/Items/Coin").GameObject();
+        GameEvents.mapLoaded += OnMapLoaded;
         GameEvents.gameLoadEnded += OnGameLoadEnded;
+        InGameEvents.EnemySlayed += (enemy => _spawnedEnemies.Remove(enemy));
+        
+        Init(Application.dataPath + "/Tables/EnemyDataTable.csv");
     }
     
+    // Spawn enemies from spawners
+    private void OnMapLoaded()
+    {
+        _enemiesContainer = new GameObject("Enemies").transform;
+        _spawnedEnemies.Clear();
+
+        var spawners = FindObjectsByType<EnemySpawner>(FindObjectsSortMode.None);
+        foreach (var spawner in spawners)
+        {
+            spawner.Spawn();
+        }
+    }
+
     private void OnGameLoadEnded()
     {
         VisibilityChecker = Camera.main.GetComponent<EnemyVisibilityChecker>();
+        StartCoroutine(ActiveCheckCoroutine());
     }
 
     public void Init(string dataPath)
@@ -81,6 +103,39 @@ public class EnemyManager : Singleton<EnemyManager>
 
     public GameObject SpawnEnemy(int enemyID, Vector3 spawnLocation)
     {
-        return Instantiate(_enemyPrefabs[enemyID], spawnLocation, Quaternion.identity).GameObject();
+        var enemy = Instantiate(_enemyPrefabs[enemyID], spawnLocation, Quaternion.identity).GameObject();
+        enemy.SetActive(false);
+        enemy.transform.SetParent(_enemiesContainer);
+        _spawnedEnemies.Add(enemy.GetComponent<EnemyBase>());
+        return enemy;
+    }
+    
+    private IEnumerator ActiveCheckCoroutine()
+    {
+        var activeDistance = 50f;
+        var wait = new WaitForSeconds(2f);
+        var player = PlayerController.Instance.transform;
+
+        while (true)
+        {
+            foreach (var enemy in _spawnedEnemies)
+            {
+                if (enemy == null) continue;
+                float distance = Vector3.Distance(enemy.transform.position, player.position);
+        
+                // Close to the player and is not activated -> activate enemy
+                if (distance <= activeDistance && !enemy.gameObject.activeSelf) 
+                {
+                    enemy.gameObject.SetActive(true);
+                }
+                // Far from the player and is activated -> deactivate enemy
+                else if (distance > activeDistance && enemy.gameObject.activeSelf)
+                {
+                    enemy.gameObject.SetActive(false);
+                }
+            }
+        
+            yield return wait;
+        }
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using TMPro;
 using Unity.VisualScripting;
@@ -39,6 +40,7 @@ public class UIManager : Singleton<UIManager>
     // Minor Controllable Objects
     private Slider _playerHPSlider;
     private Image _playerHPGlobe;
+    private TextMeshProUGUI _hpText;
     private Slider _darkGaugeSlider;
     private TextMeshProUGUI _darkGaugeText;
     
@@ -95,6 +97,7 @@ public class UIManager : Singleton<UIManager>
         _mapController      = _zoomedMap.GetComponent<MapController>();
         _playerHPSlider     = inGameCombatUI.GetComponentInChildren<Slider>();
         _playerHPGlobe      = inGameCombatUI.transform.Find("Globe").Find("HealthGlobe").Find("HealthGlobeMask").Find("Fill").GetComponent<Image>();
+        _hpText             = inGameCombatUI.transform.Find("Globe").GetComponentInChildren<TextMeshProUGUI>();
         _darkGaugeSlider    = inGameCombatUI.transform.Find("DarkSlider").GetComponentInChildren<Slider>();
         _darkGaugeText      = inGameCombatUI.transform.Find("DarkSlider").GetComponentInChildren<TextMeshProUGUI>();
         _zoomedMap.SetActive(false);
@@ -120,6 +123,15 @@ public class UIManager : Singleton<UIManager>
     {
         //_playerHPSlider.value = hpRatio;
         _playerHPGlobe.rectTransform.localPosition = new Vector3(0, _playerHPGlobe.rectTransform.rect.height * hpRatio - _playerHPGlobe.rectTransform.rect.height, 0);
+        float hp = hpRatio * 100f;
+        if (Math.Abs(hp % 1) < 0.1) 
+        {
+            _hpText.text = (int)hp + "/100";
+        }
+        else
+        {
+            _hpText.text = hp.ToString("F1") + "/100";
+        }
     }
 
     private void OnPlayerDefeated()

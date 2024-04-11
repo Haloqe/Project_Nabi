@@ -32,6 +32,7 @@ public class EnemyMovement_Flight : EnemyMovement
 
     private void UpdatePath()
     {
+        if (!isActiveAndEnabled) return;
         if (_seeker.IsDone())
             _seeker.StartPath(_rigidBody.position, _enemyBase.Target.transform.position + new Vector3(0f, 4f, 0f), OnPathComplete);
     }
