@@ -49,14 +49,14 @@ public class AttackBase_Area : AttackBase
     //fetch the address of current selected flower if the number is not 0 
     public void CheckCurrentFlower()
     {
-        currentSelectedFlowerIndex = FindObjectOfType<PlayerController>().GetCurrentSelectedFlower();
+        currentSelectedFlowerIndex = FindObjectOfType<PlayerInventory>().GetCurrentSelectedFlower();
         Debug.Log("current selected flower is: " + currentSelectedFlowerIndex);
 
     }
 
     public int CheckNumberOfCurrentFlower()
     {
-        int number = FindObjectOfType<PlayerController>().GetNumberOfFlowers(currentSelectedFlowerIndex);
+        int number = FindObjectOfType<PlayerInventory>().GetNumberOfFlowers(currentSelectedFlowerIndex);
         return number;
     }
     public void ReassignVFXAddress()
@@ -123,7 +123,7 @@ public class AttackBase_Area : AttackBase
         var vfx = Instantiate(VFXObject, position, Quaternion.identity);
         vfx.GetComponent<Bomb>().Owner = this;
 
-        FindObjectOfType<PlayerController>().DecreaseToFlower(currentSelectedFlowerIndex);
+        FindObjectOfType<PlayerInventory>().DecreaseToFlower(currentSelectedFlowerIndex);
     }
 
     protected override void OnAttackEnd_PreDelay()

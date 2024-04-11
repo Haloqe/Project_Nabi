@@ -246,6 +246,15 @@ public enum EPortalType
     FoodStore,
     NextLevel,
 }
+
+public enum EFlowerType
+{
+    NectarFlower,
+    IncendiaryFlower,
+    StickyFlower,
+    BlizzardFlower,
+    GravityFlower
+};
 #endregion Interaction
 
 #region LevelGeneration

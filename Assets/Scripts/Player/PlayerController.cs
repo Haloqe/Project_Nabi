@@ -17,11 +17,6 @@ public class PlayerController : Singleton<PlayerController>
     public PlayerDamageDealer playerDamageDealer;
     public PlayerInventory playerInventory;
 
-    //(Variables for FlowerBomb)
-    private int[] _flowerNumbers = new int[5];
-    private int _currentSelectedFlower = 1;
-    [SerializeField] TextMeshProUGUI[] flowerText = new TextMeshProUGUI[5];
-
     // Reference to UI objects
     public GameObject evadeTextUI;
     public GameObject generalTextUI;
@@ -40,7 +35,7 @@ public class PlayerController : Singleton<PlayerController>
     private float _baseStrength = 1.0f;
     private float _baseArmour = 0.0f;
     private float _baseArmourPenetration = 0.0f;
-    private float _baseEvasionRate = 0.0f; // TEMP 
+    private float _baseEvasionRate = 0.0f;
     private float _baseCritcalRate = 0.0f;
     private float _baseHealEfficiency = 1.0f;
     
@@ -174,28 +169,6 @@ public class PlayerController : Singleton<PlayerController>
         PlayerEvents.ValueChanged.Invoke(ECondition.SlayedEnemiesCount, +1);
     }
     
-    //Selection of Bombs
-    void OnBomb0_Select(InputValue value)
-    {
-        SelectFlowers(0);
-    }
-    void OnBomb1_Select(InputValue value)
-    {
-        SelectFlowers(1);
-    }
-
-    void OnBomb2_Select(InputValue value)
-    {
-        SelectFlowers(2);
-    }
-    void OnBomb3_Select(InputValue value)
-    {
-        SelectFlowers(3);
-    }
-    void OnBomb4_Select(InputValue value)
-    {
-        SelectFlowers(4);
-    }
 
     private void OnOpenMap(InputValue value)
     {
@@ -206,44 +179,6 @@ public class PlayerController : Singleton<PlayerController>
     public void Heal(float amount)
     {
         playerDamageReceiver.ChangeHealthByAmount(amount * HealEfficiency, false);
-    }
-
-    // Store the number of flower bombs the player owns
-    public void AddToFlower(int flowerIndex)
-    {
-        _flowerNumbers[flowerIndex]++;
-        flowerText[flowerIndex].text = _flowerNumbers[flowerIndex].ToString();
-    }
-
-    // Decrease the number of flower bombs the player owns
-    public void DecreaseToFlower(int flowerIndex)
-    {
-        _flowerNumbers[flowerIndex]--;
-        flowerText[flowerIndex].text = _flowerNumbers[flowerIndex].ToString();
-    }
-
-    // Return the number of flower bombs currently stored
-    public int GetNumberOfFlowers(int flowerIndex)
-    {
-        return _flowerNumbers[flowerIndex];
-    }
-
-    //Select a certain flower ready to be used
-    public void SelectFlowers(int flowerIndex)
-    {
-        //if the number of flowers in stock is not 0, select.
-        if (_flowerNumbers[flowerIndex] != 0)
-        {
-            _currentSelectedFlower = flowerIndex;
-            Debug.Log("Flower Number" + flowerIndex + "is selected!");
-            FindObjectOfType<AttackBase_Area>().SwitchVFX();
-        }
-    }
-
-    //Return the current selected flower
-    public int GetCurrentSelectedFlower()
-    {
-        return _currentSelectedFlower;
     }
 
     public void UpgradeStat(int legacyID, SLegacyStatUpgradeData upgradeData, ELegacyPreservation preservation)
