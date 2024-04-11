@@ -39,6 +39,9 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     private Transform _passiveLegacyGroup;
     private GameObject _passiveLegacySlotPrefab;
     private LegacySlotUI[] _activeLegacySlots = new LegacySlotUI[4];
+    
+    // Other loaded objects
+    public GameObject ClockworkPrefab { get; private set; } 
 
     protected override void Awake()
     {
@@ -50,6 +53,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         _collectedLegacyPreservations = new Dictionary<int, ELegacyPreservation>();
         _boundActiveLegacyIDs = new int[] {-1,-1,-1};
         _passiveLegacySlotPrefab = Utility.LoadGameObjectFromPath("Prefabs/UI/InGame/PassiveLegacySlot");
+        ClockworkPrefab = Resources.Load("Prefabs/Interact/Clockwork").GameObject();
         GameEvents.restarted += OnRestarted;
 
         Init();

@@ -201,7 +201,7 @@ public class UIManager : Singleton<UIManager>
         _uiInputModule.point = _playerPointIARef;
     }
 
-    public bool OpenWarriorUI(WarriorClockworkInteractor interactor)
+    public bool OpenWarriorUI(Clockwork interactor)
     {
         if (_activeFocusedUI) return false; 
         

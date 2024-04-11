@@ -1,13 +1,13 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class WarriorClockworkInteractor : Interactor
+public class Clockwork : Interactor
 {
     public EWarrior warrior;
     
     private void Update()
     {
-        transform.Rotate(0, 50.0f * Time.deltaTime, 0);
+        transform.Rotate(0, 0, -50.0f * Time.deltaTime);
     }
     
     protected override void OnInteract(InputAction.CallbackContext obj)
