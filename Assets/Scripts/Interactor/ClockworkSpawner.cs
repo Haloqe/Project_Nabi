@@ -12,10 +12,10 @@ public class ClockworkSpawner : Interactor
 
     private void Awake()
     {
-        Init();
+        PlayerEvents.spawned += Init;
     }
-    
-    public void Init()
+
+    private void Init()
     {
         // Choose a random warrior
         int warrior = Random.Range(0, (int)EWarrior.MAX);

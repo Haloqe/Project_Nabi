@@ -32,9 +32,12 @@ public class LevelManager : Singleton<LevelManager>
     
     // minimapTiles
     [SerializeField] private TileBase[] MinimapTiles;
-
     private EDoorDirection[] _matchDirections;
     Vector3Int[] _newDoorOffsets;
+    
+    // Clockwork spawners
+    [SerializeField] private int clockworkLimit = 10;
+    private List<ClockworkSpawner[]> _clockworkSpawnersByRoom;
 
     protected override void Awake()
     {
@@ -59,7 +62,7 @@ public class LevelManager : Singleton<LevelManager>
             Vector3Int.left, Vector3Int.right
         };
         _generatedRooms = new List<GameObject>();
-        
+
         InitialiseRooms();
         GenerateLevelGraph();
     }
@@ -71,6 +74,7 @@ public class LevelManager : Singleton<LevelManager>
         _corridors[0].Clear();
         _corridors[1].Clear();
         _generatedRooms.Clear();
+        _clockworkSpawnersByRoom = new List<ClockworkSpawner[]>();
         _roomsContainer = GameObject.Find("Rooms").transform;
         _mapTilemap = GameObject.Find("Map").GetComponent<Tilemap>();
         _superWallTilemap = GameObject.FindWithTag("Ground").GetComponent<Tilemap>();
@@ -98,6 +102,7 @@ public class LevelManager : Singleton<LevelManager>
         roomID = _levelGraph.ConnectNewRoomToAnother(ERoomType.Normal, roomID);
         _levelGraph.ConnectNewRoomToAnother(ERoomType.Shop, prevRoomID);
         _levelGraph.ConnectNewRoomToPrev(ERoomType.Teleport);
+        _levelGraph.ConnectNewRoomToPrev(ERoomType.MidBoss);
         _levelGraph.ConnectNewRoomToPrev(ERoomType.Normal);
         _levelGraph.ConnectNewRoomToPrev(ERoomType.Normal);
         _levelGraph.ConnectNewRoomToPrev(ERoomType.Teleport);
@@ -149,18 +154,17 @@ public class LevelManager : Singleton<LevelManager>
                  new SDoorInfo(EConnectionType.Vertical, EDoorDirection.Down, new Vector3Int(500, 501, 0)),
                  new SDoorInfo(EConnectionType.Horizontal, EDoorDirection.Left, new Vector3Int(501, 500, 0)),
                  new SDoorInfo(EConnectionType.Horizontal, EDoorDirection.Right, new Vector3Int(499, 500, 0)) };
-
+        
         SRoomInfo roomInfo = new SRoomInfo(_levelGraph.GetNumRooms(), _levelGraph.GetStartRoom());
-
         List<bool> visited = new List<bool>(new bool[_levelGraph.GetNumRooms()]);
-        Queue<SRoomInfo> toVisit = new();
-        toVisit.Enqueue(roomInfo);
+        Stack<SRoomInfo> toVisit = new Stack<SRoomInfo>();
+        toVisit.Push(roomInfo);
 
         // Procedurally generate rooms
         while (toVisit.Count > 0)
         {
             // Get the next room to place
-            roomInfo = toVisit.Dequeue();
+            roomInfo = toVisit.Pop();
             int currRoomID = roomInfo.RoomID;
 
             // If already placed, skip
@@ -171,11 +175,11 @@ public class LevelManager : Singleton<LevelManager>
             var res = PlaceRoom(roomInfo.PrevRoomID, currRoomID);
             if (!res) continue;
 
-            // Add its connected rooms to the visit queue
+            // Add its connected rooms to the visit stack
             var nextRoomIDs = _levelGraph.GetConnectedRooms(currRoomID);
             foreach (var nextRoomID in nextRoomIDs)
             {
-                toVisit.Enqueue(new SRoomInfo(roomInfo.RoomID, nextRoomID));
+                toVisit.Push(new SRoomInfo(roomInfo.RoomID, nextRoomID));
             }
         }
     }
@@ -425,12 +429,73 @@ public class LevelManager : Singleton<LevelManager>
             _superWallTilemap.SetTile(doorWorldPos + _newDoorOffsets[(int)door.Direction], null);
             _superWallTilemap.SetTile(otherDoorPos + _newDoorOffsets[(int)door.Direction], null);
         }
+        
+        // Save spawners
+        _clockworkSpawnersByRoom.Add(roomObj.transform.GetComponentsInChildren<ClockworkSpawner>());
     }
 
     private void PostProcessLevel()
     {
         //AddSurroundingWallTiles();
         GenerateMinimap();
+        SetClockworkSpawners();
+    }
+    
+    private void SetClockworkSpawners()
+    {
+        // Split in the middle
+        var roomsCount = _clockworkSpawnersByRoom.Count;
+        var roomMid = roomsCount % 2 == 0 ? roomsCount / 2 - 1 : roomsCount / 2; // the last room index to be included in the first half
+
+        // Combine spawners into a list
+        int[] fixedSpawnerCounts = {0,0};
+        List<ClockworkSpawner>[] availableSpawners = { new List<ClockworkSpawner>(), new List<ClockworkSpawner>() };
+
+        int[] sectionStarts = { 0, roomMid + 1 };
+        int[] sectionEnds = { roomMid + 1, roomsCount };
+        for (int section = 0; section < 2; section++)
+        {
+            for (int roomIdx = sectionStarts[section]; roomIdx < sectionEnds[section]; roomIdx++)
+            {
+                foreach (var spawner in _clockworkSpawnersByRoom[roomIdx])
+                {
+                    if (!spawner.isFixedSpawn) availableSpawners[section].Add(spawner);
+                    else fixedSpawnerCounts[section]++;
+                }
+            }
+        }
+        
+        // Compute the number of clockwork spawners to activate in each section
+        int totalSpawnCount = Mathf.Min(clockworkLimit - fixedSpawnerCounts.Sum(), availableSpawners[0].Count + availableSpawners[1].Count);
+        double[] spawnDistributions = {0.6, 0.4};
+        int[] spawnCounts = new int[spawnDistributions.Length];
+        int sumOfPreviousGroups = 0;
+
+        for (int i = 0; i < spawnDistributions.Length; i++)
+        {
+            if (i == spawnDistributions.Length - 1)
+            {
+                spawnCounts[i] = totalSpawnCount - sumOfPreviousGroups;
+            }
+            else
+            {
+                spawnCounts[i] = (int)(totalSpawnCount * spawnDistributions[i]);
+                sumOfPreviousGroups += spawnCounts[i];
+            }
+        }
+        
+        // Randomly select clockwork spawners to activate
+        var rand = new System.Random();
+        for (int section = 0; section < 2; section++)
+        {
+            var shuffledSpawners = availableSpawners[section].OrderBy(x => rand.Next()).ToList();
+            
+            // Destroy spawners that are not selected
+            for (int i = spawnCounts[section]; i < availableSpawners[section].Count; i++)
+            {
+                Destroy(shuffledSpawners[i].gameObject);
+            }
+        }
     }
 
     private void AddSurroundingWallTiles()

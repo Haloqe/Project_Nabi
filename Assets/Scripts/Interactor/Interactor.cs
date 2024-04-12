@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -8,7 +9,7 @@ public abstract class Interactor : MonoBehaviour
     private InputAction _interactAction;
     protected bool _isInteracting;
 
-    private void OnEnable()
+    protected virtual void Start()
     {
         _interactAction = FindObjectOfType<PlayerInput>().actions["Player/Interact"];
     }

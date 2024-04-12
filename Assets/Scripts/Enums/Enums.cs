@@ -266,6 +266,8 @@ public enum ERoomType
     Teleport,
     Treasure,
     Shop,
+    MidBoss,
+    Boss,
     MAX,
 }
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using TMPro;
+using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -24,6 +25,8 @@ public class UIManager : Singleton<UIManager>
     private GameObject _zoomedMapPrefab;
     private GameObject _loadingScreenPrefab;
     private GameObject[] _warriorUIPrefabs;
+    private GameObject _evadePopupPrefab;
+    private GameObject _textPopupPrefab;
 
     // UI Instantiated Objects
     public GameObject inGameCombatUI;
@@ -149,6 +152,8 @@ public class UIManager : Singleton<UIManager>
         _inGameCombatPrefab     = Utility.LoadGameObjectFromPath(path + "InGame/CombatCanvas");
         _zoomedMapPrefab        = Utility.LoadGameObjectFromPath(path + "InGame/ZoomedMap");
         _loadingScreenPrefab    = Utility.LoadGameObjectFromPath(path + "LoadingCanvas");
+        _evadePopupPrefab       = Utility.LoadGameObjectFromPath(path + "InGame/TextPopUp/EvadeUI");
+        _textPopupPrefab        = Utility.LoadGameObjectFromPath(path + "InGame/TextPopUp/GeneralTextUI");
         
         _warriorUIPrefabs = new GameObject[(int)EWarrior.MAX];
         for (int i = 0; i < (int)EWarrior.MAX; i++)
@@ -269,5 +274,17 @@ public class UIManager : Singleton<UIManager>
         {
             _warriorUI.OnSubmit();
         }
+    }
+    
+    // InGame popup
+    public void DisplayTextPopUp(string text, Vector3 position, Transform parent = null)
+    {
+        var ui = Instantiate(_textPopupPrefab, position, quaternion.identity);
+        ui.GetComponent<TextUI>().Init(parent, text);
+    }
+    
+    public void DisplayPlayerEvadePopUp()
+    {
+        Instantiate(_evadePopupPrefab, PlayerController.Instance.transform.position + new Vector3(0, 2.3f, 0), quaternion.identity);
     }
 }

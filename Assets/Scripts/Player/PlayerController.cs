@@ -1,9 +1,6 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
-using TMPro;
-using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -16,10 +13,6 @@ public class PlayerController : Singleton<PlayerController>
     public PlayerDamageReceiver playerDamageReceiver;
     public PlayerDamageDealer playerDamageDealer;
     public PlayerInventory playerInventory;
-
-    // Reference to UI objects
-    public GameObject evadeTextUI;
-    public GameObject generalTextUI;
     
     // Centrally controlled variables
     private int _slayedEnemiesCount = 0;
@@ -209,7 +202,7 @@ public class PlayerController : Singleton<PlayerController>
         // Display text
         string[] upText = {" Up!", " 업!"};
         var text = Define.StatNames[(int)Define.Localisation, (int)upgradeData.Stat] + upText[(int)Define.Localisation];
-        DisplayTextPopUp(text, true);
+        UIManager.Instance.DisplayTextPopUp(text, transform.position + new Vector3(0, 2.3f, 0), transform);
         
         // if (upgradeData.HasApplyCondition)
         // {
@@ -317,12 +310,5 @@ public class PlayerController : Singleton<PlayerController>
             yield return wait;
             playerDamageDealer.UpdateNightShadeDarkGauge(_shadowHostAutoUpdateAmount);
         }
-    }
-    
-    // TODO move to ui manager
-    public void DisplayTextPopUp(string text, bool isAttached)
-    {
-        var ui = Instantiate(generalTextUI, transform.position + new Vector3(0, 2.3f, 0), quaternion.identity).GetComponent<TextUI>();
-        ui.Init(isAttached ? transform : null, text);
     }
 }

@@ -171,7 +171,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         // Evade
         if (Random.value <= _playerController.EvasionRate)
         {
-            Instantiate(_playerController.evadeTextUI, transform.position + new Vector3(0, 2.3f, 0), quaternion.identity);
+            UIManager.Instance.DisplayPlayerEvadePopUp();
             return;
         }
         

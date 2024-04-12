@@ -3,13 +3,13 @@ using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
 {
-    public int spawnCount;
+    public int spawnLimit;
     [NamedArray(typeof(EEnemyType))] public float[] spawnProbabilities;
     private float[] _spawnProbabilitiesAcc;
 
     public void Spawn()
     {
-        if (spawnCount == 0) return;
+        if (spawnLimit == 0) return;
         
         // Save accumulated probabilities
         _spawnProbabilitiesAcc = new float[spawnProbabilities.Length];
@@ -23,7 +23,7 @@ public class EnemySpawner : MonoBehaviour
         var enemyManager = EnemyManager.Instance;
         System.Random sysRandom = new System.Random();
         var probabilitySum = _spawnProbabilitiesAcc[^1];
-        for (int i = 0; i < spawnCount; i++)
+        for (int i = 0; i < spawnLimit; i++)
         {
             int spawnID;
             // If probabilities are not set, apply equal chances
