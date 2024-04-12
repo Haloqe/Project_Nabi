@@ -19,14 +19,14 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     // Movement
     protected EnemyMovement _movement;
     public GameObject Target;
-    protected IDamageable _targetDamageable;
+    public IDamageable TargetDamageable;
     public float ActionTimeCounter = 0f;
  
     //Status effect attributes
     public bool IsSilenced { get; private set; }
     public bool ShouldDisableMovement { get; private set; }
     [NamedArray(typeof(EStatusEffect))] public ParticleSystem[] DebuffEffects;
-        private int[] _activeDOTCounts;
+    private int[] _activeDOTCounts;
     private float[] _effectRemainingTimes;
     private SortedDictionary<float, float> _slowRemainingTimes; // str,time
 
@@ -69,7 +69,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         PlayerEvents.defeated += OnPlayerDefeated;
 
         Target = GameObject.FindWithTag("Player");
-        _targetDamageable = Target.gameObject.GetComponent<IDamageable>();
+        TargetDamageable = Target.gameObject.GetComponent<IDamageable>();
         _movement.Init();
 
         Health = EnemyData.MaxHealth;
@@ -153,7 +153,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
                     break;
                 
                 case EStatusEffect.Pull:
-                    if (_movement.moveType == EEnemyMoveType.Stationary) continue;
+                    if (_movement.MoveType == EEnemyMoveType.Stationary) continue;
                     ShouldDisableMovement = true;
                     IsSilenced = true;
                     _movement.StartPullX(incomingDirectionX, statusEffect.Strength, statusEffect.Duration);
@@ -373,7 +373,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
                     return;
                 }
             }
-            DealDamage(_targetDamageable, _damageInfo);
+            DealDamage(TargetDamageable, _damageInfo);
         }
     }
 
@@ -522,6 +522,11 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         }
 
         ActionTimeCounter -= Time.deltaTime;
+    }
+
+    public void ChangeAttackSpeedByPercentage(float percentage)
+    {
+        _animator.SetFloat("AttackSpeed", percentage);
     }
     #endregion Enemy Movement
 

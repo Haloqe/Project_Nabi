@@ -6,7 +6,7 @@ public abstract class EnemyMovement : MonoBehaviour
 {
     protected EnemyBase _enemyBase;
     private GameObject _attacker;
-    public EEnemyMoveType moveType;
+    public EEnemyMoveType MoveType;
     protected float _moveSpeed;
     public bool IsRooted = false;
     public bool IsMoving = true;
@@ -79,6 +79,17 @@ public abstract class EnemyMovement : MonoBehaviour
     protected virtual void EnableFlip()
     {
         IsFlippable = true;
+    }
+
+    private void EnterAttackSequence()
+    {
+        IsAttackingPlayer = true;
+    }
+
+    private void ExitAttackSequence()
+    {
+        IsAttackingPlayer = false;
+        _animator.SetBool("IsAttacking", false);
     }
 
     protected Vector2 pullOverallVelocity = Vector2.zero;
