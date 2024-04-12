@@ -5,7 +5,7 @@ public class EnemyMovement_Stationary : EnemyMovement
 {
     private void Awake()
     {
-        moveType = EEnemyMoveType.Stationary;
+        MoveType = EEnemyMoveType.Stationary;
     }
     
     public override void Patrol()

@@ -1,11 +1,9 @@
-using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
-public class EnemyMovement_LinearPath : EnemyMovement
+public class EnemyMovement_SpiderA : EnemyMovement
 {
-
     // Ground detection
     [SerializeField] Vector2 _groundColliderSize;
     public LayerMask _groundLayer;
@@ -14,7 +12,7 @@ public class EnemyMovement_LinearPath : EnemyMovement
     
     private void Awake()
     {
-        MoveType = EEnemyMoveType.LinearPath;
+        MoveType = EEnemyMoveType.SpiderA;
     }
 
     private void WalkForward()
@@ -31,6 +29,16 @@ public class EnemyMovement_LinearPath : EnemyMovement
         }
     }
 
+    private void RunTowardsPlayer()
+    {
+        _animator.SetBool("IsAttacking", false);
+        _animator.SetBool("IsWalking", true);
+        _animator.SetFloat("RunMultiplier", 2f);
+        
+        FlipEnemyTowardsTarget();
+        WalkForward();
+    }
+
     private void GenerateRandomState()
     {
         if (Random.Range(0.0f, 1.0f) <= _enemyBase.EnemyData.IdleProbability)
@@ -45,14 +53,16 @@ public class EnemyMovement_LinearPath : EnemyMovement
             if (Random.Range(0.0f, 1.0f) <= 0.3f) FlipEnemy();
         }
     }
-
+    
     public override void Patrol()
     {
         if (IsAtEdge() && IsChasingPlayer)
         {
-            _rigidBody.velocity = Vector2.zero;
-            _animator.SetBool("IsWalking", false);
-            return;
+            // _rigidBody.velocity = Vector2.zero;
+            // _animator.SetBool("IsWalking", false);
+            // return;
+            
+            // jump down the platform!!
         }
 
         _animator.SetBool("IsAttacking", false);
@@ -65,42 +75,81 @@ public class EnemyMovement_LinearPath : EnemyMovement
 
     public override void Chase()
     {
-        if (IsAtEdge())
-        {
-            Patrol();
-            FlipEnemyTowardsTarget();
-            return;
-        }
-
-        if (_enemyBase.ActionTimeCounter < 0)
-        {
-            IsChasingPlayer = false;
-            return;
-        }
-        _animator.SetBool("IsAttacking", false);
-        _animator.SetBool("IsWalking", true);
-        
-        FlipEnemyTowardsTarget();
-        WalkForward();
+        // jump towards the player 30 pixels
     }
 
     public override void Attack()
     {
-        if (IsFlippable) FlipEnemyTowardsTarget();
-        _animator.SetBool("IsAttacking", true);
+        if (_enemyBase.ActionTimeCounter >= 0) return;
+
+        PlayerDamageReceiver playerDamager = _enemyBase.Target.gameObject.GetComponent<PlayerDamageReceiver>();
+
+        if (playerDamager.DebuffEffects[(int)EStatusEffect.Poison] != null &&
+            playerDamager.DebuffEffects[(int)EStatusEffect.Stun] != null)
+        {
+            if (!PlayerIsInWebAttackRange())
+            {
+                RunTowardsPlayer();
+                return;
+            }
+
+            Jump();
+            WebAttack();
+            _enemyBase.ActionTimeCounter = 1.5f;
+            return;
+        }
+
+        if (!PlayerIsInTeethAttackRange())
+        {
+            RunTowardsPlayer();
+            return;
+        }
+
+        TeethAttack();
+        _enemyBase.ActionTimeCounter = 1.5f;
+        return;
     }
 
-    public override bool PlayerIsInAttackRange()
+    private void Jump()
+    {
+
+    }
+
+    private void WebAttack()
+    {
+
+    }
+
+    private void TeethAttack()
+    {
+
+    }
+
+    public override bool PlayerIsInAttackRange() // the 30 pixels mentioned in flowchart
     {
         return Mathf.Abs(transform.position.x - _enemyBase.Target.transform.position.x) <= _enemyBase.EnemyData.AttackRangeX 
             && _enemyBase.Target.transform.position.y - transform.position.y <= _enemyBase.EnemyData.AttackRangeY;
     }
 
-    public override bool PlayerIsInDetectRange()
+    public override bool PlayerIsInDetectRange() // range where it jumps towards player
     {
         return Mathf.Abs(transform.position.x - _enemyBase.Target.transform.position.x) <= _enemyBase.EnemyData.DetectRangeX 
             && _enemyBase.Target.transform.position.y - transform.position.y <= _enemyBase.EnemyData.DetectRangeY;
+        
+        // is it over 30 pixels?
     }
+
+    private bool PlayerIsInWebAttackRange()
+    {
+        return false;
+    }
+
+    private bool PlayerIsInTeethAttackRange()
+    {
+        return false;
+    }
+
+
 
     public bool IsGrounded()
     {
@@ -119,4 +168,5 @@ public class EnemyMovement_LinearPath : EnemyMovement
     {
         Gizmos.DrawWireCube(transform.position - transform.up, _groundColliderSize);
     }
+    
 }

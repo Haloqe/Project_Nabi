@@ -227,6 +227,7 @@ public enum EEnemyMoveType
     LinearPath,
     Stationary,
     Flight,
+    SpiderA,
 }
 
 public enum EEnemyState
@@ -235,7 +236,8 @@ public enum EEnemyState
     Walk,
     Chase,
     Telegraph,
-    Attack,
+    AttackSequence,
+    AttackEnd,
 }
 #endregion Enemy
 

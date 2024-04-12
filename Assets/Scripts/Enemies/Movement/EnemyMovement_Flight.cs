@@ -8,7 +8,6 @@ public class EnemyMovement_Flight : EnemyMovement
     private float _nextWaypointDistance = 3f;
     private Path _path;
     private int _currentWaypoint = 0;
-    private bool _reachedEndOfPath = false;
     private Seeker _seeker;
     public LayerMask _playerLayer;
     public Collider2D _playerDetectCollider;
@@ -16,7 +15,7 @@ public class EnemyMovement_Flight : EnemyMovement
     
     private void Awake()
     {
-        moveType = EEnemyMoveType.Flight;
+        MoveType = EEnemyMoveType.Flight;
         _seeker = GetComponent<Seeker>();
         InvokeRepeating("UpdatePath", 0f, 0.5f);
     }
@@ -37,17 +36,6 @@ public class EnemyMovement_Flight : EnemyMovement
             _seeker.StartPath(_rigidBody.position, _enemyBase.Target.transform.position + new Vector3(0f, 4f, 0f), OnPathComplete);
     }
 
-    private void EnterAttackSequence()
-    {
-        IsAttackingPlayer = true;
-    }
-
-    private void ExitAttackSequence()
-    {
-        IsAttackingPlayer = false;
-        _animator.SetBool("IsAttacking", false);
-    }
-
     public override void Patrol()
     {
         Vector3 direction = new Vector3(-0.3f * (Mathf.PingPong(Time.time, 2) - 1f), 0.3f * (Mathf.PingPong(Time.time, 2) - 1f), 0);
@@ -62,15 +50,7 @@ public class EnemyMovement_Flight : EnemyMovement
 
         FlipEnemyTowardsMovement();
 
-        if (_currentWaypoint >= _path.vectorPath.Count)
-        {
-            _reachedEndOfPath = true;
-            return;
-        }
-        else
-        {
-            _reachedEndOfPath = false;
-        }
+        if (_currentWaypoint >= _path.vectorPath.Count) return;
 
         Vector2 direction = ((Vector2)_path.vectorPath[_currentWaypoint] - _rigidBody.position).normalized;
         Vector2 force = direction * _moveSpeed * Time.deltaTime * 100f;
@@ -92,6 +72,8 @@ public class EnemyMovement_Flight : EnemyMovement
         else
         {
             string currentAnimation = _animator.GetCurrentAnimatorClipInfo(0)[0].clip.name;
+
+            // switch ()
             if (currentAnimation == "Telegraph")
             {
                 // rotate 65 degrees opposite direction to the way it's facing
