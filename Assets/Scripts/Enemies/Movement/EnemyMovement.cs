@@ -7,7 +7,7 @@ public abstract class EnemyMovement : MonoBehaviour
     protected EnemyBase _enemyBase;
     private GameObject _attacker;
     public EEnemyMoveType MoveType;
-    protected float _moveSpeed;
+    public float _moveSpeed;
     public bool IsRooted = false;
     public bool IsMoving = true;
     public bool IsChasingPlayer = false;
@@ -60,12 +60,16 @@ public abstract class EnemyMovement : MonoBehaviour
     public virtual void EnableMovement()
     {
         IsRooted = false;
+        _animator.SetBool("IsRooted", false);
+        EnableFlip();
         // ResetMoveSpeed();
     }
 
     public virtual void DisableMovement()
     {
         IsRooted = true;
+        _animator.SetBool("IsRooted", true);
+        DisableFlip();
         // _animator.SetBool("IsAttacking", false);
         // _animator.SetBool("IsWalking", false);
     }

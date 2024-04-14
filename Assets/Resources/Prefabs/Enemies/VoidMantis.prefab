@@ -409,6 +409,11 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 4699412614343847205, guid: 0ca6d9dba1175490b9375c06e234edc3, type: 3}
+  - {fileID: 0}
   _neighboringEnemyColliderSize: {x: 12.1, y: 6.82}
   _neighboringEnemyColliderHeight: 3.64
   _damageInfo:
@@ -432,10 +437,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d465db50f98bf478a9a338350207dde2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveType: 2
+  MoveType: 0
   IsRooted: 0
   IsMoving: 1
   IsChasingPlayer: 0
+  IsAttackingPlayer: 0
   IsFlippable: 1
   _groundColliderSize: {x: 4.02, y: 0.36}
   _groundLayer:
@@ -494,8 +500,71 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 552616453477993610}
+  - {fileID: 797188030267407934}
   m_Father: {fileID: 6074281365749248204}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &1272832003332743002
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 7841325953118155380}
+    m_Modifications:
+    - target: {fileID: 1925904278009782628, guid: 0ca6d9dba1175490b9375c06e234edc3, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 1.43
+      objectReference: {fileID: 0}
+    - target: {fileID: 1925904278009782628, guid: 0ca6d9dba1175490b9375c06e234edc3, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.28
+      objectReference: {fileID: 0}
+    - target: {fileID: 1925904278009782628, guid: 0ca6d9dba1175490b9375c06e234edc3, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.77
+      objectReference: {fileID: 0}
+    - target: {fileID: 1925904278009782628, guid: 0ca6d9dba1175490b9375c06e234edc3, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 1925904278009782628, guid: 0ca6d9dba1175490b9375c06e234edc3, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 1925904278009782628, guid: 0ca6d9dba1175490b9375c06e234edc3, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1925904278009782628, guid: 0ca6d9dba1175490b9375c06e234edc3, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1925904278009782628, guid: 0ca6d9dba1175490b9375c06e234edc3, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -90
+      objectReference: {fileID: 0}
+    - target: {fileID: 1925904278009782628, guid: 0ca6d9dba1175490b9375c06e234edc3, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1925904278009782628, guid: 0ca6d9dba1175490b9375c06e234edc3, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2362532802675760987, guid: 0ca6d9dba1175490b9375c06e234edc3, type: 3}
+      propertyPath: m_Name
+      value: VFXSleep
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 0ca6d9dba1175490b9375c06e234edc3, type: 3}
+--- !u!4 &797188030267407934 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1925904278009782628, guid: 0ca6d9dba1175490b9375c06e234edc3, type: 3}
+  m_PrefabInstance: {fileID: 1272832003332743002}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1890070243867695157
 PrefabInstance:
   m_ObjectHideFlags: 0
