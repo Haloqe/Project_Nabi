@@ -1,6 +1,9 @@
+using JetBrains.Annotations;
 using System;
 using System.Collections.Generic;
+using UnityEditor.Timeline;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class AttackBase_Area : AttackBase
 {
@@ -142,7 +145,28 @@ public class AttackBase_Area : AttackBase
         var vfx = Instantiate(VFXObject, position, Quaternion.identity);
         vfx.GetComponent<Bomb>().Owner = this;
 
+        FollowUpVFX();
+
         //FindObjectOfType<PlayerInventory>().DecreaseToFlower(currentSelectedFlowerIndex);
+    }
+
+    public void FollowUpVFX()
+    {
+        if (currentSelectedFlowerIndex == 1)
+        {
+            //instantiate fire VFX
+            string fireVfxAddress = "Prefabs/Player/BombVFX/FireBundle";
+            GameObject FireVFXObject = Utility.LoadGameObjectFromPath(fireVfxAddress);
+
+            float dir = Mathf.Sign(gameObject.transform.localScale.x);
+            Vector3 playerPos = gameObject.transform.position;
+            Vector3 vfxPos = FireVFXObject.transform.position;
+            Vector3 position = new Vector3(playerPos.x + dir * (vfxPos.x), playerPos.y + vfxPos.y, playerPos.z + vfxPos.z);
+
+            FireVFXObject.transform.localScale = new Vector3(dir, 1.0f, 1.0f);
+            var vfx = Instantiate(FireVFXObject, position, Quaternion.identity);
+
+        }
     }
 
     protected override void OnAttackEnd_PreDelay()
