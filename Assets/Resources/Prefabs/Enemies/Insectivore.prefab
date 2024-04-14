@@ -302,7 +302,7 @@ MonoBehaviour:
   ActionTimeCounter: 0
   DebuffEffects:
   - {fileID: 0}
-  - {fileID: 474495343586124564, guid: 801ba5e162e43415b8381b8526904b61, type: 3}
+  - {fileID: 1456239278769870584}
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
@@ -312,7 +312,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
-  - {fileID: 4699412614343847205, guid: 0ca6d9dba1175490b9375c06e234edc3, type: 3}
+  - {fileID: 8913567333881234057}
   _neighboringEnemyColliderSize: {x: 12.92, y: 7.08}
   _neighboringEnemyColliderHeight: 3.76
   _damageInfo:
@@ -337,6 +337,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MoveType: 0
+  _moveSpeed: 0
   IsRooted: 0
   IsMoving: 1
   IsChasingPlayer: 0
@@ -464,6 +465,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2130670345161708735, guid: 801ba5e162e43415b8381b8526904b61, type: 3}
   m_PrefabInstance: {fileID: 1342115470404990444}
   m_PrefabAsset: {fileID: 0}
+--- !u!198 &1456239278769870584 stripped
+ParticleSystem:
+  m_CorrespondingSourceObject: {fileID: 474495343586124564, guid: 801ba5e162e43415b8381b8526904b61, type: 3}
+  m_PrefabInstance: {fileID: 1342115470404990444}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &4216759705331052460
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -524,5 +530,10 @@ PrefabInstance:
 --- !u!4 &2323539790485360328 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1925904278009782628, guid: 0ca6d9dba1175490b9375c06e234edc3, type: 3}
+  m_PrefabInstance: {fileID: 4216759705331052460}
+  m_PrefabAsset: {fileID: 0}
+--- !u!198 &8913567333881234057 stripped
+ParticleSystem:
+  m_CorrespondingSourceObject: {fileID: 4699412614343847205, guid: 0ca6d9dba1175490b9375c06e234edc3, type: 3}
   m_PrefabInstance: {fileID: 4216759705331052460}
   m_PrefabAsset: {fileID: 0}
