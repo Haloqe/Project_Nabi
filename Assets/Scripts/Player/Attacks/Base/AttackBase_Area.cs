@@ -67,10 +67,6 @@ public class AttackBase_Area : AttackBase
 
             case 1:
                 vfxAddress = "Prefabs/Player/BombVFX/IncendiaryBombVFX";
-                /*
-                bombEffect = new StatusEffectInfo(EStatusEffect.Stun, 1, 3);
-                _attackInfoInit.StatusEffects.Add(bombEffect);
-                Reset();*/
                 break;
 
             case 2:
@@ -89,10 +85,6 @@ public class AttackBase_Area : AttackBase
 
             case 4:
                 vfxAddress = "Prefabs/Player/BombVFX/GravityBombVFX";
-                /*
-                bombEffect = new StatusEffectInfo(EStatusEffect.Stun, 1, 3);
-                _attackInfoInit.StatusEffects.Add(bombEffect);
-                Reset();*/
                 break;
         }
         
@@ -155,7 +147,7 @@ public class AttackBase_Area : AttackBase
         if (currentSelectedFlowerIndex == 1)
         {
             //instantiate fire VFX
-            string fireVfxAddress = "Prefabs/Player/BombVFX/FireBundle";
+            string fireVfxAddress = "Prefabs/Player/BombVFX/FireBundleTEST";
             GameObject FireVFXObject = Utility.LoadGameObjectFromPath(fireVfxAddress);
 
             float dir = Mathf.Sign(gameObject.transform.localScale.x);
@@ -165,7 +157,12 @@ public class AttackBase_Area : AttackBase
 
             FireVFXObject.transform.localScale = new Vector3(dir, 1.0f, 1.0f);
             var vfx = Instantiate(FireVFXObject, position, Quaternion.identity);
-
+            //vfx.GetComponent<Fire>().Owner = this;
+            for (int i = 0; i < vfx.transform.childCount; i++)
+            {
+                Transform child = vfx.transform.GetChild(i);
+                child.GetComponent<Fire>().Owner = this;
+            }
         }
     }
 
@@ -179,5 +176,6 @@ public class AttackBase_Area : AttackBase
     public void DealDamage(IDamageable target)
     {
         _damageDealer.DealDamage(target, _attackInfo);
+        Debug.Log("Gave" + _attackInfo.Damage.TotalAmount + "damage!");
     }
 }
