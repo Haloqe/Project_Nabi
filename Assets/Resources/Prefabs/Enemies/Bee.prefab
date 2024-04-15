@@ -181,7 +181,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0e595f565f5f24cd9ab4b5844c422750, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveType: 0
+  MoveType: 0
+  _moveSpeed: 0
   IsRooted: 0
   IsMoving: 1
   IsChasingPlayer: 0
@@ -190,6 +191,9 @@ MonoBehaviour:
   _playerLayer:
     serializedVersion: 2
     m_Bits: 128
+  _platformLayer:
+    serializedVersion: 2
+    m_Bits: 512
   _playerDetectCollider: {fileID: 0}
 --- !u!114 &8639036497021831269
 MonoBehaviour:
@@ -251,8 +255,8 @@ CapsuleCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0.1785878, y: -0.088538766}
-  m_Size: {x: 0.71867394, y: 1.0017264}
+  m_Offset: {x: 0.1890564, y: -0.07981503}
+  m_Size: {x: 0.62096786, y: 0.89355206}
   m_Direction: 0
 --- !u!70 &3973732742887985319
 CapsuleCollider2D:
@@ -286,8 +290,8 @@ CapsuleCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0.18651628, y: -0.08411515}
-  m_Size: {x: 0.6175847, y: 0.92478824}
+  m_Offset: {x: 0.18651628, y: -0.07794839}
+  m_Size: {x: 0.6175847, y: 0.8858017}
   m_Direction: 0
 --- !u!58 &7933489065936810385
 CircleCollider2D:

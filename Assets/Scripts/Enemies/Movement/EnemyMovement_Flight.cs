@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Pathfinding;
+using Random = UnityEngine.Random;
 
 public class EnemyMovement_Flight : EnemyMovement
 {
@@ -10,8 +11,12 @@ public class EnemyMovement_Flight : EnemyMovement
     private int _currentWaypoint = 0;
     private Seeker _seeker;
     public LayerMask _playerLayer;
+    public LayerMask _platformLayer;
     public Collider2D _playerDetectCollider;
     private Vector2 _attackDirection;
+    private Vector2 _patrolDirection;
+    private bool _directionIsChosen = false;
+    private bool _directionIsFlipping = false;
     
     private void Awake()
     {
@@ -38,9 +43,35 @@ public class EnemyMovement_Flight : EnemyMovement
 
     public override void Patrol()
     {
-        Vector3 direction = new Vector3(-0.3f * (Mathf.PingPong(Time.time, 2) - 1f), 0.3f * (Mathf.PingPong(Time.time, 2) - 1f), 0);
-        Vector3 force = direction * 100f * Time.deltaTime;
+        // Vector3 direction = new Vector3(-0.3f * (Mathf.PingPong(Time.time, 2) - 1f), 0.3f * (Mathf.PingPong(Time.time, 2) - 1f), 0);
+        // Vector3 force = direction * 100f * Time.deltaTime;
+        // _rigidBody.AddForce(force);
+
+        if (!_directionIsFlipping && Physics2D.OverlapCircle(transform.position, 0.8f, _platformLayer))
+            StartCoroutine("FlipDirection");
+
+        Vector2 force = _patrolDirection * 100f * Time.deltaTime;
         _rigidBody.AddForce(force);
+        FlipEnemyTowardsMovement();
+
+        if (_directionIsChosen) return;
+        StartCoroutine("ChooseRandomDirection");
+    }
+
+    private IEnumerator ChooseRandomDirection()
+    {
+        _directionIsChosen = true;
+        _patrolDirection = new Vector2(Random.Range(-1f, 1f), Random.Range(-1f, 1f)).normalized;
+        yield return new WaitForSeconds(Random.Range(3f, 5f));
+        _directionIsChosen = false;
+    }
+
+    private IEnumerator FlipDirection()
+    {
+        _directionIsFlipping = true;
+        _patrolDirection = -_patrolDirection;
+        yield return new WaitForSeconds(1f);
+        _directionIsFlipping = false;
     }
 
     public override void Chase()
@@ -84,11 +115,11 @@ public class EnemyMovement_Flight : EnemyMovement
             {
                 // rotate back 65 degrees
                 _rigidBody.AddTorque(-1f);
-                _rigidBody.AddForce(_attackDirection * Time.deltaTime * 800f);
+                _rigidBody.AddForce(_attackDirection * Time.deltaTime * 800f / _animator.GetFloat("AttackSpeed"));
             }
             else if (currentAnimation == "Attack End")
             {
-                _rigidBody.AddForce(-_attackDirection * Time.deltaTime * 150f);
+                _rigidBody.AddForce(-_attackDirection * Time.deltaTime * 150f / _animator.GetFloat("AttackSpeed"));
             }
             else
             {
