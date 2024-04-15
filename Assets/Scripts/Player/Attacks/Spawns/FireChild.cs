@@ -16,8 +16,14 @@ public class FireChild : MonoBehaviour
     
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.CompareTag("Enemy") == false) return;
-        _parent.OnEnemyEnter(collision);
+        if (collision.gameObject.CompareTag("Ground")){
+            _parent.OnGroundContact(collision);
+        }
+            
+        if (collision.gameObject.CompareTag("Enemy")){
+            _parent.OnEnemyEnter(collision);
+        }
+        
     }
 
     private void OnTriggerExit2D(Collider2D other)
@@ -29,6 +35,6 @@ public class FireChild : MonoBehaviour
     public void Toggle()
     {
         _collider.enabled = !_collider.enabled;  
-        _renderer.enabled = !_renderer.enabled;  
+        //_renderer.enabled = !_renderer.enabled;  
     }
 }

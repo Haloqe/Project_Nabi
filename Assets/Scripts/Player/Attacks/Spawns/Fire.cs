@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
 public class Fire : MonoBehaviour
 {
@@ -25,7 +26,7 @@ public class Fire : MonoBehaviour
         StartCoroutine(nameof(BurnToggleCoroutine));
         yield return new WaitForSeconds(burningDuration);
         StopCoroutine(nameof(BurnToggleCoroutine));
-        Destroy(this);
+        Destroy(gameObject);
     }
 
     private IEnumerator BurnToggleCoroutine()
@@ -41,6 +42,10 @@ public class Fire : MonoBehaviour
         }
     }
 
+    public void OnGroundContact(Collider2D collision)
+    {
+        collision.GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Static;
+    }
     public void OnEnemyEnter(Collider2D collision)
     {
         if (Utility.IsObjectInList(collision.gameObject, _affectedEnemies)) return;
