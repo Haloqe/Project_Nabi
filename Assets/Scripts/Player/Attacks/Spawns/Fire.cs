@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class Fire : MonoBehaviour
 {
@@ -11,48 +10,45 @@ public class Fire : MonoBehaviour
     public bool readyToCollide;
     // Collider
     private List<int> _affectedEnemies;
-    private CircleCollider2D _collider;
+    private FireChild[] _fireChildren;
 
     private void Start()
     {
         _affectedEnemies = new List<int>();
-        _collider = GetComponent<CircleCollider2D>();
-        //var ps = gameObject.GetComponent<ParticleSystem>();
-        StartCoroutine(BurningCoroutine(burningDelay, burningDuration));
+        _fireChildren = GetComponentsInChildren<FireChild>();
+        StartCoroutine(BurningCoroutine());
     }
 
-    private IEnumerator BurningCoroutine(float burningDelay, float burningDuration)
+    private IEnumerator BurningCoroutine()
     {
         yield return new WaitForSeconds(burningDelay);
+        StartCoroutine(nameof(BurnToggleCoroutine));
+        yield return new WaitForSeconds(burningDuration);
+        StopCoroutine(nameof(BurnToggleCoroutine));
+        Destroy(this);
+    }
 
-        _collider.enabled = true;
-
-        for (float time = 0; time < burningDuration; time += Time.deltaTime)
+    private IEnumerator BurnToggleCoroutine()
+    {
+        while (true)
         {
-            _collider.enabled = !_collider.enabled;
-            Debug.Log(_collider.enabled);
+            yield return new WaitForSeconds(1.5f);
             _affectedEnemies.Clear();
-            // clear list
-            Debug.Log("List cleared");
-            yield return new WaitForSeconds(3f);
+            foreach (var fire in _fireChildren)
+            {
+                fire.Toggle();
+            }
         }
     }
 
-    private void OnTriggerEnter2D(Collider2D collision)
+    public void OnEnemyEnter(Collider2D collision)
     {
-        
-        if (collision.gameObject.CompareTag("Enemy") == false) return;
-        Debug.Log(collision.gameObject.GetInstanceID());
         if (Utility.IsObjectInList(collision.gameObject, _affectedEnemies)) return;
-        Debug.Log("Not in List");
-
         IDamageable target = collision.gameObject.GetComponent<IDamageable>();
         if (target != null)
         {
             Owner.DealDamage(target);
             _affectedEnemies.Add(collision.gameObject.GetInstanceID());
-
         }   
     }
-
 }

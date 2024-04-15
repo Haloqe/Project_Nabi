@@ -102,7 +102,8 @@ public class PlayerController : Singleton<PlayerController>
     private int count = -1;
     void OnTestAction(InputValue value)
     {
-        
+        playerInventory.AddToFlower((int)EFlowerType.IncendiaryFlower);
+        playerInventory.SelectFlowers((int)EFlowerType.IncendiaryFlower);
     }
 
     private void OnValueChanged(ECondition condition, float changeAmount)

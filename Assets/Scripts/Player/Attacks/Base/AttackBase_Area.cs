@@ -157,12 +157,12 @@ public class AttackBase_Area : AttackBase
 
             FireVFXObject.transform.localScale = new Vector3(dir, 1.0f, 1.0f);
             var vfx = Instantiate(FireVFXObject, position, Quaternion.identity);
-            //vfx.GetComponent<Fire>().Owner = this;
-            for (int i = 0; i < vfx.transform.childCount; i++)
-            {
-                Transform child = vfx.transform.GetChild(i);
-                child.GetComponent<Fire>().Owner = this;
-            }
+            vfx.GetComponent<Fire>().Owner = this;
+            // for (int i = 0; i < vfx.transform.childCount; i++)
+            // {
+            //     Transform child = vfx.transform.GetChild(i);
+            //     child.GetComponent<Fire>().Owner = this;
+            // }
         }
     }
 
