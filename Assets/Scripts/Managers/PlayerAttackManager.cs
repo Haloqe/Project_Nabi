@@ -423,17 +423,6 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                     // Base VFX
                     attackBase.VFXObject.GetComponent<ParticleSystemRenderer>()
                         .material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Ranged);
-                    var main = attackBase.VFXObject.GetComponent<ParticleSystem>().main;
-                    // if (warrior == EWarrior.Vernon)
-                    // {
-                    //     main.startSize = 6.5f;
-                    //     attackBase.VFXObject.transform.localPosition = new Vector3(0.04f, 0.945f, 0);
-                    // }
-                    // else
-                    // {
-                    //     main.startSize = 4f;
-                    //     attackBase.VFXObject.transform.localPosition = new Vector3(-0.02f, 0.9f, 0);
-                    // }
                     
                     // bullet
                     attackBase.SetBullet(_bulletsByWarrior[(int)warrior]);
@@ -441,6 +430,8 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                 break;
             case ELegacyType.Dash:
                 {
+                    if (warrior == EWarrior.NightShade) return;
+                    
                     // Base VFX
                     _playerDamageDealer.AttackBases[(int)attackType]
                         .VFXObject.GetComponent<ParticleSystemRenderer>()
@@ -448,5 +439,10 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                 }
                 break;
         }
+    }
+
+    public Image GetAttackOverlay(ELegacyType attackType)
+    {
+        return _activeLegacyOverlays[(int)attackType];
     }
 }

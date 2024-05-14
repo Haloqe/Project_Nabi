@@ -15,7 +15,7 @@ public class PlayerMovement : MonoBehaviour
     public float DefaultMoveSpeed = 10f;
     private float _moveSpeed; 
     private Vector2 _moveDirection;
-    private bool _isMoving;
+    public bool IsMoving { get; private set; }
     private bool _isRooted = false;
     public bool IsOnMovingPlatform = false;
 
@@ -52,7 +52,7 @@ public class PlayerMovement : MonoBehaviour
         _jumpForce = DefaultJumpForce;
         _isJumping = true;
         _jumpCounter = 0;
-        _isMoving = false;
+        IsMoving = false;
 
         _mainCollider = GetComponents<BoxCollider2D>()[0];
         _defaultBounciness = _mainCollider.sharedMaterial.bounciness;
@@ -73,7 +73,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
-        _animator.SetBool("IsMoving", _isMoving && !_isRooted);
+        _animator.SetBool("IsMoving", IsMoving && !_isRooted);
         if (_isJumping)
         {
             _coyoteTimeCounter -= Time.deltaTime;
@@ -135,12 +135,12 @@ public class PlayerMovement : MonoBehaviour
         _moveDirection = value;
         if (value.x == 0 || _isAttacking || _isDashing)
         {
-            _isMoving = false;
+            IsMoving = false;
         }
         else
         {
             // Note: Player sprite default direction is left
-            _isMoving = true;
+            IsMoving = true;
             transform.localScale = new Vector2(-Mathf.Sign(value.x) * Mathf.Abs(transform.localScale.x), transform.localScale.y);
         }
     }
@@ -157,7 +157,7 @@ public class PlayerMovement : MonoBehaviour
             if (_moveDirection.x != 0)
             {
                 // Note: Player sprite default direction is left
-                _isMoving = true;
+                IsMoving = true;
                 transform.localScale = new Vector2(-Mathf.Sign(_moveDirection.x) * Mathf.Abs(transform.localScale.x), transform.localScale.y);
             }
         }
@@ -175,14 +175,14 @@ public class PlayerMovement : MonoBehaviour
             // Only allow up, down movement during attack
             //_rigidbody2D.velocity = new Vector2(0.0f, _rigidbody2D.velocity.y);
             _isAttacking = true;
-            _isMoving = false;
+            IsMoving = false;
         }
     }
 
     public void SetDash()
     {
         _isDashing = true;
-        _isMoving = false;
+        IsMoving = false;
     }
 
     public void SetJump(bool value)

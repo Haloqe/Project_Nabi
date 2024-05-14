@@ -63,4 +63,9 @@ public class ClockworkSpawner : Interactor
         // Destroy this spawner
         Destroy(this);
     }
+
+    private void OnDestroy()
+    {
+        PlayerEvents.spawned -= Init;
+    }
 }

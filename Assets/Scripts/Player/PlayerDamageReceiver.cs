@@ -25,7 +25,6 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     private float[] _effectRemainingTimes;
     private SortedDictionary<float, float> _slowRemainingTimes; // str,time
 
-    public bool TempIsDead = false;
     private Animator _animator;
     private SpriteRenderer _spriteRenderer;
     private readonly static int IsDead = Animator.StringToHash("IsDead");
@@ -44,7 +43,6 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         _health = _maxHealth;
         IsSilenced = false;
         IsSilencedExceptCleanse = false;
-        TempIsDead = false;
     }
     
     private void Start()
@@ -165,9 +163,6 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     
     public void TakeDamage(AttackInfo damageInfo)
     {
-        // TODO Remove when monster fixed
-        if (TempIsDead) return;
-        
         // Evade
         if (Random.value <= _playerController.EvasionRate)
         {
@@ -192,7 +187,6 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     {
         StopAllCoroutines();
         _animator.SetBool(IsDead, true);
-        TempIsDead = true;
         _spriteRenderer.color = Color.white;
 
         // TODO should save info somewhere, do progressive updates

@@ -1,6 +1,8 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.VisualScripting;
+using UnityEngine.UI;
 
 public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
 {
@@ -10,6 +12,10 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
     public float[] attackDamageMultipliers;
     public int CurrAttackIdx = -1;
     public bool IsUnderAttackDelay = false;
+    
+    // Dash
+    private Coroutine _dashCooldownCoroutine;
+    private Image _dashUIOverlay;
     
     // Turbela Butterfly
     private GameObject _butterflyPrefab;
@@ -26,6 +32,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
 
     private void Start()
     {
+        _dashUIOverlay = PlayerAttackManager.Instance.GetAttackOverlay(ELegacyType.Dash);
         _butterflyPrefab = Resources.Load("Prefabs/Player/SpawnObjects/Butterfly").GameObject();
         attackDamageMultipliers = new float[] {1,1,1,1,1};
         _spawnedButterflies = new List<Butterfly>();
@@ -41,6 +48,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
             GetComponent<AttackBase_Area>()
         };
         GameEvents.restarted += OnRestarted;
+        _dashUIOverlay.fillAmount = 0.0f;
     }
     
     private void OnRestarted()
@@ -52,29 +60,67 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         foreach (var butterfly in _spawnedButterflies) Destroy(butterfly);
         _spawnedButterflies.Clear();
         for (int i = 0; i < (int)EWarrior.MAX; i++) BindingSkillPreservations[i] = ELegacyPreservation.MAX;
+        if (_dashCooldownCoroutine != null) StopCoroutine(_dashCooldownCoroutine);
+        _dashUIOverlay.fillAmount = 0.0f;
     }
 
-    private bool CanAttack(int attackIdx)
+    private IEnumerator DashCooldownCoroutine()
     {
-        // TODO Movement check
-        return CurrAttackIdx == -1 && !IsUnderAttackDelay;
+        float dashCooldown = 1.7f;
+        float timer = dashCooldown;
+        
+        // During the cooldown, update UI
+        while (timer >= 0)
+        {
+            _dashUIOverlay.fillAmount = timer / dashCooldown;
+            timer -= Time.deltaTime;
+            yield return null;
+        }
+        _dashUIOverlay.fillAmount = 0.0f;
+        _dashCooldownCoroutine = null;
     }
 
     public void OnAttack(int attackIdx)
     {
-        if (CanAttack(attackIdx))
+        // No attack can be done if under another attack or under attack delay
+        if (CurrAttackIdx != -1 || IsUnderAttackDelay) return;
+        
+        // Handle NightShade dash separately
+        if (attackIdx == (int)ELegacyType.Dash && AttackBases[attackIdx].activeWarrior == EWarrior.NightShade)
         {
-            //방향전환 막기
-            //이동.점프는?
-            if (attackIdx != (int)ELegacyType.Dash)
-                _playerMovement.DisableMovement(false);
-            else
-                _playerMovement.SetDash();
-
-            IsUnderAttackDelay = true;
-            CurrAttackIdx = attackIdx;
-            AttackBases[attackIdx].Attack();
+            if (((AttackBase_Dash)AttackBases[attackIdx]).IsCurrentNightShadeTpDash())
+            {
+                AttackBases[attackIdx].Attack();
+            }
+            // If this is the first dash with no active cooldown, start dash
+            else if (_dashCooldownCoroutine == null)
+            {
+                _dashCooldownCoroutine = StartCoroutine(DashCooldownCoroutine());
+                AttackBases[attackIdx].Attack();
+            }
+            return;
         }
+        
+        // Handle other attacks
+        // For dash, check cooldown
+        if (attackIdx == (int)ELegacyType.Dash)
+        {
+            if (_dashCooldownCoroutine == null)
+            {
+                _dashCooldownCoroutine = StartCoroutine(DashCooldownCoroutine());
+                _playerMovement.SetDash();
+            }
+            else return;
+        }
+        // For other attacks (melee, range, area), disable player movement
+        else
+        {
+            _playerMovement.DisableMovement(false);
+        }
+            
+        IsUnderAttackDelay = true;
+        CurrAttackIdx = attackIdx;
+        AttackBases[attackIdx].Attack();
     }
 
     public void OnAttackEnd(ELegacyType attackType)
