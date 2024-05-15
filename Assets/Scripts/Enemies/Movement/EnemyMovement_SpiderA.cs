@@ -82,10 +82,10 @@ public class EnemyMovement_SpiderA : EnemyMovement
     {
         if (_enemyBase.ActionTimeCounter >= 0) return;
 
-        PlayerDamageReceiver playerDamager = _enemyBase.Target.gameObject.GetComponent<PlayerDamageReceiver>();
+        PlayerDamageReceiver playerDamager = PlayerController.Instance.playerDamageReceiver;
 
-        if (playerDamager.DebuffEffects[(int)EStatusEffect.Poison] != null &&
-            playerDamager.DebuffEffects[(int)EStatusEffect.Stun] != null)
+        if (playerDamager.GetEffectRemainingTimes()[(int)EStatusEffect.Poison] <= 0 &&
+            playerDamager.GetEffectRemainingTimes()[(int)EStatusEffect.Poison] <= 0)
         {
             if (!PlayerIsInWebAttackRange())
             {

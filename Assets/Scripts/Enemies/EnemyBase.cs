@@ -43,6 +43,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     public AttackInfo _damageInfo;
     private float Health;
     private SpriteRenderer _spriteRenderer;
+    private float _armour;
 
     private void Awake()
     {
@@ -73,6 +74,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         _movement.Init();
 
         Health = EnemyData.MaxHealth;
+        _armour = EnemyData.DefaultArmour;
     }
     
     private void OnPlayerDefeated()
@@ -440,11 +442,21 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         }
     }
 
-    private float GetArmour()
+    public float GetArmour()
     {
-        if (_effectRemainingTimes[(int)EStatusEffect.Sleep] > 0) return EnemyData.DefaultArmour;
+        if (_effectRemainingTimes[(int)EStatusEffect.Sleep] > 0) return _armour;
         int sommerPreserv = (int)PlayerController.Instance.playerDamageDealer.BindingSkillPreservations[(int)EWarrior.Sommer];
         return Mathf.Max(0, EnemyData.DefaultArmour - EnemyData.DefaultArmour * Define.SommerSleepArmourReduceAmounts[sommerPreserv]);
+    }
+
+    public void ChangeArmourByPercentage(float percentage)
+    {
+        _armour *= percentage;
+    }
+
+    public void ResetArmour()
+    {
+        _armour = EnemyData.DefaultArmour;
     }
 
     public void ChangeHealthByAmount(float amount)

@@ -228,6 +228,7 @@ public enum EEnemyMoveType
     Stationary,
     Flight,
     SpiderA,
+    QueenBee,
 }
 
 public enum EEnemyState

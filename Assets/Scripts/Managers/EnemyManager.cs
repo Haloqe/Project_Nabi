@@ -101,10 +101,10 @@ public class EnemyManager : Singleton<EnemyManager>
         return _enemies[enemyID];
     }
 
-    public GameObject SpawnEnemy(int enemyID, Vector3 spawnLocation)
+    public GameObject SpawnEnemy(int enemyID, Vector3 spawnLocation, bool isSetActive = false)
     {
         var enemy = Instantiate(_enemyPrefabs[enemyID], spawnLocation, Quaternion.identity).GameObject();
-        enemy.SetActive(false);
+        enemy.SetActive(isSetActive);
         enemy.transform.SetParent(_enemiesContainer);
         _spawnedEnemies.Add(enemy.GetComponent<EnemyBase>());
         return enemy;
