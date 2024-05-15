@@ -372,7 +372,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         if (other.CompareTag(Target.tag))
         {
             // 황홀경 status effect
-            if (_animator.GetBool("IsAttacking") == true && _effectRemainingTimes[(int)EStatusEffect.Ecstasy] > 0)
+            if (_animator.GetBool("IsAttacking") && _effectRemainingTimes[(int)EStatusEffect.Ecstasy] > 0)
             {
                 if (Random.Range(0.0f, 1.0f) <= 0.5f)
                 {

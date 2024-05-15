@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
 public class PlayerDamageReceiver : MonoBehaviour, IDamageable
@@ -19,7 +20,6 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     // status effect attributes
     public bool IsSilenced { get; private set; }
     public bool IsSilencedExceptCleanse { get; private set; }
-    [NamedArray(typeof(EStatusEffect))] public GameObject[] DebuffEffects;
     [NamedArray(typeof(EDamageType))] public GameObject[] DamageEffects;
     private int[] _activeDOTCounts;
     private float[] _effectRemainingTimes;
@@ -84,7 +84,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
             EStatusEffect currEffect = (EStatusEffect)i;
             if (_effectRemainingTimes[i] <= 0)
             {
-                SetVFXActive(i, false);
+                _playerController.SetVFXActive(i, false);
                 _effectRemainingTimes[i] = 0.0f;
 
                 if (i == (int)EStatusEffect.Silence)
@@ -145,7 +145,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         if (_slowRemainingTimes.Count == 0)
         {
             _playerMovement.ResetMoveSpeed();
-            SetVFXActive(EStatusEffect.Slow, false);
+            _playerController.SetVFXActive(EStatusEffect.Slow, false);
         }
         else if (removed)
         {
@@ -331,7 +331,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         // apply new effect
         if (_effectRemainingTimes[effectIdx] == 0)
         {
-            SetVFXActive(effectIdx, true);
+            _playerController.SetVFXActive(effectIdx, true);
             Debug.Log("New " + effect.ToString() + " time: " + duration.ToString("0.0000"));
         }
         // or increment effect time
@@ -352,7 +352,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         // check if this is the first slow
         if (_slowRemainingTimes.Count == 0)
         {
-            SetVFXActive(EStatusEffect.Slow, true);
+            _playerController.SetVFXActive(EStatusEffect.Slow, true);
         }
 
         // increment duration if the same strength slow already exists
@@ -380,13 +380,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         Debug.Log("New slow (" + strength + ") time: " + duration.ToString("0.0000"));
     }
 
-    private void SetVFXActive(EStatusEffect effect, bool setActive) => SetVFXActive((int)effect, setActive);
-
-    private void SetVFXActive(int effectIdx, bool setActive)
-    {
-        if (DebuffEffects[effectIdx] == null) return;
-        DebuffEffects[effectIdx].SetActive(setActive);
-    }
+    
 
     /// <summary>
     ///  현재는 isSliencedExceptCleanse 포함해서 제거함. Silenced는 유지.
@@ -396,7 +390,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         for (int i = 0; i < (int)EStatusEffect.MAX; i++)
         {
             if (i == (int)EStatusEffect.Silence) continue;
-            SetVFXActive(i, false);
+            _playerController.SetVFXActive(i, false);
             _effectRemainingTimes[i] = 0.0f;
         }
         _slowRemainingTimes.Clear();

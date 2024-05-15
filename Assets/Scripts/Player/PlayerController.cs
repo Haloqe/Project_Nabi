@@ -13,10 +13,12 @@ public class PlayerController : Singleton<PlayerController>
     public PlayerDamageReceiver playerDamageReceiver;
     public PlayerDamageDealer playerDamageDealer;
     public PlayerInventory playerInventory;
+    public GameObject nightShadeCollider;
     
     // Centrally controlled variables
     private int _slayedEnemiesCount = 0;
     public float HpCriticalThreshold { get; private set; }
+    [NamedArray(typeof(EStatusEffect))] public GameObject[] statusEffects;
     
     // Stats
     public float Strength => _baseStrength * _strengthMultiplier;
@@ -39,6 +41,7 @@ public class PlayerController : Singleton<PlayerController>
     private float _evasionRateMultiplier = 1.0f;  
     private float _criticalRateMultiplier = 1.0f;  
     private float _healEfficiencyMultiplier = 1.0f;
+    
     public float evasionRateAdditionAtMax = 0.0f;
     
     // Legacy related (Buffs)
@@ -48,6 +51,7 @@ public class PlayerController : Singleton<PlayerController>
     public ELegacyPreservation TurbelaMaxButterflyPreserv { private set; get; }
     public ELegacyPreservation TurbelaDoubleSpawnPreserv { private set; get; }
     public ELegacyPreservation TurbelaButterflyCritPreserv { private set; get; }
+    public ELegacyPreservation NightShadeFastChasePreserv { private set; get; }
 
     // Upgrades
     private Dictionary<EStat, List<(int legacyID, SLegacyStatUpgradeData data)>> _appliedStatUpgrades;
@@ -58,8 +62,8 @@ public class PlayerController : Singleton<PlayerController>
     private readonly int _shadowHostLimit = 3;
     private readonly float _shadowHostAutoUpdateInterval = 2f;
     private readonly float _shadowHostAutoUpdateAmount = 1.5f;
+    public float[] NightShadeFastChaseStats;
     
-
     protected override void Awake()
     {
         base.Awake();
@@ -77,13 +81,14 @@ public class PlayerController : Singleton<PlayerController>
         _animator = GetComponent<Animator>();
         _appliedStatUpgrades = new Dictionary<EStat, List<(int legacyID, SLegacyStatUpgradeData data)>>();
         _shadowHosts = new List<EnemyBase>();
+        nightShadeCollider = GetComponentInChildren<NightShadeCollider>(includeInactive: true).gameObject;
         
         // Input Binding for Attacks
         _playerInput.actions["Attack_Melee"].performed += _ => playerDamageDealer.OnAttack(0);
         _playerInput.actions["Attack_Range"].performed += _ => playerDamageDealer.OnAttack(1);
         _playerInput.actions["Attack_Dash"].performed += _ => playerDamageDealer.OnAttack(2);
         _playerInput.actions["Attack_Area"].performed += _ => playerDamageDealer.OnAttack(3);
-
+        
         // Events binding
         GameEvents.restarted += OnRestarted;
         PlayerEvents.ValueChanged += OnValueChanged;
@@ -122,6 +127,7 @@ public class PlayerController : Singleton<PlayerController>
         TurbelaMaxButterflyPreserv = ELegacyPreservation.MAX; 
         TurbelaDoubleSpawnPreserv = ELegacyPreservation.MAX; 
         TurbelaButterflyCritPreserv = ELegacyPreservation.MAX;
+        NightShadeFastChasePreserv = ELegacyPreservation.MAX;
 
         // Reset ecstasy effect
         if (_ecstasyAffected != null)
@@ -134,6 +140,7 @@ public class PlayerController : Singleton<PlayerController>
         
         // Initialise NightShade data
         _shadowHosts.Clear();
+        nightShadeCollider.SetActive(false);
     }
 
     void OnMove(InputValue value)
@@ -315,5 +322,13 @@ public class PlayerController : Singleton<PlayerController>
             yield return wait;
             playerDamageDealer.UpdateNightShadeDarkGauge(_shadowHostAutoUpdateAmount);
         }
+    }
+    
+    public void SetVFXActive(EStatusEffect effect, bool setActive) => SetVFXActive((int)effect, setActive);
+
+    public void SetVFXActive(int effectIdx, bool setActive)
+    {
+        if (statusEffects[effectIdx] == null) return;
+        statusEffects[effectIdx].SetActive(setActive);
     }
 }

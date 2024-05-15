@@ -16,6 +16,8 @@ public class AttackBase_Dash : AttackBase
     private float _nightShadeDashTimeLimit;
     private GameObject _nightShadeDashPrefab;
     private GameObject _nightShadeDashShadow;
+    private readonly static int DashEnd = Animator.StringToHash("DashEnd");
+    private readonly static int Teleport = Animator.StringToHash("Teleport");
 
     public override void Start()
     {
@@ -74,11 +76,11 @@ public class AttackBase_Dash : AttackBase
         }
     }
 
-    public IEnumerator NightShadeTeleportCoroutine()
+    private IEnumerator NightShadeTeleportCoroutine()
     {
         // Start teleport effect
         var shadowAnimator = _nightShadeDashShadow.GetComponent<Animator>(); 
-        shadowAnimator.SetTrigger("Teleport");
+        shadowAnimator.SetTrigger(Teleport);
         yield return null;
         
         // Wait until the effect ends
@@ -106,11 +108,12 @@ public class AttackBase_Dash : AttackBase
         float tpTimeLimit = 6f;
         float nsMultiplier = 1.5f; 
         var shadowRb = _nightShadeDashShadow.GetComponent<Rigidbody2D>();
-        shadowRb.velocity = new Vector2(-_nightShadeDashShadow.transform.localScale.x * _dashStrength * nsMultiplier, 0f);
+        shadowRb.velocity = new Vector2(
+            -_nightShadeDashShadow.transform.localScale.x * _dashStrength * nsMultiplier * _playerMovement.moveSpeedMultiplier, 0f);
         yield return new WaitForSeconds(_dashDuration);
 
         // End Dash
-        _nightShadeDashShadow.GetComponent<Animator>().SetTrigger("DashEnd");
+        _nightShadeDashShadow.GetComponent<Animator>().SetTrigger(DashEnd);
         shadowRb.velocity = Vector2.zero;
         yield return new WaitForSeconds(tpTimeLimit - _dashDuration);
         
@@ -124,7 +127,8 @@ public class AttackBase_Dash : AttackBase
         // Start Dash
         float prevGravity = _rigidbody2D.gravityScale;
         _rigidbody2D.gravityScale = 0f;
-        _rigidbody2D.velocity = new Vector2(-transform.localScale.x * _dashStrength, 0f);
+        _rigidbody2D.velocity = new Vector2(
+            -transform.localScale.x * _dashStrength * _playerMovement.moveSpeedMultiplier, 0f);
         Coroutine legacyCoroutine = null;
         if (activeLegacy)
         {

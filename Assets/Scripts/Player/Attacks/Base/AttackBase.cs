@@ -128,7 +128,7 @@ public abstract class AttackBase : MonoBehaviour
         _attackInfo.StatusEffects = newStatusEffectsBase;
     }
 
-    public virtual void UpdateActiveLegacyPreservation(ELegacyPreservation preservation)
+    public void UpdateActiveLegacyPreservation(ELegacyPreservation preservation)
     {
         if (activeLegacy == null) return;
         RecalculateDamage();

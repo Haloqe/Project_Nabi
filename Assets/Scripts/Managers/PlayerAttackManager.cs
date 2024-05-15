@@ -261,7 +261,6 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         var legacyData = _legacies[legacyID];
         int legacyTypeIdx = (int)legacyData.Type;
         var legacyAsset = _legacySODictionary[legacyID];
-        Debug.Log("CollectLegacy: [" + preservation + "] " + legacyData.Names[1]);
         
         if (legacyData.Type == ELegacyType.Passive)
         {
@@ -299,6 +298,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         int preservationIdx = (int)preservation;
         switch (legacySO.BuffType)
         {
+            // PlayerController에 스탯이 저장되고 스탯 업 UI가 뜨는 경우
             case EBuffType.StatUpgrade:
                 _playerController.UpgradeStat(legacyID, legacySO.StatUpgradeData, preservation);
                 break;
@@ -320,6 +320,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                 _playerDamageDealer.UpgradeStatusEffectLevel(legacySO.warrior, preservation, legacySO.Stats);
                 break;
             
+            // Defines.cs에 수치가 저장되고 preservation 변경으로 activate만 하는 경우
             case EBuffType.EuphoriaEnemyGoldDropBuff:
             case EBuffType.EuphoriaEcstasyUpgrade:
             case EBuffType.SommerHypHallucination:
@@ -327,6 +328,16 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
             case EBuffType.TurbelaDoubleSpawn:
             case EBuffType.TurbelaButterflyCrit:
                 _playerController.ActivateBuffByName(legacySO.BuffType, preservation);
+                break;
+            
+            case EBuffType.AttackDamageMultiply:
+                _playerDamageDealer.attackDamageMultipliers[(int)legacySO.AttackType] += (legacySO.Stats[(int)preservation] - 1.0f);
+                break;
+            
+            case EBuffType.NightShadeFastChase:
+                _playerController.nightShadeCollider.SetActive(true);
+                _playerController.ActivateBuffByName(legacySO.BuffType, preservation);
+                _playerController.NightShadeFastChaseStats = legacySO.Stats;
                 break;
         }
     }

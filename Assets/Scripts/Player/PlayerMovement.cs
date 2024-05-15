@@ -3,6 +3,7 @@ using Cinemachine;
 using System.Collections;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -14,6 +15,7 @@ public class PlayerMovement : MonoBehaviour
     // movement    
     public float DefaultMoveSpeed = 10f;
     private float _moveSpeed; 
+    public float moveSpeedMultiplier = 1f;
     private Vector2 _moveDirection;
     public bool IsMoving { get; private set; }
     private bool _isRooted = false;
@@ -40,8 +42,9 @@ public class PlayerMovement : MonoBehaviour
     private Rigidbody2D _rigidbody2D;
     private Animator _animator;
     private Vector2 _additionalVelocity;
+    private readonly static int Moving = Animator.StringToHash("IsMoving");
 
-    
+
     private void Start()
     {
         GameEvents.restarted += OnRestarted;
@@ -69,11 +72,12 @@ public class PlayerMovement : MonoBehaviour
         IsAreaAttacking = false;
         _jumpCounter = 0;
         _isJumping = false;
+        moveSpeedMultiplier = 1f;
     }
 
     private void Update()
     {
-        _animator.SetBool("IsMoving", IsMoving && !_isRooted);
+        _animator.SetBool(Moving, IsMoving && !_isRooted);
         if (_isJumping)
         {
             _coyoteTimeCounter -= Time.deltaTime;
@@ -86,7 +90,7 @@ public class PlayerMovement : MonoBehaviour
         // disable extra movement if rooted or dashing or attacking
         if (_isRooted || _isDashing || IsAreaAttacking/*|| _isAttacking*/) return;
                 
-        _rigidbody2D.velocity = new Vector2(_moveDirection.x * _moveSpeed, _rigidbody2D.velocity.y);
+        _rigidbody2D.velocity = new Vector2(_moveDirection.x * _moveSpeed * moveSpeedMultiplier, _rigidbody2D.velocity.y);
         _rigidbody2D.velocity += _additionalVelocity;
     }
 

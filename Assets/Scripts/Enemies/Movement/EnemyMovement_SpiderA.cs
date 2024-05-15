@@ -84,20 +84,21 @@ public class EnemyMovement_SpiderA : EnemyMovement
 
         PlayerDamageReceiver playerDamager = _enemyBase.Target.gameObject.GetComponent<PlayerDamageReceiver>();
 
-        if (playerDamager.DebuffEffects[(int)EStatusEffect.Poison] != null &&
-            playerDamager.DebuffEffects[(int)EStatusEffect.Stun] != null)
-        {
-            if (!PlayerIsInWebAttackRange())
-            {
-                RunTowardsPlayer();
-                return;
-            }
-
-            Jump();
-            WebAttack();
-            _enemyBase.ActionTimeCounter = 1.5f;
-            return;
-        }
+        // TODO
+        // if (playerDamager.StatusEffectVFXs[(int)EStatusEffect.Poison] != null &&
+        //     playerDamager.StatusEffectVFXs[(int)EStatusEffect.Stun] != null)
+        // {
+        //     if (!PlayerIsInWebAttackRange())
+        //     {
+        //         RunTowardsPlayer();
+        //         return;
+        //     }
+        //
+        //     Jump();
+        //     WebAttack();
+        //     _enemyBase.ActionTimeCounter = 1.5f;
+        //     return;
+        // }
 
         if (!PlayerIsInTeethAttackRange())
         {

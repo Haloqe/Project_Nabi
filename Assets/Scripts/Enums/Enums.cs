@@ -50,6 +50,7 @@ public enum EStatusEffect
     Root,
     Pull,
     BuffButterfly,
+    Fast,
 
     [InspectorName(null)] MAX,
 }
@@ -81,6 +82,7 @@ public enum ELegacyPreservation
 public enum EBuffType
 {
     None, 
+    
     StatUpgrade,
     SpawnAreaIncrease,
     BindingSkillUpgrade,
@@ -92,8 +94,12 @@ public enum EBuffType
     SommerHypHallucination,         // 소머 - 입면 환각
             
     TurbelaMaxButterfly,            // 투르벨라 - 군락지 소환
-    TurbelaDoubleSpawn,         // 투르벨라 - 집단 폭행
+    TurbelaDoubleSpawn,             // 투르벨라 - 집단 폭행
     TurbelaButterflyCrit,           // 투르벨라 - 탄막 폭격
+    
+    NightShadeFastChase,            // 나이트셰이드 - 완벽한 잠행
+    
+    AttackDamageMultiply,           // 공격 타입별 데미지 추가
 }
 
 public enum EStatusEffectUpgradeType
@@ -161,6 +167,7 @@ public enum EPlayerAttackType
     Melee_Combo,
     Ranged,
     Dash,
+    Area,
     MAX,
 }
 

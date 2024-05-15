@@ -390,7 +390,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5082662573633383571, guid: 9abb1a9108bb1d348b4373402d8aa11d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.77
+      value: -4.02
       objectReference: {fileID: 0}
     - target: {fileID: 5082662573633383571, guid: 9abb1a9108bb1d348b4373402d8aa11d, type: 3}
       propertyPath: m_LocalPosition.z
@@ -438,7 +438,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7161971565757800894, guid: 9abb1a9108bb1d348b4373402d8aa11d, type: 3}
       propertyPath: spawnLimit
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7161971565757800894, guid: 9abb1a9108bb1d348b4373402d8aa11d, type: 3}
       propertyPath: numEnemiesToSpawn
@@ -454,7 +454,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7161971565757800894, guid: 9abb1a9108bb1d348b4373402d8aa11d, type: 3}
       propertyPath: spawnProbabilities.Array.data[1]
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7161971565757800894, guid: 9abb1a9108bb1d348b4373402d8aa11d, type: 3}
       propertyPath: spawnProbabilities.Array.data[2]
@@ -15952,6 +15952,23 @@ MonoBehaviour:
   MinRotation: -40
   MaxRotation: 40
   Duration: 5
+--- !u!1 &1120391301 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5090174167645655659, guid: ec642c166e291f1408ac64a18e7704f4, type: 3}
+  m_PrefabInstance: {fileID: 1777552115}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1120391304
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1120391301}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a227e7e537284c7488cb229c7a3695e2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &1267557202
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -16952,10 +16969,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 39438638665260744, guid: ec642c166e291f1408ac64a18e7704f4, type: 3}
-      propertyPath: generalTextUI
-      value: 
-      objectReference: {fileID: 6928738628852909497, guid: 6cee62ac8d781ac459d226b53198c5ff, type: 3}
     - target: {fileID: 539064456449143768, guid: ec642c166e291f1408ac64a18e7704f4, type: 3}
       propertyPath: m_Name
       value: Player
@@ -17000,10 +17013,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 1941149261715929894, guid: ec642c166e291f1408ac64a18e7704f4, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5090174167645655659, guid: ec642c166e291f1408ac64a18e7704f4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1120391304}
   m_SourcePrefab: {fileID: 100100000, guid: ec642c166e291f1408ac64a18e7704f4, type: 3}
 --- !u!1 &1901671441
 GameObject:
