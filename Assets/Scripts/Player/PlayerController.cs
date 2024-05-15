@@ -157,6 +157,8 @@ public class PlayerController : Singleton<PlayerController>
     void OnTestAction(InputValue value)
     {
         Heal(10);
+        playerInventory.AddFlower((int)EFlowerType.IncendiaryFlower);
+        playerInventory.SelectFlowers((int)EFlowerType.IncendiaryFlower);
     }
 
     private void OnValueChanged(ECondition condition, float changeAmount)

@@ -427,7 +427,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     private void HandleNewDamage(DamageInfo damage, float attackerArmourPenetration)
     {
         // 방어력 및 방어관통력 처리
-        damage.TotalAmount -= Mathf.Max(0, damage.TotalAmount - Mathf.Max(GetArmour() - attackerArmourPenetration, 0)); 
+        damage.TotalAmount = Mathf.Max(0, damage.TotalAmount - Mathf.Max(GetArmour() - attackerArmourPenetration, 0)); 
         
         StartCoroutine(DamageCoroutine(damage));
 

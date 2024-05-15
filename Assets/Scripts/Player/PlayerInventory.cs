@@ -5,11 +5,11 @@ using UnityEngine.InputSystem;
 public class PlayerInventory : MonoBehaviour
 {
     private int _gold = 0;
+    public GameObject noFlowerVFX; 
 
     //(Variables for FlowerBomb)
     private int[] _flowerNumbers = new int[5];
     private int _currentSelectedFlower = 1;
-    [SerializeField] TextMeshProUGUI[] flowerText = new TextMeshProUGUI[5];
 
     public void ChangeGoldByAmount(int amount)
     {
@@ -24,7 +24,7 @@ public class PlayerInventory : MonoBehaviour
             ChangeGoldByAmount(-price);
             return true;
         }
-        else return false;
+        return false;
     }
 
     //Selection of Bombs
@@ -52,17 +52,17 @@ public class PlayerInventory : MonoBehaviour
 
 
     // Store the number of flower bombs the player owns
-    public void AddToFlower(int flowerIndex)
+    public void AddFlower(int flowerIndex)
     {
         _flowerNumbers[flowerIndex]++;
-        flowerText[flowerIndex].text = _flowerNumbers[flowerIndex].ToString();
+        //flowerText[flowerIndex].text = _flowerNumbers[flowerIndex].ToString();
     }
 
     // Decrease the number of flower bombs the player owns
-    public void DecreaseToFlower(int flowerIndex)
+    public void RemoveFlower(int flowerIndex)
     {
         _flowerNumbers[flowerIndex]--;
-        flowerText[flowerIndex].text = _flowerNumbers[flowerIndex].ToString();
+        //flowerText[flowerIndex].text = _flowerNumbers[flowerIndex].ToString();
     }
 
     // Return the number of flower bombs currently stored
@@ -78,8 +78,8 @@ public class PlayerInventory : MonoBehaviour
         if (_flowerNumbers[flowerIndex] != 0)
         {
             _currentSelectedFlower = flowerIndex;
-            Debug.Log("Flower Number" + flowerIndex + "is selected!");
             FindObjectOfType<AttackBase_Area>().SwitchVFX();
+            Debug.Log((EFlowerType)flowerIndex + " selected!");
         }
     }
 

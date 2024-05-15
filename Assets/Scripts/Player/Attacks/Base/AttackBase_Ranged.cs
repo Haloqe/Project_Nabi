@@ -5,7 +5,6 @@ public class AttackBase_Ranged : AttackBase
 {
     [Space(15)][SerializeField] private Transform FireTransform;
     private GameObject _bulletObject;
-    private readonly static int AttackIndex = Animator.StringToHash("AttackIndex");
 
     public override void Start()
     {

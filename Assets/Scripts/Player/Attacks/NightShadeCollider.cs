@@ -22,7 +22,6 @@ public class NightShadeCollider : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D other)
     {
         // Add enemy collider to the list
-        Debug.Log("Trigger Enter: " + other.name);
         _chasingEnemies.Add(other);
         if (_chasingEnemies.Count > 1) return;
         
@@ -35,7 +34,6 @@ public class NightShadeCollider : MonoBehaviour
     private void OnTriggerExit2D(Collider2D other)
     {
         // Remove enemy collider from the list
-        Debug.Log("Trigger Enter: " + other.name);
         _chasingEnemies.Remove(other);
         if (_chasingEnemies.Count > 0) return;
         

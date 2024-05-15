@@ -112,6 +112,13 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         // For other attacks (melee, range, area), disable player movement
         else
         {
+            // For area attack, check availability
+            if (attackIdx == (int)ELegacyType.Area)
+            {
+                bool canAreaAttack = ((AttackBase_Area)AttackBases[attackIdx]).CheckAvailability();
+                if (!canAreaAttack) return;
+            }
+            
             _playerMovement.DisableMovement(false);
         }
 

@@ -15,7 +15,7 @@ public class Flower : Interactor
 
         if (FindObjectOfType<PlayerInventory>().GetNumberOfFlowers(flowerIndex) <= _maxNumberOfFlowers - 1)
         {
-            FindObjectOfType<PlayerInventory>().AddToFlower(flowerIndex);
+            FindObjectOfType<PlayerInventory>().AddFlower(flowerIndex);
             Destroy(gameObject);
         }
     }   

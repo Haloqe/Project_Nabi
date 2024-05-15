@@ -15,6 +15,7 @@ public abstract class AttackBase : MonoBehaviour
     
     public GameObject VFXObject;
     private Material _defaultVFXMaterial;
+    protected readonly static int AttackIndex = Animator.StringToHash("AttackIndex");
     
     // Damage
     protected AttackInfo _attackInfo = new AttackInfo();
