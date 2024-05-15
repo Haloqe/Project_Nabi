@@ -110,6 +110,7 @@ public class UIManager : Singleton<UIManager>
         _zoomedMap.SetActive(false);
         inGameCombatUI.SetActive(true);
         inGameCombatUI.GetComponent<Canvas>().worldCamera = _uiCamera;
+        inGameCombatUI.GetComponent<Canvas>().planeDistance = 20;
     }
     
     private void OnGameLoadEnded()
