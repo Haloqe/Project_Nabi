@@ -241,12 +241,13 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         }
     }
 
-    public void ChangeHealthByAmount(float amount, bool byEnemy = true)
+    public void ChangeHealthByAmount(float changeAmount, bool byEnemy = true)
     {
         // TODO hit/heal effect
-        if (amount < 0) StartCoroutine(DamagedRoutine());
-        _health = Mathf.Clamp(_health + amount, 0, _maxHealth);
-        PlayerEvents.HPChanged.Invoke(amount, GetHPRatio());
+        float prevHPRatio = GetHPRatio();
+        if (changeAmount < 0) StartCoroutine(DamagedRoutine());
+        _health = Mathf.Clamp(_health + changeAmount, 0, _maxHealth);
+        PlayerEvents.HPChanged.Invoke(changeAmount, prevHPRatio, GetHPRatio());
         if (_health == 0)
         {
             PlayerEvents.defeated.Invoke();

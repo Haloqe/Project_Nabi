@@ -3,7 +3,7 @@ using UnityEngine.Events;
 
 public class PlayerEvents
 {
-    public static UnityAction<float, float> HPChanged;
+    public static UnityAction<float, float, float> HPChanged;
     public static UnityAction defeated;
     public static UnityAction spawned;
     public static UnityAction<float> goldChanged;

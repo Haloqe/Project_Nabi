@@ -46,6 +46,7 @@ public class UIManager : Singleton<UIManager>
     private TextMeshProUGUI _hpText;
     private Slider _darkGaugeSlider;
     private TextMeshProUGUI _darkGaugeText;
+    private Image _bloodOverlay;
     
     // UI Navigation
     private GameObject _activeFocusedUI;
@@ -103,6 +104,9 @@ public class UIManager : Singleton<UIManager>
         _hpText             = inGameCombatUI.transform.Find("Globe").GetComponentInChildren<TextMeshProUGUI>();
         _darkGaugeSlider    = inGameCombatUI.transform.Find("DarkSlider").GetComponentInChildren<Slider>();
         _darkGaugeText      = inGameCombatUI.transform.Find("DarkSlider").GetComponentInChildren<TextMeshProUGUI>();
+        _bloodOverlay       = inGameCombatUI.transform.Find("BloodOverlay").GetComponent<Image>();
+
+        _bloodOverlay.gameObject.SetActive(false);
         _zoomedMap.SetActive(false);
         inGameCombatUI.SetActive(true);
         inGameCombatUI.GetComponent<Canvas>().worldCamera = _uiCamera;
@@ -122,11 +126,14 @@ public class UIManager : Singleton<UIManager>
         _darkGaugeText.text = $"{value}/100";
     }
     
-    private void OnPlayerHPChanged(float changeAmount, float hpRatio)
+    private void OnPlayerHPChanged(float changeAmount, float oldHpRatio, float newHpRatio)
     {
-        //_playerHPSlider.value = hpRatio;
-        _playerHPGlobe.rectTransform.localPosition = new Vector3(0, _playerHPGlobe.rectTransform.rect.height * hpRatio - _playerHPGlobe.rectTransform.rect.height, 0);
-        float hp = hpRatio * 100f;
+        // Update hp globe
+        _playerHPGlobe.rectTransform.localPosition = new Vector3(
+            0, _playerHPGlobe.rectTransform.rect.height * newHpRatio - _playerHPGlobe.rectTransform.rect.height, 0);
+        
+        // Update hp text
+        float hp = newHpRatio * 100f;
         if (Math.Abs(hp % 1) < 0.1) 
         {
             _hpText.text = (int)hp + "/100";
@@ -134,6 +141,55 @@ public class UIManager : Singleton<UIManager>
         else
         {
             _hpText.text = hp.ToString("F1") + "/100";
+        }
+        
+        // If HP previously below threshold and just moved over threshold, turn off blood overlay
+        float critHpRatio = PlayerController.Instance.HpCriticalThreshold;
+        if (oldHpRatio <= critHpRatio) 
+        {
+            if (newHpRatio > critHpRatio)
+            {
+                _bloodOverlay.gameObject.SetActive(false);
+                StopCoroutine(nameof(BloodOverlayCoroutine));
+            }
+            // When player dies, stop blinking the overlay
+            else if (newHpRatio == 0.0f)
+            {
+                StopCoroutine(nameof(BloodOverlayCoroutine));
+            }
+        }
+        // If HP previously over threshold and just moved below threshold, turn on blood overlay
+        else if (newHpRatio <= critHpRatio)
+        {
+            _bloodOverlay.gameObject.SetActive(true);
+            StartCoroutine(nameof(BloodOverlayCoroutine));
+        }
+    }
+
+    private IEnumerator BloodOverlayCoroutine()
+    {
+        float duration = 1;
+        var minColour = new Color(0, 0, 0, 0);
+        var midColour = new Color(1, 1, 1, 0.5f);
+        var maxColour = Color.white;
+        
+        // Increase alpha to 0.5
+        for (float time = 0; time < duration; time += Time.deltaTime)
+        {
+            float progress = Mathf.Lerp(0, time, duration);
+            _bloodOverlay.color = Color.Lerp(minColour, midColour, progress);
+            yield return null;
+        }
+        
+        // Alternate between 0.5 and 1.0 alpha
+        while (true)
+        {
+            for (float time = 0; time < duration * 2; time += Time.deltaTime)
+            {
+                float progress = Mathf.PingPong(time, duration) / duration;
+                _bloodOverlay.color = Color.Lerp(midColour, maxColour, progress);
+                yield return null;
+            }
         }
     }
 

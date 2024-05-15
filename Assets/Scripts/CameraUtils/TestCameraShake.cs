@@ -22,7 +22,7 @@ public class TestCameraShake : MonoBehaviour
         _remainingTime = 0.0f;
     }
 
-    public void OnPlayerHPChanged(float changeAmount, float hpRatio)
+    private void OnPlayerHPChanged(float changeAmount, float oldHpRatio, float newHpRatio)
     {
         // TEMP
         if (changeAmount < 0.0f)

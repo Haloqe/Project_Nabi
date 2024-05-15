@@ -16,6 +16,7 @@ public class PlayerController : Singleton<PlayerController>
     
     // Centrally controlled variables
     private int _slayedEnemiesCount = 0;
+    public float HpCriticalThreshold { get; private set; }
     
     // Stats
     public float Strength => _baseStrength * _strengthMultiplier;
@@ -64,6 +65,10 @@ public class PlayerController : Singleton<PlayerController>
         base.Awake();
         if (_toBeDestroyed) return;
 
+        // Initialise values
+        HpCriticalThreshold = 0.33f;
+        
+        // Get player components
         _playerInput = GetComponent<PlayerInput>();
         playerMovement = GetComponent<PlayerMovement>();
         playerDamageReceiver = GetComponent<PlayerDamageReceiver>();
@@ -144,7 +149,7 @@ public class PlayerController : Singleton<PlayerController>
     private int count = -1;
     void OnTestAction(InputValue value)
     {
-        
+        Heal(10);
     }
 
     private void OnValueChanged(ECondition condition, float changeAmount)
