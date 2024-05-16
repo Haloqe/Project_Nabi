@@ -98,6 +98,7 @@ public enum EBuffType
     TurbelaButterflyCrit,           // 투르벨라 - 탄막 폭격
     
     NightShadeFastChase,            // 나이트셰이드 - 완벽한 잠행
+    NightShadeShadeBonusStats,      // 나이트셰이드 - 한밤의 신기루
     
     AttackDamageMultiply,           // 공격 타입별 데미지 추가
 }

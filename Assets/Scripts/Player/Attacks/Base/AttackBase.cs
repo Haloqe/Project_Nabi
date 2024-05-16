@@ -3,6 +3,7 @@ using UnityEngine;
 
 public abstract class AttackBase : MonoBehaviour
 {
+    protected Transform _player;
     protected PlayerController _playerController;
     protected PlayerDamageDealer _damageDealer;
     protected PlayerMovement _playerMovement;
@@ -36,11 +37,12 @@ public abstract class AttackBase : MonoBehaviour
     
     public virtual void Start()
     {
+        _player = transform.parent;
         _playerController = PlayerController.Instance;
         _defaultVFXMaterial = VFXObject.GetComponent<ParticleSystemRenderer>().sharedMaterial;
-        _animator = GetComponent<Animator>();
-        _damageDealer = GetComponent<PlayerDamageDealer>();
-        _playerMovement = GetComponent<PlayerMovement>();
+        _animator = _player.GetComponent<Animator>();
+        _damageDealer = _player.GetComponent<PlayerDamageDealer>();
+        _playerMovement = _player.GetComponent<PlayerMovement>();
     }
     
     public abstract void Attack();

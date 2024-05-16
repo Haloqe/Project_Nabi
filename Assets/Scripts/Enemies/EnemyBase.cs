@@ -466,7 +466,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
             yield return null;
         }
         // Damage Over Time (DOT) damage
-        // Deals damage.TotalAmount of damage every damage.Tick seconds for damage.Duration
+        // Deals damage.TotalAmount of damage every damage. Tick seconds for damage.Duration
         else
         {
             float damagePerTick = damage.TotalAmount / (damage.Duration / damage.Tick + 1);

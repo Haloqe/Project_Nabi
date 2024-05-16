@@ -52,6 +52,7 @@ public class PlayerController : Singleton<PlayerController>
     public ELegacyPreservation TurbelaDoubleSpawnPreserv { private set; get; }
     public ELegacyPreservation TurbelaButterflyCritPreserv { private set; get; }
     public ELegacyPreservation NightShadeFastChasePreserv { private set; get; }
+    public ELegacyPreservation NightShadeShadeBonusPreserv { private set; get; }
 
     // Upgrades
     private Dictionary<EStat, List<(int legacyID, SLegacyStatUpgradeData data)>> _appliedStatUpgrades;
@@ -63,6 +64,7 @@ public class PlayerController : Singleton<PlayerController>
     private readonly float _shadowHostAutoUpdateInterval = 2f;
     private readonly float _shadowHostAutoUpdateAmount = 1.5f;
     public float[] NightShadeFastChaseStats;
+    public float[] NightShadeShadeBonusStats;
     
     protected override void Awake()
     {
@@ -128,6 +130,7 @@ public class PlayerController : Singleton<PlayerController>
         TurbelaDoubleSpawnPreserv = ELegacyPreservation.MAX; 
         TurbelaButterflyCritPreserv = ELegacyPreservation.MAX;
         NightShadeFastChasePreserv = ELegacyPreservation.MAX;
+        NightShadeShadeBonusPreserv = ELegacyPreservation.MAX;
 
         // Reset ecstasy effect
         if (_ecstasyAffected != null)

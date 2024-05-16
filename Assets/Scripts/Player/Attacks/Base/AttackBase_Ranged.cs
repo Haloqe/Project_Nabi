@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 public class AttackBase_Ranged : AttackBase
@@ -39,14 +38,14 @@ public class AttackBase_Ranged : AttackBase
     {
         _animator.SetInteger(AttackIndex, (int)ELegacyType.Ranged);
         VFXObject.GetComponent<ParticleSystemRenderer>().flip = 
-            (Mathf.Sign(gameObject.transform.localScale.x) < 0 ? Vector3.right : Vector3.zero);
+            (Mathf.Sign(_player.localScale.x) < 0 ? Vector3.right : Vector3.zero);
         VFXObject.SetActive(true);
     }
 
     public void Fire()
     {
         var bullet = Instantiate(_bulletObject, FireTransform.position, Quaternion.identity).GetComponent<Bullet>();
-        bullet.Direction = -Mathf.Sign(gameObject.transform.localScale.x);
+        bullet.Direction = -Mathf.Sign(_player.localScale.x);
         bullet.Owner = this;
         bullet.attackInfo = _attackInfo.Clone();
         bullet.attackInfo.Damage.TotalAmount *= _damageDealer.attackDamageMultipliers[(int)EPlayerAttackType.Ranged];

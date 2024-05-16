@@ -30,7 +30,7 @@ public class AttackBase_Dash : AttackBase
     public override void Reset()
     {
         base.Reset();
-        _rigidbody2D = GetComponent<Rigidbody2D>();
+        _rigidbody2D = _player.GetComponent<Rigidbody2D>();
         VFXObject.GetComponent<ParticleSystemRenderer>()
             .material.mainTexture = Resources.Load<Texture2D>("Sprites/Player/VFX/Default/Dash");
         _nightShadeDashShadow = null;
@@ -45,7 +45,7 @@ public class AttackBase_Dash : AttackBase
         else
         {
             _animator.SetInteger(AttackIndex, (int)ELegacyType.Dash);
-            VFXObject.transform.localScale = new Vector3(Mathf.Sign(gameObject.transform.localScale.x), 1.0f, 1.0f);
+            VFXObject.transform.localScale = new Vector3(Mathf.Sign(_player.localScale.x), 1.0f, 1.0f);
             VFXObject.SetActive(true);
             StartCoroutine(DashCoroutine());
         }
@@ -63,8 +63,8 @@ public class AttackBase_Dash : AttackBase
         if (_nightShadeDashShadow == null)
         {
             // Instantiate shadow at player's position and match direction
-            _nightShadeDashShadow = Instantiate(_nightShadeDashPrefab, transform.position, quaternion.identity);
-            _nightShadeDashShadow.transform.localScale = transform.localScale;
+            _nightShadeDashShadow = Instantiate(_nightShadeDashPrefab, _player.position, quaternion.identity);
+            _nightShadeDashShadow.transform.localScale = _player.localScale;
             
             // Make the shadow dash
             StartCoroutine(nameof(NightShadeDashCoroutine));
@@ -90,8 +90,8 @@ public class AttackBase_Dash : AttackBase
         }
         
         // Match position and look direction
-        transform.position = _nightShadeDashShadow.transform.position;
-        if (!_playerMovement.IsMoving) transform.localScale = _nightShadeDashShadow.transform.localScale;
+        _player.position = _nightShadeDashShadow.transform.position;
+        if (!_playerMovement.IsMoving) _player.localScale = _nightShadeDashShadow.transform.localScale;
         
         // Teleport attack
         ((Legacy_Dash)activeLegacy).OnDashEnd();
@@ -128,7 +128,7 @@ public class AttackBase_Dash : AttackBase
         float prevGravity = _rigidbody2D.gravityScale;
         _rigidbody2D.gravityScale = 0f;
         _rigidbody2D.velocity = new Vector2(
-            -transform.localScale.x * _dashStrength * _playerMovement.moveSpeedMultiplier, 0f);
+            -_player.localScale.x * _dashStrength * _playerMovement.moveSpeedMultiplier, 0f);
         Coroutine legacyCoroutine = null;
         if (activeLegacy)
         {

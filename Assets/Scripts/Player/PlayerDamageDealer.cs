@@ -8,6 +8,8 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
 {
     private Animator _animator;
     private PlayerMovement _playerMovement;
+    private PlayerController _playerController;
+    
     public AttackBase[] AttackBases { get; private set; }
     public float[] attackDamageMultipliers;
     public int CurrAttackIdx = -1;
@@ -20,7 +22,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
     // Turbela Butterfly
     private GameObject _butterflyPrefab;
     private List<Butterfly> _spawnedButterflies;
-    private int ButterflySpawnLimit => (int)Define.TurbelaMaxButterflyStats[(int)PlayerController.Instance.TurbelaMaxButterflyPreserv];
+    private int ButterflySpawnLimit => (int)Define.TurbelaMaxButterflyStats[(int)_playerController.TurbelaMaxButterflyPreserv];
 
     // NightShade
     private float _darkGauge;
@@ -39,10 +41,13 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         BindingSkillPreservations = new ELegacyPreservation[(int)EWarrior.MAX];
         for (int i = 0; i < (int)EWarrior.MAX; i++) BindingSkillPreservations[i] = ELegacyPreservation.MAX;
         _animator = GetComponent<Animator>();
-        _playerMovement = GetComponent<PlayerMovement>();
+        _playerController = PlayerController.Instance;
+        _playerMovement = _playerController.playerMovement;
+        var attacks = transform.Find("Attacks");
         AttackBases = new AttackBase[]
         {
-            GetComponent<AttackBase_Melee>(), GetComponent<AttackBase_Ranged>(), GetComponent<AttackBase_Dash>(), GetComponent<AttackBase_Area>()
+            attacks.GetComponent<AttackBase_Melee>(), attacks.GetComponent<AttackBase_Ranged>(),
+            attacks.GetComponent<AttackBase_Dash>(), attacks.GetComponent<AttackBase_Area>()
         };
         GameEvents.restarted += OnRestarted;
         _dashUIOverlay.fillAmount = 0.0f;
@@ -63,7 +68,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
 
     private IEnumerator DashCooldownCoroutine()
     {
-        float dashCooldown = 1.7f;
+        float dashCooldown = 1.4f;
         float timer = dashCooldown;
 
         // During the cooldown, update UI
@@ -193,7 +198,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
                 else
                 {
                     // 일반 공격
-                    var addAmount = 5;
+                    float addAmount = 5;
                     // 백어택
                     if (attackInfo.IncomingDirectionX != Mathf.Sign(target.GetGameObject().transform.localScale.x))
                     {
@@ -204,6 +209,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
                     {
                         addAmount = 10;
                     }
+                    addAmount += _playerController.NightShadeShadeBonusStats[(int)_playerController.NightShadeShadeBonusPreserv];
                     UpdateNightShadeDarkGauge(addAmount);
                 }
             }
@@ -249,7 +255,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         // 유산 - 흩어져라
         if (_spawnedButterflies.Count == ButterflySpawnLimit)
         {
-            PlayerController.Instance.evasionRateAdditionAtMax = 0.2f;
+            _playerController.evasionRateAdditionAtMax = 0.2f;
         }
     }
 
@@ -260,7 +266,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         // 유산 - 흩어져라
         if (_spawnedButterflies.Count == ButterflySpawnLimit)
         {
-            PlayerController.Instance.evasionRateAdditionAtMax = 0.0f;
+            _playerController.evasionRateAdditionAtMax = 0.0f;
         }
 
         // Kill a random butterfly?
@@ -287,4 +293,24 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
     }
 
     private void ResetNightShadeDarkGauge() => UpdateNightShadeDarkGauge(-100);
+
+    // Animation event
+    public void ActivateMeleeCollider()
+    {
+        var meleeBase = (AttackBase_Melee)AttackBases[(int)ELegacyType.Melee];
+        meleeBase.ToggleCollider(true);
+    }
+    
+    // Animation event
+    public void DeactivateMeleeCollider()
+    {
+        var meleeBase = (AttackBase_Melee)AttackBases[(int)ELegacyType.Melee];
+        meleeBase.ToggleCollider(false);
+    }
+    
+    // Animation event
+    public void FireRangeBullet()
+    {
+        ((AttackBase_Ranged)AttackBases[(int)ELegacyType.Ranged]).Fire();
+    }
 }

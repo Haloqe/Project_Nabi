@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 6460706110458217433}
   - component: {fileID: 7271529515666154567}
   - component: {fileID: 2480859927895115305}
-  m_Layer: 3
+  m_Layer: 15
   m_Name: Bullet_NightShade
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -101,9 +101,9 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: -494576699
-  m_SortingLayer: 7
-  m_SortingOrder: 0
+  m_SortingLayerID: -1424712129
+  m_SortingLayer: 6
+  m_SortingOrder: 10
   m_Sprite: {fileID: 21300000, guid: 25a150e7d80c8484da95060b911d9870, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -172,6 +172,7 @@ MonoBehaviour:
     StatusEffects: []
     IncomingDirectionX: 0
     AttackerArmourPenetration: 0
+    CanBeDarkAttack: 0
   _shouldRotate: 1
 --- !u!1001 &6382735737350706021
 PrefabInstance:
@@ -252,6 +253,10 @@ PrefabInstance:
     - target: {fileID: 3626305765452374586, guid: d524b92159a9c044189b859620d3545d, type: 3}
       propertyPath: m_Name
       value: BulletHitVFX
+      objectReference: {fileID: 0}
+    - target: {fileID: 3626305765452374586, guid: d524b92159a9c044189b859620d3545d, type: 3}
+      propertyPath: m_Layer
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 3626305765452374586, guid: d524b92159a9c044189b859620d3545d, type: 3}
       propertyPath: m_IsActive

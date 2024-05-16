@@ -1,9 +1,4 @@
-using JetBrains.Annotations;
-using System;
-using System.Collections.Generic;
-using UnityEditor.Timeline;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class AttackBase_Area : AttackBase
 {
@@ -26,14 +21,14 @@ public class AttackBase_Area : AttackBase
         _attackType = ELegacyType.Area;
         vfxAddress = "Prefabs/Player/BombVFX/IncendiaryBombVFX";
         VFXObject = Utility.LoadGameObjectFromPath(vfxAddress);
-        _rigidbody2D = GetComponent<Rigidbody2D>();
+        base.Start();
+        _rigidbody2D = _player.GetComponent<Rigidbody2D>();
         _attackInfoInit = new AttackInfo
         {
             Damage = new DamageInfo(EDamageType.Base, 5),
         };
-        base.Start();
-        Reset();
         _inventory = _playerController.playerInventory;
+        Reset();
     }
 
     public void SwitchVFX()
@@ -78,7 +73,7 @@ public class AttackBase_Area : AttackBase
         
     public override void Reset()
     {
-        base.Reset();
+        //base.Reset();
         _attackInfo = _attackInfoInit.Clone();
         //_damageInfo = _damageInfoInit;
         //VFXObject.GetComponent<ParticleSystemRenderer>().sharedMaterial = _defaultVFXMaterial;

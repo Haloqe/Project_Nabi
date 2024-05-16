@@ -92,7 +92,7 @@ public class AttackBase_Melee : AttackBase
         _comboTimer = 0.0f;
 
         // Dir: Positive if left, negative if right
-        float dir = Mathf.Sign(gameObject.transform.localScale.x);
+        float dir = Mathf.Sign(_player.localScale.x);
         _attackInfo.SetAttackDirToMyFront(_damageDealer.gameObject);
         _attackComboInfo.SetAttackDirToMyFront(_damageDealer.gameObject);
 
@@ -124,36 +124,23 @@ public class AttackBase_Melee : AttackBase
         if (activeLegacy) ((Legacy_Melee)activeLegacy).OnAttack_Combo();
     }
 
-    public void ActivateCollider()
+    public void ToggleCollider(bool onOff)
     {
         // Combo Attack
         if (_comboStack == 0)
         {
-            _colliderCombo.enabled = true;
+            _colliderCombo.enabled = onOff;
         }
         // Base Attack
         else
         {
-            _colliderBase.enabled = true;
-        }
-    }
-
-    public void DeactivateCollider()
-    {
-        // Combo Attack
-        if (_comboStack == 0)
-        {
-            _colliderCombo.enabled = false;
-        }
-        // Base Attack
-        else
-        {
-            _colliderBase.enabled = false;
+            _colliderBase.enabled = onOff;
         }
     }
 
     public void OnTriggerEnter2D(Collider2D collision)
     {
+        Debug.Log("Collision melee");
         // Check if the hit target is valid
         if (collision.gameObject.CompareTag("Enemy") == false) return;
         if (Utility.IsObjectInList(collision.gameObject, _affectedEnemies)) return;
