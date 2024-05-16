@@ -406,7 +406,6 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     
     public void TakeDamage(AttackInfo damageInfo)
     {
-        Utility.PrintDamageInfo(gameObject.name, damageInfo);
         HandleNewStatusEffects(damageInfo.StatusEffects, damageInfo.IncomingDirectionX);
         
         // 입면 환각
@@ -427,8 +426,9 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     private void HandleNewDamage(DamageInfo damage, float attackerArmourPenetration)
     {
         // 방어력 및 방어관통력 처리
-        damage.TotalAmount = Mathf.Max(0, damage.TotalAmount - Mathf.Max(GetArmour() - attackerArmourPenetration, 0)); 
-        
+        var realDamage = Mathf.Max(0, damage.TotalAmount - Mathf.Max(GetArmour() - attackerArmourPenetration, 0));
+        Debug.Log($"[{name}] Received {damage.TotalAmount}, Armour {GetArmour()}, Attacker's ArmourPen {attackerArmourPenetration}, Final: {realDamage}");
+        damage.TotalAmount = realDamage;
         StartCoroutine(DamageCoroutine(damage));
 
         // if (asleep) then wake up
@@ -449,7 +449,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
     public void ChangeHealthByAmount(float amount)
     {
-        Debug.Log("[" + gameObject.name + "] got damaged " + amount);
+        Debug.Log("[" + gameObject.name + "] Health " + amount);
         if (amount < 0) StartCoroutine(DamagedRoutine());
         Health = Mathf.Clamp(Health + amount, 0, EnemyData.MaxHealth);
         if (Health == 0) Die();

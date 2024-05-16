@@ -209,6 +209,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
                     {
                         addAmount = 10;
                     }
+                    Debug.Log("Shade: Base " + addAmount + " Additive: " + _playerController.NightShadeShadeBonusStats[(int)_playerController.NightShadeShadeBonusPreserv]);
                     addAmount += _playerController.NightShadeShadeBonusStats[(int)_playerController.NightShadeShadeBonusPreserv];
                     UpdateNightShadeDarkGauge(addAmount);
                 }
@@ -312,5 +313,11 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
     public void FireRangeBullet()
     {
         ((AttackBase_Ranged)AttackBases[(int)ELegacyType.Ranged]).Fire();
+    }
+    
+    // Animation event
+    public void OnMeleeComboHit()
+    {
+        ((AttackBase_Melee)AttackBases[(int)ELegacyType.Melee]).OnComboHit();
     }
 }

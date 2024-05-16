@@ -115,7 +115,6 @@ public class HealthSystem : MonoBehaviour
 			hitPoint = 0;
 
 		UpdateGraphics();
-
 		StartCoroutine(PlayerHurts());
 	}
 

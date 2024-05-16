@@ -37,7 +37,7 @@ public class PassiveLegacySOEditor : Editor
             case EBuffType.TurbelaMaxButterfly:
             case EBuffType.TurbelaDoubleSpawn:
             case EBuffType.TurbelaButterflyCrit:
-            case EBuffType.NightShadeShadeBonusStats:
+            case EBuffType.NightShadeShadeBonus:
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("Stats"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("SavedInDefine"), true);
                 break;

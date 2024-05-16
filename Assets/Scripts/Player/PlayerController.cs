@@ -73,6 +73,7 @@ public class PlayerController : Singleton<PlayerController>
 
         // Initialise values
         HpCriticalThreshold = 0.33f;
+        NightShadeShadeBonusStats = new float[]{0,0,0,0,0};
         
         // Get player components
         _playerInput = GetComponent<PlayerInput>();

@@ -39,6 +39,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     private Transform _passiveLegacyGroup;
     private GameObject _passiveLegacySlotPrefab;
     private LegacySlotUI[] _activeLegacySlots = new LegacySlotUI[4];
+    private Dictionary<int, LegacySlotUI> _slotDictionary = new Dictionary<int, LegacySlotUI>();
     
     // Other loaded objects
     public GameObject ClockworkPrefab { get; private set; } 
@@ -270,8 +271,10 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
             
             // Update UI
             var slotObj = Instantiate(_passiveLegacySlotPrefab, _passiveLegacyGroup);
-            slotObj.AddComponent<LegacySlotUI>().Init(legacyData.Warrior, legacyData.Names, legacyData.Descs);
             slotObj.GetComponent<Image>().sprite = GetLegacyIcon(legacyID);
+            var slotUi = slotObj.AddComponent<LegacySlotUI>();
+            slotUi.Init(legacyData.Warrior, legacyData.Names, legacyData.Descs, preservation);
+            _slotDictionary.Add(legacyID, slotUi);
         }
         else
         {
@@ -287,7 +290,8 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
             _activeLegacyIcons[legacyTypeIdx].sprite = GetLegacyIcon(legacyID);
             _activeLegacyIcons[legacyTypeIdx].color = Color.white;
             _activeLegacyOverlays[legacyTypeIdx].fillAmount = 0;
-            _activeLegacySlots[legacyTypeIdx].Init(legacyData.Warrior, legacyData.Names, legacyData.Descs);
+            _activeLegacySlots[legacyTypeIdx].Init(legacyData.Warrior, legacyData.Names, legacyData.Descs, preservation);
+            _slotDictionary.Add(legacyID, _activeLegacySlots[legacyTypeIdx]);
         }
         _collectedLegacyIDs.Add(legacyID);
         _collectedLegacyPreservations.Add(legacyID, preservation);
@@ -338,6 +342,11 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                 _playerController.nightShadeCollider.SetActive(true);
                 _playerController.ActivateBuffByName(legacySO.BuffType, preservation);
                 _playerController.NightShadeFastChaseStats = legacySO.Stats;
+                break;
+            
+            case EBuffType.NightShadeShadeBonus:
+                _playerController.ActivateBuffByName(legacySO.BuffType, preservation);
+                _playerController.NightShadeShadeBonusStats = legacySO.Stats;
                 break;
         }
     }

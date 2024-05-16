@@ -140,7 +140,6 @@ public class AttackBase_Melee : AttackBase
 
     public void OnTriggerEnter2D(Collider2D collision)
     {
-        Debug.Log("Collision melee");
         // Check if the hit target is valid
         if (collision.gameObject.CompareTag("Enemy") == false) return;
         if (Utility.IsObjectInList(collision.gameObject, _affectedEnemies)) return;

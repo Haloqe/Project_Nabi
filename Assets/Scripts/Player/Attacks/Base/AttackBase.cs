@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -28,6 +29,11 @@ public abstract class AttackBase : MonoBehaviour
     public EWarrior activeWarrior;
     public ActiveLegacySO activeLegacy { get; protected set; }
 
+    public void Awake()
+    {
+        PlayerEvents.strengthChanged += RecalculateDamage;
+    }
+    
     public virtual void Reset()
     {
         _attackInfo = _attackInfoInit.Clone();
@@ -74,7 +80,6 @@ public abstract class AttackBase : MonoBehaviour
     {
         activeWarrior = legacyAsset.warrior;
         activeLegacy = legacyAsset;
-        activeLegacy.preservation = preservation;
         activeLegacy.Init(gameObject.transform);
         UpdateActiveLegacyPreservation(preservation);
     }
@@ -131,9 +136,10 @@ public abstract class AttackBase : MonoBehaviour
         _attackInfo.StatusEffects = newStatusEffectsBase;
     }
 
-    public void UpdateActiveLegacyPreservation(ELegacyPreservation preservation)
+    private void UpdateActiveLegacyPreservation(ELegacyPreservation preservation)
     {
         if (activeLegacy == null) return;
+        activeLegacy.preservation = preservation;
         RecalculateDamage();
         UpdateLegacyStatusEffect();
     }
