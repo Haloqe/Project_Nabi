@@ -20,7 +20,7 @@ public class EnemyMovement_QueenBee : EnemyMovement
     private void Awake()
     {
         MoveType = EEnemyMoveType.QueenBee;
-        SpawnVFXPrefab = Resources.Load("Prefabs/Effects/SpawnPoof");
+        SpawnVFXPrefab = Resources.Load("Prefabs/Effects/SpawnPoofVFX");
     }
 
 
@@ -47,6 +47,11 @@ public class EnemyMovement_QueenBee : EnemyMovement
 
         if (_directionIsChosen) return;
         StartCoroutine("ChooseRandomDirection");
+    }
+
+    private void DefaultMovement()
+    {
+
     }
 
     private IEnumerator ChooseRandomDirection()
@@ -80,28 +85,37 @@ public class EnemyMovement_QueenBee : EnemyMovement
         {
             case 0:
             _attackTimeCounter += 5f;
-            SpawnMinions(3);
+            StartCoroutine(SpawnMinions(3));
             break;
 
             case 1:
             _attackTimeCounter += 5f;
-            BattleCry();
+            StartCoroutine(BattleCry());
             break;
 
             case 2:
             _attackTimeCounter += 5f;
+            _animator.SetBool("IsAttacking", true);
+            _animator.SetInteger("AttackIndex", 2);
             BodySlam();
             break;
 
             case 3:
             _attackTimeCounter += 5f;
+            _animator.SetBool("IsAttacking", true);
+            _animator.SetInteger("AttackIndex", 3);
             PoisonSpray();
             break;
         }
     }
 
-    private void SpawnMinions(int spawnAmount)
+    private IEnumerator SpawnMinions(int spawnAmount)
     {
+        _animator.SetBool("IsAttacking", true);
+        _animator.SetInteger("AttackIndex", 0);
+        yield return new WaitForSeconds(1f);
+        _animator.SetBool("IsAttacking", false);
+        
         Vector3 spawnLocation = transform.position;
         for (int i = 0; i < spawnAmount; i++)
         {
@@ -131,8 +145,13 @@ public class EnemyMovement_QueenBee : EnemyMovement
 
     }
 
-    private void BattleCry()
+    private IEnumerator BattleCry()
     {
+        _animator.SetBool("IsAttacking", true);
+        _animator.SetInteger("AttackIndex", 1);
+        yield return new WaitForSeconds(1f);
+        _animator.SetBool("IsAttacking", false);
+        
         List<GameObject> allBees = (GameObject.FindGameObjectsWithTag("Enemy")).ToList();
         allBees.Remove(gameObject);
 
@@ -143,26 +162,27 @@ public class EnemyMovement_QueenBee : EnemyMovement
             case 0:
             foreach (GameObject b in allBees)
             {
-                ChangeSpeedByPercentage(1.3f);
-                _enemyBase.ChangeAttackSpeedByPercentage(1.3f);
-                Debug.Log("giving speed");
+                EnemyBase beeBase = b.GetComponent<EnemyBase>();
+                EnemyMovement beeMovement = b.GetComponent<EnemyMovement>();
+                GameObject attackCommandVFX = b.transform.Find("AttackCommandVFX").gameObject;
+                beeMovement.ChangeSpeedByPercentage(1.3f);
+                beeBase.ChangeAttackSpeedByPercentage(1.3f);
+                attackCommandVFX.SetActive(true);
             }
             break;
 
             case 1:
             foreach(GameObject b in allBees)
             {
-                _enemyBase.ChangeArmourByPercentage(1.3f);
+                EnemyBase beeBase = b.GetComponent<EnemyBase>();
+                GameObject defenseCommandVFX = b.transform.Find("DefenseCommandVFX").gameObject;
+                beeBase.ChangeArmourByPercentage(1.3f);
+                defenseCommandVFX.SetActive(true);
             }
             break;
         }
 
-        StartCoroutine(BuffReset(5f, attackOrDefense, allBees));
-    }
-
-    private IEnumerator BuffReset(float buffSeconds, int attackOrDefense, List<GameObject> allBees)
-    {
-        yield return new WaitForSeconds(buffSeconds);
+        yield return new WaitForSeconds(5f);
 
         switch (attackOrDefense)
         {
@@ -170,9 +190,13 @@ public class EnemyMovement_QueenBee : EnemyMovement
             foreach (GameObject b in allBees)
             {
                 if (b == null) continue;
-                ResetMoveSpeed();
-                _enemyBase.ResetAttackSpeed();
-                Debug.Log("resetting speed");
+                EnemyBase beeBase = b.GetComponent<EnemyBase>();
+                EnemyMovement beeMovement = b.GetComponent<EnemyMovement>();
+                GameObject attackCommandVFX = b.transform.Find("AttackCommandVFX").gameObject;
+                
+                beeMovement.ResetMoveSpeed();
+                beeBase.ResetAttackSpeed();
+                attackCommandVFX.SetActive(false);
             }
             break;
 
@@ -180,8 +204,10 @@ public class EnemyMovement_QueenBee : EnemyMovement
             foreach(GameObject b in allBees)
             {
                 if (b == null) continue;
-                _enemyBase.ResetArmour();
-                Debug.Log("resetting armour");
+                EnemyBase beeBase = b.GetComponent<EnemyBase>();
+                GameObject defenseCommandVFX = b.transform.Find("DefenseCommandVFX").gameObject;
+                beeBase.ResetArmour();
+                defenseCommandVFX.SetActive(false);
             }
             break;
         }

@@ -5,7 +5,6 @@ using UnityEngine;
 public abstract class EnemyMovement : MonoBehaviour
 {
     protected EnemyBase _enemyBase;
-    private GameObject _attacker;
     public EEnemyMoveType MoveType;
     public float _moveSpeed;
     public bool IsRooted = false;
@@ -21,6 +20,7 @@ public abstract class EnemyMovement : MonoBehaviour
         _animator = GetComponent<Animator>();
         _rigidBody = GetComponent<Rigidbody2D>();
         _enemyBase = GetComponent<EnemyBase>();
+        // _player = GameObject.FindWithTag("Player");
         _moveSpeed = _enemyBase.EnemyData.DefaultMoveSpeed;
         EnableMovement();
     }

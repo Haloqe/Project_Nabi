@@ -10,11 +10,11 @@ GameObject:
   m_Component:
   - component: {fileID: 448114365536438471}
   - component: {fileID: 2711074041397727980}
+  - component: {fileID: 7735453862265511566}
   - component: {fileID: 3565587111768268388}
   - component: {fileID: 2434941724579593941}
   - component: {fileID: 2795431480703099929}
   - component: {fileID: 381155392071849445}
-  - component: {fileID: 1723351559368461532}
   m_Layer: 8
   m_Name: QueenBee
   m_TagString: Enemy
@@ -89,6 +89,27 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!95 &7735453862265511566
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4386488226926978799}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 6369cfdd1af7c47bd96db3669748ccce, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!61 &3565587111768268388
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -217,26 +238,3 @@ MonoBehaviour:
   _platformLayer:
     serializedVersion: 2
     m_Bits: 0
-  _playerDetectCollider: {fileID: 0}
-  _isAttacking: 0
---- !u!95 &1723351559368461532
-Animator:
-  serializedVersion: 5
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4386488226926978799}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 6369cfdd1af7c47bd96db3669748ccce, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
