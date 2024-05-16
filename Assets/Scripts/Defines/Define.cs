@@ -77,6 +77,7 @@ public static class Define
     public static float[] TurbelaDoubleSpawnStats = new float[5];
     public static float[] TurbelaExtraDamageStats = new float[5];
     public static float[] TurbelaButterflyCritStats = new float[5];
+    public static float[] NightShadeLeechStats = new float[5];
     public static float[][] EcstasyBuffStats =
     {
         new[] {0.5f, 0.75f, 1.0f, 1.25f}, // 사마귀 - 방어력 % 

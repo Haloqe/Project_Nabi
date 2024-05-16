@@ -27,6 +27,7 @@ public class UIManager : Singleton<UIManager>
     private GameObject[] _warriorUIPrefabs;
     private GameObject _evadePopupPrefab;
     private GameObject _textPopupPrefab;
+    private GameObject _critPopupPrefab;
 
     // UI Instantiated Objects
     public GameObject inGameCombatUI;
@@ -211,6 +212,7 @@ public class UIManager : Singleton<UIManager>
         _loadingScreenPrefab    = Utility.LoadGameObjectFromPath(path + "LoadingCanvas");
         _evadePopupPrefab       = Utility.LoadGameObjectFromPath(path + "InGame/TextPopUp/EvadeUI");
         _textPopupPrefab        = Utility.LoadGameObjectFromPath(path + "InGame/TextPopUp/GeneralTextUI");
+        _critPopupPrefab        = Utility.LoadGameObjectFromPath(path + "InGame/TextPopUp/CritPopUp");
         
         _warriorUIPrefabs = new GameObject[(int)EWarrior.MAX];
         for (int i = 0; i < (int)EWarrior.MAX; i++)
@@ -338,6 +340,13 @@ public class UIManager : Singleton<UIManager>
     {
         var ui = Instantiate(_textPopupPrefab, position, quaternion.identity);
         ui.GetComponent<TextUI>().Init(parent, text);
+    }
+    
+    // InGame popup - crit
+    public void DisplayCritPopUp(Vector3 position)
+    {
+        var ui = Instantiate(_critPopupPrefab, position, quaternion.identity);
+        ui.GetComponent<TextUI>().Init(null, string.Empty);
     }
     
     public void DisplayPlayerEvadePopUp()

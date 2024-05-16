@@ -12,24 +12,38 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d6cb223189a2411ea1ce6a186661cf57, type: 3}
   m_Name: "\uB9D0\uC0B4\uC758 \uBC24"
   m_EditorClassIdentifier: 
-  Warrior: 4
-  BuffType: 0
-  StatusEffectUpgrades:
-  - UpgradeType: 0
-    IncreaseMethod: 0
+  warrior: 3
+  preservation: 0
+  BuffType: 3
+  StatUpgradeData:
+    Stat: 0
     IncreaseAmounts: []
-  StatUpgrades:
-  - Stat: 0
-    IncreaseMethod: 0
-    IncreaseAmounts: []
-    UpdateFrequency: 0
-    Condition:
+    HasUpdateCondition: 0
+    StatUpdateCondition:
+      updateFrequency: 0
       condition: 0
       comparator: 0
-      value: 0
+      targetValue: 0
+      isValueRatio: 0
+    HasApplyCondition: 0
+    UpgradeApplyCondition:
+      updateFrequency: 0
+      condition: 0
+      comparator: 0
+      targetValue: 0
+      isValueRatio: 0
+    UndoUpgradeWhenConditionNotMet: 0
   BuffIncreaseMethod: 0
   BuffIncreaseAmounts:
   - 0
   - 0
   - 0
   - 0
+  Stats:
+  - 0.15
+  - 0.175
+  - 0.25
+  - 0.4
+  - 0
+  SavedInDefine: 0
+  AttackType: 0

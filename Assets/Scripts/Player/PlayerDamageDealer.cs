@@ -13,6 +13,8 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
     public AttackBase[] AttackBases { get; private set; }
     public float[] attackDamageMultipliers;
     public int CurrAttackIdx = -1;
+    public int NextAttackIdx = -1;
+    private bool _canSaveNextAttack;
     public bool IsUnderAttackDelay = false;
 
     // Dash
@@ -51,6 +53,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         };
         GameEvents.restarted += OnRestarted;
         _dashUIOverlay.fillAmount = 0.0f;
+        _canSaveNextAttack = true;
     }
 
     private void OnRestarted()
@@ -59,11 +62,13 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         attackDamageMultipliers = new float[]{ 1, 1, 1, 1, 1 };
         foreach (var attack in AttackBases) attack.Reset();
         CurrAttackIdx = -1;
+        NextAttackIdx = -1;
         foreach (var butterfly in _spawnedButterflies) Destroy(butterfly);
         _spawnedButterflies.Clear();
         for (int i = 0; i < (int)EWarrior.MAX; i++) BindingSkillPreservations[i] = ELegacyPreservation.MAX;
         if (_dashCooldownCoroutine != null) StopCoroutine(_dashCooldownCoroutine);
         _dashUIOverlay.fillAmount = 0.0f;
+        _canSaveNextAttack = true;
     }
 
     private IEnumerator DashCooldownCoroutine()
@@ -85,7 +90,20 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
     public void OnAttack(int attackIdx)
     {
         // No attack can be done if under another attack or under attack delay
-        if (CurrAttackIdx != -1 || IsUnderAttackDelay) return;
+        if (CurrAttackIdx != -1 || IsUnderAttackDelay)
+        {
+            // Attack buffer
+            if (!_canSaveNextAttack)
+            {
+                Debug.Log("!!! Cannot save attack, animation not near end");
+                return;
+            }
+            NextAttackIdx = attackIdx;
+            Debug.Log("Attack saved in buffer!");
+            return;
+        }
+        // If an attack is saved in the buffer, should play that instead
+        if (NextAttackIdx != -1) return;
 
         // Handle NightShade dash separately
         if (attackIdx == (int)ELegacyType.Dash && AttackBases[attackIdx].activeWarrior == EWarrior.NightShade)
@@ -99,6 +117,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
             {
                 _dashCooldownCoroutine = StartCoroutine(DashCooldownCoroutine());
                 AttackBases[attackIdx].Attack();
+                _canSaveNextAttack = false;
             }
             return;
         }
@@ -123,20 +142,21 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
                 bool canAreaAttack = ((AttackBase_Area)AttackBases[attackIdx]).CheckAvailability();
                 if (!canAreaAttack) return;
             }
-            
             _playerMovement.DisableMovement(false);
         }
 
         IsUnderAttackDelay = true;
         CurrAttackIdx = attackIdx;
         AttackBases[attackIdx].Attack();
+        _canSaveNextAttack = false;
     }
 
     public void OnAttackEnd(ELegacyType attackType)
     {
         // 막은거 풀기
+        Debug.Log("Attack end: curr idx set to -1");
         CurrAttackIdx = -1;
-        _animator.SetInteger(AttackIndex, CurrAttackIdx);
+        _animator.SetInteger(AttackIndex, -1);
         if (attackType == ELegacyType.Melee) AttackBases[(int)attackType].VFXObject.SetActive(false);
         StartCoroutine(AttackBases[(int)attackType].AttackPostDelayCoroutine());
         _playerMovement._isDashing = false;
@@ -147,6 +167,15 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
     {
         IsUnderAttackDelay = false;
         _playerMovement.EnableMovement(false);
+        
+        // If an attack is saved in the buffer, play
+        if (NextAttackIdx != -1)
+        {
+            Debug.Log("Buffer has next attack, playing " + (ELegacyType)NextAttackIdx);
+            var attackToPlay = NextAttackIdx;
+            NextAttackIdx = -1;
+            OnAttack(attackToPlay);
+        }
     }
 
     // IDamageDealer Override
@@ -164,14 +193,19 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         {
             infoToSend.Damage.TotalAmount *= 2;
             isCritAttack = true;
+            UIManager.Instance.DisplayCritPopUp(transform.position + new Vector3(0, 2.3f, 0));
         }
 
-        // 어둠 게이지 완충 공격
+        // 어둠 게이지 완충 공격: 추가 데미지 및 흡혈 여부
         var isDarkChargedAttack = false;
         if (IsDarkGaugeFull && attackInfo.CanBeDarkAttack)
         {
             isDarkChargedAttack = true;
             infoToSend.Damage.TotalAmount *= 1.5f;
+            if (BindingSkillPreservations[(int)EWarrior.NightShade] != ELegacyPreservation.MAX)
+            {
+                infoToSend.ShouldLeech = true;
+            }
             ResetNightShadeDarkGauge();
         }
 
@@ -193,7 +227,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
                 // 완충 공격시 게이지 충전 및 숙주 상태이상에 걸리지 않음
                 if (isDarkChargedAttack)
                 {
-                    attackInfo.StatusEffects.RemoveAt(attackInfo.StatusEffects.Count - 1);
+                    infoToSend.StatusEffects.RemoveAt(attackInfo.StatusEffects.Count - 1);
                 }
                 else
                 {
@@ -238,6 +272,10 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
 
             case EWarrior.Turbela:
                 Define.TurbelaExtraDamageStats = stats;
+                break;
+            
+            case EWarrior.NightShade:
+                Define.NightShadeLeechStats = stats;
                 break;
         }
         BindingSkillPreservations[(int)warrior] = preservation;
@@ -319,5 +357,12 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
     public void OnMeleeComboHit()
     {
         ((AttackBase_Melee)AttackBases[(int)ELegacyType.Melee]).OnComboHit();
+    }
+    
+    // Animation event
+    public void EnableSaveNextAttack()
+    {
+        // Debug.Log("Can save attack");
+        _canSaveNextAttack = true;
     }
 }

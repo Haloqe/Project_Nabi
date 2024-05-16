@@ -36,6 +36,7 @@ public struct SLegacyStatUpgradeData
     //public EIncreaseMethod IncreaseMethod;
     [NamedArray(typeof(ELegacyPreservation))] public float[] IncreaseAmounts;
 
+    public bool isMultiplier;
     public bool HasUpdateCondition;
     public SCondition StatUpdateCondition;          // 스탯이 업데이트 되는 조건
     

@@ -23,8 +23,8 @@ public class AttackBase_Melee : AttackBase
     // Damage
     private AttackInfo _attackComboInfo = new AttackInfo();
     private AttackInfo _attackComboInit = new AttackInfo();
-    private SDamageInfo _damageComboInfo = new SDamageInfo();
-    private SDamageInfo _damageInfoComboInit = new SDamageInfo();
+    private SDamageInfo _damageComboInfo;
+    private SDamageInfo _damageInfoComboInit;
     
     // Animator variables
     private readonly static int IsMeleeCombo = Animator.StringToHash("IsMeleeCombo");
@@ -41,8 +41,8 @@ public class AttackBase_Melee : AttackBase
         _affectedEnemies = new List<int>();
 
         // Damage
-        _damageInfoInit = new SDamageInfo() { BaseDamage = 3.0f, RelativeDamage = 1.0f, };
-        _damageInfoComboInit = new SDamageInfo() { BaseDamage = 5.0f, RelativeDamage = 3.0f, };
+        _damageInfoInit = new SDamageInfo { BaseDamage = 3.0f, RelativeDamage = 1.0f, };
+        _damageInfoComboInit = new SDamageInfo { BaseDamage = 5.0f, RelativeDamage = 2.0f };
         _attackInfoInit.Damage.TotalAmount = _damageInfoInit.BaseDamage + _playerController.Strength * _damageInfoInit.RelativeDamage;
         _attackComboInit.Damage.TotalAmount = _damageInfoComboInit.BaseDamage + _playerController.Strength * _damageInfoComboInit.RelativeDamage;
         _attackInfoInit.CanBeDarkAttack = true;
@@ -61,8 +61,8 @@ public class AttackBase_Melee : AttackBase
         
         // Damage
         activeLegacy = null;
-        _attackInfo = _attackInfoInit;
-        _attackComboInfo = _attackComboInit;
+        _damageComboInfo = _damageInfoComboInit;
+        _attackComboInfo = _attackComboInit.Clone();
         _affectedEnemies.Clear();
 
         // VFX
@@ -90,6 +90,7 @@ public class AttackBase_Melee : AttackBase
         // Add combo stack
         _comboStack++;
         _comboTimer = 0.0f;
+        Debug.Log("MELEE ATTACK, Stack: " + _comboStack);
 
         // Dir: Positive if left, negative if right
         float dir = Mathf.Sign(_player.localScale.x);
@@ -151,6 +152,10 @@ public class AttackBase_Melee : AttackBase
         _attackInfo.Damage.TotalAmount = _damageInfo.BaseDamage + _playerController.Strength * _damageInfo.RelativeDamage;
         
         // Do damage
+        if (_comboStack == 0)
+        {
+            int i = 0;
+        }
         _affectedEnemies.Add(collision.gameObject.GetInstanceID());
         _damageDealer.DealDamage(target, _comboStack == 0 ? _attackComboInfo : _attackInfo);
     }
@@ -169,12 +174,12 @@ public class AttackBase_Melee : AttackBase
         _attackComboInfo.Damage.TotalAmount = _damageComboInfo.BaseDamage + _playerController.Strength * _damageComboInfo.RelativeDamage;
         
         // Combo - Damage multiplier and additional damage from active legacy
-        if (activeLegacy)
+        if (activeLegacy != null)
         {
             var legacyPreservation = (int)activeLegacy.preservation;
             _attackComboInfo.Damage.TotalAmount *= activeLegacy.damageMultipliers[legacyPreservation];
             var extra = activeLegacy.extraDamages[legacyPreservation];
-            _attackComboInfo.Damage.TotalAmount += extra.BaseDamage + _playerController.Strength * extra.RelativeDamage;
+            _attackComboInfo.Damage.TotalAmount += (extra.BaseDamage + _playerController.Strength * extra.RelativeDamage);
         }
     }
 

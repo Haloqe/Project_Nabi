@@ -10,6 +10,7 @@ public class AttackInfo
     public int IncomingDirectionX;
     public float AttackerArmourPenetration;
     public bool CanBeDarkAttack;
+    public bool ShouldLeech;
 
     public AttackInfo()
     {

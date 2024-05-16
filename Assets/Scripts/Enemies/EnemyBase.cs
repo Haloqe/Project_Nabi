@@ -404,32 +404,39 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         return gameObject;
     }
     
-    public void TakeDamage(AttackInfo damageInfo)
+    public void TakeDamage(AttackInfo attackInfo)
     {
-        HandleNewStatusEffects(damageInfo.StatusEffects, damageInfo.IncomingDirectionX);
+        HandleNewStatusEffects(attackInfo.StatusEffects, attackInfo.IncomingDirectionX);
         
         // 입면 환각
         var hypHallucinationPreserv = _player.playerDamageDealer.BindingSkillPreservations[(int)EWarrior.Sommer];
         if (_sommerStackCount <= 0)
         {
-            AttackInfo boostedDamageInfo = damageInfo.Clone();
-            boostedDamageInfo.Damage.TotalAmount += damageInfo.Damage.TotalAmount * Define.SommerHypHallucinationStats[(int)hypHallucinationPreserv];
-            HandleNewDamage(boostedDamageInfo.Damage, boostedDamageInfo.AttackerArmourPenetration);
+            AttackInfo boostedAttackInfo = attackInfo.Clone();
+            boostedAttackInfo.Damage.TotalAmount += attackInfo.Damage.TotalAmount * Define.SommerHypHallucinationStats[(int)hypHallucinationPreserv];
+            HandleNewDamage(boostedAttackInfo.Damage, boostedAttackInfo.AttackerArmourPenetration, attackInfo.ShouldLeech);
         }
         // 그 외 경우
         else
         {
-            HandleNewDamage(damageInfo.Damage, damageInfo.AttackerArmourPenetration);
+            HandleNewDamage(attackInfo.Damage, attackInfo.AttackerArmourPenetration, attackInfo.ShouldLeech);
         }
     }
 
-    private void HandleNewDamage(DamageInfo damage, float attackerArmourPenetration)
+    private void HandleNewDamage(DamageInfo damage, float attackerArmourPenetration, bool shouldLeech)
     {
-        // 방어력 및 방어관통력 처리
+        // 방어력 및 방어 관통력 처리
         var realDamage = Mathf.Max(0, damage.TotalAmount - Mathf.Max(GetArmour() - attackerArmourPenetration, 0));
         Debug.Log($"[{name}] Received {damage.TotalAmount}, Armour {GetArmour()}, Attacker's ArmourPen {attackerArmourPenetration}, Final: {realDamage}");
         damage.TotalAmount = realDamage;
         StartCoroutine(DamageCoroutine(damage));
+        
+        // 흡혈 여부
+        if (shouldLeech)
+        {
+            _player.Heal(realDamage * -1 * 
+                Define.NightShadeLeechStats[(int)_player.playerDamageDealer.BindingSkillPreservations[(int)EWarrior.NightShade]]);
+        }
 
         // if (asleep) then wake up
         if (_effectRemainingTimes[(int)EStatusEffect.Sleep] > 0)
@@ -443,7 +450,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     private float GetArmour()
     {
         if (_effectRemainingTimes[(int)EStatusEffect.Sleep] > 0) return EnemyData.DefaultArmour;
-        int sommerPreserv = (int)PlayerController.Instance.playerDamageDealer.BindingSkillPreservations[(int)EWarrior.Sommer];
+        int sommerPreserv = (int)_player.playerDamageDealer.BindingSkillPreservations[(int)EWarrior.Sommer];
         return Mathf.Max(0, EnemyData.DefaultArmour - EnemyData.DefaultArmour * Define.SommerSleepArmourReduceAmounts[sommerPreserv]);
     }
 

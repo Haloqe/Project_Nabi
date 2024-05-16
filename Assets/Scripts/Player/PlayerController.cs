@@ -19,28 +19,30 @@ public class PlayerController : Singleton<PlayerController>
     private int _slayedEnemiesCount = 0;
     public float HpCriticalThreshold { get; private set; }
     [NamedArray(typeof(EStatusEffect))] public GameObject[] statusEffects;
+    [NamedArray(typeof(EBuffs))] public GameObject[] buffEffects;
     
     // Stats
     public float Strength => _baseStrength * _strengthMultiplier;
     public float Armour => _baseArmour * _armourMultiplier;
     public float ArmourPenetration => _baseArmourPenetration * _armourPenetrationMultiplier;
-    public float EvasionRate => _baseEvasionRate * _evasionRateMultiplier + evasionRateAdditionAtMax;
-    public float CriticalRate => _baseCritcalRate * _criticalRateMultiplier;
     public float HealEfficiency => _baseHealEfficiency * _healEfficiencyMultiplier;
+    public float EvasionRate => _baseEvasionRate + _evasionRateAddition + evasionRateAdditionAtMax;
+    public float CriticalRate => _baseCritcalRate + _criticalRateAddition;
 
-    private float _baseStrength = 1.0f;
+    private float _baseStrength = 3.0f;
     private float _baseArmour = 0.0f;
     private float _baseArmourPenetration = 0.0f;
     private float _baseEvasionRate = 0.0f;
     private float _baseCritcalRate = 0.0f;
     private float _baseHealEfficiency = 1.0f;
     
+    // 확률은 +, 일반 숫자값은 *
     private float _strengthMultiplier = 1.0f;
     private float _armourMultiplier = 1.0f;
     private float _armourPenetrationMultiplier = 1.0f;
-    private float _evasionRateMultiplier = 1.0f;  
-    private float _criticalRateMultiplier = 1.0f;  
     private float _healEfficiencyMultiplier = 1.0f;
+    private float _evasionRateAddition = 0.0f;  
+    private float _criticalRateAddition = 1.0f;  
     
     public float evasionRateAdditionAtMax = 0.0f;
     
@@ -119,7 +121,7 @@ public class PlayerController : Singleton<PlayerController>
         _strengthMultiplier = 1.0f;
         _armourMultiplier = 1.0f;
         _armourPenetrationMultiplier = 1.0f;
-        _evasionRateMultiplier = 1.0f;
+        _evasionRateAddition = 0.0f;
         _healEfficiencyMultiplier = 1.0f;
         evasionRateAdditionAtMax = 0.0f;
         
@@ -189,6 +191,7 @@ public class PlayerController : Singleton<PlayerController>
     // Heal is exclusively used for increase of health from food items
     public void Heal(float amount)
     {
+        buffEffects[(int)EBuffs.Heal].SetActive(true);
         playerDamageReceiver.ChangeHealthByAmount(amount * HealEfficiency, false);
     }
 
@@ -210,12 +213,21 @@ public class PlayerController : Singleton<PlayerController>
         //     _appliedStatUpgrades.Add(upgradeData.Stat, new List<(int legacyID, SLegacyStatUpgradeData data)>{(legacyID, upgradeData)});
         // }
         
-        // Update value - multiplier
-        // 피의 갑주를 제외한 모든 stat update는 현재 multiplier 형식이기에 통일하였음
         string enumString = upgradeData.Stat.ToString();
         string decapitalizedEnumString = char.ToLower(enumString[0]) + enumString.Substring(1);
-        var multiplierFieldInfo = GetType().GetField($"_{decapitalizedEnumString}Multiplier", BindingFlags.NonPublic | BindingFlags.Instance);
-        multiplierFieldInfo.SetValue(this, (float)multiplierFieldInfo.GetValue(this) + upgradeData.IncreaseAmounts[(int)preservation]);
+        
+        // Update value - multiplier
+        if (upgradeData.isMultiplier)
+        {
+            var multiplierFieldInfo = GetType().GetField($"_{decapitalizedEnumString}Multiplier", BindingFlags.NonPublic | BindingFlags.Instance);
+            multiplierFieldInfo.SetValue(this, (float)multiplierFieldInfo.GetValue(this) + upgradeData.IncreaseAmounts[(int)preservation]);
+        }
+        // Update value - addition
+        else
+        {
+            var additionFieldInfo = GetType().GetField($"_{decapitalizedEnumString}Addition", BindingFlags.NonPublic | BindingFlags.Instance);
+            additionFieldInfo.SetValue(this, (float)additionFieldInfo.GetValue(this) + upgradeData.IncreaseAmounts[(int)preservation]);
+        }
         
         // Display text
         string[] upText = {" Up!", " 업!"};

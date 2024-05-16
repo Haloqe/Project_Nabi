@@ -5,13 +5,14 @@ using UnityEngine;
 public class TextUI : MonoBehaviour
 {
     private TextMeshProUGUI _tmp;
-    public float lifeTime = 0.6f;
+    private float _lifeTime = 0.6f;
     private Transform parent;
 
-    public void Init(Transform followParent, string text)
+    public void Init(Transform followParent, string text, float lifeTime = 0.6f)
     {
+        _lifeTime = lifeTime;
         parent = followParent;
-        _tmp.text = text;
+        if (text != string.Empty && text != null) _tmp.text = text;
     }
 
     private void Awake()
@@ -31,7 +32,7 @@ public class TextUI : MonoBehaviour
     
     private IEnumerator LifeTimeCoroutine()
     {
-        yield return new WaitForSeconds(lifeTime);
+        yield return new WaitForSeconds(_lifeTime);
         
         // Fade
         var changeAmount = new Color(0, 0, 0, 0.01f);

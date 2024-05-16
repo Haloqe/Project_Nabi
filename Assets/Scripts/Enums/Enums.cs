@@ -24,6 +24,13 @@ public enum EDamageType
     MAX,
 }
 
+public enum EBuffs
+{
+    Fast,
+    Heal,
+    MAX,
+}
+
 public enum EStatusEffect
 {
     None,
@@ -50,7 +57,6 @@ public enum EStatusEffect
     Root,
     Pull,
     BuffButterfly,
-    Fast,
 
     [InspectorName(null)] MAX,
 }
