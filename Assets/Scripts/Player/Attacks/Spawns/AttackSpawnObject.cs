@@ -60,17 +60,15 @@ public class AttackSpawnObject : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D other)
     {
         IDamageable target = other.gameObject.GetComponent<IDamageable>();
-        if (target != null && (HasDamage || HasStatusEffect))
-        {
-            _attackersList.Add(target);
-            StartCoroutine(DealCoroutine(target));
-        }
+        if (target == null || _attackersList.Contains(target) || !HasDamage && !HasStatusEffect) return;
+        _attackersList.Add(target);
+        StartCoroutine(DealCoroutine(target));
     }
     
     private void OnTriggerExit2D(Collider2D other)
     {
         IDamageable target = other.gameObject.GetComponent<IDamageable>();
-        if (target != null && (HasDamage || HasStatusEffect))
+        if (target != null)
         {
             _attackersList.Remove(target);
         }
