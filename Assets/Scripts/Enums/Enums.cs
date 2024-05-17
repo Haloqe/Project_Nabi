@@ -280,11 +280,12 @@ public enum EPortalType
 
 public enum EFlowerType
 {
-    NectarFlower,
-    IncendiaryFlower,
-    StickyFlower,
-    BlizzardFlower,
-    GravityFlower
+    NectarFlower,       // 회복
+    IncendiaryFlower,   // 화염
+    StickyFlower,       // 젤리
+    BlizzardFlower,     // 냉기
+    GravityFlower,      // 중력
+    MAX,
 };
 #endregion Interaction
 

@@ -5,12 +5,14 @@ using UnityEngine.InputSystem;
 using UnityEngine;
 using System;
 using System.Linq;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine.UI;
 using UnityEditor;
 
 public class PlayerAttackManager : Singleton<PlayerAttackManager>
 {
+    // References
     private PlayerController _playerController;
     private PlayerInput _playerInput;
     private PlayerDamageDealer _playerDamageDealer;

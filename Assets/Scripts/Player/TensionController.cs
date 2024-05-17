@@ -38,7 +38,7 @@ public class TensionController : MonoBehaviour
     
     private void Awake()
     {
-        GameEvents.restarted += Reset;
+        GameEvents.restarted += OnRestarted;
         _tensionGaugeSlider = GetComponentInChildren<Slider>();
         _tensionGaugeText = GetComponentInChildren<TextMeshProUGUI>();
         _tensionGaugeFillImage = _tensionGaugeSlider.transform.Find("Fill Area").GetComponentInChildren<Image>();
@@ -53,10 +53,10 @@ public class TensionController : MonoBehaviour
         _player = PlayerController.Instance;
         _overheatedVFX = _player.transform.Find("OverheatedVFX").gameObject;
         _overloadedVFX = _player.transform.Find("OverloadedVFX").gameObject;
-        Reset();
+        OnRestarted();
     }
 
-    private void Reset()
+    private void OnRestarted()
     {
         _incrementStep = 1;
         _maxTension = 4;//50;

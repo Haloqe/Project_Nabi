@@ -147,6 +147,8 @@ public class PlayerController : Singleton<PlayerController>
         // Initialise NightShade data
         _shadowHosts.Clear();
         nightShadeCollider.SetActive(false);
+        
+        playerInventory.SelectFlower(1);
     }
 
     void OnMove(InputValue value)
@@ -164,7 +166,7 @@ public class PlayerController : Singleton<PlayerController>
     {
         Heal(10);
         playerInventory.AddFlower((int)EFlowerType.IncendiaryFlower);
-        playerInventory.SelectFlowers((int)EFlowerType.IncendiaryFlower);
+        playerInventory.SelectFlower((int)EFlowerType.IncendiaryFlower);
     }
 
     private void OnValueChanged(ECondition condition, float changeAmount)

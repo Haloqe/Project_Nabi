@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class GoldUI : MonoBehaviour
 {
+    private PlayerInventory _playerInventory;
     private TextMeshProUGUI _goldText;
     private Animator _goldIconAnimator;
     private readonly static int Emphasis = Animator.StringToHash("Emphasis");
@@ -13,15 +14,18 @@ public class GoldUI : MonoBehaviour
     {
         _goldText = GetComponentInChildren<TextMeshProUGUI>();
         _goldIconAnimator = GetComponentInChildren<Animator>();
-
         _goldText.text = "0";
-        GameEvents.restarted += () => OnPlayerGoldChanged(0);
         PlayerEvents.goldChanged += OnPlayerGoldChanged;
     }
-    
-    private void OnPlayerGoldChanged(float gold)
+
+    private void Start()
     {
-        _goldText.text = gold.ToString(CultureInfo.CurrentCulture);
+        _playerInventory = PlayerController.Instance.playerInventory;
+    }
+
+    private void OnPlayerGoldChanged()
+    {
+        _goldText.text = _playerInventory.Gold.ToString(CultureInfo.CurrentCulture);
         if (_goldIconAnimator) _goldIconAnimator.SetTrigger(Emphasis);
     }
 }

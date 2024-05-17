@@ -6,7 +6,7 @@ public class PlayerEvents
     public static UnityAction<float, float, float> HPChanged;
     public static UnityAction defeated;
     public static UnityAction spawned;
-    public static UnityAction<float> goldChanged;
+    public static UnityAction goldChanged;
     public static UnityAction<ECondition, float> ValueChanged;
     public static UnityAction strengthChanged;
 }

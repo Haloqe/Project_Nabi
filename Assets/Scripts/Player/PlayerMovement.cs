@@ -1,9 +1,5 @@
-using System;
-using Cinemachine;
 using System.Collections;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -29,7 +25,6 @@ public class PlayerMovement : MonoBehaviour
 
     [SerializeField] private float _coyoteTime = 0.2f;
     private float _coyoteTimeCounter;
-
     [SerializeField] private float _jumpBufferTime = 0.2f;
     private float _jumpBufferTimeCounter;
 

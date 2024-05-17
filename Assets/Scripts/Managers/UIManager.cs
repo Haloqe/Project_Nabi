@@ -6,7 +6,6 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class UIManager : Singleton<UIManager>
@@ -52,8 +51,22 @@ public class UIManager : Singleton<UIManager>
     
     // UI Navigation
     private GameObject _activeFocusedUI;
-    int temp = 0;
     private Camera _uiCamera;
+    
+    // References
+    private PlayerController _playerController;
+    private PlayerAttackManager _playerAttackManager;
+    
+    // Flower bomb
+    [NamedArray(typeof(EFlowerType))] [SerializeField]
+    private Image[] flowerIcons = new Image[(int)EFlowerType.MAX];
+    private GameObject _flowerUILeft;
+    private GameObject _flowerUIRight;
+    private Image _flowerIconLeft;
+    private Image _flowerIconRight;
+    private Image _flowerIconMid;
+    private Image _flowerOverlay;
+    private TextMeshProUGUI _flowerCountText;
 
     protected override void Awake()
     {
@@ -114,6 +127,16 @@ public class UIManager : Singleton<UIManager>
         inGameCombatUI.SetActive(true);
         inGameCombatUI.GetComponent<Canvas>().worldCamera = _uiCamera;
         inGameCombatUI.GetComponent<Canvas>().planeDistance = 20;
+        
+        // UI - flower bombs
+        var flowerSlotRoot = inGameCombatUI.transform.Find("ActiveLayoutGroup").Find("Slot_3");
+        _flowerIconMid = flowerSlotRoot.Find("AbilityIcon").GetComponent<Image>();
+        _flowerOverlay = flowerSlotRoot.Find("Overlay").GetComponent<Image>();
+        _flowerCountText = _flowerIconMid.transform.Find("Count").GetComponent<TextMeshProUGUI>();
+        _flowerUILeft = _flowerIconMid.gameObject.transform.Find("Slot_L").GameObject();
+        _flowerUIRight = _flowerIconMid.gameObject.transform.Find("Slot_R").GameObject();
+        _flowerIconLeft = _flowerUILeft.GetComponentInChildren<Image>();
+        _flowerIconRight = _flowerUILeft.GetComponentInChildren<Image>();
     }
     
     private void OnGameLoadEnded()
@@ -234,10 +257,15 @@ public class UIManager : Singleton<UIManager>
 
     private void OnPlayerSpawned()
     {
-        _playerHPSlider.value = FindObjectOfType<PlayerDamageReceiver>().GetHPRatio();
+        _playerAttackManager = PlayerAttackManager.Instance;
+        _playerController = PlayerController.Instance;
+        _playerHPSlider.value = _playerController.playerDamageReceiver.GetHPRatio();
         _playerIAMap = FindObjectOfType<PlayerInput>().actions.FindActionMap("Player");
         _playerIAMap.Enable();
         _UIIAMap.Disable();
+        
+        _playerIAMap.FindAction("Bomb_Left").performed += OnBombSelect_Left;
+        _playerIAMap.FindAction("Bomb_Right").performed += OnBombSelect_Right;
     }
 
     private IEnumerator GameOverCoroutine()
@@ -355,6 +383,31 @@ public class UIManager : Singleton<UIManager>
     
     public void DisplayPlayerEvadePopUp()
     {
-        Instantiate(_evadePopupPrefab, PlayerController.Instance.transform.position + new Vector3(0, 2.3f, 0), quaternion.identity);
+        Instantiate(_evadePopupPrefab, _playerController.transform.position + new Vector3(0, 2.3f, 0), quaternion.identity);
+    }
+
+    // Flower
+    private void OnBombSelect_Left(InputAction.CallbackContext obj) => ChangeFlowerBomb(true);
+    private void OnBombSelect_Right(InputAction.CallbackContext obj) => ChangeFlowerBomb(false);
+    
+    public void ChangeFlowerBomb(bool toPrevious)
+    {
+        // Compute left, mid, and right indices
+        int oldIdx = _playerController.playerInventory.GetCurrentSelectedFlower();
+        int midIdx = toPrevious ? oldIdx - 1 : oldIdx + 1;
+        if (midIdx == 0) midIdx = (int)EFlowerType.MAX - 1;
+        if (midIdx == (int)EFlowerType.MAX) midIdx = 1;
+        int leftIdx = midIdx == 1 ? (int)EFlowerType.MAX - 1 : midIdx - 1;
+        int rightIdx = midIdx == (int)EFlowerType.MAX - 1 ? 1 : midIdx + 1;
+        
+        // Update icons respectively
+        _flowerIconLeft = flowerIcons[leftIdx];
+        _flowerIconRight = flowerIcons[rightIdx];
+        _flowerIconMid = flowerIcons[midIdx];
+        
+        // Update count text and fill
+        var count = _playerController.playerInventory.GetNumberOfFlowers(midIdx);
+        _flowerCountText.text = count.ToString();
+        _flowerOverlay.fillAmount = count == 0 ? 0 : 1;
     }
 }
