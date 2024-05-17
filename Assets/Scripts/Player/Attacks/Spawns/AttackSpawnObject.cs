@@ -18,6 +18,7 @@ public class AttackSpawnObject : MonoBehaviour
     public bool HasDamage;
     [NamedArray(typeof(ELegacyPreservation))] public float[] 
         relativeDamages = new float[4];
+    public bool ShouldUpdateTension;
 
     [Space(10)] [Header("Status Effect")] 
     public bool HasStatusEffect;
@@ -54,6 +55,7 @@ public class AttackSpawnObject : MonoBehaviour
         {
             _attackInfo.StatusEffects.Add(StatusEffectInfos[(int)preservation]);
         }
+        _attackInfo.ShouldUpdateTension = ShouldUpdateTension;
         _attackInfo.SetAttackDirToMyFront(_playerDamageDealer.gameObject);
     }
     

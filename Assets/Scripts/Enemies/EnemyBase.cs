@@ -414,21 +414,22 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         {
             AttackInfo boostedAttackInfo = attackInfo.Clone();
             boostedAttackInfo.Damage.TotalAmount += attackInfo.Damage.TotalAmount * Define.SommerHypHallucinationStats[(int)hypHallucinationPreserv];
-            HandleNewDamage(boostedAttackInfo.Damage, boostedAttackInfo.AttackerArmourPenetration, attackInfo.ShouldLeech);
+            HandleNewDamage(boostedAttackInfo.Damage, boostedAttackInfo.AttackerArmourPenetration, attackInfo.ShouldLeech, attackInfo.ShouldUpdateTension);
         }
         // 그 외 경우
         else
         {
-            HandleNewDamage(attackInfo.Damage, attackInfo.AttackerArmourPenetration, attackInfo.ShouldLeech);
+            HandleNewDamage(attackInfo.Damage, attackInfo.AttackerArmourPenetration, attackInfo.ShouldLeech, attackInfo.ShouldUpdateTension);
         }
     }
 
-    private void HandleNewDamage(DamageInfo damage, float attackerArmourPenetration, bool shouldLeech)
+    private void HandleNewDamage(DamageInfo damage, float attackerArmourPenetration, bool shouldLeech, bool shouldUpdateTension)
     {
         // 방어력 및 방어 관통력 처리
         var realDamage = Mathf.Max(0, damage.TotalAmount - Mathf.Max(GetArmour() - attackerArmourPenetration, 0));
         Debug.Log($"[{name}] Received {damage.TotalAmount}, Armour {GetArmour()}, Attacker's ArmourPen {attackerArmourPenetration}, Final: {realDamage}");
         damage.TotalAmount = realDamage;
+        if (damage.TotalAmount == 0) return;
         StartCoroutine(DamageCoroutine(damage));
         
         // 흡혈 여부
@@ -437,6 +438,8 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
             _player.Heal(realDamage * -1 * 
                 Define.NightShadeLeechStats[(int)_player.playerDamageDealer.BindingSkillPreservations[(int)EWarrior.NightShade]]);
         }
+        // 장력 게이지
+        if (shouldUpdateTension) UIManager.Instance.IncrementTensionGaugeUI();
 
         // if (asleep) then wake up
         if (_effectRemainingTimes[(int)EStatusEffect.Sleep] > 0)

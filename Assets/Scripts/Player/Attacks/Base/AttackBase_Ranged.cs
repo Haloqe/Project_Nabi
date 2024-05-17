@@ -11,6 +11,7 @@ public class AttackBase_Ranged : AttackBase
         _damageInfoInit.BaseDamage = 3.0f;
         _attackInfoInit.Damage.TotalAmount = _damageInfoInit.BaseDamage + _playerController.Strength * _damageInfoInit.RelativeDamage;
         _attackInfoInit.CanBeDarkAttack = true;
+        _attackInfoInit.ShouldUpdateTension = true;
         Reset();
     }
 

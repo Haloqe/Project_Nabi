@@ -47,6 +47,9 @@ public class AttackBase_Melee : AttackBase
         _attackComboInit.Damage.TotalAmount = _damageInfoComboInit.BaseDamage + _playerController.Strength * _damageInfoComboInit.RelativeDamage;
         _attackInfoInit.CanBeDarkAttack = true;
         _attackComboInit.CanBeDarkAttack = true;
+        _attackInfoInit.ShouldUpdateTension = true;
+        _attackComboInit.ShouldUpdateTension = true;
+        
         Reset();
     }
 

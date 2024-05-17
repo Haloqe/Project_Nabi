@@ -202,6 +202,21 @@ public enum EStat
     EvasionRate,
     HealEfficiency,
 }
+
+public enum EArborType
+{
+    Default,
+    Regret,
+    Joy,
+}
+
+public enum ETensionState
+{
+    Innate,
+    Overheated,
+    Overloaded,
+    Recovery,
+}
 #endregion
 
 //--------------------------------------------------------------------------------

@@ -12,6 +12,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
     
     public AttackBase[] AttackBases { get; private set; }
     public float[] attackDamageMultipliers;
+    public float totalDamageMultiplier; // Used exclusively for tension effect
     public int CurrAttackIdx = -1;
     public int NextAttackIdx = -1;
     private bool _canSaveNextAttack;
@@ -69,6 +70,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         if (_dashCooldownCoroutine != null) StopCoroutine(_dashCooldownCoroutine);
         _dashUIOverlay.fillAmount = 0.0f;
         _canSaveNextAttack = true;
+        totalDamageMultiplier = 1.0f;
     }
 
     private IEnumerator DashCooldownCoroutine()
@@ -250,6 +252,9 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
             }
         }
 
+        // 장력 게이지 추가 데미지 증가
+        infoToSend.Damage.TotalAmount *= totalDamageMultiplier;
+        
         // 데미지 전달
         target.TakeDamage(infoToSend);
     }

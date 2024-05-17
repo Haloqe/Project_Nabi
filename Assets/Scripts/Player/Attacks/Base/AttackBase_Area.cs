@@ -26,6 +26,7 @@ public class AttackBase_Area : AttackBase
         _attackInfoInit = new AttackInfo
         {
             Damage = new DamageInfo(EDamageType.Base, 5),
+            ShouldUpdateTension = true,
         };
         _inventory = _playerController.playerInventory;
         Reset();

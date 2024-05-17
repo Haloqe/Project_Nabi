@@ -42,7 +42,7 @@ public class PlayerController : Singleton<PlayerController>
     private float _armourPenetrationMultiplier = 1.0f;
     private float _healEfficiencyMultiplier = 1.0f;
     private float _evasionRateAddition = 0.0f;  
-    private float _criticalRateAddition = 1.0f;  
+    private float _criticalRateAddition = 0.0f;  
     
     public float evasionRateAdditionAtMax = 0.0f;
     
@@ -182,7 +182,6 @@ public class PlayerController : Singleton<PlayerController>
         PlayerEvents.ValueChanged.Invoke(ECondition.SlayedEnemiesCount, +1);
     }
     
-
     private void OnOpenMap(InputValue value)
     {
         UIManager.Instance.ToggleMap();
@@ -348,5 +347,10 @@ public class PlayerController : Singleton<PlayerController>
     {
         if (statusEffects[effectIdx] == null) return;
         statusEffects[effectIdx].SetActive(setActive);
+    }
+
+    public void AddCriticalRate(float value)
+    {
+        _criticalRateAddition = Mathf.Max(0, _criticalRateAddition + value);
     }
 }

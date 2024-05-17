@@ -18,6 +18,7 @@ public class AttackSpawnObjectEditor : Editor
         if (obj.HasDamage)
         {
             EditorGUILayout.PropertyField(serializedObject.FindProperty("relativeDamages"), true);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("ShouldUpdateTension"), true);
         }
         
         EditorGUILayout.PropertyField(serializedObject.FindProperty("HasStatusEffect"));

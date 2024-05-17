@@ -9,8 +9,14 @@ public class AttackInfo
     public List<StatusEffectInfo> StatusEffects;
     public int IncomingDirectionX;
     public float AttackerArmourPenetration;
+    
+    // 나이트셰이드 어둠 완충 공격이 될 수 있는가?
     public bool CanBeDarkAttack;
+    // 나이트셰이드 흡혈이 들어가는 공격인가?
     public bool ShouldLeech;
+    // 장력 게이지가 올라가는 공격인가?
+    public bool ShouldUpdateTension;
+    
 
     public AttackInfo()
     {
@@ -24,10 +30,12 @@ public class AttackInfo
         StatusEffects = statusEffectInfos;
     }
     
-    public AttackInfo(DamageInfo damageInfo, List<StatusEffectInfo> statusEffectInfos, int dir, bool canBeDarkAttack) : this(damageInfo, statusEffectInfos)
+    public AttackInfo(DamageInfo damageInfo, List<StatusEffectInfo> statusEffectInfos, int dir, bool canBeDarkAttack, bool shouldUpdateTension) 
+        : this(damageInfo, statusEffectInfos)
     {
         IncomingDirectionX = dir;
         CanBeDarkAttack = canBeDarkAttack;
+        ShouldUpdateTension = shouldUpdateTension;
     }
 
     // Only X is considered
@@ -42,7 +50,7 @@ public class AttackInfo
 
     public AttackInfo Clone()
     {
-        return new AttackInfo(Damage, StatusEffects, IncomingDirectionX, CanBeDarkAttack);
+        return new AttackInfo(Damage, StatusEffects, IncomingDirectionX, CanBeDarkAttack, ShouldUpdateTension);
     }
 }
 

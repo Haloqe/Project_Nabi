@@ -36,8 +36,8 @@ public static class Define
         { EStatusEffect.Sommer, EStatusEffect.Sommer },   // 소머
         { EStatusEffect.Ecstasy, EStatusEffect.Ecstasy }, // 유포리아
         { EStatusEffect.Swarm, EStatusEffect.Cloud },     // 투르벨라
-        //{ EStatusEffect.Poison, EStatusEffect.Leech },          // 버논
-        { EStatusEffect.Evade, EStatusEffect.Evade },      // 나이트셰이드
+        //{ EStatusEffect.Poison, EStatusEffect.Leech },  // 버논
+        { EStatusEffect.Evade, EStatusEffect.Evade },     // 나이트셰이드
     };
 
     // Enemy Commons

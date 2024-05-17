@@ -48,6 +48,7 @@ public class UIManager : Singleton<UIManager>
     private Slider _darkGaugeSlider;
     private TextMeshProUGUI _darkGaugeText;
     private Image _bloodOverlay;
+    private TensionController _tensionController;
     
     // UI Navigation
     private GameObject _activeFocusedUI;
@@ -105,6 +106,7 @@ public class UIManager : Singleton<UIManager>
         _hpText             = inGameCombatUI.transform.Find("Globe").GetComponentInChildren<TextMeshProUGUI>();
         _darkGaugeSlider    = inGameCombatUI.transform.Find("DarkSlider").GetComponentInChildren<Slider>();
         _darkGaugeText      = inGameCombatUI.transform.Find("DarkSlider").GetComponentInChildren<TextMeshProUGUI>();
+        _tensionController  = inGameCombatUI.transform.Find("TensionSlider").GetComponent<TensionController>();
         _bloodOverlay       = inGameCombatUI.transform.Find("BloodOverlay").GetComponent<Image>();
 
         _bloodOverlay.gameObject.SetActive(false);
@@ -127,6 +129,8 @@ public class UIManager : Singleton<UIManager>
         _darkGaugeSlider.value = value / 100.0f;
         _darkGaugeText.text = $"{value}/100";
     }
+
+    public void IncrementTensionGaugeUI() => _tensionController.IncrementTension();
     
     private void OnPlayerHPChanged(float changeAmount, float oldHpRatio, float newHpRatio)
     {
