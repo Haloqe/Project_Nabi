@@ -4,7 +4,8 @@ using UnityEngine;
 public class EnemyMovement_Stationary : EnemyMovement
 {
     SpriteRenderer _spriteRenderer;
-    bool _isHidden = true;
+    private bool _isHidden = true;
+    private static readonly int IsAttacking = Animator.StringToHash("IsAttacking");
 
     private void Awake()
     {
@@ -17,7 +18,7 @@ public class EnemyMovement_Stationary : EnemyMovement
     
     public override void Patrol()
     {
-        _animator.SetBool("IsAttacking", false);
+        _animator.SetBool(IsAttacking, false);
         if (_enemyBase.ActionTimeCounter <= 0)
         {
             if (Random.Range(0.0f, 1.0f) <= 0.5f)
@@ -33,7 +34,7 @@ public class EnemyMovement_Stationary : EnemyMovement
         if (IsFlippable)
         {
             FlipEnemyTowardsTarget();
-            _animator.SetBool("IsAttacking", false);
+            _animator.SetBool(IsAttacking, false);
         }
     }
 
@@ -41,12 +42,12 @@ public class EnemyMovement_Stationary : EnemyMovement
     {
         if (_isHidden)
         {
-            StartCoroutine("FadeIn");
+            StartCoroutine(nameof(FadeIn));
             _isHidden = false;
         }
 
         if (IsFlippable) FlipEnemyTowardsTarget();
-        _animator.SetBool("IsAttacking", true);
+        _animator.SetBool(IsAttacking, true);
     }
 
     private IEnumerator FadeIn()

@@ -9,7 +9,11 @@ public class EnemyMovement_SpiderA : EnemyMovement
     public LayerMask _groundLayer;
     public Collider2D _groundInFrontCollider;
     public Collider2D _ceilingInFrontCollider;
-    
+    private static readonly int IsAttacking = Animator.StringToHash("IsAttacking");
+    private static readonly int IsWalking = Animator.StringToHash("IsWalking");
+    private static readonly int IsJumping = Animator.StringToHash("IsJumping");
+    private static readonly int RunMultiplier = Animator.StringToHash("RunMultiplier");
+
     private void Awake()
     {
         MoveType = EEnemyMoveType.SpiderA;
@@ -21,19 +25,14 @@ public class EnemyMovement_SpiderA : EnemyMovement
         if (!IsGrounded()) return;
         if (IsAtEdge()) FlipEnemy();
 
-        if (transform.localScale.x > Mathf.Epsilon) //if it's facing right
-        {
-            _rigidBody.velocity = new Vector2(_moveSpeed, 0f);
-        } else {
-            _rigidBody.velocity = new Vector2(-_moveSpeed, 0f);
-        }
+        _rigidBody.velocity = transform.localScale.x > Mathf.Epsilon ? new Vector2(_moveSpeed, 0f) : new Vector2(-_moveSpeed, 0f);
     }
 
     private void RunTowardsPlayer()
     {
-        _animator.SetBool("IsAttacking", false);
-        _animator.SetBool("IsWalking", true);
-        _animator.SetFloat("RunMultiplier", 2f);
+        _animator.SetBool(IsAttacking, false);
+        _animator.SetBool(IsWalking, true);
+        _animator.SetFloat(RunMultiplier, 2f);
         
         FlipEnemyTowardsTarget();
         WalkForward();
@@ -65,12 +64,12 @@ public class EnemyMovement_SpiderA : EnemyMovement
             // jump down the platform!!
         }
 
-        _animator.SetBool("IsAttacking", false);
+        _animator.SetBool(IsAttacking, false);
         IsChasingPlayer = false;
         if (_enemyBase.ActionTimeCounter <= 0) GenerateRandomState();
         if (IsMoving) WalkForward();
         else _rigidBody.velocity = Vector2.zero;
-        _animator.SetBool("IsWalking", IsMoving);
+        _animator.SetBool(IsWalking, IsMoving);
     }
 
     public override void Chase()
@@ -110,9 +109,17 @@ public class EnemyMovement_SpiderA : EnemyMovement
         return;
     }
 
-    private void Jump()
+    private void Jump(float distance)
     {
+        // not finished!!
+        _animator.SetBool(IsJumping, true);
+        Vector3 force = new Vector3(distance, 5f, 0);
+        _rigidBody.AddForce(force);
+    }
 
+    private void DisableJump()
+    {
+        _animator.SetBool(IsJumping, false);
     }
 
     private void WebAttack()
@@ -150,17 +157,14 @@ public class EnemyMovement_SpiderA : EnemyMovement
     }
 
 
-
-    public bool IsGrounded()
+    private bool IsGrounded()
     {
-        if (Physics2D.OverlapBox(transform.position, _groundColliderSize, 0, _groundLayer)) return true;
-        else return false;
+        return Physics2D.OverlapBox(transform.position, _groundColliderSize, 0, _groundLayer);
     }
 
-    public bool IsAtEdge()
+    private bool IsAtEdge()
     {
-        if (_ceilingInFrontCollider.IsTouchingLayers(_groundLayer) || !_groundInFrontCollider.IsTouchingLayers(_groundLayer)) return true;
-        else return false;
+        return _ceilingInFrontCollider.IsTouchingLayers(_groundLayer) || !_groundInFrontCollider.IsTouchingLayers(_groundLayer);
     }
 
 

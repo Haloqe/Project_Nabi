@@ -16,7 +16,9 @@ public class EnemyMovement_QueenBee : EnemyMovement
     private bool _directionIsFlipping = false;
     private float _attackTimeCounter = 0f;
     private UnityEngine.Object SpawnVFXPrefab;
-    
+    private static readonly int IsAttacking = Animator.StringToHash("IsAttacking");
+    private static readonly int AttackIndex = Animator.StringToHash("AttackIndex");
+
     private void Awake()
     {
         MoveType = EEnemyMoveType.QueenBee;
@@ -39,14 +41,14 @@ public class EnemyMovement_QueenBee : EnemyMovement
     private void RandomMovement()
     {
         if (!_directionIsFlipping && Physics2D.OverlapCircle(transform.position, 0.8f, _platformLayer))
-            StartCoroutine("FlipDirection");
+            StartCoroutine(nameof(FlipDirection));
 
         Vector2 force = _patrolDirection * 100f * Time.deltaTime;
         _rigidBody.AddForce(force);
         FlipEnemyTowardsMovement();
 
         if (_directionIsChosen) return;
-        StartCoroutine("ChooseRandomDirection");
+        StartCoroutine(nameof(ChooseRandomDirection));
     }
 
     private void DefaultMovement()
@@ -95,15 +97,15 @@ public class EnemyMovement_QueenBee : EnemyMovement
 
             case 2:
             _attackTimeCounter += 5f;
-            _animator.SetBool("IsAttacking", true);
-            _animator.SetInteger("AttackIndex", 2);
+            _animator.SetBool(IsAttacking, true);
+            _animator.SetInteger(AttackIndex, 2);
             BodySlam();
             break;
 
             case 3:
             _attackTimeCounter += 5f;
-            _animator.SetBool("IsAttacking", true);
-            _animator.SetInteger("AttackIndex", 3);
+            _animator.SetBool(id: IsAttacking, true);
+            _animator.SetInteger(AttackIndex, 3);
             PoisonSpray();
             break;
         }
@@ -111,10 +113,10 @@ public class EnemyMovement_QueenBee : EnemyMovement
 
     private IEnumerator SpawnMinions(int spawnAmount)
     {
-        _animator.SetBool("IsAttacking", true);
-        _animator.SetInteger("AttackIndex", 0);
+        _animator.SetBool(IsAttacking, true);
+        _animator.SetInteger(AttackIndex, 0);
         yield return new WaitForSeconds(1f);
-        _animator.SetBool("IsAttacking", false);
+        _animator.SetBool(IsAttacking, false);
         
         Vector3 spawnLocation = transform.position;
         for (int i = 0; i < spawnAmount; i++)
@@ -147,12 +149,12 @@ public class EnemyMovement_QueenBee : EnemyMovement
 
     private IEnumerator BattleCry()
     {
-        _animator.SetBool("IsAttacking", true);
-        _animator.SetInteger("AttackIndex", 1);
+        _animator.SetBool(IsAttacking, true);
+        _animator.SetInteger(AttackIndex, 1);
         yield return new WaitForSeconds(1f);
-        _animator.SetBool("IsAttacking", false);
+        _animator.SetBool(IsAttacking, false);
         
-        List<GameObject> allBees = (GameObject.FindGameObjectsWithTag("Enemy")).ToList();
+        List<GameObject> allBees = GameObject.FindGameObjectsWithTag("Enemy").ToList();
         allBees.Remove(gameObject);
 
         int attackOrDefense = (int)Math.Floor(Random.Range(0.0f, 2f));

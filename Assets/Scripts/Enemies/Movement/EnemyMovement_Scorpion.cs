@@ -5,70 +5,61 @@ using System.Linq;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-
 public class EnemyMovement_Scorpion : EnemyMovement
 {
-    private Vector2 _attackDirection;
-    private Vector2 _patrolDirection;
-    private bool _directionIsChosen = false;
     private float _attackTimeCounter = 0f;
-    [SerializeField] private GameObject _playerObject;
     [SerializeField] private GameObject _shooterPositionObject;
     [SerializeField] private GameObject _basePositionObject;
     [SerializeField] private GameObject _shooterObject;
-    // [SerializeField] private GameObject _headObject;
-    // [SerializeField] private GameObject _bottomStingerObject;
-    // [SerializeField] private GameObject _topStingerObject;
-    // [SerializeField] GameObject[] _partObjects;
-    private Rigidbody2D[] _partRigidbodies;
-    private float[] _bouncingSpeeds = new float[] {2f, 2.3f, 2.6f, 2.7f};
+    [SerializeField] private GameObject[] _tailObjects;
+    private GameObject _bulletObject;
+    private Rigidbody2D[] _bouncingPartRigidBodies;
+    private Rigidbody2D[] _clawRigidBodies;
+    private GameObject[] _clawObjects;
+    private float[] _bouncingSpeeds = {2f, 2.3f, 2.6f, 2.6f};
     private Vector3 _stingerDirection;
     private Vector3 _playerDirection;
     
     private void Awake()
     {
         MoveType = EEnemyMoveType.Scorpion;
-
+        _bulletObject = Resources.Load<GameObject>("Prefabs/Enemies/Spawns/Scorpion_bullet");
+        
         Transform bouncingObjectsParent = transform.Find("bouncingObjects");
-        _partRigidbodies = bouncingObjectsParent.GetComponentsInChildren<Rigidbody2D>();
-        for (int i = 0; i < _partRigidbodies.Length; i++)
+        _bouncingPartRigidBodies = bouncingObjectsParent.GetComponentsInChildren<Rigidbody2D>();
+        for (int i = 0; i < _bouncingPartRigidBodies.Length; i++)
         {
-            Vector2 initialForce = new Vector2(0f, _bouncingSpeeds[i]);
-            _partRigidbodies[i].AddForce(initialForce, ForceMode2D.Impulse);
-            StartCoroutine(Bounce(_partRigidbodies[i], _bouncingSpeeds[i]));
+            StartCoroutine(Bounce(_bouncingPartRigidBodies[i], _bouncingSpeeds[i]));
         }
+        
+        Transform clawObjectsParent = transform.Find("clawObjects");
+        _clawRigidBodies = clawObjectsParent.GetComponentsInChildren<Rigidbody2D>();
+        _clawObjects = new GameObject[_clawRigidBodies.Length];
+        for (int i = 0; i < _clawRigidBodies.Length; i++) { _clawObjects[i] = _clawRigidBodies[i].gameObject; }
+        
+    }
+
+    public override void Init()
+    {
+        base.Init();
+        StartCoroutine(ShootBullet());
     }
 
     private IEnumerator Bounce(Rigidbody2D rb, float speed)
     {
+        int direction = 1;
         while (true)
         {
-            Vector2 targetPosition = new Vector2(rb.position.x, rb.position.y + 1f);
-            Vector2 velocity = Vector2.zero;
-            rb.position = Vector2.SmoothDamp(rb.position, targetPosition, ref velocity, speed);
-            yield return new WaitForSeconds(0.1f);
+            var force = new Vector2(0f, direction * speed * 0.5f);
+            rb.AddForce(force, ForceMode2D.Impulse);
+            yield return new WaitForSeconds(3f / speed);
+            direction *= -1;
         }
     }
 
     public override void Patrol()
     {
-
-    }
-
-    private IEnumerator ChooseRandomDirection()
-    {
-        _directionIsChosen = true;
-        _patrolDirection = new Vector2(Random.Range(-1f, 1f), Random.Range(-1f, 1f)).normalized;
-        yield return new WaitForSeconds(Random.Range(3f, 5f));
-        _directionIsChosen = false;
-    }
-
-    private void DefaultMovement()
-    {
-        Vector3 direction = new Vector3(0, 0.3f * (Mathf.PingPong(Time.time, 2) - 1f), 0);
-        Vector3 force = direction * 100f * Time.deltaTime;
         
-        // _headRB.AddForce(force);
     }
 
     public override void Attack()
@@ -78,35 +69,62 @@ public class EnemyMovement_Scorpion : EnemyMovement
             GenerateRandomAttack();
         }
         _attackTimeCounter -= Time.deltaTime;
-
-        // track player
-        // shoot every 5 seconds
+        
         TrackPlayer();
-        DefaultMovement();
     }
 
-    private void FlipShooter()
+    private void FlipTail(int negativeOrPositive)
     {
-
+        float[] flipMoveAmount = {1f, 2f, -0.5f};
+        for (int i = 0; i < _tailObjects.Length; i++)
+        {
+            _tailObjects[i].transform.localScale = new Vector2(
+                -1f * (_tailObjects[i].transform.localScale.x),
+                _tailObjects[i].transform.localScale.y);
+            _tailObjects[i].transform.position = new Vector2(
+                (_tailObjects[i].transform.position.x + flipMoveAmount[i] * negativeOrPositive),
+                _tailObjects[i].transform.position.y);
+        }
     }
 
     private void TrackPlayer()
     {
-        // get player location
-        // if player location is to the left and is facing right, flip. vice versa
-        // get the vector of the direction of the stinger and the vector to the direction of the player
-        // subtract the vectors and add torque to it
-
-        if (transform.position.x - _playerObject.transform.position.x >= 0)
+        if (transform.position.x - _player.transform.position.x >= 0)
         {
-            if (_shooterObject.transform.localScale.x > Mathf.Epsilon) FlipShooter();
+            if (_shooterObject.transform.localScale.x > Mathf.Epsilon) FlipTail(1);
         } else {
-            if (_shooterObject.transform.localScale.x < Mathf.Epsilon) FlipShooter();
+            if (_shooterObject.transform.localScale.x < Mathf.Epsilon) FlipTail(-1);
         }
 
         _stingerDirection = _shooterPositionObject.transform.position - _basePositionObject.transform.position;
-        _playerDirection = _playerObject.transform.position - _basePositionObject.transform.position;
+        _playerDirection = _player.transform.position - _basePositionObject.transform.position;
         _shooterObject.transform.rotation *= Quaternion.FromToRotation(_stingerDirection, _playerDirection).normalized;
+    }
+
+    private IEnumerator ShootBullet()
+    {
+        while (_player != null)
+        {
+            yield return new WaitForSeconds(5f);
+            var bullet = Instantiate(_bulletObject,
+                _shooterPositionObject.transform.position,
+                Quaternion.identity).GetComponent<Scorpion_Bullet>();
+            bullet.Shoot(_stingerDirection);
+        }
+    }
+
+    private void ClawAttack()
+    {
+        // initial position
+        // telegraph
+        // go to the middle
+        // go back to initial position
+        
+    }
+
+    private void MoveClawsBack()
+    {
+        // Vector3[] initialPositions = {_clawObjects[0].transform.position, _clawObjects[1].transform.position};
         
     }
 
