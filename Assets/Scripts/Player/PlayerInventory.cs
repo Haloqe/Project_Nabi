@@ -3,19 +3,37 @@ using UnityEngine;
 
 public class PlayerInventory : MonoBehaviour
 {
+    // References
+    private AttackBase_Area _areaAttack;
+    private UIManager _uiManager;
+    
+    // Variables
     public int Gold { get; private set; }
-    public GameObject noFlowerVFX; 
-
-    // FlowerBomb
     private int[] _numFlowers = new int[5];
-    private int _currentSelectedFlower = (int)EFlowerType.IncendiaryFlower;
+    private int _currentSelectedFlower = 0;
+    
+    // VFXs
+    public GameObject noFlowerVFX;
 
     private void Awake()
     {
+        _uiManager = UIManager.Instance;
         // Reset gold upon restart
-        GameEvents.restarted += () => ChangeGoldByAmount(-Gold);
+        GameEvents.restarted += () =>
+        {
+            ChangeGoldByAmount(-Gold);
+            _currentSelectedFlower = 0;
+            _uiManager.ChangeFlowerBomb(false);
+        };
+        _areaAttack = transform.GetComponentInChildren<AttackBase_Area>();
     }
-    
+
+    private void Start()
+    {
+        _currentSelectedFlower = 0;
+        UIManager.Instance.ChangeFlowerBomb(false);
+    }
+
     public void ChangeGoldByAmount(int amount)
     {
         Gold += amount;
@@ -36,12 +54,24 @@ public class PlayerInventory : MonoBehaviour
     public void AddFlower(int flowerIndex)
     {
         _numFlowers[flowerIndex]++;
+        
+        // Instant UI update?
+        if (_currentSelectedFlower == flowerIndex)
+        {
+            _uiManager.UpdateFlowerCount(flowerIndex);
+        }
     }
 
     // Decrease the number of flower bombs the player owns
     public void RemoveFlower(int flowerIndex)
     {
         _numFlowers[flowerIndex]--;
+        
+        // Instant UI update?
+        if (_currentSelectedFlower == flowerIndex)
+        {
+            _uiManager.UpdateFlowerCount(flowerIndex);
+        }
     }
 
     // Return the number of flower bombs currently stored
@@ -53,13 +83,8 @@ public class PlayerInventory : MonoBehaviour
     //Select a certain flower ready to be used
     public void SelectFlower(int flowerIndex)
     {
-        //if the number of flowers in stock is not 0, select.
-        if (_numFlowers[flowerIndex] != 0)
-        {
-            _currentSelectedFlower = flowerIndex;
-            FindObjectOfType<AttackBase_Area>().SwitchVFX();
-            Debug.Log((EFlowerType)flowerIndex + " selected!");
-        }
+        _currentSelectedFlower = flowerIndex;
+        _areaAttack.SwitchVFX(flowerIndex);
     }
 
     //Return the current selected flower

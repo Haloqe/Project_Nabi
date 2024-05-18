@@ -166,7 +166,6 @@ public class PlayerController : Singleton<PlayerController>
     {
         Heal(10);
         playerInventory.AddFlower((int)EFlowerType.IncendiaryFlower);
-        playerInventory.SelectFlower((int)EFlowerType.IncendiaryFlower);
     }
 
     private void OnValueChanged(ECondition condition, float changeAmount)

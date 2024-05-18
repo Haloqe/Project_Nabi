@@ -58,8 +58,7 @@ public class UIManager : Singleton<UIManager>
     private PlayerAttackManager _playerAttackManager;
     
     // Flower bomb
-    [NamedArray(typeof(EFlowerType))] [SerializeField]
-    private Image[] flowerIcons = new Image[(int)EFlowerType.MAX];
+    [NamedArray(typeof(EFlowerType))] [SerializeField] private Sprite[] flowerIcons = new Sprite[(int)EFlowerType.MAX];
     private GameObject _flowerUILeft;
     private GameObject _flowerUIRight;
     private Image _flowerIconLeft;
@@ -67,6 +66,7 @@ public class UIManager : Singleton<UIManager>
     private Image _flowerIconMid;
     private Image _flowerOverlay;
     private TextMeshProUGUI _flowerCountText;
+    private float _flowerUIDisplayRemainingTime;
 
     protected override void Awake()
     {
@@ -132,11 +132,11 @@ public class UIManager : Singleton<UIManager>
         var flowerSlotRoot = inGameCombatUI.transform.Find("ActiveLayoutGroup").Find("Slot_3");
         _flowerIconMid = flowerSlotRoot.Find("AbilityIcon").GetComponent<Image>();
         _flowerOverlay = flowerSlotRoot.Find("Overlay").GetComponent<Image>();
-        _flowerCountText = _flowerIconMid.transform.Find("Count").GetComponent<TextMeshProUGUI>();
-        _flowerUILeft = _flowerIconMid.gameObject.transform.Find("Slot_L").GameObject();
-        _flowerUIRight = _flowerIconMid.gameObject.transform.Find("Slot_R").GameObject();
-        _flowerIconLeft = _flowerUILeft.GetComponentInChildren<Image>();
-        _flowerIconRight = _flowerUILeft.GetComponentInChildren<Image>();
+        _flowerCountText = flowerSlotRoot.Find("Count").GetComponent<TextMeshProUGUI>();
+        _flowerUILeft = flowerSlotRoot.Find("Slot_L").GameObject();
+        _flowerUIRight = flowerSlotRoot.Find("Slot_R").GameObject();
+        _flowerIconLeft = _flowerUILeft.transform.Find("Icon").GetComponent<Image>();
+        _flowerIconRight = _flowerUIRight.transform.Find("Icon").GetComponent<Image>();
     }
     
     private void OnGameLoadEnded()
@@ -145,6 +145,7 @@ public class UIManager : Singleton<UIManager>
         _playerIAMap.Enable();
         _UIIAMap.Disable();
         UpdateDarkGaugeUI(0);
+        _flowerUIDisplayRemainingTime = 0;
     }
 
     public void UpdateDarkGaugeUI(float value)
@@ -400,14 +401,48 @@ public class UIManager : Singleton<UIManager>
         int leftIdx = midIdx == 1 ? (int)EFlowerType.MAX - 1 : midIdx - 1;
         int rightIdx = midIdx == (int)EFlowerType.MAX - 1 ? 1 : midIdx + 1;
         
+        // Change selected flower bomb
+        _playerController.playerInventory.SelectFlower(midIdx);
+        
         // Update icons respectively
-        _flowerIconLeft = flowerIcons[leftIdx];
-        _flowerIconRight = flowerIcons[rightIdx];
-        _flowerIconMid = flowerIcons[midIdx];
+        _flowerIconLeft.sprite = flowerIcons[leftIdx];
+        _flowerIconRight.sprite = flowerIcons[rightIdx];
+        _flowerIconMid.sprite = flowerIcons[midIdx];
         
         // Update count text and fill
-        var count = _playerController.playerInventory.GetNumberOfFlowers(midIdx);
+        UpdateFlowerCount(midIdx);
+
+        // Display left/right UI for a while
+        StartCoroutine(FlowerBombUICoroutine());
+    }
+
+    public void UpdateFlowerCount(int idx)
+    {
+        var count = _playerController.playerInventory.GetNumberOfFlowers(idx);
         _flowerCountText.text = count.ToString();
-        _flowerOverlay.fillAmount = count == 0 ? 0 : 1;
+        _flowerOverlay.fillAmount = count == 0 ? 1 : 0;
+    }
+
+    private IEnumerator FlowerBombUICoroutine()
+    {
+        _flowerUIDisplayRemainingTime += 2.0f;
+        
+        // Show left/right UI
+        if (!_flowerUILeft.activeSelf)
+        {
+            _flowerUILeft.SetActive(true);
+            _flowerUIRight.SetActive(true);
+        }
+        
+        // Wait for some duration
+        yield return new WaitForSeconds(2.0f);
+        _flowerUIDisplayRemainingTime -= 2.0f;
+        
+        // Hide left/right UI
+        if (_flowerUIDisplayRemainingTime == 0.0f)
+        {
+            _flowerUILeft.SetActive(false);
+            _flowerUIRight.SetActive(false);
+        }
     }
 }

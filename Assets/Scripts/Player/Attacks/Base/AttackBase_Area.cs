@@ -32,14 +32,14 @@ public class AttackBase_Area : AttackBase
         Reset();
     }
 
-    public void SwitchVFX()
+    public void SwitchVFX(int flowerIdx)
     {
-        currentSelectedFlowerIndex = _inventory.GetCurrentSelectedFlower();
+        currentSelectedFlowerIndex = flowerIdx;
         ReassignVFXAddress();
         VFXObject = Utility.LoadGameObjectFromPath(vfxAddress);
     }
     
-    public void ReassignVFXAddress()
+    private void ReassignVFXAddress()
     {  
         switch (currentSelectedFlowerIndex)
         {
@@ -88,7 +88,6 @@ public class AttackBase_Area : AttackBase
         // Is flower available?
         if (_inventory.GetNumberOfFlowers(currentSelectedFlowerIndex) <= 0)
         {
-            Debug.Log("There is no flower bomb to use!");
             _inventory.noFlowerVFX.SetActive(true);
             return false;
         }
