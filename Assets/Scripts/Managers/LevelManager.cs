@@ -569,7 +569,7 @@ public class LevelManager : Singleton<LevelManager>
         playerObject.position = _playerSpawnPos;
         GameObject.Find("Virtual Camera").GetComponent<CinemachineVirtualCamera>().Follow = playerObject;
         
-        PlayerEvents.spawned.Invoke();
+        PlayerEvents.Spawned.Invoke();
     }
 
     private void GenerateMinimap()

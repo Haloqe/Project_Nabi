@@ -22,8 +22,8 @@ public class EnemyManager : Singleton<EnemyManager>
         _enemies = new Dictionary<int, SEnemyData>();
         _spawnedEnemies = new List<EnemyBase>();
         GoldPrefab = Resources.Load("Prefabs/Items/Coin").GameObject();
-        GameEvents.mapLoaded += OnMapLoaded;
-        GameEvents.gameLoadEnded += OnGameLoadEnded;
+        GameEvents.MapLoaded += OnMapLoaded;
+        GameEvents.GameLoadEnded += OnGameLoadEnded;
         InGameEvents.EnemySlayed += (enemy => _spawnedEnemies.Remove(enemy));
         
         Init(Application.dataPath + "/Tables/EnemyDataTable.csv");

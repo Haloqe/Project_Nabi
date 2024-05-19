@@ -31,7 +31,7 @@ public abstract class AttackBase : MonoBehaviour
 
     public void Awake()
     {
-        PlayerEvents.strengthChanged += RecalculateDamage;
+        PlayerEvents.StrengthChanged += RecalculateDamage;
     }
     
     public virtual void Reset()
@@ -66,7 +66,7 @@ public abstract class AttackBase : MonoBehaviour
     public IEnumerator AttackPostDelayCoroutine()
     {
         OnAttackEnd_PreDelay();
-        yield return new WaitForSeconds(_attackPostDelay);
+        yield return new WaitForSecondsRealtime(_attackPostDelay);
         OnAttackEnd_PostDelay();
         _damageDealer.OnAttackEnd_PostDelay();
     }

@@ -52,23 +52,23 @@ public class GameManager : Singleton<GameManager>
     private void PostLoadInGame()
     {
         // Display loading screen UI
-        GameEvents.gameLoadStarted.Invoke();
+        GameEvents.GameLoadStarted.Invoke();
         
         // Generate new map
         if (_shouldRandomGenerateMap) LevelManager.Instance.Generate();
-        GameEvents.mapLoaded.Invoke();
+        GameEvents.MapLoaded.Invoke();
         
         // If not first run, reset variables
         // TODo temp
         //if (PlayerController.Instance != null) GameEvents.restarted.Invoke();
-        if (!IsFirstRun) GameEvents.restarted.Invoke();
+        if (!IsFirstRun) GameEvents.Restarted.Invoke();
 
         // When all set, spawn player 
         LevelManager.Instance.SpawnPlayer();
         PlayerAttackManager.Instance.InitInGameVariables();
         
         // End loading
-        GameEvents.gameLoadEnded.Invoke();
+        GameEvents.GameLoadEnded.Invoke();
     }
     
     public void SaveStageInfo()

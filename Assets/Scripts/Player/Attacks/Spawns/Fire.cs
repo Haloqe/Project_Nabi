@@ -22,9 +22,9 @@ public class Fire : MonoBehaviour
 
     private IEnumerator BurningCoroutine()
     {
-        yield return new WaitForSeconds(burningDelay);
+        yield return new WaitForSecondsRealtime(burningDelay);
         StartCoroutine(nameof(BurnToggleCoroutine));
-        yield return new WaitForSeconds(burningDuration);
+        yield return new WaitForSecondsRealtime(burningDuration);
         StopCoroutine(nameof(BurnToggleCoroutine));
         Destroy(gameObject);
     }
@@ -33,7 +33,7 @@ public class Fire : MonoBehaviour
     {
         while (true)
         {
-            yield return new WaitForSeconds(1.5f);
+            yield return new WaitForSecondsRealtime(1.5f);
             _affectedEnemies.Clear();
             foreach (var fire in _fireChildren)
             {

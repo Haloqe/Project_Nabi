@@ -69,7 +69,7 @@ public class MapController : MonoBehaviour
         while (_mapCamera.position != target)
         {
             _mapCamera.position = Vector3.Lerp(start, target, time / Vector3.Distance(start, target) * 120f);
-            time += Time.deltaTime;
+            time += Time.unscaledDeltaTime;
             yield return null;
         }
 

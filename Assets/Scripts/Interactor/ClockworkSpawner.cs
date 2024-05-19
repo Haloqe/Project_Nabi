@@ -12,7 +12,7 @@ public class ClockworkSpawner : Interactor
 
     private void Awake()
     {
-        PlayerEvents.spawned += Init;
+        PlayerEvents.Spawned += Init;
     }
 
     private void Init()
@@ -66,6 +66,6 @@ public class ClockworkSpawner : Interactor
 
     private void OnDestroy()
     {
-        PlayerEvents.spawned -= Init;
+        PlayerEvents.Spawned -= Init;
     }
 }

@@ -48,8 +48,8 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     private void Start()
     {
         _playerController = PlayerController.Instance;
-        PlayerEvents.defeated += OnDefeated;
-        GameEvents.restarted += OnRestarted;
+        PlayerEvents.Defeated += OnDefeated;
+        GameEvents.Restarted += OnRestarted;
         
         _playerMovement = GetComponent<PlayerMovement>();
         _effectRemainingTimes = new float[(int)EStatusEffect.MAX];
@@ -67,7 +67,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     //updates the remaining time of various status effects
     private void UpdateStatusEffectTimes()
     {
-        float deltaTime = Time.deltaTime;
+        float deltaTime = Time.unscaledDeltaTime;
         bool shouldCheckUpdateMovement = false;
         bool shouldCheckUpdateSilenceEx = false;
 
@@ -133,7 +133,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         bool removed = false;
         foreach (float strength in _slowRemainingTimes.Keys.ToList())
         {
-            _slowRemainingTimes[strength] -= Time.deltaTime;
+            _slowRemainingTimes[strength] -= Time.unscaledDeltaTime;
             if (_slowRemainingTimes[strength] <= 0.0f)
             {
                 _slowRemainingTimes.Remove(strength);
@@ -163,7 +163,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     
     public void TakeDamage(AttackInfo damageInfo)
     {
-        // Evade
+        // Attempt evade
         if (Random.value <= _playerController.EvasionRate)
         {
             UIManager.Instance.DisplayPlayerEvadePopUp();
@@ -171,7 +171,6 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         }
         
         // Evade failed?
-        Utility.PrintDamageInfo("Player", damageInfo);
         HandleNewDamage(damageInfo.Damage, damageInfo.AttackerArmourPenetration);
         HandleNewStatusEffects(damageInfo.StatusEffects);
     }    
@@ -180,6 +179,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     {
         // 플레이어 방어력 처리
         damage.TotalAmount = Mathf.Max(damage.TotalAmount - (_playerController.Armour - attackerArmourPenetration), 0);
+        Debug.Log("Player damaged: " + damage.TotalAmount);
         StartCoroutine(DamageCoroutine(damage));
     }
 
@@ -247,10 +247,10 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         float prevHPRatio = GetHPRatio();
         if (changeAmount < 0) StartCoroutine(DamagedRoutine());
         _health = Mathf.Clamp(_health + changeAmount, 0, _maxHealth);
-        PlayerEvents.HPChanged.Invoke(changeAmount, prevHPRatio, GetHPRatio());
+        PlayerEvents.HpChanged.Invoke(changeAmount, prevHPRatio, GetHPRatio());
         if (_health == 0)
         {
-            PlayerEvents.defeated.Invoke();
+            PlayerEvents.Defeated.Invoke();
             GameManager.Instance.IsFirstRun = false;
         }
     }

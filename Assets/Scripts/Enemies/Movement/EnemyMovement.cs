@@ -113,7 +113,7 @@ public abstract class EnemyMovement : MonoBehaviour
         while (elapsedTime < duration)
         {
             _rigidBody.velocity = pullOverallVelocity;
-            elapsedTime += Time.fixedDeltaTime;
+            elapsedTime += Time.fixedUnscaledDeltaTime;
             yield return new WaitForFixedUpdate();
         }
         pullOverallVelocity -= new Vector2(direction * strength, 0);

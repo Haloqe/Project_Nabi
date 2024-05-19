@@ -52,7 +52,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
             attacks.GetComponent<AttackBase_Melee>(), attacks.GetComponent<AttackBase_Ranged>(),
             attacks.GetComponent<AttackBase_Dash>(), attacks.GetComponent<AttackBase_Area>()
         };
-        GameEvents.restarted += OnRestarted;
+        GameEvents.Restarted += OnRestarted;
         _dashUIOverlay.fillAmount = 0.0f;
         _canSaveNextAttack = true;
     }
@@ -75,14 +75,14 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
 
     private IEnumerator DashCooldownCoroutine()
     {
-        float dashCooldown = 1.4f;
+        float dashCooldown = 0.6f;
         float timer = dashCooldown;
 
         // During the cooldown, update UI
         while (timer >= 0)
         {
             _dashUIOverlay.fillAmount = timer / dashCooldown;
-            timer -= Time.deltaTime;
+            timer -= Time.unscaledDeltaTime;
             yield return null;
         }
         _dashUIOverlay.fillAmount = 0.0f;
@@ -161,7 +161,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         _animator.SetInteger(AttackIndex, -1);
         if (attackType == ELegacyType.Melee) AttackBases[(int)attackType].VFXObject.SetActive(false);
         StartCoroutine(AttackBases[(int)attackType].AttackPostDelayCoroutine());
-        _playerMovement._isDashing = false;
+        _playerMovement.isDashing = false;
     }
 
     // Called when attack delay ends

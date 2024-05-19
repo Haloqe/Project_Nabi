@@ -7,7 +7,6 @@ public class AttackBase_Area : AttackBase
     private float _areaRadiusMultiplier;
 
     // Stopping player movement
-    private float _prevGravity;
     private Vector3 _prevVelocity;
     private Rigidbody2D _rigidbody2D;
 
@@ -103,18 +102,17 @@ public class AttackBase_Area : AttackBase
         _animator.SetInteger(AttackIndex, (int)ELegacyType.Area);
         
         // Zero out movement
-        _prevGravity = _rigidbody2D.gravityScale;
         _prevVelocity = _rigidbody2D.velocity;
         _rigidbody2D.gravityScale = 0.0f;
         _rigidbody2D.velocity = Vector3.zero;
-        _playerMovement.IsAreaAttacking = true; 
+        _playerMovement.isAreaAttacking = true; 
 
         // Instantiate VFX
-        float dir = Mathf.Sign(gameObject.transform.localScale.x);
-        Vector3 playerPos = gameObject.transform.position;
+        float dir = Mathf.Sign(_player.localScale.x);
+        Vector3 playerPos = _player.transform.position;
         Vector3 vfxPos = VFXObject.transform.position;
-        Vector3 position = new Vector3(playerPos.x + dir * (vfxPos.x), playerPos.y + vfxPos.y, playerPos.z + vfxPos.z);
-
+        Vector3 position = new Vector3(playerPos.x + dir * vfxPos.x, playerPos.y + vfxPos.y, playerPos.z + vfxPos.z);
+        
         VFXObject.transform.localScale = new Vector3(dir, 1.0f, 1.0f);
         var vfx = Instantiate(VFXObject, position, Quaternion.identity);
         vfx.GetComponent<Bomb>().Owner = this;
@@ -132,8 +130,8 @@ public class AttackBase_Area : AttackBase
             string fireVfxAddress = "Prefabs/Player/BombVFX/FireBundleTEST";
             GameObject FireVFXObject = Utility.LoadGameObjectFromPath(fireVfxAddress);
 
-            float dir = Mathf.Sign(gameObject.transform.localScale.x);
-            Vector3 playerPos = gameObject.transform.position;
+            float dir = Mathf.Sign(_player.localScale.x);
+            Vector3 playerPos = _player.position;
             Vector3 vfxPos = FireVFXObject.transform.position;
             Vector3 position = new Vector3(playerPos.x + dir * (vfxPos.x), playerPos.y + vfxPos.y, playerPos.z + vfxPos.z);
 
@@ -145,9 +143,9 @@ public class AttackBase_Area : AttackBase
 
     protected override void OnAttackEnd_PreDelay()
     {
-        _rigidbody2D.gravityScale = _prevGravity;
+        _rigidbody2D.gravityScale = _playerController.DefaultGravityScale / Time.timeScale;
         _rigidbody2D.velocity = new Vector2(_prevVelocity.x, 0); // _prevVelocity
-        _playerMovement.IsAreaAttacking = false;
+        _playerMovement.isAreaAttacking = false;
     }
 
     public void DealDamage(IDamageable target)

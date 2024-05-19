@@ -47,7 +47,8 @@ public class UIManager : Singleton<UIManager>
     private Slider _darkGaugeSlider;
     private TextMeshProUGUI _darkGaugeText;
     private Image _bloodOverlay;
-    private TensionController _tensionController;
+    private Image _tensionOverlay;
+    private PlayerTensionController _playerTensionController;
     
     // UI Navigation
     private GameObject _activeFocusedUI;
@@ -74,11 +75,13 @@ public class UIManager : Singleton<UIManager>
         if (_toBeDestroyed) return;
         LoadAllUIPrefabs();
         
-        PlayerEvents.defeated += OnPlayerDefeated;
-        PlayerEvents.HPChanged += OnPlayerHPChanged;
-        PlayerEvents.spawned += OnPlayerSpawned;
-        GameEvents.gameLoadStarted += OnGameLoadStarted;
-        GameEvents.gameLoadEnded += OnGameLoadEnded;
+        PlayerEvents.Defeated += OnPlayerDefeated;
+        PlayerEvents.HpChanged += OnPlayerHPChanged;
+        PlayerEvents.Spawned += OnPlayerSpawned;
+        GameEvents.GameLoadStarted += OnGameLoadStarted;
+        GameEvents.GameLoadEnded += OnGameLoadEnded;
+        InGameEvents.TimeSlowDown += () => _tensionOverlay.gameObject.SetActive(true);
+        InGameEvents.TimeRevertNormal += () => _tensionOverlay.gameObject.SetActive(false);
 
         _uiInputModule = FindObjectOfType<InputSystemUIInputModule>();
         InputActionAsset IAAsset = _uiInputModule.actionsAsset;
@@ -119,11 +122,10 @@ public class UIManager : Singleton<UIManager>
         _hpText             = inGameCombatUI.transform.Find("Globe").GetComponentInChildren<TextMeshProUGUI>();
         _darkGaugeSlider    = inGameCombatUI.transform.Find("DarkSlider").GetComponentInChildren<Slider>();
         _darkGaugeText      = inGameCombatUI.transform.Find("DarkSlider").GetComponentInChildren<TextMeshProUGUI>();
-        _tensionController  = inGameCombatUI.transform.Find("TensionSlider").GetComponent<TensionController>();
+        _playerTensionController  = inGameCombatUI.transform.Find("TensionSlider").GetComponent<PlayerTensionController>();
         _bloodOverlay       = inGameCombatUI.transform.Find("BloodOverlay").GetComponent<Image>();
-
-        _bloodOverlay.gameObject.SetActive(false);
-        _zoomedMap.SetActive(false);
+        _tensionOverlay     = inGameCombatUI.transform.Find("TensionOverlay").GetComponent<Image>();
+        
         inGameCombatUI.SetActive(true);
         inGameCombatUI.GetComponent<Canvas>().worldCamera = _uiCamera;
         inGameCombatUI.GetComponent<Canvas>().planeDistance = 20;
@@ -141,6 +143,9 @@ public class UIManager : Singleton<UIManager>
     
     private void OnGameLoadEnded()
     {
+        _bloodOverlay.gameObject.SetActive(false);
+        _tensionOverlay.gameObject.SetActive(false);
+        _zoomedMap.SetActive(false);
         _loadingScreenUI.SetActive(false);
         _playerIAMap.Enable();
         _UIIAMap.Disable();
@@ -154,7 +159,7 @@ public class UIManager : Singleton<UIManager>
         _darkGaugeText.text = $"{value}/100";
     }
 
-    public void IncrementTensionGaugeUI() => _tensionController.IncrementTension();
+    public void IncrementTensionGaugeUI() => _playerTensionController.IncrementTension();
     
     private void OnPlayerHPChanged(float changeAmount, float oldHpRatio, float newHpRatio)
     {
@@ -204,7 +209,7 @@ public class UIManager : Singleton<UIManager>
         var maxColour = Color.white;
         
         // Increase alpha to 0.5
-        for (float time = 0; time < duration; time += Time.deltaTime)
+        for (float time = 0; time < duration; time += Time.unscaledDeltaTime)
         {
             float progress = Mathf.Lerp(0, time, duration);
             _bloodOverlay.color = Color.Lerp(minColour, midColour, progress);
@@ -214,7 +219,7 @@ public class UIManager : Singleton<UIManager>
         // Alternate between 0.5 and 1.0 alpha
         while (true)
         {
-            for (float time = 0; time < duration * 2; time += Time.deltaTime)
+            for (float time = 0; time < duration * 2; time += Time.unscaledDeltaTime)
             {
                 float progress = Mathf.PingPong(time, duration) / duration;
                 _bloodOverlay.color = Color.Lerp(midColour, maxColour, progress);
@@ -372,14 +377,14 @@ public class UIManager : Singleton<UIManager>
     public void DisplayTextPopUp(string text, Vector3 position, Transform parent = null)
     {
         var ui = Instantiate(_textPopupPrefab, position, quaternion.identity);
-        ui.GetComponent<TextUI>().Init(parent, text);
+        ui.GetComponent<TextPopUpUI>().Init(parent, text);
     }
     
     // InGame popup - crit
     public void DisplayCritPopUp(Vector3 position)
     {
         var ui = Instantiate(_critPopupPrefab, position, quaternion.identity);
-        ui.GetComponent<TextUI>().Init(null, string.Empty);
+        ui.GetComponent<TextPopUpUI>().Init(null, string.Empty, 0.4f);
     }
     
     public void DisplayPlayerEvadePopUp()
@@ -445,4 +450,6 @@ public class UIManager : Singleton<UIManager>
             _flowerUIRight.SetActive(false);
         }
     }
+    
+    
 }

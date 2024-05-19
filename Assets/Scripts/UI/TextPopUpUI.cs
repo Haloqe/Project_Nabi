@@ -2,7 +2,7 @@ using System.Collections;
 using TMPro;
 using UnityEngine;
 
-public class TextUI : MonoBehaviour
+public class TextPopUpUI : MonoBehaviour
 {
     private TextMeshProUGUI _tmp;
     private float _lifeTime = 0.6f;

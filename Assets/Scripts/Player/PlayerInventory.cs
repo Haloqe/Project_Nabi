@@ -15,29 +15,26 @@ public class PlayerInventory : MonoBehaviour
     // VFXs
     public GameObject noFlowerVFX;
 
-    private void Awake()
-    {
-        _uiManager = UIManager.Instance;
-        // Reset gold upon restart
-        GameEvents.restarted += () =>
-        {
-            ChangeGoldByAmount(-Gold);
-            _currentSelectedFlower = 0;
-            _uiManager.ChangeFlowerBomb(false);
-        };
-        _areaAttack = transform.GetComponentInChildren<AttackBase_Area>();
-    }
-
     private void Start()
     {
+        _uiManager = UIManager.Instance;
+        _areaAttack = FindObjectOfType<AttackBase_Area>();
         _currentSelectedFlower = 0;
-        UIManager.Instance.ChangeFlowerBomb(false);
+        _uiManager.ChangeFlowerBomb(false);
+        GameEvents.Restarted += OnRestarted;
+    }
+
+    private void OnRestarted()
+    {
+        ChangeGoldByAmount(-Gold);
+        _currentSelectedFlower = 0;
+        _uiManager.ChangeFlowerBomb(false);
     }
 
     public void ChangeGoldByAmount(int amount)
     {
         Gold += amount;
-        PlayerEvents.goldChanged.Invoke();
+        PlayerEvents.GoldChanged.Invoke();
     }
 
     public bool TryBuyItem(int price)

@@ -78,7 +78,7 @@ public class AttackBase_Melee : AttackBase
         if (_comboStack is 0 or 3) return;
 
         // Update combo timer if attacking
-        _comboTimer += Time.deltaTime;
+        _comboTimer += Time.unscaledDeltaTime;
         
         // Reset combo stack if time limit reached
         if (_comboTimer > _comboTimeLimit)

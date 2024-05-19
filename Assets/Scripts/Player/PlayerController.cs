@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
@@ -16,6 +17,7 @@ public class PlayerController : Singleton<PlayerController>
     public GameObject nightShadeCollider;
     
     // Centrally controlled variables
+    public float DefaultGravityScale { get; private set; }
     private int _slayedEnemiesCount = 0;
     public float HpCriticalThreshold { get; private set; }
     [NamedArray(typeof(EStatusEffect))] public GameObject[] statusEffects;
@@ -43,7 +45,6 @@ public class PlayerController : Singleton<PlayerController>
     private float _healEfficiencyMultiplier = 1.0f;
     private float _evasionRateAddition = 0.0f;  
     private float _criticalRateAddition = 0.0f;  
-    
     public float evasionRateAdditionAtMax = 0.0f;
     
     // Legacy related (Buffs)
@@ -76,6 +77,7 @@ public class PlayerController : Singleton<PlayerController>
         // Initialise values
         HpCriticalThreshold = 0.33f;
         NightShadeShadeBonusStats = new float[]{0,0,0,0,0};
+        DefaultGravityScale = 3.0f;
         
         // Get player components
         _playerInput = GetComponent<PlayerInput>();
@@ -95,7 +97,7 @@ public class PlayerController : Singleton<PlayerController>
         _playerInput.actions["Attack_Area"].performed += _ => playerDamageDealer.OnAttack(3);
         
         // Events binding
-        GameEvents.restarted += OnRestarted;
+        GameEvents.Restarted += OnRestarted;
         PlayerEvents.ValueChanged += OnValueChanged;
         InGameEvents.EnemySlayed += OnEnemySlayed;
         OnRestarted();
@@ -147,8 +149,6 @@ public class PlayerController : Singleton<PlayerController>
         // Initialise NightShade data
         _shadowHosts.Clear();
         nightShadeCollider.SetActive(false);
-        
-        playerInventory.SelectFlower(1);
     }
 
     void OnMove(InputValue value)
@@ -161,10 +161,8 @@ public class PlayerController : Singleton<PlayerController>
         playerMovement.SetJump(value.isPressed);
     }
 
-    private int count = -1;
     void OnTestAction(InputValue value)
     {
-        Heal(10);
         playerInventory.AddFlower((int)EFlowerType.IncendiaryFlower);
     }
 

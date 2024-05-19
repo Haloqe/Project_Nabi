@@ -66,7 +66,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
         _damageInfo = new AttackInfo();
         _damageInfo.Damage = new DamageInfo((EDamageType)Enum.Parse(typeof(EDamageType), EnemyData.DamageType), EnemyData.DefaultDamage);
-        PlayerEvents.defeated += OnPlayerDefeated;
+        PlayerEvents.Defeated += OnPlayerDefeated;
 
         Target = GameObject.FindWithTag("Player");
         _targetDamageable = Target.gameObject.GetComponent<IDamageable>();
@@ -202,7 +202,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
     private void UpdateRemainingStatusEffectTimes()
     {
-        float deltaTime = Time.deltaTime;
+        float deltaTime = Time.unscaledDeltaTime;
         
         for (int i = 0; i < _effectRemainingTimes.Length; i++)
         {
@@ -262,10 +262,10 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     {
         if (_sommerStackCount <= 0) return;
 
-        _sommerTimeSinceStacked += Time.deltaTime;
+        _sommerTimeSinceStacked += Time.unscaledDeltaTime;
 
         if (_sommerTimeSinceStacked > _effectRemainingTimes[(int)EStatusEffect.Sommer])
-            _sommerStackCount -= _sommerSubtractedStackPerSecond * Time.deltaTime;
+            _sommerStackCount -= _sommerSubtractedStackPerSecond * Time.unscaledDeltaTime;
 
         if (_sommerStackCount >= 10)
         {
@@ -295,7 +295,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         bool removed = false;
         foreach (float strength in _slowRemainingTimes.Keys.ToList())
         {
-            _slowRemainingTimes[strength] -= Time.deltaTime;
+            _slowRemainingTimes[strength] -= Time.unscaledDeltaTime;
             if (_slowRemainingTimes[strength] <= 0.0f)
             {
                 _slowRemainingTimes.Remove(strength);

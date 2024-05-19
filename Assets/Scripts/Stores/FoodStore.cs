@@ -111,7 +111,7 @@ public class FoodStore : MonoBehaviour
 
     private IEnumerator FillRoutine()
     {
-        for (var time = 0f; time < Define.HoldInteractionTime; time += Time.deltaTime)
+        for (var time = 0f; time < Define.HoldInteractionTime; time += Time.unscaledDeltaTime)
         {
             _activeItemImage.fillAmount = time / Define.HoldInteractionTime;
             yield return null;

@@ -1,9 +1,12 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class AttackBase_Ranged : AttackBase
 {
     [Space(15)][SerializeField] private Transform FireTransform;
     private GameObject _bulletObject;
+    private List<Bullet> _activeBullets;
 
     public override void Start()
     {
@@ -12,9 +15,22 @@ public class AttackBase_Ranged : AttackBase
         _attackInfoInit.Damage.TotalAmount = _damageInfoInit.BaseDamage + _playerController.Strength * _damageInfoInit.RelativeDamage;
         _attackInfoInit.CanBeDarkAttack = true;
         _attackInfoInit.ShouldUpdateTension = true;
+        _activeBullets = new List<Bullet>();
+        
+        GameEvents.Restarted += _activeBullets.Clear;
+        InGameEvents.TimeSlowDown += OnTimeManipulate;
+        InGameEvents.TimeRevertNormal += OnTimeManipulate;
         Reset();
     }
 
+    private void OnTimeManipulate()
+    {
+        foreach (var bullet in _activeBullets)
+        {
+            bullet.UpdateVelocityOnTimeScaleChange();
+        }
+    }
+    
     public void SetBullet(GameObject bulletPrefab)
     {
         if (bulletPrefab == null) ResetBulletToDefault(); 
@@ -51,10 +67,11 @@ public class AttackBase_Ranged : AttackBase
         bullet.attackInfo = _attackInfo.Clone();
         bullet.attackInfo.Damage.TotalAmount *= _damageDealer.attackDamageMultipliers[(int)EPlayerAttackType.Ranged];
         bullet.attackInfo.SetAttackDirToMyFront(_damageDealer.gameObject);
+        _activeBullets.Add(bullet);
     }
 
     // Called when a shot bullet is destroyed for any reason
-    public void OnHit(IDamageable target, Vector3 bulletPos, AttackInfo savedAttackInfo)
+    public void OnHit(Bullet bullet, IDamageable target, Vector3 bulletPos, AttackInfo savedAttackInfo)
     {
         if (activeLegacy) 
             ((Legacy_Ranged)activeLegacy).OnHit(target, bulletPos);
@@ -62,5 +79,7 @@ public class AttackBase_Ranged : AttackBase
         // Deal damage to the target if the bullet is hit
         if (target != null)
             _damageDealer.DealDamage(target, savedAttackInfo);
+        
+        _activeBullets.Remove(bullet);
     }
 }
