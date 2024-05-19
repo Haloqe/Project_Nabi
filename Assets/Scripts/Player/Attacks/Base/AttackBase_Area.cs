@@ -22,12 +22,14 @@ public class AttackBase_Area : AttackBase
         vfxAddress = "Prefabs/Player/BombVFX/IncendiaryBombVFX";
         VFXObject = Utility.LoadGameObjectFromPath(vfxAddress);
         base.Start();
+
         _rigidbody2D = _player.GetComponent<Rigidbody2D>();
         _attackInfoInit = new AttackInfo
         {
             Damage = new DamageInfo(EDamageType.Base, 5),
             ShouldUpdateTension = true,
         };
+
         _inventory = _playerController.playerInventory;
         Reset();
     }
@@ -40,7 +42,8 @@ public class AttackBase_Area : AttackBase
     }
     
     private void ReassignVFXAddress()
-    {  
+    {
+        
         switch (currentSelectedFlowerIndex)
         {
             case 0:
@@ -53,6 +56,7 @@ public class AttackBase_Area : AttackBase
 
             case 2:
                 vfxAddress = "Prefabs/Player/BombVFX/StickyBombVFX";
+                bombEffect = null;
                 bombEffect = new StatusEffectInfo(EStatusEffect.Slow, 1, 3);
                 _attackInfoInit.StatusEffects.Add(bombEffect);
                 Reset();
@@ -60,8 +64,9 @@ public class AttackBase_Area : AttackBase
 
             case 3:
                 vfxAddress = "Prefabs/Player/BombVFX/BlizzardBombVFX";
+                bombEffect = null;
                 bombEffect = new StatusEffectInfo(EStatusEffect.Stun, 1, 3);
-                _attackInfoInit.StatusEffects.Add(bombEffect);
+                //_attackInfoInit.StatusEffects.Add(bombEffect);
                 Reset();
                 break;
 
@@ -81,6 +86,13 @@ public class AttackBase_Area : AttackBase
         _areaRadiusMultiplier = 1f;
         activeLegacy = null;
         _attackPostDelay = 0.0f;
+        _attackInfoInit = new AttackInfo
+        {
+            Damage = new DamageInfo(EDamageType.Base, 5),
+            ShouldUpdateTension = true,
+        };
+
+
     }
 
     public bool CheckAvailability()
@@ -110,18 +122,18 @@ public class AttackBase_Area : AttackBase
         _playerMovement.IsAreaAttacking = true; 
 
         // Instantiate VFX
-        float dir = Mathf.Sign(gameObject.transform.localScale.x);
-        Vector3 playerPos = gameObject.transform.position;
+        float dir = Mathf.Sign(_player.transform.localScale.x);
+        Vector3 playerPos = _player.transform.position;
         Vector3 vfxPos = VFXObject.transform.position;
         Vector3 position = new Vector3(playerPos.x + dir * (vfxPos.x), playerPos.y + vfxPos.y, playerPos.z + vfxPos.z);
 
         VFXObject.transform.localScale = new Vector3(dir, 1.0f, 1.0f);
         var vfx = Instantiate(VFXObject, position, Quaternion.identity);
         vfx.GetComponent<Bomb>().Owner = this;
-        //FollowUpVFX();
+        FollowUpVFX();
         
         // Decrement flower
-        _playerController.playerInventory.RemoveFlower(currentSelectedFlowerIndex);
+        //_playerController.playerInventory.RemoveFlower(currentSelectedFlowerIndex);
     }
 
     private void FollowUpVFX()
@@ -129,11 +141,11 @@ public class AttackBase_Area : AttackBase
         if (currentSelectedFlowerIndex == (int)EFlowerType.IncendiaryFlower)
         {
             //instantiate fire VFX
-            string fireVfxAddress = "Prefabs/Player/BombVFX/FireBundleTEST";
+            string fireVfxAddress = "Prefabs/Player/BombVFX/FireBundle";
             GameObject FireVFXObject = Utility.LoadGameObjectFromPath(fireVfxAddress);
 
-            float dir = Mathf.Sign(gameObject.transform.localScale.x);
-            Vector3 playerPos = gameObject.transform.position;
+            float dir = Mathf.Sign(_player.transform.localScale.x);
+            Vector3 playerPos = _player.transform.position;
             Vector3 vfxPos = FireVFXObject.transform.position;
             Vector3 position = new Vector3(playerPos.x + dir * (vfxPos.x), playerPos.y + vfxPos.y, playerPos.z + vfxPos.z);
 

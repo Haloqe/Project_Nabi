@@ -56,4 +56,5 @@ public class Fire : MonoBehaviour
             _affectedEnemies.Add(collision.gameObject.GetInstanceID());
         }   
     }
+    
 }
