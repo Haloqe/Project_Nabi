@@ -1,9 +1,9 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 public class PlayerController : Singleton<PlayerController>
 {
@@ -66,8 +66,8 @@ public class PlayerController : Singleton<PlayerController>
     private readonly int _shadowHostLimit = 3;
     private readonly float _shadowHostAutoUpdateInterval = 2f;
     private readonly float _shadowHostAutoUpdateAmount = 1.5f;
-    public float[] NightShadeFastChaseStats;
-    public float[] NightShadeShadeBonusStats;
+    public float[] nightShadeFastChaseStats;
+    public float[] nightShadeShadeBonusStats;
     
     protected override void Awake()
     {
@@ -76,7 +76,7 @@ public class PlayerController : Singleton<PlayerController>
 
         // Initialise values
         HpCriticalThreshold = 0.33f;
-        NightShadeShadeBonusStats = new float[]{0,0,0,0,0};
+        nightShadeShadeBonusStats = new float[]{0,0,0,0,0};
         DefaultGravityScale = 3.0f;
         
         // Get player components
@@ -161,9 +161,19 @@ public class PlayerController : Singleton<PlayerController>
         playerMovement.SetJump(value.isPressed);
     }
 
+    int count = 0;
     void OnTestAction(InputValue value)
     {
-        playerInventory.AddFlower((int)EFlowerType.IncendiaryFlower);
+        playerInventory.ChangeGoldByAmount(600);
+        // if (count == 0)
+        // {
+        //     playerInventory.AddFlower((int)EFlowerType.IncendiaryFlower);
+        // }
+        // else
+        // {
+        //     playerDamageReceiver.ChangeHealthByAmount(-1000);
+        // }
+        // count++;
     }
 
     private void OnValueChanged(ECondition condition, float changeAmount)

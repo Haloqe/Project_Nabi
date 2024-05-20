@@ -210,9 +210,9 @@ Rigidbody2D:
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_SleepingMode: 1
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
   m_Constraints: 4
 --- !u!114 &2914330885644459676
 MonoBehaviour:
@@ -256,14 +256,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 51a188405a852cb40a9cfb5fc83ff641, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  DefaultMoveSpeed: 5
   moveSpeedMultiplier: 1
   IsOnMovingPlatform: 0
-  DefaultJumpForce: 8
-  _coyoteTime: 0.2
-  _jumpBufferTime: 0.2
-  _isDashing: 0
-  IsAreaAttacking: 0
+  jumpForce: 0
+  isDashing: 0
+  isAreaAttacking: 0
 --- !u!114 &39438638665260744
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -303,8 +300,8 @@ MonoBehaviour:
   - {fileID: 1218171508732822510}
   - {fileID: 1538532851158953275}
   evasionRateAdditionAtMax: 0
-  NightShadeFastChaseStats: []
-  NightShadeShadeBonusStats: []
+  nightShadeFastChaseStats: []
+  nightShadeShadeBonusStats: []
 --- !u!114 &5603536338378699506
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -337,7 +334,7 @@ Animator:
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: 03da9a955af2b934395532eea66bae5c, type: 2}
   m_CullingMode: 0
-  m_UpdateMode: 0
+  m_UpdateMode: 2
   m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
@@ -360,9 +357,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   attackDamageMultipliers: []
   totalDamageMultiplier: 0
-  CurrAttackIdx: -1
-  NextAttackIdx: -1
-  IsUnderAttackDelay: 0
 --- !u!61 &7074130228895634554
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -639,9 +633,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7982ea07292ceb54c8f4abee22e4f4c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  VFXObject: {fileID: 6151124506431370974}
-  activeWarrior: 0
-  VFXObjCombo: {fileID: 5665054400567532444}
+  baseEffector: {fileID: 6151124506431370974}
+  comboEffector: {fileID: 5665054400567532444}
 --- !u!114 &6265892190179805405
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -654,9 +647,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6535e479327b38418a08d5f235c3b74, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  VFXObject: {fileID: 1123490876573057877}
-  activeWarrior: 0
-  FireTransform: {fileID: 3431984937059004776}
+  baseEffector: {fileID: 1123490876573057877}
+  fireTransform: {fileID: 3431984937059004776}
 --- !u!114 &8846949218276276624
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -669,8 +661,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07d5a52e6d7a1ff46814e8fb1d479f8f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  VFXObject: {fileID: 4964522683273783373}
-  activeWarrior: 0
+  baseEffector: {fileID: 4964522683273783373}
 --- !u!114 &3179075783509259498
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -683,9 +674,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e3296024fdb1d3e479ecb96dfa455a2b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  VFXObject: {fileID: 0}
-  activeWarrior: 0
-  currentSelectedFlowerIndex: 0
+  baseEffector: {fileID: 0}
   vfxAddress: 
 --- !u!50 &4192845758978188837
 Rigidbody2D:
@@ -2112,13 +2101,21 @@ PrefabInstance:
       propertyPath: useUnscaledTime
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 1852569629261966025, guid: ac0a661ff07dcdf40b2d3c12f70b1314, type: 3}
+      propertyPath: InitialModule.startSize.scalar
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1852569629261966025, guid: ac0a661ff07dcdf40b2d3c12f70b1314, type: 3}
+      propertyPath: InitialModule.startLifetime.scalar
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 3457672384858064589, guid: ac0a661ff07dcdf40b2d3c12f70b1314, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3457672384858064589, guid: ac0a661ff07dcdf40b2d3c12f70b1314, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 4.16
+      value: 4.71
       objectReference: {fileID: 0}
     - target: {fileID: 3457672384858064589, guid: ac0a661ff07dcdf40b2d3c12f70b1314, type: 3}
       propertyPath: m_LocalPosition.z

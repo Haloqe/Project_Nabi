@@ -28,7 +28,7 @@ public class NightShadeCollider : MonoBehaviour
         // If this is the first enemy, start chasing
         // Turn on effect and adjust speed
         _playerController.buffEffects[(int)EBuffs.Fast].SetActive(true);
-        _playerMovement.moveSpeedMultiplier = _playerController.NightShadeFastChaseStats[(int)_playerController.NightShadeFastChasePreserv];
+        _playerMovement.moveSpeedMultiplier = _playerController.nightShadeFastChaseStats[(int)_playerController.NightShadeFastChasePreserv];
     }
 
     private void OnTriggerExit2D(Collider2D other)

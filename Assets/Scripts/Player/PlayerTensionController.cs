@@ -38,7 +38,7 @@ public class PlayerTensionController : MonoBehaviour
     
     private void Awake()
     {
-        GameEvents.Restarted += OnRestarted;
+        //GameEvents.Restarted += OnRestarted;
         _tensionGaugeSlider = GetComponentInChildren<Slider>();
         _tensionGaugeText = GetComponentInChildren<TextMeshProUGUI>();
         _tensionGaugeFillImage = _tensionGaugeSlider.transform.Find("Fill Area").GetComponentInChildren<Image>();
@@ -60,7 +60,7 @@ public class PlayerTensionController : MonoBehaviour
     private void OnRestarted()
     {
         _incrementStep = 1;
-        _maxTension = 4;//50;
+        _maxTension = 40;
         _arborType = EArborType.Default;
         _overloadDuration = 4.0f;
         _recoveryDuration = 3.0f;

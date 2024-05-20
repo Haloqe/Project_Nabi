@@ -12,7 +12,7 @@ public class TextPopUpUI : MonoBehaviour
     {
         _lifeTime = lifeTime;
         parent = followParent;
-        if (text != string.Empty && text != null) _tmp.text = text;
+        if (!string.IsNullOrEmpty(text)) _tmp.text = text;
     }
 
     private void Awake()

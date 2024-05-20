@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.VisualScripting;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
@@ -13,14 +14,15 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
     public AttackBase[] AttackBases { get; private set; }
     public float[] attackDamageMultipliers;
     public float totalDamageMultiplier; // Used exclusively for tension effect
-    public int CurrAttackIdx = -1;
-    public int NextAttackIdx = -1;
-    private bool _canSaveNextAttack;
-    public bool IsUnderAttackDelay = false;
+    private int _currAttackIdx;
+    private int _bufferedAttackIdx;
+    private bool _canBufferAttack;
+    private bool _isUnderAttackDelay;
 
     // Dash
     private Coroutine _dashCooldownCoroutine;
     private Image _dashUIOverlay;
+    private float _dashCooldown = 0.6f;
 
     // Turbela Butterfly
     private GameObject _butterflyPrefab;
@@ -37,51 +39,69 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
 
     private void Start()
     {
-        _dashUIOverlay = PlayerAttackManager.Instance.GetAttackOverlay(ELegacyType.Dash);
+        // Get components
         _butterflyPrefab = Resources.Load("Prefabs/Player/SpawnObjects/Butterfly").GameObject();
+        _dashUIOverlay = PlayerAttackManager.Instance.GetAttackOverlay(ELegacyType.Dash);
+        _playerController = PlayerController.Instance;
+        _playerMovement = _playerController.playerMovement;
+        _animator = GetComponent<Animator>();
+        
+        // Initialise values
         attackDamageMultipliers = new float[]{ 1, 1, 1, 1, 1 };
         _spawnedButterflies = new List<Butterfly>();
         BindingSkillPreservations = new ELegacyPreservation[(int)EWarrior.MAX];
         for (int i = 0; i < (int)EWarrior.MAX; i++) BindingSkillPreservations[i] = ELegacyPreservation.MAX;
-        _animator = GetComponent<Animator>();
-        _playerController = PlayerController.Instance;
-        _playerMovement = _playerController.playerMovement;
         var attacks = transform.Find("Attacks");
         AttackBases = new AttackBase[]
         {
             attacks.GetComponent<AttackBase_Melee>(), attacks.GetComponent<AttackBase_Ranged>(),
             attacks.GetComponent<AttackBase_Dash>(), attacks.GetComponent<AttackBase_Area>()
         };
-        GameEvents.Restarted += OnRestarted;
         _dashUIOverlay.fillAmount = 0.0f;
-        _canSaveNextAttack = true;
+        _canBufferAttack = true;
+        _currAttackIdx = -1;
+        _bufferedAttackIdx = -1;
+        
+        // Bind events
+        GameEvents.GameLoadEnded += OnRestarted;
     }
 
     private void OnRestarted()
     {
-        ResetNightShadeDarkGauge();
+        // Reset attacks
+        if (_dashCooldownCoroutine != null) StopCoroutine(_dashCooldownCoroutine);
+        for (int i = 0; i < (int)EWarrior.MAX; i++) BindingSkillPreservations[i] = ELegacyPreservation.MAX;
+        
+        // Initialise damage multipliers
         attackDamageMultipliers = new float[]{ 1, 1, 1, 1, 1 };
-        foreach (var attack in AttackBases) attack.Reset();
-        CurrAttackIdx = -1;
-        NextAttackIdx = -1;
+        totalDamageMultiplier = 1.0f;
+        
+        // Empty the attack buffer
+        _currAttackIdx = -1;
+        _bufferedAttackIdx = -1;
+        _canBufferAttack = false;
+        _isUnderAttackDelay = false;
+        
+        // Clear spawned butterflies
         foreach (var butterfly in _spawnedButterflies) Destroy(butterfly);
         _spawnedButterflies.Clear();
-        for (int i = 0; i < (int)EWarrior.MAX; i++) BindingSkillPreservations[i] = ELegacyPreservation.MAX;
-        if (_dashCooldownCoroutine != null) StopCoroutine(_dashCooldownCoroutine);
+        
+        // Reset gauge values
+        ResetNightShadeDarkGauge();
+        
+        // Reset UI
+        _dashUIOverlay = PlayerAttackManager.Instance.GetAttackOverlay(ELegacyType.Dash);
         _dashUIOverlay.fillAmount = 0.0f;
-        _canSaveNextAttack = true;
-        totalDamageMultiplier = 1.0f;
     }
 
     private IEnumerator DashCooldownCoroutine()
     {
-        float dashCooldown = 0.6f;
-        float timer = dashCooldown;
+        float timer = _dashCooldown;
 
         // During the cooldown, update UI
         while (timer >= 0)
         {
-            _dashUIOverlay.fillAmount = timer / dashCooldown;
+            _dashUIOverlay.fillAmount = timer / _dashCooldown;
             timer -= Time.unscaledDeltaTime;
             yield return null;
         }
@@ -92,23 +112,24 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
     public void OnAttack(int attackIdx)
     {
         // No attack can be done if under another attack or under attack delay
-        if (CurrAttackIdx != -1 || IsUnderAttackDelay)
+        if (_currAttackIdx != -1 || _isUnderAttackDelay)
         {
             // Attack buffer
-            if (!_canSaveNextAttack)
+            if (!_canBufferAttack)
             {
                 Debug.Log("!!! Cannot save attack, animation not near end");
                 return;
             }
-            NextAttackIdx = attackIdx;
+            _bufferedAttackIdx = attackIdx;
             Debug.Log("Attack saved in buffer!");
             return;
         }
         // If an attack is saved in the buffer, should play that instead
-        if (NextAttackIdx != -1) return;
+        if (_bufferedAttackIdx != -1) return;
 
         // Handle NightShade dash separately
-        if (attackIdx == (int)ELegacyType.Dash && AttackBases[attackIdx].activeWarrior == EWarrior.NightShade)
+        if (attackIdx == (int)ELegacyType.Dash && AttackBases[attackIdx].ActiveLegacy &&
+            AttackBases[attackIdx].ActiveLegacy.warrior == EWarrior.NightShade)
         {
             if (((AttackBase_Dash)AttackBases[attackIdx]).IsCurrentNightShadeTpDash())
             {
@@ -119,7 +140,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
             {
                 _dashCooldownCoroutine = StartCoroutine(DashCooldownCoroutine());
                 AttackBases[attackIdx].Attack();
-                _canSaveNextAttack = false;
+                _canBufferAttack = false;
             }
             return;
         }
@@ -147,19 +168,19 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
             _playerMovement.DisableMovement(false);
         }
 
-        IsUnderAttackDelay = true;
-        CurrAttackIdx = attackIdx;
+        _isUnderAttackDelay = true;
+        _currAttackIdx = attackIdx;
         AttackBases[attackIdx].Attack();
-        _canSaveNextAttack = false;
+        _canBufferAttack = false;
     }
 
     public void OnAttackEnd(ELegacyType attackType)
     {
         // 막은거 풀기
         Debug.Log("Attack end: curr idx set to -1");
-        CurrAttackIdx = -1;
+        _currAttackIdx = -1;
         _animator.SetInteger(AttackIndex, -1);
-        if (attackType == ELegacyType.Melee) AttackBases[(int)attackType].VFXObject.SetActive(false);
+        if (attackType == ELegacyType.Melee) AttackBases[(int)attackType].baseEffector.SetActive(false);
         StartCoroutine(AttackBases[(int)attackType].AttackPostDelayCoroutine());
         _playerMovement.isDashing = false;
     }
@@ -167,15 +188,15 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
     // Called when attack delay ends
     public void OnAttackEnd_PostDelay()
     {
-        IsUnderAttackDelay = false;
+        _isUnderAttackDelay = false;
         _playerMovement.EnableMovement(false);
         
         // If an attack is saved in the buffer, play
-        if (NextAttackIdx != -1)
+        if (_bufferedAttackIdx != -1)
         {
-            Debug.Log("Buffer has next attack, playing " + (ELegacyType)NextAttackIdx);
-            var attackToPlay = NextAttackIdx;
-            NextAttackIdx = -1;
+            Debug.Log("Buffer has next attack, playing " + (ELegacyType)_bufferedAttackIdx);
+            var attackToPlay = _bufferedAttackIdx;
+            _bufferedAttackIdx = -1;
             OnAttack(attackToPlay);
         }
     }
@@ -245,8 +266,8 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
                     {
                         addAmount = 10;
                     }
-                    Debug.Log("Shade: Base " + addAmount + " Additive: " + _playerController.NightShadeShadeBonusStats[(int)_playerController.NightShadeShadeBonusPreserv]);
-                    addAmount += _playerController.NightShadeShadeBonusStats[(int)_playerController.NightShadeShadeBonusPreserv];
+                    Debug.Log("Shade: Base " + addAmount + " Additive: " + _playerController.nightShadeShadeBonusStats[(int)_playerController.NightShadeShadeBonusPreserv]);
+                    addAmount += _playerController.nightShadeShadeBonusStats[(int)_playerController.NightShadeShadeBonusPreserv];
                     UpdateNightShadeDarkGauge(addAmount);
                 }
             }
@@ -367,7 +388,6 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
     // Animation event
     public void EnableSaveNextAttack()
     {
-        // Debug.Log("Can save attack");
-        _canSaveNextAttack = true;
+        _canBufferAttack = true;
     }
 }

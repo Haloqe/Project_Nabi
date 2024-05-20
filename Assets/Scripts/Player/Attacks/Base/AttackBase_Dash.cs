@@ -8,7 +8,6 @@ public class AttackBase_Dash : AttackBase
     private Rigidbody2D _rigidbody2D;
     private float _dashStrength = 2.5f;
     private float _dashDuration = 0.35f;
-    private readonly static int AttackIndex = Animator.StringToHash("AttackIndex");
     
     // Nightshade Dash
     private float _nightShadeDashTimeLimit;
@@ -22,29 +21,27 @@ public class AttackBase_Dash : AttackBase
         base.Start();
         _attackInfoInit = new AttackInfo();
         _nightShadeDashPrefab = Resources.Load("Prefabs/Player/NightShadeDash").GameObject();
+        _rigidbody2D = _player.GetComponent<Rigidbody2D>();
         Reset();
     }
     
-    public override void Reset()
+    protected override void Reset()
     {
         base.Reset();
-        _rigidbody2D = _player.GetComponent<Rigidbody2D>();
-        VFXObject.GetComponent<ParticleSystemRenderer>()
-            .material.mainTexture = Resources.Load<Texture2D>("Sprites/Player/VFX/Default/Dash");
         _nightShadeDashShadow = null;
     }
 
     public override void Attack()
     {
-        if (activeWarrior == EWarrior.NightShade)
+        if (ActiveLegacy != null && ActiveLegacy.warrior == EWarrior.NightShade)
         {
             NightShadeDash();
         }
         else
         {
             _animator.SetInteger(AttackIndex, (int)ELegacyType.Dash);
-            VFXObject.transform.localScale = new Vector3(Mathf.Sign(_player.localScale.x), 1.0f, 1.0f);
-            VFXObject.SetActive(true);
+            baseEffector.transform.localScale = new Vector3(Mathf.Sign(_player.localScale.x), 1.0f, 1.0f);
+            baseEffector.SetActive(true);
             StartCoroutine(DashCoroutine());
         }
     }
@@ -92,7 +89,7 @@ public class AttackBase_Dash : AttackBase
         if (!_playerMovement.IsMoving) _player.localScale = _nightShadeDashShadow.transform.localScale;
         
         // Teleport attack
-        ((Legacy_Dash)activeLegacy).OnDashEnd();
+        ((Legacy_Dash)ActiveLegacy).OnDashEnd();
             
         // Reset shadow
         StopCoroutine(nameof(NightShadeDashCoroutine));
@@ -131,25 +128,25 @@ public class AttackBase_Dash : AttackBase
         Coroutine legacyCoroutine = null;
         
         // Legacy extra effect?
-        if (activeLegacy)
+        if (ActiveLegacy)
         {
-            ((Legacy_Dash)activeLegacy).OnDashBegin();
-            legacyCoroutine = StartCoroutine(((Legacy_Dash)activeLegacy).DashSpawnCoroutine());
+            ((Legacy_Dash)ActiveLegacy).OnDashBegin();
+            legacyCoroutine = StartCoroutine(((Legacy_Dash)ActiveLegacy).DashSpawnCoroutine());
         }
         
         // Delay during dash
         yield return new WaitForSecondsRealtime(_dashDuration);
 
         // End Dash
-        VFXObject.SetActive(false);
+        baseEffector.SetActive(false);
         _damageDealer.OnAttackEnd(ELegacyType.Dash);
         _rigidbody2D.gravityScale = _playerController.DefaultGravityScale / Time.timeScale;
         _rigidbody2D.velocity = Vector2.zero;
         
         // Legacy extra effect?
-        if (activeLegacy)
+        if (ActiveLegacy)
         {
-            ((Legacy_Dash)activeLegacy).OnDashEnd();
+            ((Legacy_Dash)ActiveLegacy).OnDashEnd();
             if (legacyCoroutine != null) StopCoroutine(legacyCoroutine);
         }
     }

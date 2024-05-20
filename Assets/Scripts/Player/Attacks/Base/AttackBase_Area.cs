@@ -11,7 +11,7 @@ public class AttackBase_Area : AttackBase
     private Rigidbody2D _rigidbody2D;
 
     //detecting which flower to use
-    public int currentSelectedFlowerIndex;
+    private int _selectedFlowerIndex;
     public string vfxAddress;
     StatusEffectInfo bombEffect;
 
@@ -19,7 +19,7 @@ public class AttackBase_Area : AttackBase
     {
         _attackType = ELegacyType.Area;
         vfxAddress = "Prefabs/Player/BombVFX/IncendiaryBombVFX";
-        VFXObject = Utility.LoadGameObjectFromPath(vfxAddress);
+        baseEffector = Utility.LoadGameObjectFromPath(vfxAddress);
         base.Start();
         _rigidbody2D = _player.GetComponent<Rigidbody2D>();
         _attackInfoInit = new AttackInfo
@@ -30,17 +30,25 @@ public class AttackBase_Area : AttackBase
         _inventory = _playerController.playerInventory;
         Reset();
     }
+    
+    protected override void Reset()
+    {
+        base.Reset();
+        _attackInfo = _attackInfoInit.Clone();
+        _areaRadiusMultiplier = 1f;
+        _selectedFlowerIndex = 0;
+    }
 
     public void SwitchVFX(int flowerIdx)
     {
-        currentSelectedFlowerIndex = flowerIdx;
+        _selectedFlowerIndex = flowerIdx;
         ReassignVFXAddress();
-        VFXObject = Utility.LoadGameObjectFromPath(vfxAddress);
+        baseEffector = Utility.LoadGameObjectFromPath(vfxAddress);
     }
     
     private void ReassignVFXAddress()
     {  
-        switch (currentSelectedFlowerIndex)
+        switch (_selectedFlowerIndex)
         {
             case 0:
                 Debug.Log("Will heal you on R");
@@ -70,28 +78,17 @@ public class AttackBase_Area : AttackBase
         }
         
     }
-        
-    public override void Reset()
-    {
-        //base.Reset();
-        _attackInfo = _attackInfoInit.Clone();
-        //_damageInfo = _damageInfoInit;
-        //VFXObject.GetComponent<ParticleSystemRenderer>().sharedMaterial = _defaultVFXMaterial;
-        _areaRadiusMultiplier = 1f;
-        activeLegacy = null;
-        _attackPostDelay = 0.0f;
-    }
 
     public bool CheckAvailability()
     {
         // Is flower available?
-        if (_inventory.GetNumberOfFlowers(currentSelectedFlowerIndex) <= 0)
+        if (_inventory.GetNumberOfFlowers(_selectedFlowerIndex) <= 0)
         {
             _inventory.noFlowerVFX.SetActive(true);
             return false;
         }
         
-        return currentSelectedFlowerIndex != 0;
+        return _selectedFlowerIndex != 0;
         // _playerController.Heal(15);
         // return;
     }
@@ -110,21 +107,21 @@ public class AttackBase_Area : AttackBase
         // Instantiate VFX
         float dir = Mathf.Sign(_player.localScale.x);
         Vector3 playerPos = _player.transform.position;
-        Vector3 vfxPos = VFXObject.transform.position;
+        Vector3 vfxPos = baseEffector.transform.position;
         Vector3 position = new Vector3(playerPos.x + dir * vfxPos.x, playerPos.y + vfxPos.y, playerPos.z + vfxPos.z);
         
-        VFXObject.transform.localScale = new Vector3(dir, 1.0f, 1.0f);
-        var vfx = Instantiate(VFXObject, position, Quaternion.identity);
+        baseEffector.transform.localScale = new Vector3(dir, 1.0f, 1.0f);
+        var vfx = Instantiate(baseEffector, position, Quaternion.identity);
         vfx.GetComponent<Bomb>().Owner = this;
         //FollowUpVFX();
         
         // Decrement flower
-        _playerController.playerInventory.RemoveFlower(currentSelectedFlowerIndex);
+        _playerController.playerInventory.RemoveFlower(_selectedFlowerIndex);
     }
 
     private void FollowUpVFX()
     {
-        if (currentSelectedFlowerIndex == (int)EFlowerType.IncendiaryFlower)
+        if (_selectedFlowerIndex == (int)EFlowerType.IncendiaryFlower)
         {
             //instantiate fire VFX
             string fireVfxAddress = "Prefabs/Player/BombVFX/FireBundleTEST";

@@ -26,8 +26,9 @@ public class PlayerInventory : MonoBehaviour
 
     private void OnRestarted()
     {
-        ChangeGoldByAmount(-Gold);
+        Gold = 0;
         _currentSelectedFlower = 0;
+        for (int i = 0; i < _numFlowers.Length; i++) _numFlowers[i] = 0;
         _uiManager.ChangeFlowerBomb(false);
     }
 

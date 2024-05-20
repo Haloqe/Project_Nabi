@@ -30,10 +30,10 @@ public class AttackSpawnObject : MonoBehaviour
         _dealIntervalWait = new WaitForSeconds(DealInterval);
         _attackersList = new List<IDamageable>();
         _playerDamageDealer = PlayerController.Instance.playerDamageDealer;
-        var activeLegacy = _playerDamageDealer.AttackBases[(int)attackParentType].activeLegacy;
+        var activeLegacy = _playerDamageDealer.AttackBases[(int)attackParentType].ActiveLegacy;
         EStatusEffect warriorSpecificEffect = PlayerAttackManager.Instance
             .GetWarriorStatusEffect(activeLegacy.warrior, _playerDamageDealer.GetStatusEffectLevel(activeLegacy.warrior));
-        SetAttackInfo(_playerDamageDealer.AttackBases[(int)attackParentType].activeLegacy.preservation);
+        SetAttackInfo(_playerDamageDealer.AttackBases[(int)attackParentType].ActiveLegacy.preservation);
         SetWarriorSpecificStatusEffect(warriorSpecificEffect);
     }
     

@@ -1,23 +1,24 @@
-using System;
 using System.Collections;
 using UnityEngine;
 
 public abstract class AttackBase : MonoBehaviour
 {
+    // References
     protected Transform _player;
     protected PlayerController _playerController;
     protected PlayerDamageDealer _damageDealer;
     protected PlayerMovement _playerMovement;
     protected Animator _animator;
     
+    // Effectors
+    public GameObject baseEffector;
+    public ParticleSystemRenderer basePSRenderer { get; private set; }
+    
+    // Variables
+    protected ELegacyType _attackType;
     private float _attackDelay;
     private float _attackSpeedMultiplier;
     protected float _attackPostDelay;
-    protected ELegacyType _attackType;
-    
-    public GameObject VFXObject;
-    private Material _defaultVFXMaterial;
-    protected readonly static int AttackIndex = Animator.StringToHash("AttackIndex");
     
     // Damage
     protected AttackInfo _attackInfo = new AttackInfo();
@@ -26,29 +27,41 @@ public abstract class AttackBase : MonoBehaviour
     protected SDamageInfo _damageInfoInit = new SDamageInfo();
     
     // Legacy
-    public EWarrior activeWarrior;
-    public ActiveLegacySO activeLegacy { get; protected set; }
+    public ActiveLegacySO ActiveLegacy { get; protected set; }
 
+    // Others
+    protected readonly static int AttackIndex = Animator.StringToHash("AttackIndex");
+    private Material _defaultVFXMaterial;
+    
+    
     public void Awake()
     {
         PlayerEvents.StrengthChanged += RecalculateDamage;
-    }
-    
-    public virtual void Reset()
-    {
-        _attackInfo = _attackInfoInit.Clone();
-        _damageInfo = _damageInfoInit;
-        VFXObject.GetComponent<ParticleSystemRenderer>().sharedMaterial = _defaultVFXMaterial;
+        GameEvents.Restarted += Reset;
     }
     
     public virtual void Start()
     {
         _player = transform.parent;
         _playerController = PlayerController.Instance;
-        _defaultVFXMaterial = VFXObject.GetComponent<ParticleSystemRenderer>().sharedMaterial;
+        basePSRenderer = baseEffector.GetComponent<ParticleSystemRenderer>();
+        _defaultVFXMaterial = basePSRenderer.sharedMaterial;
         _animator = _player.GetComponent<Animator>();
         _damageDealer = _player.GetComponent<PlayerDamageDealer>();
         _playerMovement = _player.GetComponent<PlayerMovement>();
+    }
+    
+    protected virtual void Reset()
+    {
+        // Remove bound legacy
+        ActiveLegacy = null;
+        
+        // Reset attack info
+        _attackInfo = _attackInfoInit.Clone();
+        _damageInfo = _damageInfoInit;
+        
+        // Reset VFX material
+        basePSRenderer.sharedMaterial = _defaultVFXMaterial;
     }
     
     public abstract void Attack();
@@ -73,20 +86,19 @@ public abstract class AttackBase : MonoBehaviour
 
     public virtual bool IsActiveBound()
     {
-        return activeLegacy == null;
+        return ActiveLegacy == null;
     }
 
     public void BindActiveLegacy(ActiveLegacySO legacyAsset, ELegacyPreservation preservation)
     {
-        activeWarrior = legacyAsset.warrior;
-        activeLegacy = legacyAsset;
-        activeLegacy.Init(gameObject.transform);
+        ActiveLegacy = legacyAsset;
+        ActiveLegacy.Init(gameObject.transform);
         UpdateActiveLegacyPreservation(preservation);
     }
 
     public void UpdateSpawnSize(float increaseAmount, EIncreaseMethod method)
     {
-        if (activeLegacy) activeLegacy.UpdateSpawnSize(method, increaseAmount);
+        if (ActiveLegacy) ActiveLegacy.UpdateSpawnSize(method, increaseAmount);
     }
 
     public virtual void RecalculateDamage()
@@ -95,36 +107,36 @@ public abstract class AttackBase : MonoBehaviour
         _attackInfo.Damage.TotalAmount = _damageInfo.BaseDamage + _playerController.Strength * _damageInfo.RelativeDamage;
         
         // Damage multiplier and additional damage from active legacy
-        if (activeLegacy)
+        if (ActiveLegacy)
         {
-            var legacyPreservation = (int)activeLegacy.preservation;
-            _attackInfo.Damage.TotalAmount *= activeLegacy.damageMultipliers[legacyPreservation];
-            var extra = activeLegacy.extraDamages[legacyPreservation];
+            var legacyPreservation = (int)ActiveLegacy.preservation;
+            _attackInfo.Damage.TotalAmount *= ActiveLegacy.damageMultipliers[legacyPreservation];
+            var extra = ActiveLegacy.extraDamages[legacyPreservation];
             _attackInfo.Damage.TotalAmount += extra.BaseDamage + _playerController.Strength * extra.RelativeDamage;
         }
     }
     
     public virtual void UpdateLegacyStatusEffect()
     {
-        if (activeLegacy == null) return;
-        var legacyPreservation = (int)activeLegacy.preservation;
+        if (ActiveLegacy == null) return;
+        var legacyPreservation = (int)ActiveLegacy.preservation;
         
         // Get the newest status effect
         EStatusEffect warriorSpecificEffect = PlayerAttackManager.Instance
-            .GetWarriorStatusEffect(activeLegacy.warrior, _damageDealer.GetStatusEffectLevel(activeLegacy.warrior));
+            .GetWarriorStatusEffect(ActiveLegacy.warrior, _damageDealer.GetStatusEffectLevel(ActiveLegacy.warrior));
         
         // Update status effect of base damage)
         var newStatusEffectsBase = _attackInfo.StatusEffects;
         var newEffect = new StatusEffectInfo(warriorSpecificEffect,
-            activeLegacy.StatusEffects[legacyPreservation].Strength,
-            activeLegacy.StatusEffects[legacyPreservation].Duration,
-            activeLegacy.StatusEffects[legacyPreservation].Chance);
+            ActiveLegacy.StatusEffects[legacyPreservation].Strength,
+            ActiveLegacy.StatusEffects[legacyPreservation].Duration,
+            ActiveLegacy.StatusEffects[legacyPreservation].Chance);
         newStatusEffectsBase.Add(newEffect);    
         
         // Additional status effect
-        if (activeLegacy.ExtraStatusEffects != null && activeLegacy.ExtraStatusEffects.Length > 0)
+        if (ActiveLegacy.ExtraStatusEffects != null && ActiveLegacy.ExtraStatusEffects.Length > 0)
         {
-            var extraCC = activeLegacy.ExtraStatusEffects[legacyPreservation];
+            var extraCC = ActiveLegacy.ExtraStatusEffects[legacyPreservation];
             if (extraCC is { Effect: not (EStatusEffect.None or EStatusEffect.BuffButterfly) })
             {
                 var extraEffect = new StatusEffectInfo(extraCC.Effect, extraCC.Strength, extraCC.Duration, extraCC.Chance);
@@ -138,8 +150,8 @@ public abstract class AttackBase : MonoBehaviour
 
     private void UpdateActiveLegacyPreservation(ELegacyPreservation preservation)
     {
-        if (activeLegacy == null) return;
-        activeLegacy.preservation = preservation;
+        if (ActiveLegacy == null) return;
+        ActiveLegacy.preservation = preservation;
         RecalculateDamage();
         UpdateLegacyStatusEffect();
     }

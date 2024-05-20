@@ -90,7 +90,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         _passiveLegacyGroup = combatCanvas.transform.Find("PassiveLayoutGroup").transform;
     }
     
-    public void Init()
+    private void Init()
     {
         //Init_WarriorData();
         Init_LegacyData();
@@ -100,11 +100,10 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     
     private void Init_WarriorVFXs()
     {
-        _bulletsByWarrior = new GameObject[(int)EWarrior.MAX];
+        _bulletsByWarrior = new GameObject[(int)EWarrior.MAX + 1];
         _vfxTexturesByWarrior = new Texture2D[(int)EWarrior.MAX][];
         for (int warriorIdx = 0; warriorIdx < (int)EWarrior.MAX; warriorIdx++)
         {
-            string s = "Prefabs/Player/Bullet_" + (EWarrior)warriorIdx;
             _bulletsByWarrior[warriorIdx] = Resources.Load<GameObject>("Prefabs/Player/Bullets/Bullet_" + (EWarrior)warriorIdx);
             _vfxTexturesByWarrior[warriorIdx] = new Texture2D[(int)EPlayerAttackType.MAX];
             for (int attackIdx = 0; attackIdx < (int)EPlayerAttackType.MAX; attackIdx++)
@@ -113,6 +112,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                     "Sprites/Player/VFX/" + (EWarrior)warriorIdx + "/" + (EPlayerAttackType)attackIdx);
             }
         }
+        _bulletsByWarrior[(int)EWarrior.MAX] = Resources.Load<GameObject>("Prefabs/Player/Bullets/Bullet_Default");
     }
 
     private void Init_WarriorData()
@@ -251,7 +251,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     public string GetBoundActiveLegacyName(ELegacyType legacyType)
     {
         int id = _boundActiveLegacyIDs[(int)legacyType];
-        return id == -1 ? String.Empty : _legacies[id].Names[(int)Define.Localisation];
+        return id == -1 ? string.Empty : _legacies[id].Names[(int)Define.Localisation];
     }
     
     private bool IsLegacyCollected(int legacyIdx)
@@ -312,7 +312,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
             case EBuffType.SpawnAreaIncrease:
                 foreach (var attackBase in _playerDamageDealer.AttackBases)
                 {
-                    if (attackBase.activeWarrior == legacySO.warrior)
+                    if (attackBase.ActiveLegacy != null && attackBase.ActiveLegacy.warrior == legacySO.warrior)
                     {
                         attackBase.UpdateSpawnSize(legacySO.BuffIncreaseAmounts[preservationIdx], legacySO.BuffIncreaseMethod);
                     }
@@ -343,12 +343,12 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
             case EBuffType.NightShadeFastChase:
                 _playerController.nightShadeCollider.SetActive(true);
                 _playerController.ActivateBuffByName(legacySO.BuffType, preservation);
-                _playerController.NightShadeFastChaseStats = legacySO.Stats;
+                _playerController.nightShadeFastChaseStats = legacySO.Stats;
                 break;
             
             case EBuffType.NightShadeShadeBonus:
                 _playerController.ActivateBuffByName(legacySO.BuffType, preservation);
-                _playerController.NightShadeShadeBonusStats = legacySO.Stats;
+                _playerController.nightShadeShadeBonusStats = legacySO.Stats;
                 break;
         }
     }
@@ -419,8 +419,8 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     {
         return Define.StatusEffectByWarrior[(int)warrior, level];
     }
-    
-    public void UpdateAttackVFX(EWarrior warrior, ELegacyType attackType)
+
+    private void UpdateAttackVFX(EWarrior warrior, ELegacyType attackType)
     { 
         // try get warrior-specific VFX
         switch (attackType)
@@ -430,12 +430,10 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                     var attackBase = (AttackBase_Melee)_playerDamageDealer.AttackBases[(int)attackType];
                     
                     // Base VFX
-                    attackBase.VFXObject.GetComponent<ParticleSystemRenderer>()
-                        .material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Melee_Base);
+                    attackBase.basePSRenderer.material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Melee_Base);
                     
                     // Combo VFX
-                    attackBase.VFXObjCombo.GetComponent<ParticleSystemRenderer>()
-                        .material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Melee_Combo);
+                    attackBase.comboPSRenderer.material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Melee_Combo);
                 }
                 break;
             case ELegacyType.Ranged:
@@ -443,11 +441,10 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                     var attackBase = (AttackBase_Ranged)_playerDamageDealer.AttackBases[(int)attackType];
                     
                     // Base VFX
-                    attackBase.VFXObject.GetComponent<ParticleSystemRenderer>()
-                        .material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Ranged);
+                    attackBase.basePSRenderer.material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Ranged);
                     
                     // bullet
-                    attackBase.SetBullet(_bulletsByWarrior[(int)warrior]);
+                    attackBase.SetBullet(GetBulletPrefab(warrior));
                 }
                 break;
             case ELegacyType.Dash:
@@ -455,9 +452,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                     if (warrior == EWarrior.NightShade) return;
                     
                     // Base VFX
-                    _playerDamageDealer.AttackBases[(int)attackType]
-                        .VFXObject.GetComponent<ParticleSystemRenderer>()
-                        .material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Dash);
+                    _playerDamageDealer.AttackBases[(int)attackType].basePSRenderer.material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Dash);
                 }
                 break;
         }
@@ -466,5 +461,10 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     public Image GetAttackOverlay(ELegacyType attackType)
     {
         return _activeLegacyOverlays[(int)attackType];
+    }
+
+    public GameObject GetBulletPrefab(EWarrior warrior)
+    {
+        return _bulletsByWarrior[(int)warrior];
     }
 }

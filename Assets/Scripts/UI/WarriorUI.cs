@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Linq;
 using TMPro;
 using UnityEngine;
@@ -7,6 +8,7 @@ using Random = UnityEngine.Random;
 
 public class WarriorUI : MonoBehaviour
 {
+    private PlayerController _player;
     private int _numUsedPanels;
     private int _hoveredPanelIdx = -1;
     private int _selectedPanelIdx;
@@ -17,19 +19,32 @@ public class WarriorUI : MonoBehaviour
     private Color _selectedColor;
     private SLegacyData[] _legacies;
 
-    private GameObject _confirmPanel;
+    private GameObject _confirmPanelObject;
+    private Transform _confirmContentPanel;
+    private TextMeshProUGUI _confirmOldText;
+    private TextMeshProUGUI _confirmNewText;
     private Outline[] _panelOutlines;
     [SerializeField] private GameObject[] _legacyPanels;
+    private int _legacyChangePrice;
+    private Coroutine _activeShakeCoroutine;
+    private Vector2 _confirmPanelInitialPos;
     
     public void Initialise(EWarrior warrior)
     {
         // Initialise variables
+        _legacyChangePrice = 600;
+        _player = PlayerController.Instance;
         _warrior = warrior;
         _legacyPreservations = new ELegacyPreservation[3];
         _panelOutlines = new Outline[4];
         _legacyFullNames = new string[3];
         _hoveredPanelIdx = -1;
-        _confirmPanel = transform.Find("ConfirmPanel").gameObject;
+        _confirmPanelObject = transform.Find("ConfirmPanel").gameObject;
+        _confirmContentPanel = _confirmPanelObject.transform.Find("Panel");
+        var names = _confirmContentPanel.Find("Names");
+        _confirmOldText = names.Find("OldText").Find("Name").GetComponent<TextMeshProUGUI>();
+        _confirmNewText = names.Find("NewText").Find("Name").GetComponent<TextMeshProUGUI>();
+        _confirmPanelInitialPos = _confirmContentPanel.GetComponent<RectTransform>().anchoredPosition;
         
         // Retrieve a list of legacies that are not collected yet
         var possibleLegacies = PlayerAttackManager.Instance.GetBindableLegaciesByWarrior(_warrior);
@@ -69,6 +84,9 @@ public class WarriorUI : MonoBehaviour
                 + ">" + nameTmp.text + "</color>";
         }
         _panelOutlines[3] = _legacyPanels[3].GetComponent<Outline>();
+        var guideText = _confirmContentPanel.Find("ChangeGuideText").GetComponent<TextMeshProUGUI>();
+        guideText.text = _legacyChangePrice + guideText.text;
+        
         
         // Initialise color
         var baseColor = _panelOutlines[0].effectColor;
@@ -116,17 +134,40 @@ public class WarriorUI : MonoBehaviour
         
         // Active
         string boundLegacyName = PlayerAttackManager.Instance.GetBoundActiveLegacyName(_legacies[panelIndex].Type);
-        if (boundLegacyName.Equals(String.Empty))
+        if (string.IsNullOrEmpty(boundLegacyName))
         {
             CollectLegacy(panelIndex); 
         }
         else
         {
-            // TODO
-            _confirmPanel.SetActive(true);
+            DisplayConfirmPanel(panelIndex);
         }
     }
 
+    private void DisplayConfirmPanel(int panelIndex)
+    {
+        // Change old and new legacy names
+        ELegacyType attackType = _legacies[panelIndex].Type;
+        AttackBase attackBase = _player.playerDamageDealer.AttackBases[(int)attackType];
+        string oldText = Utility.GetColouredWarriorText(attackBase.ActiveLegacy.warrior) + " " +
+            Utility.GetColouredPreservationText(attackBase.ActiveLegacy.preservation) + "\n" +
+            PlayerAttackManager.Instance.GetBoundActiveLegacyName(attackType);
+        _confirmOldText.text = oldText;
+        
+        string newText = Utility.GetColouredWarriorText(_legacies[panelIndex].Warrior) + " " +
+            Utility.GetColouredPreservationText(_legacyPreservations[panelIndex]) + "\n" +
+            _legacies[panelIndex].Names[(int)Define.Localisation];
+        _confirmNewText.text = newText;
+        
+        // Header
+        var headerTMP = _confirmContentPanel.Find("TitleText").GetComponent<TextMeshProUGUI>();
+        headerTMP.text = Define.AttackTypeNames[(int)Define.Localisation, (int)attackType] +
+            "이 다음과 같이 변경됩니다.";
+        
+        // Display UI
+        _confirmPanelObject.SetActive(true);
+    }
+    
     private void CollectLegacy(int panelIndex)
     {
         PlayerAttackManager.Instance.CollectLegacy(_legacies[panelIndex].ID, _legacyPreservations[panelIndex]);
@@ -135,26 +176,54 @@ public class WarriorUI : MonoBehaviour
     
     public void OnSubmit()
     {
-        if (_confirmPanel.activeSelf)
+        if (_confirmPanelObject.activeSelf)
         {
-            _confirmPanel.SetActive(false);
-            CollectLegacy(_selectedPanelIdx);
+            var res = _player.playerInventory.TryBuyItem(_legacyChangePrice);
+            if (!res)
+            {
+                if (_activeShakeCoroutine != null) StopCoroutine(_activeShakeCoroutine);
+                _activeShakeCoroutine = StartCoroutine(ShakeCoroutine());
+            }
+            else
+            {
+                if (_activeShakeCoroutine != null) StopCoroutine(_activeShakeCoroutine);
+                _confirmPanelObject.SetActive(false);
+                CollectLegacy(_selectedPanelIdx);
+            }
         }
         else
         {
             OnPointerClickPanel(_selectedPanelIdx);
         }
     }
+    
+    private IEnumerator ShakeCoroutine()
+    {
+        var rectTransform = _confirmContentPanel.GetComponent<RectTransform>();
+        rectTransform.anchoredPosition = _confirmPanelInitialPos;
+        float elapsed = 0.0f;
+
+        while (elapsed < 0.5f)
+        {
+            float x = Random.Range(-1f, 1f) * 3f;
+            x *= 1.0f - (elapsed / 0.5f);
+            rectTransform.anchoredPosition = new Vector2(x, rectTransform.anchoredPosition.y);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        rectTransform.anchoredPosition = _confirmPanelInitialPos;
+    }
 
     public void OnCancel()
     {
-        if (!_confirmPanel.activeSelf) return;
-        _confirmPanel.SetActive(false);
+        if (!_confirmPanelObject.activeSelf) return;
+        _confirmPanelObject.SetActive(false);
     }
     
     public void OnNavigate(Vector2 value)
     {
-        if (_confirmPanel.activeSelf) return;
+        if (_confirmPanelObject.activeSelf) return;
         switch (value.y)
         {
             // Left or Right
@@ -189,6 +258,7 @@ public class WarriorUI : MonoBehaviour
             else
                 _panelOutlines[_selectedPanelIdx].effectColor = _hoveredColor;
         }
+        
         // Update selected panel
         _selectedPanelIdx = index;
         _panelOutlines[index].enabled = true;

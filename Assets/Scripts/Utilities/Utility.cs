@@ -4,6 +4,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Tilemaps;
+using ColorUtility = UnityEngine.ColorUtility;
 using Object = UnityEngine.Object;
 
 public static class Utility
@@ -71,7 +72,7 @@ public static class Utility
 
     public static void PrintDamageInfo(string receiver, AttackInfo attackInfo)
     {
-        string damageInfo = System.String.Empty;
+        string damageInfo = string.Empty;
         if (attackInfo.Damage != null)
         {
             var damage = attackInfo.Damage;
@@ -86,7 +87,7 @@ public static class Utility
             }
         }
         
-        string statusEffectInfo = System.String.Empty;
+        string statusEffectInfo = string.Empty;
         if (attackInfo.StatusEffects != null)
         {
             foreach (var effect in attackInfo.StatusEffects)
@@ -152,5 +153,17 @@ public static class Utility
                 return Math.Abs(left - right) < 0.0001f;
         }
         return false;
+    }
+
+    public static string GetColouredPreservationText(ELegacyPreservation preserv)
+    {
+        return "<color=#" + ColorUtility.ToHtmlStringRGBA(Define.LegacyPreservationColors[(int)preserv])
+            + ">[" + Define.LegacyPreservationNames[(int)Define.Localisation, (int)preserv] + "]</color>";
+    }
+    
+    public static string GetColouredWarriorText(EWarrior warrior)
+    {
+        return "<color=#" + ColorUtility.ToHtmlStringRGBA(Define.WarriorMainColours[(int)warrior])
+            + ">[" + Define.WarriorNames[(int)Define.Localisation, (int)warrior] + "]</color>";
     }
 }
