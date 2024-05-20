@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -15,6 +16,11 @@ public abstract class EnemyMovement : MonoBehaviour
     public bool IsFlippable = true;
     protected Rigidbody2D _rigidBody;
     protected Animator _animator;
+
+    //used for pull
+    Vector2 pullForce;
+    public float influenceRange;
+    public float distanceToGravField;
 
     public void Init()
     {
@@ -96,36 +102,41 @@ public abstract class EnemyMovement : MonoBehaviour
         _animator.SetBool("IsAttacking", false);
     }
 
-    protected Vector2 pullOverallVelocity = Vector2.zero;
-    public void StartPullX(int direction, float strength, float duration)
+    protected Vector2 pullVelocity = Vector2.zero;
+    public void StartPullX(Vector2 gravCorePosition, float strength, float duration)
     {
         DisableFlip();
         IsRooted = true;
         IsMoving = false;
-        pullOverallVelocity += new Vector2(direction * strength, 0);
-        StartCoroutine(PullXCoroutine(direction, strength, duration));
+        //pullOverallVelocity += new Vector2(direction * strength, 0);
+        StartCoroutine(PullXCoroutine(gravCorePosition, strength, duration));
+        
     }
 
     // Currently only considers the x axis; need to change if needed in future
-    protected virtual IEnumerator PullXCoroutine(int direction, float strength, float duration)
+    // gravCorePosition = fetch the direction of the gravity Field 
+    // strength, duration = constant
+    protected virtual IEnumerator PullXCoroutine(Vector2 gravCorePosition, float strength, float duration)
     {
+        //gravCorePosition = new Vector2(0, 0);
+        distanceToGravField = Vector2.Distance(gravCorePosition, _rigidBody.position);
         float elapsedTime = 0;
+
         while (elapsedTime < duration)
         {
-            _rigidBody.velocity = pullOverallVelocity;
+            pullForce = (gravCorePosition - _rigidBody.position).normalized / distanceToGravField * strength;
+            _rigidBody.AddForce(pullForce, ForceMode2D.Force);
+
             elapsedTime += Time.fixedDeltaTime;
             yield return new WaitForFixedUpdate();
+
         }
+       
+        /*
         pullOverallVelocity -= new Vector2(direction * strength, 0);
         _rigidBody.velocity = pullOverallVelocity;
         if (pullOverallVelocity == Vector2.zero) EnableFlip();
-        
-        // while (elapsedTime < duration)
-        // {
-        //     _rigidBody.AddForce(new Vector2(direction * strength, 0), ForceMode2D.Force);
-        //     elapsedTime += Time.fixedDeltaTime;
-        //     yield return new WaitForFixedUpdate();
-        // }
+        */
     }
 
     public virtual void Patrol() {}

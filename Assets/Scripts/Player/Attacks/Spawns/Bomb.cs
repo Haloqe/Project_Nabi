@@ -42,25 +42,6 @@ public class Bomb : MonoBehaviour
         }
         _collider.enabled = false;
 
-        if(FindObjectOfType<PlayerInventory>().GetCurrentSelectedFlower() == 4)
-        {
-            followUpVFX();
-        }
-        
-    }
-
-    public void followUpVFX()
-    {
-        string GravityVfxAddress = "Prefabs/Player/BombVFX/GravityField";
-            GameObject GravityVFXObject = Utility.LoadGameObjectFromPath(GravityVfxAddress);
-
-            float dir = Mathf.Sign(gameObject.transform.localScale.x);
-            Vector3 playerPos = gameObject.transform.position;
-            Vector3 vfxPos = GravityVFXObject.transform.position;
-            Vector3 position = new Vector3(playerPos.x + dir * (vfxPos.x), playerPos.y + vfxPos.y, playerPos.z + vfxPos.z);
-
-            GravityVFXObject.transform.localScale = new Vector3(dir, 1.0f, 1.0f);
-            var vfx = Instantiate(GravityVFXObject, position, Quaternion.identity);
     }
 
     private void OnTriggerEnter2D(Collider2D collision)

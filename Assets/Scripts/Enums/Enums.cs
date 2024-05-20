@@ -52,10 +52,10 @@ public enum EStatusEffect
     Blind,
     Stun,
     Slow,
+    Pull,
     Airborne,
     Silence,
     Root,
-    Pull,
     BuffButterfly,
 
     [InspectorName(null)] MAX,

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UIElements;
 using Random = UnityEngine.Random;
 
 public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
@@ -89,7 +90,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     protected virtual void Initialise() { }
 
     #region Status Effects imposed by the player handling
-    private void HandleNewStatusEffects(List<StatusEffectInfo> statusEffects, int incomingDirectionX = 0)
+    private void HandleNewStatusEffects(List<StatusEffectInfo> statusEffects, Vector2 GravCorePosition)
     {
         if (statusEffects == null) return;
 
@@ -160,7 +161,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
                     if (_movement.MoveType == EEnemyMoveType.Stationary) continue;
                     ShouldDisableMovement = true;
                     IsSilenced = true;
-                    _movement.StartPullX(incomingDirectionX, statusEffect.Strength, statusEffect.Duration);
+                    _movement.StartPullX(GravCorePosition, statusEffect.Strength, statusEffect.Duration);
                     break;
                 
                 case EStatusEffect.Evade or EStatusEffect.Camouflage:
@@ -406,7 +407,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     
     public void TakeDamage(AttackInfo attackInfo)
     {
-        HandleNewStatusEffects(attackInfo.StatusEffects, attackInfo.IncomingDirectionX);
+        HandleNewStatusEffects(attackInfo.StatusEffects, attackInfo.GravCorePosition);
         
         // 입면 환각
         var hypHallucinationPreserv = _player.playerDamageDealer.BindingSkillPreservations[(int)EWarrior.Sommer];

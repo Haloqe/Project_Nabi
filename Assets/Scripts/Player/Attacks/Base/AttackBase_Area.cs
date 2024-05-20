@@ -1,3 +1,5 @@
+using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class AttackBase_Area : AttackBase
@@ -66,7 +68,7 @@ public class AttackBase_Area : AttackBase
                 vfxAddress = "Prefabs/Player/BombVFX/BlizzardBombVFX";
                 bombEffect = null;
                 bombEffect = new StatusEffectInfo(EStatusEffect.Stun, 1, 3);
-                //_attackInfoInit.StatusEffects.Add(bombEffect);
+                _attackInfoInit.StatusEffects.Add(bombEffect);
                 Reset();
                 break;
 
@@ -85,7 +87,7 @@ public class AttackBase_Area : AttackBase
         //VFXObject.GetComponent<ParticleSystemRenderer>().sharedMaterial = _defaultVFXMaterial;
         _areaRadiusMultiplier = 1f;
         activeLegacy = null;
-        _attackPostDelay = 0.0f;
+        _attackPostDelay = 0.0f;    
         _attackInfoInit = new AttackInfo
         {
             Damage = new DamageInfo(EDamageType.Base, 5),
@@ -129,11 +131,27 @@ public class AttackBase_Area : AttackBase
 
         VFXObject.transform.localScale = new Vector3(dir, 1.0f, 1.0f);
         var vfx = Instantiate(VFXObject, position, Quaternion.identity);
-        vfx.GetComponent<Bomb>().Owner = this;
-        FollowUpVFX();
-        
+
+        if(currentSelectedFlowerIndex == (int)EFlowerType.GravityFlower)
+        {
+            StartCoroutine(BombExpansion(vfx));
+        }
+        else
+        {
+            vfx.GetComponent<Bomb>().Owner = this;
+            FollowUpVFX();
+        }        
         // Decrement flower
         //_playerController.playerInventory.RemoveFlower(currentSelectedFlowerIndex);
+    }
+
+    IEnumerator BombExpansion(GameObject vfx)
+    {
+        Debug.Log("Hello I'm waiting");
+        vfx.GetComponent<Bomb>().Owner = this;
+        yield return new WaitForSeconds(1.4f);
+        Debug.Log("Waited for 5 seconds!");
+        FollowUpVFX();
     }
 
     private void FollowUpVFX()
@@ -153,6 +171,38 @@ public class AttackBase_Area : AttackBase
             var vfx = Instantiate(FireVFXObject, position, Quaternion.identity);
             vfx.GetComponent<Fire>().Owner = this;
         }
+        
+        if(currentSelectedFlowerIndex == (int)EFlowerType.GravityFlower)
+        {
+            
+            //instantiate Gravity VFX
+            string GraivtyFieldVfxAddress = "Prefabs/Player/BombVFX/GravityField";
+            GameObject GravityFieldVFXObject = Utility.LoadGameObjectFromPath(GraivtyFieldVfxAddress);
+
+            float dir = Mathf.Sign(_player.transform.localScale.x);
+            Vector3 playerPos = _player.transform.position;
+            Vector3 vfxPos = GravityFieldVFXObject.transform.position;
+            Vector3 position = new Vector3(playerPos.x + dir * (vfxPos.x), playerPos.y + vfxPos.y, playerPos.z + vfxPos.z);
+
+            GravityFieldVFXObject.transform.localScale = new Vector3(dir, 1.0f, 1.0f);
+            var vfx = Instantiate(GravityFieldVFXObject, position, Quaternion.identity);
+
+            //restate the damageinfo 
+            _attackInfoInit = new AttackInfo{
+                Damage = new DamageInfo(EDamageType.Base, 0),
+                ShouldUpdateTension = true,
+                GravCorePosition = position
+            };
+            
+            bombEffect = null;
+            bombEffect = new StatusEffectInfo(EStatusEffect.Pull, 3, 5);
+            _attackInfoInit.StatusEffects.Add(bombEffect);
+            Reset();
+            
+            vfx.GetComponent<GravityField>().Owner = this;
+            
+            
+        }
     }
 
     protected override void OnAttackEnd_PreDelay()
@@ -164,6 +214,7 @@ public class AttackBase_Area : AttackBase
 
     public void DealDamage(IDamageable target)
     {
+        
         var attackToSend = _attackInfo.Clone();
         attackToSend.Damage.TotalAmount *= _damageDealer.attackDamageMultipliers[(int)EPlayerAttackType.Area];
         Debug.Log("Damage: " + attackToSend.Damage.TotalAmount);
