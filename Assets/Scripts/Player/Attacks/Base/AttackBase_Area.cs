@@ -1,5 +1,6 @@
 using System.Collections;
 using Unity.VisualScripting;
+using UnityEditor.TextCore.Text;
 using UnityEngine;
 
 public class AttackBase_Area : AttackBase
@@ -26,11 +27,12 @@ public class AttackBase_Area : AttackBase
         base.Start();
 
         _rigidbody2D = _player.GetComponent<Rigidbody2D>();
-        _attackInfoInit = new AttackInfo
+
+/*        _attackInfoInit = new AttackInfo
         {
             Damage = new DamageInfo(EDamageType.Base, 5),
             ShouldUpdateTension = true,
-        };
+        };*/
 
         _inventory = _playerController.playerInventory;
         Reset();
@@ -48,9 +50,6 @@ public class AttackBase_Area : AttackBase
         
         switch (currentSelectedFlowerIndex)
         {
-            case 0:
-                Debug.Log("Will heal you on R");
-                break;
 
             case 1:
                 vfxAddress = "Prefabs/Player/BombVFX/IncendiaryBombVFX";
@@ -58,18 +57,10 @@ public class AttackBase_Area : AttackBase
 
             case 2:
                 vfxAddress = "Prefabs/Player/BombVFX/StickyBombVFX";
-                bombEffect = null;
-                bombEffect = new StatusEffectInfo(EStatusEffect.Slow, 0.5f, 3);
-                _attackInfoInit.StatusEffects.Add(bombEffect);
-                Reset();
                 break;
 
             case 3:
                 vfxAddress = "Prefabs/Player/BombVFX/BlizzardBombVFX";
-                bombEffect = null;
-                bombEffect = new StatusEffectInfo(EStatusEffect.Stun, 1, 3);
-                _attackInfoInit.StatusEffects.Add(bombEffect);
-                Reset();
                 break;
 
             case 4:
@@ -78,7 +69,72 @@ public class AttackBase_Area : AttackBase
         }
         
     }
+    private void ReassignDamage(bool isSpawn)
+    {
+        if (isSpawn)
+        {
+            if(currentSelectedFlowerIndex == (int)EFlowerType.IncendiaryFlower)
+            {
+                 _attackInfoInit = new AttackInfo
+                 {
+                     Damage = new DamageInfo(EDamageType.Base, 2),
+                     ShouldUpdateTension = true,
+                 };
+                 Reset();
+            }
+            
+        }
+
+        else
+        {
+            switch (currentSelectedFlowerIndex)
+            {
+
+                case 1:
+                    _attackInfoInit = new AttackInfo
+                    {
+                        Damage = new DamageInfo(EDamageType.Base, 5),
+                        ShouldUpdateTension = true,
+                    };
+                    break;
+
+                case 2:
+                    _attackInfoInit = new AttackInfo
+                    {
+                        Damage = new DamageInfo(EDamageType.Base, 5),
+                        ShouldUpdateTension = true,
+                    };
+
+                    bombEffect = new StatusEffectInfo(EStatusEffect.Slow, 0.5f, 3);
+                    _attackInfoInit.StatusEffects.Add(bombEffect);
+                    break;
+
+                case 3:
+                    _attackInfoInit = new AttackInfo
+                    {
+                        Damage = new DamageInfo(EDamageType.Base, 5),
+                        ShouldUpdateTension = true,
+                    };
+
+                    bombEffect = new StatusEffectInfo(EStatusEffect.Stun, 1, 3);
+                    _attackInfoInit.StatusEffects.Add(bombEffect);
+                    break;
+
+                case 4:
+                    vfxAddress = "Prefabs/Player/BombVFX/GravityBombVFX";
+                    _attackInfoInit = new AttackInfo
+                    {
+                        Damage = new DamageInfo(EDamageType.Base, 5),
+                        ShouldUpdateTension = true,
+                    };
+                    break;
+            }
+
+            Reset();
+        }
         
+    }
+
     public override void Reset()
     {
         //base.Reset();
@@ -87,13 +143,14 @@ public class AttackBase_Area : AttackBase
         //VFXObject.GetComponent<ParticleSystemRenderer>().sharedMaterial = _defaultVFXMaterial;
         _areaRadiusMultiplier = 1f;
         activeLegacy = null;
-        _attackPostDelay = 0.0f;    
+        _attackPostDelay = 0.0f;  
+        
+        //_attackInfoInit 초기화
         _attackInfoInit = new AttackInfo
         {
             Damage = new DamageInfo(EDamageType.Base, 5),
             ShouldUpdateTension = true,
         };
-
 
     }
 
@@ -114,7 +171,7 @@ public class AttackBase_Area : AttackBase
     {
         // Play player animation
         _animator.SetInteger(AttackIndex, (int)ELegacyType.Area);
-        
+
         // Zero out movement
         _prevGravity = _rigidbody2D.gravityScale;
         _prevVelocity = _rigidbody2D.velocity;
@@ -130,23 +187,22 @@ public class AttackBase_Area : AttackBase
 
         VFXObject.transform.localScale = new Vector3(dir, 1.0f, 1.0f);
         var vfx = Instantiate(VFXObject, position, Quaternion.identity);
+        vfx.GetComponent<Bomb>().Owner = this;
 
-        if(currentSelectedFlowerIndex == (int)EFlowerType.GravityFlower)
+        if (currentSelectedFlowerIndex == (int)EFlowerType.GravityFlower)
         {
-            vfx.GetComponent<Bomb>().Owner = this;
             //spawn gravity field on completion of bomb VFX
             StartCoroutine(BombExpansion(vfx, position, dir));
         }
         else
         {
-            vfx.GetComponent<Bomb>().Owner = this;
-
             if (currentSelectedFlowerIndex == (int)EFlowerType.IncendiaryFlower)
             {
                 FireBundleSpawn();
             }
             
-        }        
+        }
+
         // Decrement flower
         //_playerController.playerInventory.RemoveFlower(currentSelectedFlowerIndex);
     }
@@ -177,20 +233,10 @@ public class AttackBase_Area : AttackBase
             vfx.GetComponent<Fire>().Owner = this;
         }
         
-   
     }
 
     private void GravityFieldSpawn(Vector3 position, float dir)
     {
-        //instantiate Gravity VFX
-        string GraivtyFieldVfxAddress = "Prefabs/Player/BombVFX/GravityField";
-        GameObject GravityFieldVFXObject = Utility.LoadGameObjectFromPath(GraivtyFieldVfxAddress);
-
-
-        GravityFieldVFXObject.transform.localScale = new Vector3(dir, 1.0f, 1.0f);
-        var vfx = Instantiate(GravityFieldVFXObject, position, Quaternion.identity);
-
-        //restate the damageinfo 
         _attackInfoInit = new AttackInfo
         {
             Damage = new DamageInfo(EDamageType.Base, 0),
@@ -203,6 +249,13 @@ public class AttackBase_Area : AttackBase
         _attackInfoInit.StatusEffects.Add(bombEffect);
         Reset();
 
+        //instantiate Gravity VFX
+        string GraivtyFieldVfxAddress = "Prefabs/Player/BombVFX/GravityField";
+        GameObject GravityFieldVFXObject = Utility.LoadGameObjectFromPath(GraivtyFieldVfxAddress);
+
+
+        GravityFieldVFXObject.transform.localScale = new Vector3(dir, 1.0f, 1.0f);
+        var vfx = Instantiate(GravityFieldVFXObject, position, Quaternion.identity);
         vfx.GetComponent<GravityField>().Owner = this;
 
     }
@@ -214,9 +267,10 @@ public class AttackBase_Area : AttackBase
         _playerMovement.IsAreaAttacking = false;
     }
 
-    public void DealDamage(IDamageable target)
+    public void DealDamage(IDamageable target, bool isSpawn)
     {
-        
+        ReassignDamage(isSpawn);
+
         var attackToSend = _attackInfo.Clone();
         attackToSend.Damage.TotalAmount *= _damageDealer.attackDamageMultipliers[(int)EPlayerAttackType.Area];
         Debug.Log("Damage: " + attackToSend.Damage.TotalAmount);

@@ -52,7 +52,7 @@ public class Bomb : MonoBehaviour
         IDamageable target = collision.gameObject.GetComponent<IDamageable>();
         if (target != null)
         {
-            Owner.DealDamage(target);
+            Owner.DealDamage(target, false);
             _affectedEnemies.Add(collision.gameObject.GetInstanceID());
         }
     }

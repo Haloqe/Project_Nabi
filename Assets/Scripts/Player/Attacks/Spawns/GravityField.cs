@@ -25,7 +25,7 @@ public class GravityField : MonoBehaviour
 
         if (target != null)
         {
-            Owner.DealDamage(target);
+            Owner.DealDamage(target, true);
             _affectedEnemies.Add(collision.gameObject.GetInstanceID());
         }
     }

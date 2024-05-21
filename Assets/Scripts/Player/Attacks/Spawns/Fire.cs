@@ -48,7 +48,7 @@ public class Fire : MonoBehaviour
         IDamageable target = collision.gameObject.GetComponent<IDamageable>();
         if (target != null)
         {
-            Owner.DealDamage(target);
+            Owner.DealDamage(target, true);
             _affectedEnemies.Add(collision.gameObject.GetInstanceID());
         }   
     }
