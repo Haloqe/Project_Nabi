@@ -117,16 +117,24 @@ public abstract class EnemyMovement : MonoBehaviour
     // strength, duration = constant
     protected virtual IEnumerator PullXCoroutine(Vector3 gravCorePosition, float strength, float duration)
     {
-        strength = 75;
-        //gravCorePosition = new Vector2(0, 0);
         distanceToGravField = Vector2.Distance(gravCorePosition, _rigidBody.position);
+
         float elapsedTime = 0;
 
         while (elapsedTime < duration)
         {
             pullForce = ((Vector2)(gravCorePosition) - _rigidBody.position).normalized / distanceToGravField * strength;
-            _rigidBody.AddForce(pullForce, ForceMode2D.Force);
+            
 
+            if(this.MoveType == EEnemyMoveType.Flight)
+            {
+                _rigidBody.AddForce(pullForce, ForceMode2D.Force);
+            }
+            else
+            {
+                pullForce.y = 0;
+                _rigidBody.AddForce(pullForce, ForceMode2D.Force);
+            }
             elapsedTime += Time.fixedDeltaTime;
             yield return new WaitForFixedUpdate();
 

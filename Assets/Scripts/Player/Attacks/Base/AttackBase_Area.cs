@@ -59,7 +59,7 @@ public class AttackBase_Area : AttackBase
             case 2:
                 vfxAddress = "Prefabs/Player/BombVFX/StickyBombVFX";
                 bombEffect = null;
-                bombEffect = new StatusEffectInfo(EStatusEffect.Slow, 1, 3);
+                bombEffect = new StatusEffectInfo(EStatusEffect.Slow, 0.5f, 3);
                 _attackInfoInit.StatusEffects.Add(bombEffect);
                 Reset();
                 break;
@@ -107,8 +107,7 @@ public class AttackBase_Area : AttackBase
         }
         
         return currentSelectedFlowerIndex != 0;
-        // _playerController.Heal(15);
-        // return;
+        
     }
     
     public override void Attack()
@@ -200,7 +199,7 @@ public class AttackBase_Area : AttackBase
         };
 
         bombEffect = null;
-        bombEffect = new StatusEffectInfo(EStatusEffect.Pull, 3, 5);
+        bombEffect = new StatusEffectInfo(EStatusEffect.Pull, 75, 5);
         _attackInfoInit.StatusEffects.Add(bombEffect);
         Reset();
 
