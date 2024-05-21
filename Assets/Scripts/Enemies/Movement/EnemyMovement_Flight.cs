@@ -13,11 +13,15 @@ public class EnemyMovement_Flight : EnemyMovement
     public LayerMask _playerLayer;
     public LayerMask _platformLayer;
     public Collider2D _playerDetectCollider;
-    private Vector2 _attackDirection;
+    // private Vector2 _attackDirection;
+    private Vector3 _targetPosition;
     private Vector2 _patrolDirection;
     private bool _directionIsChosen = false;
     private bool _directionIsFlipping = false;
+    private bool _isSpawnedByQueen = false;
+    private bool _isInAttackState = false;
     private static readonly int IsAttacking = Animator.StringToHash("IsAttacking");
+    private static readonly int IsInAttackSequence = Animator.StringToHash("IsInAttackSequence");
     private static readonly int AttackSpeed = Animator.StringToHash("AttackSpeed");
 
     private void Awake()
@@ -73,6 +77,28 @@ public class EnemyMovement_Flight : EnemyMovement
         yield return new WaitForSeconds(1f);
         _directionIsFlipping = false;
     }
+    
+    private IEnumerator MoveToPosition(Vector3 destination, float speed, bool facingTarget)
+    {
+        Vector3 moveDirection = (destination - transform.position).normalized;
+        Debug.Log("going through here..." + destination);
+        while (!IsCloseEnough(gameObject, destination))
+        {
+            _rigidBody.velocity = moveDirection * speed;
+            if (facingTarget) FlipEnemyTowardsTarget();
+            else FlipEnemyTowardsMovement();
+            yield return null;
+        }
+        Debug.Log("successfully reached destination!");
+        Debug.Log("target: " + destination + ", rn: " + transform.position);
+    }
+    
+    private bool IsCloseEnough(GameObject obj, Vector3 pos)
+    {
+        if (!(Vector3.Distance(obj.transform.position, pos) < 0.3f)) return false;
+        obj.transform.position = pos;
+        return true;
+    }
 
     public override void Chase()
     {
@@ -91,41 +117,147 @@ public class EnemyMovement_Flight : EnemyMovement
         if (distance < _nextWaypointDistance) _currentWaypoint++;
     }
 
+    // public override void Attack()
+    // {
+    //     FlipEnemyTowardsMovement();
+    //     if (!_animator.GetBool(IsAttacking))
+    //     {
+    //         _animator.SetBool(IsAttacking, true);
+    //         _attackDirection = ((Vector2)_enemyBase.Target.transform.position - _rigidBody.position).normalized;
+    //         return;
+    //     }
+    //     
+    //     
+    //     string currentAnimation = _animator.GetCurrentAnimatorClipInfo(0)[0].clip.name;
+    //
+    //     // switch ()
+    //     if (currentAnimation == "Telegraph")
+    //     {
+    //         // rotate 65 degrees opposite direction to the way it's facing
+    //         // facing left -> anti-clockwise, vice versa
+    //         _rigidBody.AddTorque(1f);
+    //     }
+    //     else if (currentAnimation == "Attack Sequence")
+    //     {
+    //         // rotate back 65 degrees
+    //         _rigidBody.AddTorque(-1f);
+    //         _rigidBody.AddForce(_attackDirection * Time.deltaTime * 800f / _animator.GetFloat(AttackSpeed));
+    //         // instead of force, change it to velocity
+    //     }
+    //     else if (currentAnimation == "Attack End")
+    //     {
+    //         _rigidBody.AddForce(-_attackDirection * Time.deltaTime * 150f / _animator.GetFloat(AttackSpeed));
+    //     }
+    //     else
+    //     {
+    //         _animator.SetBool(IsAttacking, false);
+    //     }
+    //
+    // }
+    
+    // public override void Attack()
+    // {
+    //     FlipEnemyTowardsMovement();
+    //     if (!_animator.GetBool(IsAttacking))
+    //     {
+    //         _animator.SetBool(IsAttacking, true);
+    //         _attackDirection = ((Vector2)_enemyBase.Target.transform.position - _rigidBody.position).normalized;
+    //         return;
+    //     }
+    //     
+    //     string currentAnimation = _animator.GetCurrentAnimatorClipInfo(0)[0].clip.name;
+    //     
+    //     switch (currentAnimation)
+    //     {
+    //         case "Telegraph":
+    //             _rigidBody.AddTorque(1f);
+    //             break;
+    //         
+    //         case "Attack Sequence":
+    //             _rigidBody.velocity = new Vector2(0f, 0f);
+    //             _rigidBody.AddTorque(-1f);
+    //             StartCoroutine(MoveToPosition(_player.transform.position, _moveSpeed, false));
+    //             break;
+    //         
+    //         case "Attack End":
+    //             // _rigidBody.AddForce(-_attackDirection * Time.deltaTime * 150f / _animator.GetFloat(AttackSpeed));
+    //             break;
+    //         
+    //         default:
+    //             _animator.SetBool(IsAttacking, false);
+    //             break;
+    //     }
+    // }
+
     public override void Attack()
     {
-        FlipEnemyTowardsMovement();
+        if (_isInAttackState) return;
+        
         if (!_animator.GetBool(IsAttacking))
         {
             _animator.SetBool(IsAttacking, true);
-            _attackDirection = ((Vector2)_enemyBase.Target.transform.position - _rigidBody.position).normalized;
+            IsAttackingPlayer = true;
+            _targetPosition = _enemyBase.Target.transform.position;
+            StartCoroutine(Telegraph());
             return;
         }
-        else
-        {
-            string currentAnimation = _animator.GetCurrentAnimatorClipInfo(0)[0].clip.name;
 
-            // switch ()
-            if (currentAnimation == "Telegraph")
-            {
-                // rotate 65 degrees opposite direction to the way it's facing
-                // facing left -> anti-clockwise, vice versa
-                _rigidBody.AddTorque(1f);
-            }
-            else if (currentAnimation == "Attack Sequence")
-            {
-                // rotate back 65 degrees
-                _rigidBody.AddTorque(-1f);
-                _rigidBody.AddForce(_attackDirection * Time.deltaTime * 800f / _animator.GetFloat(AttackSpeed));
-            }
-            else if (currentAnimation == "Attack End")
-            {
-                _rigidBody.AddForce(-_attackDirection * Time.deltaTime * 150f / _animator.GetFloat(AttackSpeed));
-            }
-            else
-            {
-                _animator.SetBool(IsAttacking, false);
-            }
+        if (_animator.GetBool(IsInAttackSequence))
+        {
+            StartCoroutine(AttackSequence());
+            return;
         }
+
+        StartCoroutine(AttackEnd());
+    }
+
+    private IEnumerator Telegraph()
+    {
+        _isInAttackState = true;
+        
+        int directionFacing = 1;
+        if (_targetPosition.x > transform.position.x) directionFacing *= -1;
+        Vector3 position = _targetPosition + new Vector3(directionFacing * 3f, 3f, 0);
+        yield return MoveToPosition(position, _moveSpeed, true);
+        _rigidBody.velocity = new Vector3(0f, 0f, 0f);
+        yield return new WaitForSeconds(1f);
+
+        _animator.SetBool(IsInAttackSequence, true);
+        IsAttackingPlayer = true;
+        _isInAttackState = false;
+    }
+
+    private IEnumerator AttackSequence()
+    {
+        _isInAttackState = true;
+        
+        _rigidBody.velocity = new Vector3(0f, 0f, 0f);
+        Vector3 position = _targetPosition + new Vector3(0f, 0.5f, 0);
+        yield return MoveToPosition(position, _moveSpeed * 3f, false);
+        
+        _animator.SetBool(IsInAttackSequence, false);
+        _isInAttackState = false;
+    }
+
+    private IEnumerator AttackEnd()
+    {
+        _isInAttackState = true;
+        
+        int directionFacing = -1;
+        if (_targetPosition.x > transform.position.x) directionFacing *= -1;
+        Vector3 position = _targetPosition + new Vector3(directionFacing * 2f, 2f, 0);
+        yield return MoveToPosition(position, _moveSpeed, true);
+
+        yield return new WaitForSeconds(3f);
+        
+        _animator.SetBool(IsAttacking, false);
+        IsAttackingPlayer = false;
+        _isInAttackState = false;
+    }
+
+    public void SendQueenSpawnedInfo()
+    {
+        _isSpawnedByQueen = true;
     }
 
     public override bool PlayerIsInAttackRange()
@@ -137,6 +269,7 @@ public class EnemyMovement_Flight : EnemyMovement
 
     public override bool PlayerIsInDetectRange()
     {
+        if (_isSpawnedByQueen) return true;
         return Physics2D.OverlapCircle(transform.position, _enemyBase.EnemyData.DetectRangeX, _playerLayer);
     }
 

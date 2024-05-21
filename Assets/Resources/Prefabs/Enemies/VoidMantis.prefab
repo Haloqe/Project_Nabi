@@ -402,7 +402,7 @@ MonoBehaviour:
   ActionTimeCounter: 0
   DebuffEffects:
   - {fileID: 0}
-  - {fileID: 2066976166111230753}
+  - {fileID: 6372151935524610601}
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
@@ -425,6 +425,7 @@ MonoBehaviour:
     StatusEffects: []
     IncomingDirectionX: 0
     AttackerArmourPenetration: 0
+    CanBeDarkAttack: 0
 --- !u!114 &2629840789977255762
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -438,6 +439,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MoveType: 0
+  _moveSpeed: 0
   IsRooted: 0
   IsMoving: 1
   IsChasingPlayer: 0
@@ -627,8 +629,8 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2130670345161708735, guid: 801ba5e162e43415b8381b8526904b61, type: 3}
   m_PrefabInstance: {fileID: 1890070243867695157}
   m_PrefabAsset: {fileID: 0}
---- !u!198 &2066976166111230753 stripped
-ParticleSystem:
-  m_CorrespondingSourceObject: {fileID: 474495343586124564, guid: 801ba5e162e43415b8381b8526904b61, type: 3}
+--- !u!1 &6372151935524610601 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4779602008116443676, guid: 801ba5e162e43415b8381b8526904b61, type: 3}
   m_PrefabInstance: {fileID: 1890070243867695157}
   m_PrefabAsset: {fileID: 0}

@@ -9,6 +9,8 @@ public class EnemyMovement_SpiderA : EnemyMovement
     public LayerMask _groundLayer;
     public Collider2D _groundInFrontCollider;
     public Collider2D _ceilingInFrontCollider;
+    private GameObject _webObject;
+    private static readonly float _jumpForce = 10f;
     private static readonly int IsAttacking = Animator.StringToHash("IsAttacking");
     private static readonly int IsWalking = Animator.StringToHash("IsWalking");
     private static readonly int IsJumping = Animator.StringToHash("IsJumping");
@@ -17,6 +19,7 @@ public class EnemyMovement_SpiderA : EnemyMovement
     private void Awake()
     {
         MoveType = EEnemyMoveType.SpiderA;
+        _webObject = Resources.Load<GameObject>("Prefabs/Enemies/Spawns/Spider_web");
     }
 
     private void WalkForward()
@@ -84,7 +87,7 @@ public class EnemyMovement_SpiderA : EnemyMovement
         PlayerDamageReceiver playerDamager = PlayerController.Instance.playerDamageReceiver;
 
         if (playerDamager.GetEffectRemainingTimes()[(int)EStatusEffect.Poison] <= 0 &&
-            playerDamager.GetEffectRemainingTimes()[(int)EStatusEffect.Poison] <= 0)
+            playerDamager.GetEffectRemainingTimes()[(int)EStatusEffect.Stun] <= 0)
         {
             if (!PlayerIsInWebAttackRange())
             {
@@ -92,8 +95,8 @@ public class EnemyMovement_SpiderA : EnemyMovement
                 return;
             }
 
-            Jump();
-            WebAttack();
+            Jump(0f);
+            StartCoroutine(WebAttack());
             _enemyBase.ActionTimeCounter = 1.5f;
             return;
         }
@@ -106,25 +109,25 @@ public class EnemyMovement_SpiderA : EnemyMovement
 
         TeethAttack();
         _enemyBase.ActionTimeCounter = 1.5f;
-        return;
     }
 
     private void Jump(float distance)
     {
         // not finished!!
+        if (_animator.GetBool(IsJumping)) return;
         _animator.SetBool(IsJumping, true);
-        Vector3 force = new Vector3(distance, 5f, 0);
-        _rigidBody.AddForce(force);
+        _rigidBody.velocity = new Vector3(_rigidBody.velocity.x + distance, _jumpForce, 0);
     }
-
+    
     private void DisableJump()
     {
         _animator.SetBool(IsJumping, false);
     }
 
-    private void WebAttack()
+    private IEnumerator WebAttack()
     {
-
+        yield return new WaitForSeconds(0.3f);
+        Instantiate(_webObject, transform.position, Quaternion.identity);
     }
 
     private void TeethAttack()
@@ -148,7 +151,7 @@ public class EnemyMovement_SpiderA : EnemyMovement
 
     private bool PlayerIsInWebAttackRange()
     {
-        return false;
+        return true;
     }
 
     private bool PlayerIsInTeethAttackRange()

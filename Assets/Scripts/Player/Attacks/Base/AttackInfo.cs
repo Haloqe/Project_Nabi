@@ -22,6 +22,12 @@ public class AttackInfo
         Damage = damageInfo;
         StatusEffects = new List<StatusEffectInfo>();
     }
+
+    public AttackInfo(List<StatusEffectInfo> statusEffectInfos)
+    {
+        Damage = new DamageInfo();
+        StatusEffects = statusEffectInfos;
+    }
     
     public AttackInfo(DamageInfo damageInfo, List<StatusEffectInfo> statusEffectInfos)
     {

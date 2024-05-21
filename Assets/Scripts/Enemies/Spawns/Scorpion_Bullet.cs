@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class Scorpion_Bullet : MonoBehaviour
 {
-    private float _speed = 10f;
+    private float _speed = 20f;
     private static float _bulletDamage = 5f;
-    private AttackInfo _bulletAttackInfo = new AttackInfo(new DamageInfo(EDamageType.Base, _bulletDamage));
+    private AttackInfo _bulletAttackInfo = new(new DamageInfo(EDamageType.Base, _bulletDamage));
     
     public void Shoot(Vector3 direction)
     {

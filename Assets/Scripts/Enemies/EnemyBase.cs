@@ -526,14 +526,15 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     private void UpdateMovementState()
     {
         if (_movement.IsRooted) return;
+        ActionTimeCounter -= Time.deltaTime;
 
         if (Target == null)
         {
             _movement.Patrol();
             return;
         }
-        
-        if (_movement.PlayerIsInAttackRange())
+
+        if (_movement.PlayerIsInAttackRange() || _movement.IsAttackingPlayer)
         {
             _movement.Attack();
         }
@@ -543,18 +544,14 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
             ActionTimeCounter = EnemyData.ChasePlayerDuration;
             _movement.Chase();
         }
+        else if (_movement.IsChasingPlayer)
+        {
+            _movement.Chase();
+        }
         else
         {
-            if (_movement.IsAttackingPlayer) {
-                _movement.Attack();
-            } else if (_movement.IsChasingPlayer) {
-                _movement.Chase();
-            } else {
-                _movement.Patrol();
-            }
+            _movement.Patrol();
         }
-
-        ActionTimeCounter -= Time.deltaTime;
     }
 
     public void ChangeAttackSpeedByPercentage(float percentage)

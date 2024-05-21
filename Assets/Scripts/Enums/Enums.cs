@@ -50,6 +50,7 @@ public enum EStatusEffect
     Root,
     Pull,
     BuffButterfly,
+    Weakness,
 
     [InspectorName(null)] MAX,
 }

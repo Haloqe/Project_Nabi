@@ -1,13 +1,14 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UIElements;
 using Random = UnityEngine.Random;
 
 public class EnemyMovement_Scorpion : EnemyMovement
 {
-    private float _attackTimeCounter = 0f;
+    private bool _isInAttackSequence;
+    
     [SerializeField] private GameObject _shooterPositionObject;
     [SerializeField] private GameObject _basePositionObject;
     [SerializeField] private GameObject _shooterObject;
@@ -16,10 +17,23 @@ public class EnemyMovement_Scorpion : EnemyMovement
     private Rigidbody2D[] _bouncingPartRigidBodies;
     private Rigidbody2D[] _clawRigidBodies;
     private GameObject[] _clawObjects;
+    
     private float[] _bouncingSpeeds = {2f, 2.3f, 2.6f, 2.6f};
+    
     private Vector3 _stingerDirection;
     private Vector3 _playerDirection;
+    private Vector3[] _defaultClawPositions = { new(-15.69f, -2f, 0f), new(10.9f, -2f, 0f) };
+    private Vector3[] _electricClawPositions = { new(-26f, -3f, 0), new(16f, -3f, 0) };
+    private Vector3 _midpoint = new(-3.5f, -5f, 0f);
     
+    private bool _isShootingBullets;
+    private int _raycastLayerMask;
+    [SerializeField] private LineRenderer _lineRenderer;
+    [SerializeField] private GameObject _electricityObject;
+
+    private int _cycleCount = 0;
+    private static readonly int IsClawAttacking = Animator.StringToHash("IsClawAttacking");
+
     private void Awake()
     {
         MoveType = EEnemyMoveType.Scorpion;
@@ -37,14 +51,10 @@ public class EnemyMovement_Scorpion : EnemyMovement
         _clawObjects = new GameObject[_clawRigidBodies.Length];
         for (int i = 0; i < _clawRigidBodies.Length; i++) { _clawObjects[i] = _clawRigidBodies[i].gameObject; }
         
-    }
+        _raycastLayerMask = LayerMask.GetMask("Platform");
 
-    public override void Init()
-    {
-        base.Init();
-        StartCoroutine(ShootBullet());
     }
-
+    
     private IEnumerator Bounce(Rigidbody2D rb, float speed)
     {
         int direction = 1;
@@ -56,22 +66,7 @@ public class EnemyMovement_Scorpion : EnemyMovement
             direction *= -1;
         }
     }
-
-    public override void Patrol()
-    {
-        
-    }
-
-    public override void Attack()
-    {
-        if (_attackTimeCounter <= 0)
-        {
-            GenerateRandomAttack();
-        }
-        _attackTimeCounter -= Time.deltaTime;
-        
-        TrackPlayer();
-    }
+    
 
     private void FlipTail(int negativeOrPositive)
     {
@@ -103,7 +98,7 @@ public class EnemyMovement_Scorpion : EnemyMovement
 
     private IEnumerator ShootBullet()
     {
-        while (_player != null)
+        while (_isShootingBullets)
         {
             yield return new WaitForSeconds(5f);
             var bullet = Instantiate(_bulletObject,
@@ -113,37 +108,165 @@ public class EnemyMovement_Scorpion : EnemyMovement
         }
     }
 
-    private void ClawAttack()
+    private IEnumerator ShootLaser()
     {
-        // initial position
-        // telegraph
-        // go to the middle
-        // go back to initial position
+        _isInAttackSequence = true;
+        float rotationSpeed = 5f;
+        float rotationDegrees = 6f;
+        int direction = 1;
+        if (Random.Range(0f, 1f) > 0.5f) direction *= -1;
+        _isShootingBullets = false;
+        _lineRenderer.enabled = true;
+        
+        _shooterObject.transform.rotation *= Quaternion.FromToRotation(_stingerDirection, _playerDirection).normalized;
+        _shooterObject.transform.Rotate(0, 0, direction * rotationDegrees);
+        float initialAngle = _shooterObject.transform.eulerAngles.z;
+        while (Mathf.Abs(_shooterObject.transform.eulerAngles.z - initialAngle) <= rotationDegrees * 2)
+        {
+            Vector3 position = _shooterPositionObject.transform.position;
+            _stingerDirection = position - _basePositionObject.transform.position;
+            if (Physics2D.Raycast(position, _stingerDirection, 100f, _raycastLayerMask))
+            {
+                RaycastHit2D hit = Physics2D.Raycast(position, _stingerDirection, 100f, _raycastLayerMask);
+                Draw2DRay(position, hit.point);
+            }
+            else
+            {
+                Draw2DRay(_shooterPositionObject.transform.position, _stingerDirection * 100f);
+            }
+            yield return null;
+            _shooterObject.transform.Rotate(0, 0, direction * rotationSpeed * Time.deltaTime);
+        }
+
+        _isShootingBullets = true;
+        _lineRenderer.enabled = false;
+        StartCoroutine(ShootBullet());
+        _isInAttackSequence = false;
+    }
+
+    private void Draw2DRay(Vector2 startPos, Vector2 endPos)
+    {
+        _lineRenderer.SetPosition(0, startPos);
+        _lineRenderer.SetPosition(1, endPos);
+    }
+
+    private IEnumerator ClawAttack()
+    {
+        _isInAttackSequence = true;
+        StartCoroutine(MoveClaws(_defaultClawPositions, 5f));
+        GripClaws();
+        _animator.SetBool(IsClawAttacking, true);
+        
+        yield return new WaitForSeconds(5f);
+        Vector3 gap = new Vector3(2f, 0, 0);
+        StartCoroutine(MoveClaws(new[] {_midpoint - gap, _midpoint + gap}, 50f));
+        
+        yield return new WaitForSeconds(5f);
+        _animator.SetBool(IsClawAttacking, false);
+        StartCoroutine(MoveClaws(_defaultClawPositions, 5f));
+        _isInAttackSequence = false;
+    }
+
+    private IEnumerator ElectricityAttack()
+    {
+        _isInAttackSequence = true;
+        StartCoroutine(MoveClaws(_electricClawPositions, 5f));
+        for (int i = 0; i <= 1; i++)
+        {
+            _clawObjects[i].GetComponent<SpriteRenderer>().color = Color.cyan;
+            _clawObjects[i].GetComponent<PolygonCollider2D>().enabled = false;
+        }
+        yield return new WaitForSeconds(1f);
+        
+        _electricityObject.SetActive(true);
+        
+        yield return new WaitForSeconds(5f);
+        
+        _electricityObject.SetActive(false);
+        for (int i = 0; i <= 1; i++)
+        {
+            _clawObjects[i].GetComponent<SpriteRenderer>().color = Color.white;
+            _clawObjects[i].GetComponent<PolygonCollider2D>().enabled = true;
+        }
+        StartCoroutine(MoveClaws(_defaultClawPositions, 5f));
+        yield return new WaitForSeconds(2f);
+        _isInAttackSequence = false;
+    }
+
+    private void GroundPound()
+    {
+        _isInAttackSequence = true;
+
+        _isInAttackSequence = false;
+    }
+
+    private IEnumerator MoveClaws(Vector3[] finalPositions, float speed)
+    {
+        while (!IsCloseEnough(_clawObjects, finalPositions))
+        {
+            float step = speed * Time.deltaTime;
+            for (int i = 0; i <= 1; i++)
+            {
+                _clawObjects[i].transform.position =
+                    Vector3.MoveTowards(_clawObjects[i].transform.position, finalPositions[i], step);
+            }
+            yield return null;
+        }
+    }
+
+    private void GripClaws()
+    {
         
     }
 
-    private void MoveClawsBack()
+    private bool IsCloseEnough(GameObject[] a, Vector3[] b)
     {
-        // Vector3[] initialPositions = {_clawObjects[0].transform.position, _clawObjects[1].transform.position};
-        
+        for (int i = 0; i <= 1; i++)
+        {
+            if (Vector3.Distance(a[i].transform.position, b[i]) < 0.001f)
+            {
+                a[i].transform.position = b[i];
+            } else {
+                return false;
+            }
+        }
+        return true;
     }
+    
+    public override void Attack()
+    {
+        if (_isShootingBullets) TrackPlayer();
+        if (_isInAttackSequence) return;
 
+        if (_cycleCount == 0)
+        {
+            GroundPound();
+            _cycleCount++;
+            return;
+        }
+
+        if (_cycleCount >= 2)
+        {
+            StartCoroutine(ElectricityAttack());
+            _cycleCount = 0;
+            return;
+        }
+        
+        GenerateRandomAttack();
+    }
+    
     private void GenerateRandomAttack()
     {
-        switch (Math.Floor(Random.Range(0.0f, 3f)))
+        switch (Math.Floor(Random.Range(0f, 2f)))
         {
             case 0:
-            _attackTimeCounter += 5f;
+            StartCoroutine(ShootLaser());
+            // StartCoroutine(ElectricityAttack());
             break;
 
             case 1:
-            _attackTimeCounter += 5f;
+            StartCoroutine(ClawAttack());
             break;
-
-            case 2:
-            _attackTimeCounter += 5f;
-            break;
-
         }
     }
 
@@ -156,5 +279,5 @@ public class EnemyMovement_Scorpion : EnemyMovement
     {
         return false;
     }
-
+    
 }

@@ -94,7 +94,7 @@ public abstract class EnemyMovement : MonoBehaviour
     private void ExitAttackSequence()
     {
         IsAttackingPlayer = false;
-        _animator.SetBool(IsAttacking, false);
+        if (_animator != null) _animator.SetBool(IsAttacking, false);
     }
 
     protected Vector2 PullOverallVelocity = Vector2.zero;
