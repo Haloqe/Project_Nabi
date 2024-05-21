@@ -2,7 +2,7 @@ using UnityEngine;
 
 public abstract class Singleton<T> : MonoBehaviour where T : Component
 {
-    protected bool _toBeDestroyed = false;
+    public bool IsToBeDestroyed { get; protected set; }
 	private static T _instance;
     public static T Instance
     {
@@ -25,7 +25,7 @@ public abstract class Singleton<T> : MonoBehaviour where T : Component
         {
             Debug.Log("Duplicate " + typeof(T) + " detected. Destroying " + gameObject.name);
             Destroy(gameObject);
-            _toBeDestroyed = true;
+            IsToBeDestroyed = true;
         }
     }
 }

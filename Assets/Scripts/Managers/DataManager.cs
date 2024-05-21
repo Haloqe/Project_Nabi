@@ -10,7 +10,7 @@ public class DataManager : Singleton<DataManager>
     protected override void Awake()
     {
         base.Awake();
-        if (_toBeDestroyed) return;
+        if (IsToBeDestroyed) return;
         
         _playerAttackManager = GetComponent<PlayerAttackManager>();
         _enemyManager = GetComponent<EnemyManager>();

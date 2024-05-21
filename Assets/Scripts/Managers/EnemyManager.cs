@@ -18,7 +18,7 @@ public class EnemyManager : Singleton<EnemyManager>
     protected override void Awake()
     {
         base.Awake();
-        if (_toBeDestroyed) return;
+        if (IsToBeDestroyed) return;
         _enemies = new Dictionary<int, SEnemyData>();
         _spawnedEnemies = new List<EnemyBase>();
         GoldPrefab = Resources.Load("Prefabs/Items/Coin").GameObject();

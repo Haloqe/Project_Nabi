@@ -33,15 +33,12 @@ public abstract class AttackBase : MonoBehaviour
     protected readonly static int AttackIndex = Animator.StringToHash("AttackIndex");
     private Material _defaultVFXMaterial;
     
-    
-    public void Awake()
-    {
-        PlayerEvents.StrengthChanged += RecalculateDamage;
-        GameEvents.Restarted += Reset;
-    }
-    
     public virtual void Start()
     {
+        if (gameObject.GetComponentInParent<Singleton<PlayerController>>().IsToBeDestroyed) return;
+        PlayerEvents.StrengthChanged += RecalculateDamage;
+        GameEvents.Restarted += Reset;
+        
         _player = transform.parent;
         _playerController = PlayerController.Instance;
         basePSRenderer = baseEffector.GetComponent<ParticleSystemRenderer>();
@@ -61,6 +58,7 @@ public abstract class AttackBase : MonoBehaviour
         _damageInfo = _damageInfoInit;
         
         // Reset VFX material
+        if (_attackType == ELegacyType.Area) return;
         basePSRenderer.sharedMaterial = _defaultVFXMaterial;
     }
     

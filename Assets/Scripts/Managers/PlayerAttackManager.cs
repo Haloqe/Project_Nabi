@@ -49,7 +49,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     protected override void Awake()
     {
         base.Awake();
-        if (_toBeDestroyed) return;
+        if (IsToBeDestroyed) return;
         _legacyIconSpriteSheet = Resources.LoadAll<Sprite>("Sprites/Icons/Abilities/PlayerAbilitySpritesheet");
         _collectedLegacyIDs = new HashSet<int>();
         _collectedPassiveIDs = new List<int>();

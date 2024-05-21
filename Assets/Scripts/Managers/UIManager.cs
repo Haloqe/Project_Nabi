@@ -37,8 +37,9 @@ public class UIManager : Singleton<UIManager>
     private GameObject _loadingScreenUI;
     
     // UI Mechanism Script
-    private WarriorUI _warriorUI;
+    private WarriorUIController _warriorUIController;
     private MapController _mapController;
+    private DefeatedUIController _defeatedUIController;
     
     // Minor Controllable Objects
     private Slider _playerHPSlider;
@@ -72,7 +73,7 @@ public class UIManager : Singleton<UIManager>
     protected override void Awake()
     {
         base.Awake();
-        if (_toBeDestroyed) return;
+        if (IsToBeDestroyed) return;
         LoadAllUIPrefabs();
         
         PlayerEvents.Defeated += OnPlayerDefeated;
@@ -116,6 +117,7 @@ public class UIManager : Singleton<UIManager>
         _defeatedUI         = Instantiate(_defeatedUIPrefab, Vector3.zero, Quaternion.identity).GameObject();
         inGameCombatUI      = Instantiate(_inGameCombatPrefab, Vector3.zero, Quaternion.identity).GameObject();
         _zoomedMap          = Instantiate(_zoomedMapPrefab, Vector3.zero, Quaternion.identity).GameObject();
+        _defeatedUIController = _defeatedUI.GetComponent<DefeatedUIController>();
         _mapController      = _zoomedMap.GetComponent<MapController>();
         _playerHPSlider     = inGameCombatUI.GetComponentInChildren<Slider>();
         _playerHPGlobe      = inGameCombatUI.transform.Find("Globe").Find("HealthGlobe").Find("HealthGlobeMask").Find("Fill").GetComponent<Image>();
@@ -309,8 +311,8 @@ public class UIManager : Singleton<UIManager>
         
         _warriorUIObject = Instantiate(_warriorUIPrefabs[(int)interactor.warrior], Vector3.zero, Quaternion.identity).GameObject();
         _warriorUIObject.GetComponent<Canvas>().worldCamera = _uiCamera;
-        _warriorUI = _warriorUIObject.GetComponent<WarriorUI>();
-        _warriorUI.Initialise(interactor.warrior);
+        _warriorUIController = _warriorUIObject.GetComponent<WarriorUIController>();
+        _warriorUIController.Initialise(interactor.warrior);
         OpenFocusedUI(_warriorUIObject);
         Destroy(interactor.gameObject);
         return true;
@@ -335,7 +337,7 @@ public class UIManager : Singleton<UIManager>
         Debug.Log("UIManager::OnClose");
         if (_activeFocusedUI == _warriorUIObject)
         {
-            _warriorUI.OnCancel();
+            _warriorUIController.OnCancel();
         }
         else if (_activeFocusedUI)
         {
@@ -347,8 +349,18 @@ public class UIManager : Singleton<UIManager>
     private void OnNavigate(InputAction.CallbackContext obj)
     {
         var value = obj.ReadValue<Vector2>();
-        if (_activeFocusedUI == _zoomedMap) _mapController.OnNavigate(value);
-        else if (_activeFocusedUI == _warriorUIObject) _warriorUI.OnNavigate(value); 
+        if (_activeFocusedUI == _zoomedMap)
+        {
+            _mapController.OnNavigate(value);
+        }
+        else if (_activeFocusedUI == _warriorUIObject)
+        {
+            _warriorUIController.OnNavigate(value);
+        } 
+        else if (_activeFocusedUI == _defeatedUI)
+        {
+            _defeatedUIController.OnNavigate(value);
+        }
     }
     
     private void OnZoom(InputAction.CallbackContext obj)
@@ -369,7 +381,11 @@ public class UIManager : Singleton<UIManager>
     {
         if (_activeFocusedUI == _warriorUIObject)
         {
-            _warriorUI.OnSubmit();
+            _warriorUIController.OnSubmit();
+        }
+        else if (_activeFocusedUI == _defeatedUI)
+        {
+            _defeatedUIController.OnSubmit();
         }
     }
     
@@ -450,6 +466,4 @@ public class UIManager : Singleton<UIManager>
             _flowerUIRight.SetActive(false);
         }
     }
-    
-    
 }

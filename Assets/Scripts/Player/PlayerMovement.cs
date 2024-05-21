@@ -44,16 +44,14 @@ public class PlayerMovement : MonoBehaviour
     private readonly static int Moving = Animator.StringToHash("IsMoving");
     private readonly static int IsDoubleJumping = Animator.StringToHash("IsDoubleJumping");
     private readonly static int IsJumping = Animator.StringToHash("IsJumping");
+    
 
-    private void Awake()
+    private void Start()
     {
         GameEvents.Restarted += OnRestarted;
         InGameEvents.TimeSlowDown += OnTimeSlowDown;
         InGameEvents.TimeRevertNormal += OnTimeRevertNormal;
-    }
-
-    private void Start()
-    {
+        
         _playerController = PlayerController.Instance;
         _animator = GetComponent<Animator>();
         _rigidbody2D = GetComponent<Rigidbody2D>();

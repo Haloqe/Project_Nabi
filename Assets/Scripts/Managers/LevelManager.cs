@@ -42,7 +42,7 @@ public class LevelManager : Singleton<LevelManager>
     protected override void Awake()
     {
         base.Awake();
-        if (_toBeDestroyed) return;
+        if (IsToBeDestroyed) return;
         
         _maxHeight = 1000;
         _maxWidth = 1000;
@@ -555,7 +555,7 @@ public class LevelManager : Singleton<LevelManager>
         
         if (playerController == null)
         {
-            playerObject = Instantiate(GameManager.Instance.Player).gameObject.transform;
+            playerObject = Instantiate(GameManager.Instance.PlayerPrefab).gameObject.transform;
             _playerSpawnPos = GameObject.Find("PlayerStart").transform.position;
         }
         else

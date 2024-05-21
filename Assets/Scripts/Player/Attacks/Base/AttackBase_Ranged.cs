@@ -10,6 +10,7 @@ public class AttackBase_Ranged : AttackBase
     public override void Start()
     {
         base.Start();
+        _attackType = ELegacyType.Ranged;
         _damageInfoInit.BaseDamage = 3.0f;
         _attackInfoInit.Damage.TotalAmount = _damageInfoInit.BaseDamage + _playerController.Strength * _damageInfoInit.RelativeDamage;
         _attackInfoInit.CanBeDarkAttack = true;

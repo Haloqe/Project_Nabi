@@ -5,9 +5,9 @@ using UnityEngine.EventSystems;
 public class LegacyPanel : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
     private int _index = 0;
-    private WarriorUI _baseUI;
+    private WarriorUIController _baseUI;
 
-    public void Init(WarriorUI baseUI, int index)
+    public void Init(WarriorUIController baseUI, int index)
     {
         _index = index;
         _baseUI = baseUI;

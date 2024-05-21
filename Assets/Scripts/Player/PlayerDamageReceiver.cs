@@ -28,12 +28,6 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     private Animator _animator;
     private SpriteRenderer _spriteRenderer;
     private readonly static int IsDead = Animator.StringToHash("IsDead");
-
-    private void Awake()
-    {
-        _animator = GetComponent<Animator>();
-        _spriteRenderer = GetComponent<SpriteRenderer>();
-    }
     
     private void OnRestarted()
     {
@@ -48,6 +42,9 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     private void Start()
     {
         _playerController = PlayerController.Instance;
+        _animator = GetComponent<Animator>();
+        _spriteRenderer = GetComponent<SpriteRenderer>();
+        
         PlayerEvents.Defeated += OnDefeated;
         GameEvents.Restarted += OnRestarted;
         

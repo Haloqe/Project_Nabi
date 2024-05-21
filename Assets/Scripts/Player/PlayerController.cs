@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Serialization;
 
 public class PlayerController : Singleton<PlayerController>
 {
@@ -72,7 +71,7 @@ public class PlayerController : Singleton<PlayerController>
     protected override void Awake()
     {
         base.Awake();
-        if (_toBeDestroyed) return;
+        if (IsToBeDestroyed) return;
 
         // Initialise values
         HpCriticalThreshold = 0.33f;
@@ -164,7 +163,8 @@ public class PlayerController : Singleton<PlayerController>
     int count = 0;
     void OnTestAction(InputValue value)
     {
-        playerInventory.ChangeGoldByAmount(600);
+        playerDamageReceiver.ChangeHealthByAmount(-1000);
+        //playerInventory.ChangeGoldByAmount(600);
         // if (count == 0)
         // {
         //     playerInventory.AddFlower((int)EFlowerType.IncendiaryFlower);

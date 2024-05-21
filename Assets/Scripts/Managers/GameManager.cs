@@ -1,15 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
 
 public class GameManager : Singleton<GameManager>
 {
     [SerializeField] private bool _shouldRandomGenerateMap;
-    public GameObject Player;
+    public GameObject PlayerPrefab;
 
     // Level Details
     // public int PrevStage = 0;
@@ -22,7 +18,7 @@ public class GameManager : Singleton<GameManager>
     protected override void Awake()
     {
         base.Awake();
-        if (_toBeDestroyed) return;
+        if (IsToBeDestroyed) return;
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
@@ -75,5 +71,14 @@ public class GameManager : Singleton<GameManager>
     {
         // PrevStage = CurrStage;
         _playerPrevPosition = PlayerController.Instance.transform.position;
+    }
+
+    // TODO Save
+    public void LoadMainMenu()
+    {
+        Destroy(PlayerController.Instance.gameObject);
+        IsFirstRun = true;
+        UIManager.Instance.StopAllCoroutines();
+        SceneManager.LoadScene("Scenes/MainMenu");
     }
 }

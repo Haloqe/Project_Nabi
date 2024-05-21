@@ -38,7 +38,6 @@ public class PlayerTensionController : MonoBehaviour
     
     private void Awake()
     {
-        //GameEvents.Restarted += OnRestarted;
         _tensionGaugeSlider = GetComponentInChildren<Slider>();
         _tensionGaugeText = GetComponentInChildren<TextMeshProUGUI>();
         _tensionGaugeFillImage = _tensionGaugeSlider.transform.Find("Fill Area").GetComponentInChildren<Image>();

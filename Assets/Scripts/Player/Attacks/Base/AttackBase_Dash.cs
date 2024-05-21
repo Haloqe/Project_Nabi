@@ -19,6 +19,7 @@ public class AttackBase_Dash : AttackBase
     public override void Start()
     {
         base.Start();
+        _attackType = ELegacyType.Dash;
         _attackInfoInit = new AttackInfo();
         _nightShadeDashPrefab = Resources.Load("Prefabs/Player/NightShadeDash").GameObject();
         _rigidbody2D = _player.GetComponent<Rigidbody2D>();
