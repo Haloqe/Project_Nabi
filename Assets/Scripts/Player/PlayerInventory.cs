@@ -24,6 +24,11 @@ public class PlayerInventory : MonoBehaviour
         GameEvents.Restarted += OnRestarted;
     }
 
+    private void OnDestroy()
+    {
+        GameEvents.Restarted -= OnRestarted;
+    }
+
     private void OnRestarted()
     {
         Gold = 0;
@@ -82,7 +87,7 @@ public class PlayerInventory : MonoBehaviour
     public void SelectFlower(int flowerIndex)
     {
         _currentSelectedFlower = flowerIndex;
-        _areaAttack.SwitchVFX(flowerIndex);
+        _areaAttack.UpdateVFX(flowerIndex);
     }
 
     //Return the current selected flower

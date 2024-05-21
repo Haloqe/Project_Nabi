@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
@@ -89,17 +90,23 @@ public class PlayerController : Singleton<PlayerController>
         _shadowHosts = new List<EnemyBase>();
         nightShadeCollider = GetComponentInChildren<NightShadeCollider>(includeInactive: true).gameObject;
         
-        // Input Binding for Attacks
-        _playerInput.actions["Attack_Melee"].performed += _ => playerDamageDealer.OnAttack(0);
-        _playerInput.actions["Attack_Range"].performed += _ => playerDamageDealer.OnAttack(1);
-        _playerInput.actions["Attack_Dash"].performed += _ => playerDamageDealer.OnAttack(2);
-        _playerInput.actions["Attack_Area"].performed += _ => playerDamageDealer.OnAttack(3);
-        
         // Events binding
         GameEvents.Restarted += OnRestarted;
         PlayerEvents.ValueChanged += OnValueChanged;
         InGameEvents.EnemySlayed += OnEnemySlayed;
         OnRestarted();
+    }
+
+    private void OnDestroy()
+    {
+        GameEvents.Restarted -= OnRestarted;
+        PlayerEvents.ValueChanged -= OnValueChanged;
+        InGameEvents.EnemySlayed -= OnEnemySlayed;
+    }
+
+    private void OnAttackKeyPressed(int attackIdx)
+    {
+        playerDamageDealer.OnAttack(attackIdx);
     }
 
     private void Start()
@@ -163,11 +170,11 @@ public class PlayerController : Singleton<PlayerController>
     int count = 0;
     void OnTestAction(InputValue value)
     {
-        playerInventory.AddFlower(1);
-        playerInventory.AddFlower(2);
-        playerInventory.AddFlower(3);
-        playerInventory.AddFlower(4);
-        //playerDamageReceiver.ChangeHealthByAmount(-1000);
+        // playerInventory.AddFlower(1);
+        // playerInventory.AddFlower(2);
+        // playerInventory.AddFlower(3);
+        // playerInventory.AddFlower(4);
+        playerDamageReceiver.ChangeHealthByAmount(-1000);
         //playerInventory.ChangeGoldByAmount(600);
         // if (count == 0)
         // {

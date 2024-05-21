@@ -22,6 +22,14 @@ public class AttackBase_Ranged : AttackBase
         InGameEvents.TimeRevertNormal += OnTimeManipulate;
         Reset();
     }
+
+    protected override void OnDestroy()
+    {
+        base.OnDestroy();
+        GameEvents.Restarted -= _activeBullets.Clear;
+        InGameEvents.TimeSlowDown -= OnTimeManipulate;
+        InGameEvents.TimeRevertNormal -= OnTimeManipulate;
+    }
     
     protected override void Reset()
     {

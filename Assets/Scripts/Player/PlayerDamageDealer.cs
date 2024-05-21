@@ -1,9 +1,12 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.VisualScripting;
+using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
+using Random = UnityEngine.Random;
 
 public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
 {
@@ -64,6 +67,23 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         
         // Bind events
         GameEvents.GameLoadEnded += OnRestarted;
+        
+        // Input Binding for Attacks
+        var playerInput = GetComponent<PlayerInput>();
+        playerInput.actions["Attack_Melee"].performed += OnMeleeAttack;
+        playerInput.actions["Attack_Range"].performed += OnRangedAttack;
+        playerInput.actions["Attack_Dash"].performed += OnDashAttack;
+        playerInput.actions["Attack_Area"].performed += OnAreaAttack;
+    }
+
+    private void OnDestroy()
+    {
+        GameEvents.GameLoadEnded -= OnRestarted;
+        var playerInput = GetComponent<PlayerInput>();
+        playerInput.actions["Attack_Melee"].performed -= OnMeleeAttack;
+        playerInput.actions["Attack_Range"].performed -= OnRangedAttack;
+        playerInput.actions["Attack_Dash"].performed -= OnDashAttack;
+        playerInput.actions["Attack_Area"].performed -= OnAreaAttack;
     }
 
     private void OnRestarted()
@@ -109,23 +129,25 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         _dashCooldownCoroutine = null;
     }
 
-    public void OnAttack(int attackIdx)
+    private void OnMeleeAttack(InputAction.CallbackContext context) => OnAttack((int)ELegacyType.Melee);
+    private void OnRangedAttack(InputAction.CallbackContext context) => OnAttack((int)ELegacyType.Ranged);
+    private void OnDashAttack(InputAction.CallbackContext context) => OnAttack((int)ELegacyType.Dash);
+    private void OnAreaAttack(InputAction.CallbackContext context) => OnAttack((int)ELegacyType.Area);
+    
+    private bool HandleAttackBuffer(int attackIdx)
     {
         // No attack can be done if under another attack or under attack delay
         if (_currAttackIdx != -1 || _isUnderAttackDelay)
         {
-            // Attack buffer
-            if (!_canBufferAttack)
-            {
-                Debug.Log("!!! Cannot save attack, animation not near end");
-                return;
-            }
-            _bufferedAttackIdx = attackIdx;
-            Debug.Log("Attack saved in buffer!");
-            return;
+            if (_canBufferAttack) _bufferedAttackIdx = attackIdx;
         }
         // If an attack is saved in the buffer, should play that instead
-        if (_bufferedAttackIdx != -1) return;
+        return _bufferedAttackIdx == -1;
+    }
+    
+    public void OnAttack(int attackIdx)
+    {
+        if (!HandleAttackBuffer(attackIdx)) return;
 
         // Handle NightShade dash separately
         if (attackIdx == (int)ELegacyType.Dash && AttackBases[attackIdx].ActiveLegacy &&

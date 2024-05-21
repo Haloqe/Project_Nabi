@@ -54,6 +54,12 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         _activeDOTCounts = new int[(int)EDamageType.MAX];
     }
 
+    private void OnDestroy()
+    {
+        PlayerEvents.Defeated -= OnDefeated;
+        GameEvents.Restarted -= OnRestarted;
+    }
+
     private void Update()
     {
         UpdateStatusEffectTimes();

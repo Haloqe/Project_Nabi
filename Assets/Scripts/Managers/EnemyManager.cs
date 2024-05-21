@@ -25,6 +25,11 @@ public class EnemyManager : Singleton<EnemyManager>
         GameEvents.MapLoaded += OnMapLoaded;
         GameEvents.GameLoadEnded += OnGameLoadEnded;
         InGameEvents.EnemySlayed += (enemy => _spawnedEnemies.Remove(enemy));
+        PlayerEvents.Defeated += () =>
+        {
+            StopAllCoroutines();
+            _spawnedEnemies.Clear();
+        };
         
         Init(Application.dataPath + "/Tables/EnemyDataTable.csv");
     }
@@ -33,7 +38,6 @@ public class EnemyManager : Singleton<EnemyManager>
     private void OnMapLoaded()
     {
         _enemiesContainer = new GameObject("Enemies").transform;
-        _spawnedEnemies.Clear();
 
         var spawners = FindObjectsByType<EnemySpawner>(FindObjectsSortMode.None);
         foreach (var spawner in spawners)

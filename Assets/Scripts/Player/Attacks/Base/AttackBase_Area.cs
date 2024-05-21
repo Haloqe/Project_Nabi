@@ -14,11 +14,9 @@ public class AttackBase_Area : AttackBase
     public string vfxAddress;
     StatusEffectInfo bombEffect;
 
+    
     public override void Start()
     {
-        _attackType = ELegacyType.Area;
-        vfxAddress = "Prefabs/Player/BombVFX/IncendiaryBombVFX";
-        baseEffector = Utility.LoadGameObjectFromPath(vfxAddress);
         base.Start();
         _rigidbody2D = _player.GetComponent<Rigidbody2D>();
         _attackInfoInit = new AttackInfo
@@ -26,7 +24,10 @@ public class AttackBase_Area : AttackBase
             Damage = new DamageInfo(EDamageType.Base, 5),
             ShouldUpdateTension = true,
         };
-        _inventory = _playerController.playerInventory;
+        _inventory = _playerController.GetComponent<PlayerInventory>();
+        _attackType = ELegacyType.Area;
+        vfxAddress = "Prefabs/Player/BombVFX/IncendiaryBombVFX";
+        baseEffector = Utility.LoadGameObjectFromPath(vfxAddress);
         Reset();
     }
     
@@ -37,15 +38,15 @@ public class AttackBase_Area : AttackBase
         _areaRadiusMultiplier = 1f;
     }
 
-    public void SwitchVFX(int flowerIdx)
+    public void UpdateVFX(int flowerIdx)
     {
-        ReassignVFXAddress();
+        ReassignVFXAddress(flowerIdx);
         baseEffector = Utility.LoadGameObjectFromPath(vfxAddress);
     }
     
-    private void ReassignVFXAddress()
+    private void ReassignVFXAddress(int flowerIdx)
     {  
-        switch (_inventory.GetCurrentSelectedFlower())
+        switch (flowerIdx)
         {
             case 0:
                 Debug.Log("Will heal you on R");

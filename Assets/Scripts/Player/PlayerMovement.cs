@@ -66,6 +66,13 @@ public class PlayerMovement : MonoBehaviour
         _defaultFriction = _mainCollider.sharedMaterial.friction;
     }
 
+    private void OnDestroy()
+    {
+        GameEvents.Restarted -= OnRestarted;
+        InGameEvents.TimeSlowDown -= OnTimeSlowDown;
+        InGameEvents.TimeRevertNormal -= OnTimeRevertNormal;
+    }
+
     private void OnRestarted()
     {
         RemoveDebuffs();

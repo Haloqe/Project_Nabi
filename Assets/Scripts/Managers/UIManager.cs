@@ -283,7 +283,7 @@ public class UIManager : Singleton<UIManager>
     {
         _playerAttackManager = PlayerAttackManager.Instance;
         _playerController = PlayerController.Instance;
-        _playerHPSlider.value = _playerController.playerDamageReceiver.GetHPRatio();
+        _playerHPSlider.value = 1;
         _playerIAMap = FindObjectOfType<PlayerInput>().actions.FindActionMap("Player");
         _playerIAMap.Enable();
         _UIIAMap.Disable();
@@ -448,7 +448,6 @@ public class UIManager : Singleton<UIManager>
         int rightIdx = midIdx == (int)EFlowerType.MAX - 1 ? 1 : midIdx + 1;
         
         // Change selected flower bomb
-        Debug.Log("Flower selected: " + midIdx);
         _playerController.playerInventory.SelectFlower(midIdx);
         
         // Update icons respectively

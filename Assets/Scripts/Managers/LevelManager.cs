@@ -550,17 +550,15 @@ public class LevelManager : Singleton<LevelManager>
         // PlayerEvents.spawned.Invoke();
 
         // DEBUG TEMP CODE FROM HERE
-        PlayerController playerController = PlayerController.Instance;
         Transform playerObject = null;
-        
-        if (playerController == null)
+        if (PlayerController.Instance == null)
         {
             playerObject = Instantiate(GameManager.Instance.PlayerPrefab).gameObject.transform;
             _playerSpawnPos = GameObject.Find("PlayerStart").transform.position;
         }
         else
         {
-            playerObject = playerController.gameObject.transform;
+            playerObject = PlayerController.Instance.transform;
     
             // If player spawn pos undefined (first game run + not random generated map (debug map))
             if (_playerSpawnPos == Vector3.back)

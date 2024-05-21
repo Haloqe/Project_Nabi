@@ -2,7 +2,7 @@ using UnityEngine;
 
 public abstract class Singleton<T> : MonoBehaviour where T : Component
 {
-    public bool IsToBeDestroyed { get; protected set; }
+    public bool IsToBeDestroyed { get; private set; }
 	private static T _instance;
     public static T Instance
     {

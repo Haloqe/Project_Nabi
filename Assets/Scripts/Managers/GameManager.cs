@@ -82,7 +82,9 @@ public class GameManager : Singleton<GameManager>
     {
         // If player exists (ingame->mainmenu), destroy the player
         if (PlayerController.Instance)
+        {
             Destroy(PlayerController.Instance.gameObject);
+        }
         
         IsFirstRun = true;
         SceneManager.LoadScene("Scenes/MainMenu");

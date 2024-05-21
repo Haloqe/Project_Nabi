@@ -78,9 +78,9 @@ MonoBehaviour:
   flowerIcons:
   - {fileID: 0}
   - {fileID: 21300000, guid: c46c12aadee8a004b864a3b880cc41e0, type: 3}
-  - {fileID: 21300000, guid: c650eb6acdc27f44280330514c4d6645, type: 3}
+  - {fileID: 21300000, guid: 0a8fb5ad0d9f0204c9042a19805bd437, type: 3}
   - {fileID: 21300000, guid: 25a99511f84dac7459d326718d9bd87b, type: 3}
-  - {fileID: 21300000, guid: 607a52e6011d2a848bee3a1c4ebadf82, type: 3}
+  - {fileID: 21300000, guid: 04d8c6bc76eaad54f875d095ae332715, type: 3}
 --- !u!114 &7962455665489443107
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -93,8 +93,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c342c1f68a6e294ebf8205edc357c15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _shouldRandomGenerateMap: 0
-  Player: {fileID: 539064456449143768, guid: ec642c166e291f1408ac64a18e7704f4, type: 3}
+  PlayerPrefab: {fileID: 539064456449143768, guid: ec642c166e291f1408ac64a18e7704f4, type: 3}
   IsFirstRun: 1
 --- !u!114 &993175973461698046
 MonoBehaviour:
@@ -113,7 +112,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 15267fbd5d732d840be5ade21c38eb7f, type: 2}
   - {fileID: 11400000, guid: 88ff637b212c51a4b862b949af68c542, type: 2}
   - {fileID: 11400000, guid: 09c85ec34e5eaea45b7152685f312563, type: 2}
-  clockworkLimit: 10
+  clockworkLimit: 5
 --- !u!114 &1152217624153404905
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -149,7 +148,7 @@ MonoBehaviour:
   m_PointAction: {fileID: 4791533117604866356, guid: 6bf0aedc5ba04624da4b5b9ce4e4d79a, type: 3}
   m_MoveAction: {fileID: -1410875197298813780, guid: 6bf0aedc5ba04624da4b5b9ce4e4d79a, type: 3}
   m_SubmitAction: {fileID: 4403909570384843862, guid: 6bf0aedc5ba04624da4b5b9ce4e4d79a, type: 3}
-  m_CancelAction: {fileID: -8150178695478642910, guid: 6bf0aedc5ba04624da4b5b9ce4e4d79a, type: 3}
+  m_CancelAction: {fileID: 0}
   m_LeftClickAction: {fileID: -3441240075715754177, guid: 6bf0aedc5ba04624da4b5b9ce4e4d79a, type: 3}
   m_MiddleClickAction: {fileID: -5232176261126401939, guid: 6bf0aedc5ba04624da4b5b9ce4e4d79a, type: 3}
   m_RightClickAction: {fileID: -4572215341860886383, guid: 6bf0aedc5ba04624da4b5b9ce4e4d79a, type: 3}

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -36,9 +37,6 @@ public abstract class AttackBase : MonoBehaviour
     public virtual void Start()
     {
         if (gameObject.GetComponentInParent<Singleton<PlayerController>>().IsToBeDestroyed) return;
-        PlayerEvents.StrengthChanged += RecalculateDamage;
-        GameEvents.Restarted += Reset;
-        
         _player = transform.parent;
         _playerController = PlayerController.Instance;
         basePSRenderer = baseEffector.GetComponent<ParticleSystemRenderer>();
@@ -46,8 +44,17 @@ public abstract class AttackBase : MonoBehaviour
         _animator = _player.GetComponent<Animator>();
         _damageDealer = _player.GetComponent<PlayerDamageDealer>();
         _playerMovement = _player.GetComponent<PlayerMovement>();
+        
+        PlayerEvents.StrengthChanged += RecalculateDamage;
+        GameEvents.Restarted += Reset;
     }
-    
+
+    protected virtual void OnDestroy()
+    {
+        PlayerEvents.StrengthChanged -= RecalculateDamage;
+        GameEvents.Restarted -= Reset;
+    }
+
     protected virtual void Reset()
     {
         // Remove bound legacy
