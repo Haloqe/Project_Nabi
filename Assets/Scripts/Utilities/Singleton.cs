@@ -8,8 +8,7 @@ public abstract class Singleton<T> : MonoBehaviour where T : Component
     {
         get
         {
-            if (_instance == null) 
-                _instance = FindObjectOfType<T>();
+            if (_instance == null) _instance = FindObjectOfType<T>();
             return _instance;
         }
     }

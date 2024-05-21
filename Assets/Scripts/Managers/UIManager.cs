@@ -29,6 +29,7 @@ public class UIManager : Singleton<UIManager>
     private GameObject _critPopupPrefab;
 
     // UI Instantiated Objects
+    private GameObject _mainMenuUI;
     public GameObject inGameCombatUI;
     private GameObject _defeatedUI;
     private GameObject _warriorUIObject;
@@ -37,6 +38,7 @@ public class UIManager : Singleton<UIManager>
     private GameObject _loadingScreenUI;
     
     // UI Mechanism Script
+    private MainMenuUIController _mainMenuUIController;
     private WarriorUIController _warriorUIController;
     private MapController _mapController;
     private DefeatedUIController _defeatedUIController;
@@ -79,6 +81,7 @@ public class UIManager : Singleton<UIManager>
         PlayerEvents.Defeated += OnPlayerDefeated;
         PlayerEvents.HpChanged += OnPlayerHPChanged;
         PlayerEvents.Spawned += OnPlayerSpawned;
+        GameEvents.MainMenuLoaded += OnMainMenuLoaded;
         GameEvents.GameLoadStarted += OnGameLoadStarted;
         GameEvents.GameLoadEnded += OnGameLoadEnded;
         InGameEvents.TimeSlowDown += () => _tensionOverlay.gameObject.SetActive(true);
@@ -100,7 +103,7 @@ public class UIManager : Singleton<UIManager>
         _playerPointIARef = InputActionReference.Create(_uiInputModule.point);
     }
 
-    public void UseUIControl()
+    private void UseUIControl()
     {
         if (_playerIAMap != null) _playerIAMap.Disable();
         _UIIAMap.Enable();
@@ -109,9 +112,7 @@ public class UIManager : Singleton<UIManager>
     private void OnGameLoadStarted()
     {
         _uiCamera = GameObject.Find("UI Camera").GetComponent<Camera>();
-        _loadingScreenUI.SetActive(true);
-        _UIIAMap.Enable();
-        if (_playerIAMap != null) _playerIAMap.Disable();
+        _activeFocusedUI = null;
         
         _focusedOverlay     = Instantiate(_focusedOverlayPrefab, Vector3.zero, Quaternion.identity).GameObject();
         _defeatedUI         = Instantiate(_defeatedUIPrefab, Vector3.zero, Quaternion.identity).GameObject();
@@ -229,9 +230,16 @@ public class UIManager : Singleton<UIManager>
             }
         }
     }
+    
+    private IEnumerator GameOverCoroutine()
+    {
+        yield return new WaitForSeconds(Define.GameOverDelayTime);
+        OpenFocusedUI(_defeatedUI);
+    }
 
     private void OnPlayerDefeated()
     {
+        StopCoroutine(nameof(BloodOverlayCoroutine));
         CloseFocusedUI();
         _playerIAMap.Disable();
         StartCoroutine(GameOverCoroutine());
@@ -240,11 +248,11 @@ public class UIManager : Singleton<UIManager>
     private void LoadAllUIPrefabs()
     {
         string path = "Prefabs/UI/";
+        _loadingScreenPrefab    = Utility.LoadGameObjectFromPath(path + "LoadingCanvas");
         _focusedOverlayPrefab   = Utility.LoadGameObjectFromPath(path + "InGame/FocusedCanvas");
         _defeatedUIPrefab       = Utility.LoadGameObjectFromPath(path + "InGame/GameOverCanvas");
         _inGameCombatPrefab     = Utility.LoadGameObjectFromPath(path + "InGame/CombatCanvas");
         _zoomedMapPrefab        = Utility.LoadGameObjectFromPath(path + "InGame/ZoomedMap");
-        _loadingScreenPrefab    = Utility.LoadGameObjectFromPath(path + "LoadingCanvas");
         _evadePopupPrefab       = Utility.LoadGameObjectFromPath(path + "InGame/TextPopUp/EvadeUI");
         _textPopupPrefab        = Utility.LoadGameObjectFromPath(path + "InGame/TextPopUp/GeneralTextUI");
         _critPopupPrefab        = Utility.LoadGameObjectFromPath(path + "InGame/TextPopUp/CritPopUp");
@@ -255,12 +263,20 @@ public class UIManager : Singleton<UIManager>
             _warriorUIPrefabs[i] = Utility.LoadGameObjectFromPath(path + "InGame/Warrior/" + (EWarrior)i);
         }
         _loadingScreenUI = Instantiate(_loadingScreenPrefab, Vector3.zero, Quaternion.identity).GameObject();
+        _loadingScreenUI.SetActive(false);
         DontDestroyOnLoad(_loadingScreenUI);
     }
 
-    private void LoadMainMenuUI()
+    public void DisplayLoadingScreen()
     {
-        // TODO
+        _loadingScreenUI.SetActive(true);
+    }
+
+    private void OnMainMenuLoaded()
+    {
+        _mainMenuUIController = FindObjectOfType<MainMenuUIController>();
+        _mainMenuUI = _mainMenuUIController.GameObject();
+        OpenFocusedUI(_mainMenuUI);
     }
 
     private void OnPlayerSpawned()
@@ -276,17 +292,10 @@ public class UIManager : Singleton<UIManager>
         _playerIAMap.FindAction("Bomb_Right").performed += OnBombSelect_Right;
     }
 
-    private IEnumerator GameOverCoroutine()
-    {
-        yield return new WaitForSeconds(Define.GameOverDelayTime);
-        OpenFocusedUI(_defeatedUI);
-    }
-
     private void OpenFocusedUI(GameObject uiObject, bool shouldShowOverlay = false)
     {
-        if (shouldShowOverlay) _focusedOverlay.SetActive(true);
-        _playerIAMap.Disable();
-        _UIIAMap.Enable();
+        if (shouldShowOverlay && _focusedOverlay) _focusedOverlay.SetActive(true);
+        UseUIControl();
         _activeFocusedUI = uiObject;
         _uiInputModule.point = _uiPointIARef;
         uiObject.SetActive(true);
@@ -361,6 +370,10 @@ public class UIManager : Singleton<UIManager>
         {
             _defeatedUIController.OnNavigate(value);
         }
+        else if (_activeFocusedUI == _mainMenuUI)
+        {
+            _mainMenuUIController.OnNavigate(value);
+        }
     }
     
     private void OnZoom(InputAction.CallbackContext obj)
@@ -386,6 +399,10 @@ public class UIManager : Singleton<UIManager>
         else if (_activeFocusedUI == _defeatedUI)
         {
             _defeatedUIController.OnSubmit();
+        }
+        else if (_activeFocusedUI == _mainMenuUI)
+        {
+            _mainMenuUIController.OnSubmit();
         }
     }
     
@@ -416,13 +433,22 @@ public class UIManager : Singleton<UIManager>
     {
         // Compute left, mid, and right indices
         int oldIdx = _playerController.playerInventory.GetCurrentSelectedFlower();
-        int midIdx = toPrevious ? oldIdx - 1 : oldIdx + 1;
-        if (midIdx == 0) midIdx = (int)EFlowerType.MAX - 1;
-        if (midIdx == (int)EFlowerType.MAX) midIdx = 1;
+        int midIdx;
+        if (toPrevious)
+        {
+            if (oldIdx <= 1) midIdx = (int)EFlowerType.MAX - 1;
+            else midIdx = oldIdx - 1;
+        }
+        else
+        {
+            if (oldIdx >= (int)EFlowerType.MAX - 1) midIdx = 1;
+            else midIdx = oldIdx + 1;
+        }
         int leftIdx = midIdx == 1 ? (int)EFlowerType.MAX - 1 : midIdx - 1;
         int rightIdx = midIdx == (int)EFlowerType.MAX - 1 ? 1 : midIdx + 1;
         
         // Change selected flower bomb
+        Debug.Log("Flower selected: " + midIdx);
         _playerController.playerInventory.SelectFlower(midIdx);
         
         // Update icons respectively

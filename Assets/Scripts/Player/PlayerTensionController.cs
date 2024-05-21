@@ -25,7 +25,7 @@ public class PlayerTensionController : MonoBehaviour
     private float _slowDownAmount;
     private int _incrementStep;
     private float[] _critAdditionByStates;
-    private float[] _damageMutiplierByStates;
+    private float[] _damageMultiplierByStates;
     
     private int _tension;
     private int _maxTension;
@@ -64,7 +64,7 @@ public class PlayerTensionController : MonoBehaviour
         _overloadDuration = 4.0f;
         _recoveryDuration = 3.0f;
         _critAdditionByStates = new float[]{0.0f, 0.05f, 0.15f, 0.0f};
-        _damageMutiplierByStates = new float[]{1.0f, 1.1f, 1.2f, 1.0f};
+        _damageMultiplierByStates = new float[]{1.0f, 1.1f, 1.2f, 1.0f};
         _tensionGaugeOutline.effectColor = _fillNormalColour;
         _tensionGaugeText.color = Color.white;
         ResetTension();
@@ -120,7 +120,7 @@ public class PlayerTensionController : MonoBehaviour
 
         // Apply new state effects
         _tensionState = newState;
-        _player.playerDamageDealer.totalDamageMultiplier = _damageMutiplierByStates[(int)newState];
+        _player.playerDamageDealer.totalDamageMultiplier = _damageMultiplierByStates[(int)newState];
         _player.AddCriticalRate(_critAdditionByStates[(int)newState]);
 
         switch (newState)

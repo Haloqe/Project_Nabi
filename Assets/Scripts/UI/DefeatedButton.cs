@@ -14,13 +14,11 @@ public class DefeatedButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     
     public void OnPointerEnter(PointerEventData eventData)
     {
-        Debug.Log("Mouse enter");
         _baseUI.OnPointerEnter(_isRestartBtn);
     }
     
     public void OnPointerExit(PointerEventData eventData)
     {
-        Debug.Log("Mouse exit");
         _baseUI.OnPointerExit(_isRestartBtn);
     }
 }

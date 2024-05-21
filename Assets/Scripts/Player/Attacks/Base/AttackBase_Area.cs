@@ -11,7 +11,6 @@ public class AttackBase_Area : AttackBase
     private Rigidbody2D _rigidbody2D;
 
     //detecting which flower to use
-    private int _selectedFlowerIndex;
     public string vfxAddress;
     StatusEffectInfo bombEffect;
 
@@ -36,19 +35,17 @@ public class AttackBase_Area : AttackBase
         base.Reset();
         _attackInfo = _attackInfoInit.Clone();
         _areaRadiusMultiplier = 1f;
-        _selectedFlowerIndex = 0;
     }
 
     public void SwitchVFX(int flowerIdx)
     {
-        _selectedFlowerIndex = flowerIdx;
         ReassignVFXAddress();
         baseEffector = Utility.LoadGameObjectFromPath(vfxAddress);
     }
     
     private void ReassignVFXAddress()
     {  
-        switch (_selectedFlowerIndex)
+        switch (_inventory.GetCurrentSelectedFlower())
         {
             case 0:
                 Debug.Log("Will heal you on R");
@@ -81,16 +78,12 @@ public class AttackBase_Area : AttackBase
 
     public bool CheckAvailability()
     {
-        // Is flower available?
-        if (_inventory.GetNumberOfFlowers(_selectedFlowerIndex) <= 0)
+        if (_inventory.GetNumberOfFlowers(_inventory.GetCurrentSelectedFlower()) <= 0)
         {
             _inventory.noFlowerVFX.SetActive(true);
             return false;
         }
-        
-        return _selectedFlowerIndex != 0;
-        // _playerController.Heal(15);
-        // return;
+        return true;
     }
     
     public override void Attack()
@@ -116,12 +109,12 @@ public class AttackBase_Area : AttackBase
         //FollowUpVFX();
         
         // Decrement flower
-        _playerController.playerInventory.RemoveFlower(_selectedFlowerIndex);
+        _playerController.playerInventory.RemoveFlower(_inventory.GetCurrentSelectedFlower());
     }
 
     private void FollowUpVFX()
     {
-        if (_selectedFlowerIndex == (int)EFlowerType.IncendiaryFlower)
+        if (_inventory.GetCurrentSelectedFlower() == (int)EFlowerType.IncendiaryFlower)
         {
             //instantiate fire VFX
             string fireVfxAddress = "Prefabs/Player/BombVFX/FireBundleTEST";

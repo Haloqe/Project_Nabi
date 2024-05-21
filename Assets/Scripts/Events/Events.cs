@@ -19,6 +19,7 @@ public static class InGameEvents
 
 public static class GameEvents
 {
+    public static UnityAction MainMenuLoaded;
     public static UnityAction Restarted;
     public static UnityAction GameLoadStarted;
     public static UnityAction GameLoadEnded;
