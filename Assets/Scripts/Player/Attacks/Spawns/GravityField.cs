@@ -7,7 +7,7 @@ public class GravityField : MonoBehaviour
 {
     public AttackBase_Area Owner;
     public int pullDelay = 0;
-    public int pullDuration;
+    public int pullDuration = 5;
 
     // Collider 
     private List<int> _affectedEnemies;
@@ -16,6 +16,7 @@ public class GravityField : MonoBehaviour
     {
         _affectedEnemies = new List<int>();
     }
+
     public void OnTriggerEnter2D(Collider2D collision)
     {
         Debug.Log("collided with enemies");

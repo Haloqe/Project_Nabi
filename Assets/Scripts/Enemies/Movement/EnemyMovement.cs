@@ -102,12 +102,11 @@ public abstract class EnemyMovement : MonoBehaviour
         _animator.SetBool("IsAttacking", false);
     }
 
-    protected Vector2 pullVelocity = Vector2.zero;
-    public void StartPullX(Vector2 gravCorePosition, float strength, float duration)
+    public void StartPullX(Vector3 gravCorePosition, float strength, float duration)
     {
         DisableFlip();
-        IsRooted = true;
-        IsMoving = false;
+        //IsRooted = true;
+        //IsMoving = false;
         //pullOverallVelocity += new Vector2(direction * strength, 0);
         StartCoroutine(PullXCoroutine(gravCorePosition, strength, duration));
         
@@ -116,15 +115,16 @@ public abstract class EnemyMovement : MonoBehaviour
     // Currently only considers the x axis; need to change if needed in future
     // gravCorePosition = fetch the direction of the gravity Field 
     // strength, duration = constant
-    protected virtual IEnumerator PullXCoroutine(Vector2 gravCorePosition, float strength, float duration)
+    protected virtual IEnumerator PullXCoroutine(Vector3 gravCorePosition, float strength, float duration)
     {
+        strength = 75;
         //gravCorePosition = new Vector2(0, 0);
         distanceToGravField = Vector2.Distance(gravCorePosition, _rigidBody.position);
         float elapsedTime = 0;
 
         while (elapsedTime < duration)
         {
-            pullForce = (gravCorePosition - _rigidBody.position).normalized / distanceToGravField * strength;
+            pullForce = ((Vector2)(gravCorePosition) - _rigidBody.position).normalized / distanceToGravField * strength;
             _rigidBody.AddForce(pullForce, ForceMode2D.Force);
 
             elapsedTime += Time.fixedDeltaTime;

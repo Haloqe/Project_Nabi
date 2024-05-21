@@ -90,7 +90,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     protected virtual void Initialise() { }
 
     #region Status Effects imposed by the player handling
-    private void HandleNewStatusEffects(List<StatusEffectInfo> statusEffects, Vector2 GravCorePosition)
+    private void HandleNewStatusEffects(List<StatusEffectInfo> statusEffects, Vector3 GravCorePosition)
     {
         if (statusEffects == null) return;
 
@@ -159,7 +159,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
                 
                 case EStatusEffect.Pull:
                     if (_movement.MoveType == EEnemyMoveType.Stationary) continue;
-                    ShouldDisableMovement = true;
+                    //ShouldDisableMovement = true;
                     IsSilenced = true;
                     _movement.StartPullX(GravCorePosition, statusEffect.Strength, statusEffect.Duration);
                     break;

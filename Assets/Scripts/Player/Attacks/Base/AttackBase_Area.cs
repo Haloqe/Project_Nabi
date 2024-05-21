@@ -134,27 +134,33 @@ public class AttackBase_Area : AttackBase
 
         if(currentSelectedFlowerIndex == (int)EFlowerType.GravityFlower)
         {
-            StartCoroutine(BombExpansion(vfx));
+            vfx.GetComponent<Bomb>().Owner = this;
+            //spawn gravity field on completion of bomb VFX
+            StartCoroutine(BombExpansion(vfx, position, dir));
         }
         else
         {
             vfx.GetComponent<Bomb>().Owner = this;
-            FollowUpVFX();
+
+            if (currentSelectedFlowerIndex == (int)EFlowerType.IncendiaryFlower)
+            {
+                FireBundleSpawn();
+            }
+            
         }        
         // Decrement flower
         //_playerController.playerInventory.RemoveFlower(currentSelectedFlowerIndex);
     }
 
-    IEnumerator BombExpansion(GameObject vfx)
+    IEnumerator BombExpansion(GameObject vfx, Vector3 position, float dir)
     {
-        Debug.Log("Hello I'm waiting");
-        vfx.GetComponent<Bomb>().Owner = this;
         yield return new WaitForSeconds(1.4f);
-        Debug.Log("Waited for 5 seconds!");
-        FollowUpVFX();
+        Debug.Log("Waited for 1.4 seconds!");
+        GravityFieldSpawn(position, dir);
+
     }
 
-    private void FollowUpVFX()
+    private void FireBundleSpawn()
     {
         if (currentSelectedFlowerIndex == (int)EFlowerType.IncendiaryFlower)
         {
@@ -172,37 +178,34 @@ public class AttackBase_Area : AttackBase
             vfx.GetComponent<Fire>().Owner = this;
         }
         
-        if(currentSelectedFlowerIndex == (int)EFlowerType.GravityFlower)
+   
+    }
+
+    private void GravityFieldSpawn(Vector3 position, float dir)
+    {
+        //instantiate Gravity VFX
+        string GraivtyFieldVfxAddress = "Prefabs/Player/BombVFX/GravityField";
+        GameObject GravityFieldVFXObject = Utility.LoadGameObjectFromPath(GraivtyFieldVfxAddress);
+
+
+        GravityFieldVFXObject.transform.localScale = new Vector3(dir, 1.0f, 1.0f);
+        var vfx = Instantiate(GravityFieldVFXObject, position, Quaternion.identity);
+
+        //restate the damageinfo 
+        _attackInfoInit = new AttackInfo
         {
-            
-            //instantiate Gravity VFX
-            string GraivtyFieldVfxAddress = "Prefabs/Player/BombVFX/GravityField";
-            GameObject GravityFieldVFXObject = Utility.LoadGameObjectFromPath(GraivtyFieldVfxAddress);
+            Damage = new DamageInfo(EDamageType.Base, 0),
+            ShouldUpdateTension = false,
+            GravCorePosition = position
+        };
 
-            float dir = Mathf.Sign(_player.transform.localScale.x);
-            Vector3 playerPos = _player.transform.position;
-            Vector3 vfxPos = GravityFieldVFXObject.transform.position;
-            Vector3 position = new Vector3(playerPos.x + dir * (vfxPos.x), playerPos.y + vfxPos.y, playerPos.z + vfxPos.z);
+        bombEffect = null;
+        bombEffect = new StatusEffectInfo(EStatusEffect.Pull, 3, 5);
+        _attackInfoInit.StatusEffects.Add(bombEffect);
+        Reset();
 
-            GravityFieldVFXObject.transform.localScale = new Vector3(dir, 1.0f, 1.0f);
-            var vfx = Instantiate(GravityFieldVFXObject, position, Quaternion.identity);
+        vfx.GetComponent<GravityField>().Owner = this;
 
-            //restate the damageinfo 
-            _attackInfoInit = new AttackInfo{
-                Damage = new DamageInfo(EDamageType.Base, 0),
-                ShouldUpdateTension = true,
-                GravCorePosition = position
-            };
-            
-            bombEffect = null;
-            bombEffect = new StatusEffectInfo(EStatusEffect.Pull, 3, 5);
-            _attackInfoInit.StatusEffects.Add(bombEffect);
-            Reset();
-            
-            vfx.GetComponent<GravityField>().Owner = this;
-            
-            
-        }
     }
 
     protected override void OnAttackEnd_PreDelay()
