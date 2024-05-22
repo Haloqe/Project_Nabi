@@ -23,7 +23,9 @@ public class EnemyMovement_Scorpion : EnemyMovement
     private Vector3 _stingerDirection;
     private Vector3 _playerDirection;
     private Vector3[] _defaultClawPositions = { new(-15.69f, -2f, 0f), new(10.9f, -2f, 0f) };
+    // private Vector3[] _defaultClawPositions;
     private Vector3[] _electricClawPositions = { new(-26f, -3f, 0), new(16f, -3f, 0) };
+    // private Vector3[] _electricClawPositions;
     private Vector3 _midpoint = new(-3.5f, -5f, 0f);
     
     private bool _isShootingBullets;
@@ -52,7 +54,6 @@ public class EnemyMovement_Scorpion : EnemyMovement
         for (int i = 0; i < _clawRigidBodies.Length; i++) { _clawObjects[i] = _clawRigidBodies[i].gameObject; }
         
         _raycastLayerMask = LayerMask.GetMask("Platform");
-
     }
     
     private IEnumerator Bounce(Rigidbody2D rb, float speed)
@@ -70,7 +71,7 @@ public class EnemyMovement_Scorpion : EnemyMovement
 
     private void FlipTail(int negativeOrPositive)
     {
-        float[] flipMoveAmount = {1f, 2f, -0.5f};
+        float[] flipMoveAmount = {1f, 1.7f, -0.3f};
         for (int i = 0; i < _tailObjects.Length; i++)
         {
             _tailObjects[i].transform.localScale = new Vector2(
@@ -101,6 +102,7 @@ public class EnemyMovement_Scorpion : EnemyMovement
         while (_isShootingBullets)
         {
             yield return new WaitForSeconds(5f);
+            if (!_isShootingBullets) yield break;
             var bullet = Instantiate(_bulletObject,
                 _shooterPositionObject.transform.position,
                 Quaternion.identity).GetComponent<Scorpion_Bullet>();
@@ -111,16 +113,20 @@ public class EnemyMovement_Scorpion : EnemyMovement
     private IEnumerator ShootLaser()
     {
         _isInAttackSequence = true;
+        _isShootingBullets = false;
         float rotationSpeed = 5f;
-        float rotationDegrees = 6f;
+        float rotationDegrees = 10f;
         int direction = 1;
         if (Random.Range(0f, 1f) > 0.5f) direction *= -1;
-        _isShootingBullets = false;
         _lineRenderer.enabled = true;
         
+        _stingerDirection = _shooterPositionObject.transform.position - _basePositionObject.transform.position;
+        _playerDirection = _player.transform.position - _basePositionObject.transform.position;
         _shooterObject.transform.rotation *= Quaternion.FromToRotation(_stingerDirection, _playerDirection).normalized;
-        _shooterObject.transform.Rotate(0, 0, direction * rotationDegrees);
+
+        _shooterObject.transform.Rotate(0, 0, -direction * rotationDegrees);
         float initialAngle = _shooterObject.transform.eulerAngles.z;
+        
         while (Mathf.Abs(_shooterObject.transform.eulerAngles.z - initialAngle) <= rotationDegrees * 2)
         {
             Vector3 position = _shooterPositionObject.transform.position;
@@ -134,12 +140,12 @@ public class EnemyMovement_Scorpion : EnemyMovement
             {
                 Draw2DRay(_shooterPositionObject.transform.position, _stingerDirection * 100f);
             }
-            yield return null;
             _shooterObject.transform.Rotate(0, 0, direction * rotationSpeed * Time.deltaTime);
+            yield return null;
         }
 
-        _isShootingBullets = true;
         _lineRenderer.enabled = false;
+        _isShootingBullets = true;
         StartCoroutine(ShootBullet());
         _isInAttackSequence = false;
     }
@@ -223,7 +229,7 @@ public class EnemyMovement_Scorpion : EnemyMovement
     {
         for (int i = 0; i <= 1; i++)
         {
-            if (Vector3.Distance(a[i].transform.position, b[i]) < 0.001f)
+            if (Vector3.Distance(a[i].transform.position, b[i]) < 0.01f)
             {
                 a[i].transform.position = b[i];
             } else {
@@ -257,7 +263,7 @@ public class EnemyMovement_Scorpion : EnemyMovement
     
     private void GenerateRandomAttack()
     {
-        switch (Math.Floor(Random.Range(0f, 2f)))
+        switch (Math.Floor(Random.Range(0f, 1f)))
         {
             case 0:
             StartCoroutine(ShootLaser());

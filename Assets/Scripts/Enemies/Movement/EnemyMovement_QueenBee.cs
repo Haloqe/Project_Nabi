@@ -9,13 +9,7 @@ using Random = UnityEngine.Random;
 
 public class EnemyMovement_QueenBee : EnemyMovement
 {
-    // public LayerMask _platformLayer;
-    // private Vector2 _attackDirection;
-    // private Vector2 _patrolDirection;
-    // private bool _directionIsChosen;
-    // private bool _directionIsFlipping;
     private bool _isBouncing = true;
-    private bool _lessThanTwoBees;
     private bool _beesAreCommanded;
     private bool _isInAttackSequence;
     private bool _justFinishedAttack = true;
@@ -48,8 +42,8 @@ public class EnemyMovement_QueenBee : EnemyMovement
         }
         
         GameObject[] allBees = GameObject.FindGameObjectsWithTag("Enemy");
-        _lessThanTwoBees = allBees.Length <= 2;
-        if (_lessThanTwoBees)
+        bool lessThanTwoBees = allBees.Length <= 2;
+        if (lessThanTwoBees)
         {
             StartCoroutine(SpawnMinions(3));
             return;
@@ -61,7 +55,6 @@ public class EnemyMovement_QueenBee : EnemyMovement
             return;
         }
         
-        // BodySlam or PoisonBomb
         StartCoroutine(Generate3RandomAttacks());
     }
     
@@ -125,18 +118,6 @@ public class EnemyMovement_QueenBee : EnemyMovement
         yield return MoveToPosition(idlePosition, _moveSpeed);
         yield return new WaitForSeconds(3f);
         
-        // float timeCounter = 0f;
-        // while (timeCounter <= 3f)
-        // {
-        //     Vector3 moveDirection = (_player.transform.position
-        //         + new Vector3(directionFacing * 6f, 6f, 0)
-        //         - transform.position).normalized;
-        //     _rigidBody.velocity = moveDirection * _moveSpeed;
-        //     FlipEnemyTowardsTarget();
-        //     timeCounter += Time.deltaTime;
-        //     yield return null;
-        // }
-        
         _justFinishedAttack = false;
         _isInAttackSequence = false;
     }
@@ -153,40 +134,6 @@ public class EnemyMovement_QueenBee : EnemyMovement
             direction *= -1;
         }
     }
-
-    // private void RandomMovement()
-    // {
-    //     if (!_directionIsFlipping && Physics2D.OverlapCircle(transform.position, 0.8f, _platformLayer))
-    //         StartCoroutine(nameof(FlipDirection));
-    //
-    //     Vector2 force = _patrolDirection * 100f * Time.deltaTime;
-    //     _rigidBody.AddForce(force);
-    //     FlipEnemyTowardsMovement();
-    //
-    //     if (_directionIsChosen) return;
-    //     StartCoroutine(nameof(ChooseRandomDirection));
-    // }
-    //
-    // private void DefaultMovement()
-    // {
-    //
-    // }
-    //
-    // private IEnumerator ChooseRandomDirection()
-    // {
-    //     _directionIsChosen = true;
-    //     _patrolDirection = new Vector2(Random.Range(-1f, 1f), Random.Range(-1f, 1f)).normalized;
-    //     yield return new WaitForSeconds(Random.Range(3f, 5f));
-    //     _directionIsChosen = false;
-    // }
-    //
-    // private IEnumerator FlipDirection()
-    // {
-    //     _directionIsFlipping = true;
-    //     _patrolDirection = -_patrolDirection;
-    //     yield return new WaitForSeconds(1f);
-    //     _directionIsFlipping = false;
-    // }
 
     private IEnumerator SpawnMinions(int spawnAmount)
     {
@@ -345,10 +292,4 @@ public class EnemyMovement_QueenBee : EnemyMovement
     {
         return false;
     }
-
-    // void OnDrawGizmos()
-    // {
-    //     Gizmos.DrawWireSphere(transform.position, _enemyBase.EnemyData.DetectRangeX);
-    //     Gizmos.DrawWireCube(transform.position - transform.up, new Vector2 (_enemyBase.EnemyData.AttackRangeX, _enemyBase.EnemyData.AttackRangeY));
-    // }
 }

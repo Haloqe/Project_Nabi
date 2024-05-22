@@ -601,6 +601,7 @@ GameObject:
   - component: {fileID: 2434941724579593941}
   - component: {fileID: 2795431480703099929}
   - component: {fileID: 381155392071849445}
+  - component: {fileID: 8578289371761018550}
   m_Layer: 8
   m_Name: QueenBee
   m_TagString: Enemy
@@ -774,6 +775,51 @@ MonoBehaviour:
   IsChasingPlayer: 0
   IsAttackingPlayer: 0
   IsFlippable: 1
+--- !u!61 &8578289371761018550
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4386488226926978799}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 512
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0.63179016, y: 0.42119277}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 5, y: 6.71875}
+    newSize: {x: 1.6, y: 2.15}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  serializedVersion: 2
+  m_Size: {x: 0.98757935, y: 2.5511549}
+  m_EdgeRadius: 0
 --- !u!1 &4494401330723719496
 GameObject:
   m_ObjectHideFlags: 0

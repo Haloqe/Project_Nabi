@@ -26,6 +26,11 @@ public abstract class EnemyMovement : MonoBehaviour
         EnableMovement();
     }
 
+    public void StopMovementCoroutines()
+    {
+        StopAllCoroutines();
+    }
+
     public void ResetMoveSpeed()
     {
         _moveSpeed = _enemyBase.EnemyData.DefaultMoveSpeed;

@@ -21,6 +21,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     public GameObject Target;
     protected IDamageable _targetDamageable;
     public float ActionTimeCounter = 0f;
+    private bool _playerIsDefeated = false;
  
     //Status effect attributes
     public bool IsSilenced { get; private set; }
@@ -44,6 +45,8 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     private float Health;
     private SpriteRenderer _spriteRenderer;
     private float _armour;
+    private float _damageCooltimeCounter;
+    private float _damageCooltime = 0.3f;
 
     private void Awake()
     {
@@ -79,13 +82,21 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     
     private void OnPlayerDefeated()
     {
-        
+        StopAllCoroutines();
+        _movement.StopMovementCoroutines();
+        _playerIsDefeated = true;
+    }
+
+    private void OnDestroy()
+    {
+        PlayerEvents.defeated -= OnPlayerDefeated;
     }
 
     protected virtual void FixedUpdate()
     {
         UpdateRemainingStatusEffectTimes();
         UpdateMovementState();
+        _damageCooltimeCounter += Time.deltaTime;
     }
 
     protected virtual void Initialise() { }
@@ -371,6 +382,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
     private void OnTriggerEnter2D(Collider2D other)
     {
+        if (_damageCooltimeCounter <= _damageCooltime) return;
         if (other.CompareTag(Target.tag))
         {
             // 황홀경 status effect
@@ -390,6 +402,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
                 }
             }
             DealDamage(_targetDamageable, _damageInfo);
+            _damageCooltimeCounter = 0f;
         }
     }
 
@@ -525,15 +538,15 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     #region Enemy Movement
     private void UpdateMovementState()
     {
-        if (_movement.IsRooted) return;
-        ActionTimeCounter -= Time.deltaTime;
-
-        if (Target == null)
+        if (_playerIsDefeated)
         {
             _movement.Patrol();
             return;
         }
-
+        
+        if (_movement.IsRooted) return;
+        ActionTimeCounter -= Time.deltaTime;
+        
         if (_movement.PlayerIsInAttackRange() || _movement.IsAttackingPlayer)
         {
             _movement.Attack();

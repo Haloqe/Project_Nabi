@@ -25,7 +25,9 @@ public class EnemyMovement_LinearPath : EnemyMovement
         if (!IsGrounded()) return;
         if (IsAtEdge()) FlipEnemy();
 
-        _rigidBody.velocity = transform.localScale.x > Mathf.Epsilon ? new Vector2(_moveSpeed, 0f) : new Vector2(-_moveSpeed, 0f); //if it's facing right
+        _rigidBody.velocity = transform.localScale.x > Mathf.Epsilon ?
+            new Vector2(_moveSpeed, 0f) :
+            new Vector2(-_moveSpeed, 0f); //if it's facing right
     }
 
     private void GenerateRandomState()
@@ -33,11 +35,13 @@ public class EnemyMovement_LinearPath : EnemyMovement
         if (Random.Range(0.0f, 1.0f) <= _enemyBase.EnemyData.IdleProbability)
         {
             IsMoving = false;
-            _enemyBase.ActionTimeCounter = Random.Range(_enemyBase.EnemyData.IdleAverageDuration * 0.5f, _enemyBase.EnemyData.IdleAverageDuration * 1.5f);
+            _enemyBase.ActionTimeCounter = Random.Range(_enemyBase.EnemyData.IdleAverageDuration * 0.5f,
+                _enemyBase.EnemyData.IdleAverageDuration * 1.5f);
         } else
         {
             IsMoving = true;
-            _enemyBase.ActionTimeCounter = Random.Range(_enemyBase.EnemyData.WalkAverageDuration * 0.5f, _enemyBase.EnemyData.WalkAverageDuration * 1.5f);
+            _enemyBase.ActionTimeCounter = Random.Range(_enemyBase.EnemyData.WalkAverageDuration * 0.5f,
+                _enemyBase.EnemyData.WalkAverageDuration * 1.5f);
 
             if (Random.Range(0.0f, 1.0f) <= 0.3f) FlipEnemy();
         }
@@ -85,6 +89,7 @@ public class EnemyMovement_LinearPath : EnemyMovement
     {
         if (IsFlippable) FlipEnemyTowardsTarget();
         _animator.SetBool(IsAttacking, true);
+        ChangeSpeedByPercentage(0);
     }
 
     public override bool PlayerIsInAttackRange()
