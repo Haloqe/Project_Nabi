@@ -16,6 +16,8 @@ public class UIManager : Singleton<UIManager>
     private InputActionMap _UIIAMap;
     private InputActionReference _uiPointIARef;
     private InputActionReference _playerPointIARef;
+    private InputActionReference _uiClickIARef;
+    private InputActionReference _playerClickIARef;
     
     // Prefabs
     private GameObject _defeatedUIPrefab;
@@ -27,6 +29,7 @@ public class UIManager : Singleton<UIManager>
     private GameObject _evadePopupPrefab;
     private GameObject _textPopupPrefab;
     private GameObject _critPopupPrefab;
+    private GameObject _bookPrefab;
 
     // UI Instantiated Objects
     private GameObject _mainMenuUI;
@@ -36,12 +39,14 @@ public class UIManager : Singleton<UIManager>
     private GameObject _focusedOverlay;
     private GameObject _zoomedMap;
     private GameObject _loadingScreenUI;
+    private GameObject _bookUI;
     
     // UI Mechanism Script
     private MainMenuUIController _mainMenuUIController;
     private WarriorUIController _warriorUIController;
     private MapController _mapController;
     private DefeatedUIController _defeatedUIController;
+    private BookUIController _bookUIController;
     
     // Minor Controllable Objects
     private Slider _playerHPSlider;
@@ -92,6 +97,7 @@ public class UIManager : Singleton<UIManager>
         _UIIAMap = IAAsset.FindActionMap("UI");
         _UIIAMap.FindAction("Close").performed += OnClose;
         _UIIAMap.FindAction("CloseMap").performed += OnCloseMap;
+        _UIIAMap.FindAction("CloseBook").performed += OnCloseBook;
         _UIIAMap.FindAction("Navigate").performed += OnNavigate;
         _UIIAMap.FindAction("Navigate").canceled += OnNavigate;
         _UIIAMap.FindAction("Reset").performed += OnReset;
@@ -101,6 +107,8 @@ public class UIManager : Singleton<UIManager>
 
         _uiPointIARef = InputActionReference.Create(_UIIAMap.FindAction("Point"));
         _playerPointIARef = InputActionReference.Create(_uiInputModule.point);
+        _uiClickIARef = InputActionReference.Create(_UIIAMap.FindAction("Click"));
+        _playerClickIARef = InputActionReference.Create(_uiInputModule.leftClick);
     }
 
     private void UseUIControl()
@@ -118,6 +126,8 @@ public class UIManager : Singleton<UIManager>
         _defeatedUI         = Instantiate(_defeatedUIPrefab, Vector3.zero, Quaternion.identity).GameObject();
         inGameCombatUI      = Instantiate(_inGameCombatPrefab, Vector3.zero, Quaternion.identity).GameObject();
         _zoomedMap          = Instantiate(_zoomedMapPrefab, Vector3.zero, Quaternion.identity).GameObject();
+        _bookUI             = Instantiate(_bookPrefab, Vector3.zero, Quaternion.identity).GameObject();
+        _bookUIController   = _bookUI.GetComponentInChildren<BookUIController>();
         _defeatedUIController = _defeatedUI.GetComponent<DefeatedUIController>();
         _mapController      = _zoomedMap.GetComponent<MapController>();
         _playerHPSlider     = inGameCombatUI.GetComponentInChildren<Slider>();
@@ -132,6 +142,8 @@ public class UIManager : Singleton<UIManager>
         inGameCombatUI.SetActive(true);
         inGameCombatUI.GetComponent<Canvas>().worldCamera = _uiCamera;
         inGameCombatUI.GetComponent<Canvas>().planeDistance = 20;
+        // var bookIcon = inGameCombatUI.transform.Find("BookIcon").GetComponent<Button>();
+        // bookIcon.onClick.AddListener(OpenBook);
         
         // UI - flower bombs
         var flowerSlotRoot = inGameCombatUI.transform.Find("ActiveLayoutGroup").Find("Slot_3");
@@ -143,7 +155,7 @@ public class UIManager : Singleton<UIManager>
         _flowerIconLeft = _flowerUILeft.transform.Find("Icon").GetComponent<Image>();
         _flowerIconRight = _flowerUIRight.transform.Find("Icon").GetComponent<Image>();
     }
-    
+
     private void OnGameLoadEnded()
     {
         _bloodOverlay.gameObject.SetActive(false);
@@ -152,6 +164,8 @@ public class UIManager : Singleton<UIManager>
         _loadingScreenUI.SetActive(false);
         _playerIAMap.Enable();
         _UIIAMap.Disable();
+        _uiInputModule.point = _playerPointIARef;
+        _uiInputModule.leftClick = _playerClickIARef;
         UpdateDarkGaugeUI(0);
         _flowerUIDisplayRemainingTime = 0;
     }
@@ -256,6 +270,7 @@ public class UIManager : Singleton<UIManager>
         _evadePopupPrefab       = Utility.LoadGameObjectFromPath(path + "InGame/TextPopUp/EvadeUI");
         _textPopupPrefab        = Utility.LoadGameObjectFromPath(path + "InGame/TextPopUp/GeneralTextUI");
         _critPopupPrefab        = Utility.LoadGameObjectFromPath(path + "InGame/TextPopUp/CritPopUp");
+        _bookPrefab             = Utility.LoadGameObjectFromPath(path + "InGame/Book/BookCanvas");
         
         _warriorUIPrefabs = new GameObject[(int)EWarrior.MAX];
         for (int i = 0; i < (int)EWarrior.MAX; i++)
@@ -298,6 +313,7 @@ public class UIManager : Singleton<UIManager>
         UseUIControl();
         _activeFocusedUI = uiObject;
         _uiInputModule.point = _uiPointIARef;
+        _uiInputModule.leftClick = _uiClickIARef;
         uiObject.SetActive(true);
     }
 
@@ -312,6 +328,7 @@ public class UIManager : Singleton<UIManager>
         _activeFocusedUI.SetActive(false);
         _activeFocusedUI = null;
         _uiInputModule.point = _playerPointIARef;
+        _uiInputModule.leftClick = _playerClickIARef;
     }
 
     public bool OpenWarriorUI(Clockwork interactor)
@@ -327,7 +344,20 @@ public class UIManager : Singleton<UIManager>
         return true;
     }
 
-    public void ToggleMap()
+    public void OpenBook()
+    {
+        OpenFocusedUI(_bookUI, true);
+    }
+
+    private void OnCloseBook(InputAction.CallbackContext obj)
+    {
+        if (_activeFocusedUI == _bookUI)
+        {
+            _bookUIController.StartCloseBookAnimation();
+        }
+    }
+
+    public void OpenMap()
     {
         _mapController.ResetMapCamera();
         OpenFocusedUI(_zoomedMap);
@@ -343,10 +373,13 @@ public class UIManager : Singleton<UIManager>
     
     private void OnClose(InputAction.CallbackContext obj)
     {
-        Debug.Log("UIManager::OnClose");
         if (_activeFocusedUI == _warriorUIObject)
         {
             _warriorUIController.OnCancel();
+        }
+        else if (_activeFocusedUI == _bookUI)
+        {
+            _bookUIController.StartCloseBookAnimation();
         }
         else if (_activeFocusedUI)
         {
