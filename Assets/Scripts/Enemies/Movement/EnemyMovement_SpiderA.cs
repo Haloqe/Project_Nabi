@@ -12,6 +12,7 @@ public class EnemyMovement_SpiderA : EnemyMovement
     private GameObject _webObject;
     private static readonly float _jumpForce = 10f;
     private static readonly int IsAttacking = Animator.StringToHash("IsAttacking");
+    private static readonly int IsTeethAttacking = Animator.StringToHash("IsTeethAttacking");
     private static readonly int IsWalking = Animator.StringToHash("IsWalking");
     private static readonly int IsJumping = Animator.StringToHash("IsJumping");
     private static readonly int RunMultiplier = Animator.StringToHash("RunMultiplier");
@@ -132,7 +133,8 @@ public class EnemyMovement_SpiderA : EnemyMovement
 
     private void TeethAttack()
     {
-
+        _animator.SetBool(IsTeethAttacking, true);
+        
     }
 
     public override bool PlayerIsInAttackRange() // the 30 pixels mentioned in flowchart
