@@ -29,10 +29,15 @@ public class EnemyMovement_Scorpion : EnemyMovement
     
     // claw stuff
     [SerializeField] private GameObject[] _armObjects = new GameObject[6];
+    private GameObject _electricityObject;
     private Vector3[] _defaultClawPositions = new Vector3[2];
     private Vector3[] _electricClawPositions = new Vector3[2];
+    private Vector3[] _raisedClawPositions = new Vector3[2];
+    private Vector3[] _clawAttackPositions = new Vector3[2];
     private float _defaultClawGap = 16f;
-    private float _electricClawGap = 5f;
+    private float _electricClawGap = 10f;
+    private float _raisedClawGap = 12f;
+    private float _clawAttackGap = 5f;
     // private static readonly int IsClawAttacking = Animator.StringToHash("IsClawAttacking");
     
 
@@ -40,6 +45,7 @@ public class EnemyMovement_Scorpion : EnemyMovement
     {
         MoveType = EEnemyMoveType.Scorpion;
         _bulletObject = Resources.Load<GameObject>("Prefabs/Enemies/Spawns/Scorpion_bullet");
+        _electricityObject = transform.Find("electricity").transform.gameObject;
         
         Transform bouncingObjectsParent = transform.Find("bouncingObjects");
         _bouncingPartRigidBodies = bouncingObjectsParent.GetComponentsInChildren<Rigidbody2D>();
@@ -57,7 +63,17 @@ public class EnemyMovement_Scorpion : EnemyMovement
         _electricClawPositions = new[]
         {
             midpoint + new Vector3(-_electricClawGap, 0, 0),
-            midpoint + -new Vector3(_electricClawGap, 0, 0)
+            midpoint + new Vector3(_electricClawGap, 0, 0)
+        };
+        _raisedClawPositions = new[]
+        {
+            midpoint + new Vector3(-_raisedClawGap, 15f, 0),
+            midpoint + new Vector3(_raisedClawGap, 15f, 0)
+        };
+        _clawAttackPositions = new[]
+        {
+            midpoint + new Vector3(-_clawAttackGap, 0, 0),
+            midpoint + new Vector3(_clawAttackGap, 0, 0)
         };
         
         _raycastLayerMask = LayerMask.GetMask("Platform");
@@ -122,7 +138,7 @@ public class EnemyMovement_Scorpion : EnemyMovement
         _isInAttackSequence = true;
         _isShootingBullets = false;
         float rotationSpeed = 5f;
-        float rotationDegrees = 10f;
+        float rotationDegrees = 20f;
         int direction = 1;
         if (Random.Range(0f, 1f) > 0.5f) direction *= -1;
         _lineRenderer.enabled = true;
@@ -166,53 +182,96 @@ public class EnemyMovement_Scorpion : EnemyMovement
     private IEnumerator ClawAttack()
     {
         _isInAttackSequence = true;
-        StartCoroutine(MoveClaws(_defaultClawPositions, 2f));
+        yield return MoveClaws(_defaultClawPositions, 2f);
         GripClaws();
         // StartCoroutine(RotateByAmount(_armObjects[0], 90f, 1, 50f));
         // _animator.SetBool(IsClawAttacking, true);
         
         yield return new WaitForSeconds(3f);
-        Vector3 gap = new Vector3(5f, 0, 0);
-        Vector3 midpoint = gameObject.transform.position;
-        StartCoroutine(MoveClaws(new[] {midpoint - gap, midpoint + gap}, 5f));
+        yield return MoveClaws(_clawAttackPositions, 5f);
         
         yield return new WaitForSeconds(5f);
         // _animator.SetBool(IsClawAttacking, false);
         // StartCoroutine(RotateByAmount(_armObjects[0], 90f, -1, 50f));
-        StartCoroutine(MoveClaws(_defaultClawPositions, 2f));
+        yield return MoveClaws(_defaultClawPositions, 2f);
         _isInAttackSequence = false;
     }
 
     private IEnumerator ElectricityAttack()
     {
-        // _isInAttackSequence = true;
-        // StartCoroutine(MoveClaws(_electricClawPositions, 5f));
-        // for (int i = 0; i <= 1; i++)
-        // {
-        //     _clawObjects[i].GetComponent<SpriteRenderer>().color = Color.cyan;
-        //     _clawObjects[i].GetComponent<PolygonCollider2D>().enabled = false;
-        // }
-        // yield return new WaitForSeconds(1f);
-        //
-        // _electricityObject.SetActive(true);
-        //
-        // yield return new WaitForSeconds(5f);
-        //
-        // _electricityObject.SetActive(false);
-        // for (int i = 0; i <= 1; i++)
-        // {
-        //     _clawObjects[i].GetComponent<SpriteRenderer>().color = Color.white;
-        //     _clawObjects[i].GetComponent<PolygonCollider2D>().enabled = true;
-        // }
-        // StartCoroutine(MoveClaws(_defaultClawPositions, 5f));
-        // yield return new WaitForSeconds(2f);
-        // _isInAttackSequence = false;
-        yield return null;
+        _isInAttackSequence = true;
+
+        SpriteRenderer[] spriteRenderers = {
+            _armObjects[0].GetComponent<SpriteRenderer>(), 
+            _armObjects[3].GetComponent<SpriteRenderer>() };
+        Collider2D[] colliders = {
+            _armObjects[0].GetComponent<PolygonCollider2D>(),
+            _armObjects[3].GetComponent<PolygonCollider2D>() };
+        
+        yield return MoveClaws(_electricClawPositions, 5f);
+        for (int i = 0; i <= 1; i++)
+        {
+            spriteRenderers[i].color = Color.cyan;
+            colliders[i].enabled = false;
+        }
+        yield return new WaitForSeconds(1f);
+        
+        _electricityObject.SetActive(true);
+        yield return new WaitForSeconds(5f);
+        _electricityObject.SetActive(false);
+        
+        for (int i = 0; i <= 1; i++)
+        {
+            spriteRenderers[i].color = Color.white;
+            colliders[i].enabled = true;
+        }
+        
+        yield return MoveClaws(_defaultClawPositions, 5f);
+        
+        _isInAttackSequence = false;
     }
 
-    private void GroundPound()
+    private IEnumerator GroundPound()
     {
         _isInAttackSequence = true;
+        
+        yield return MoveClaws(_raisedClawPositions, 2f);
+        // rotate claws
+        yield return new WaitForSeconds(3f);
+
+        float playerXPosition = _player.transform.position.x;
+        float xLevel = transform.position.x;
+        float yLevel = transform.position.y;
+        Vector3[] attackPosition = new Vector3[2];
+        // do the snap snap animation
+        // do the targeting player animation maybe?
+        yield return new WaitForSeconds(1f);
+        
+        if (playerXPosition - xLevel is >= -5f and <= 5f) // if player is at middle
+        {
+            attackPosition = new [] {
+                new Vector3(playerXPosition - 1f, yLevel, 0),
+                new Vector3(playerXPosition + 1f, yLevel, 0)
+            };
+        }
+        else if (playerXPosition < xLevel) // if player is at left
+        {
+            attackPosition = new [] {
+                new Vector3(playerXPosition, yLevel, 0),
+                new Vector3(2 * xLevel - playerXPosition, yLevel, 0)
+            };
+        }
+        else // if player is at right
+        {
+            attackPosition = new [] {
+                new Vector3(3 * playerXPosition - 2 * xLevel, yLevel, 0),
+                new Vector3(playerXPosition, yLevel, 0)
+            };
+        }
+        
+        yield return MoveClaws(attackPosition, 5f);
+        yield return new WaitForSeconds(1f);
+        yield return MoveClaws(_defaultClawPositions, 2f);
 
         _isInAttackSequence = false;
     }
@@ -236,6 +295,7 @@ public class EnemyMovement_Scorpion : EnemyMovement
             float step = speed * i / 100f;
             MoveClawIK(initialPositions[0] + directions[0] * step, true);
             MoveClawIK(initialPositions[1] + directions[1] * step, false);
+            // yield return new WaitForSeconds(1f);
             yield return null;
         }
     }
@@ -256,15 +316,41 @@ public class EnemyMovement_Scorpion : EnemyMovement
                 int direction = -1;
                 if ((int)Mathf.Round(cross.z) == -1) direction *= -1;
                 _armObjects[i + rightClaw].transform.Rotate(0f,0f, direction * rotationAngle);
+                
+                // Vector3 c = _armObjects[0 + rightClaw].transform.position - _armObjects[1 + rightClaw].transform.position;
+                // Vector3 d = _armObjects[1 + rightClaw].transform.position - _armObjects[2 + rightClaw].transform.position;
+                // Vector3 crossP = Vector3.Cross(c, d).normalized;
+                //
+                // // if ((_armObjects[0 + rightClaw].transform.position - _armObjects[1 + rightClaw].transform.position).y > 0) return;
+                // int isWrongDirection = (int)Mathf.Round(crossP.z) * (int)Mathf.Pow(-1, rightClaw);
+                // if (isWrongDirection != -1) _armObjects[1 +  rightClaw].transform.rotation = _armObjects[2 + rightClaw].transform.rotation;
             }
+            
+            // if (_armObjects[2 + rightClaw].transform.rotation.z <= -90f * (int)Mathf.Pow(-1, rightClaw))
+            
         }
+        
+        Vector3 c = _armObjects[0 + rightClaw].transform.position - _armObjects[1 + rightClaw].transform.position;
+        Vector3 d = _armObjects[1 + rightClaw].transform.position - _armObjects[2 + rightClaw].transform.position;
+        Vector3 crossP = Vector3.Cross(c, d).normalized;
+        
+        // if ((_armObjects[0 + rightClaw].transform.position - _armObjects[1 + rightClaw].transform.position).y > 0) return;
+        int isWrongDirection = (int)Mathf.Round(crossP.z) * (int)Mathf.Pow(-1, rightClaw);
+        if (isWrongDirection != -1) return;
+        // if (_armObjects[0 + rightClaw].transform.position.x is >= -5f and <= 5f) return;
+        if (_armObjects[1 + rightClaw].transform.position.y < transform.position.y) return;
+        
+        _armObjects[1 + rightClaw].transform.Rotate(0f, 0f, -_armObjects[1 + rightClaw].transform.rotation.z);
+        float flipAngle = Vector3.Angle(c, d);
+        _armObjects[2 + rightClaw].transform.Rotate(0f, 0f, Mathf.Pow(-1, rightClaw + 1) * (360f - 2 * flipAngle));
+        
     }
 
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.yellow;
-        Gizmos.DrawSphere(_defaultClawPositions[0], 1);
-        Gizmos.DrawSphere(_defaultClawPositions[1], 1);
+        Gizmos.DrawSphere(transform.position + new Vector3(5f, 0, 0), 1);
+        Gizmos.DrawSphere(transform.position - new Vector3(5f, 0, 0), 1);
     }
 
     private IEnumerator RotateByAmount(GameObject obj, float angle, int direction, float speed)
@@ -290,7 +376,7 @@ public class EnemyMovement_Scorpion : EnemyMovement
         switch (_cycleCount)
         {
             case 0:
-            GroundPound();
+            StartCoroutine(GroundPound());
             _cycleCount++;
             break;
             
@@ -301,6 +387,7 @@ public class EnemyMovement_Scorpion : EnemyMovement
             
             default:
             GenerateRandomAttack();
+            _cycleCount++;
             break;
         }
     }
