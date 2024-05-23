@@ -11,7 +11,9 @@ public class EnemyMovement_LinearPath : EnemyMovement
     public LayerMask _groundLayer;
     public Collider2D _groundInFrontCollider;
     public Collider2D _ceilingInFrontCollider;
-    
+    private static readonly int IsAttacking = Animator.StringToHash("IsAttacking");
+    private static readonly int IsWalking = Animator.StringToHash("IsWalking");
+
     private void Awake()
     {
         MoveType = EEnemyMoveType.LinearPath;
@@ -23,12 +25,9 @@ public class EnemyMovement_LinearPath : EnemyMovement
         if (!IsGrounded()) return;
         if (IsAtEdge()) FlipEnemy();
 
-        if (transform.localScale.x > Mathf.Epsilon) //if it's facing right
-        {
-            _rigidBody.velocity = new Vector2(_moveSpeed, 0f);
-        } else {
-            _rigidBody.velocity = new Vector2(-_moveSpeed, 0f);
-        }
+        _rigidBody.velocity = transform.localScale.x > Mathf.Epsilon ?
+            new Vector2(_moveSpeed, 0f) :
+            new Vector2(-_moveSpeed, 0f); //if it's facing right
     }
 
     private void GenerateRandomState()
@@ -36,11 +35,13 @@ public class EnemyMovement_LinearPath : EnemyMovement
         if (Random.Range(0.0f, 1.0f) <= _enemyBase.EnemyData.IdleProbability)
         {
             IsMoving = false;
-            _enemyBase.ActionTimeCounter = Random.Range(_enemyBase.EnemyData.IdleAverageDuration * 0.5f, _enemyBase.EnemyData.IdleAverageDuration * 1.5f);
+            _enemyBase.ActionTimeCounter = Random.Range(_enemyBase.EnemyData.IdleAverageDuration * 0.5f,
+                _enemyBase.EnemyData.IdleAverageDuration * 1.5f);
         } else
         {
             IsMoving = true;
-            _enemyBase.ActionTimeCounter = Random.Range(_enemyBase.EnemyData.WalkAverageDuration * 0.5f, _enemyBase.EnemyData.WalkAverageDuration * 1.5f);
+            _enemyBase.ActionTimeCounter = Random.Range(_enemyBase.EnemyData.WalkAverageDuration * 0.5f,
+                _enemyBase.EnemyData.WalkAverageDuration * 1.5f);
 
             if (Random.Range(0.0f, 1.0f) <= 0.3f) FlipEnemy();
         }
@@ -51,16 +52,16 @@ public class EnemyMovement_LinearPath : EnemyMovement
         if (IsAtEdge() && IsChasingPlayer)
         {
             _rigidBody.velocity = Vector2.zero;
-            _animator.SetBool("IsWalking", false);
+            _animator.SetBool(IsWalking, false);
             return;
         }
 
-        _animator.SetBool("IsAttacking", false);
+        _animator.SetBool(IsAttacking, false);
         IsChasingPlayer = false;
         if (_enemyBase.ActionTimeCounter <= 0) GenerateRandomState();
         if (IsMoving) WalkForward();
         else _rigidBody.velocity = Vector2.zero;
-        _animator.SetBool("IsWalking", IsMoving);
+        _animator.SetBool(IsWalking, IsMoving);
     }
 
     public override void Chase()
@@ -77,8 +78,8 @@ public class EnemyMovement_LinearPath : EnemyMovement
             IsChasingPlayer = false;
             return;
         }
-        _animator.SetBool("IsAttacking", false);
-        _animator.SetBool("IsWalking", true);
+        _animator.SetBool(IsAttacking, false);
+        _animator.SetBool(IsWalking, true);
         
         FlipEnemyTowardsTarget();
         WalkForward();
@@ -87,7 +88,8 @@ public class EnemyMovement_LinearPath : EnemyMovement
     public override void Attack()
     {
         if (IsFlippable) FlipEnemyTowardsTarget();
-        _animator.SetBool("IsAttacking", true);
+        _animator.SetBool(IsAttacking, true);
+        ChangeSpeedByPercentage(0);
     }
 
     public override bool PlayerIsInAttackRange()
@@ -102,16 +104,14 @@ public class EnemyMovement_LinearPath : EnemyMovement
             && _enemyBase.Target.transform.position.y - transform.position.y <= _enemyBase.EnemyData.DetectRangeY;
     }
 
-    public bool IsGrounded()
+    private bool IsGrounded()
     {
-        if (Physics2D.OverlapBox(transform.position, _groundColliderSize, 0, _groundLayer)) return true;
-        else return false;
+        return Physics2D.OverlapBox(transform.position, _groundColliderSize, 0, _groundLayer);
     }
 
-    public bool IsAtEdge()
+    private bool IsAtEdge()
     {
-        if (_ceilingInFrontCollider.IsTouchingLayers(_groundLayer) || !_groundInFrontCollider.IsTouchingLayers(_groundLayer)) return true;
-        else return false;
+        return _ceilingInFrontCollider.IsTouchingLayers(_groundLayer) || !_groundInFrontCollider.IsTouchingLayers(_groundLayer);
     }
 
 

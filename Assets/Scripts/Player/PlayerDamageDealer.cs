@@ -78,6 +78,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
 
     private void OnDestroy()
     {
+        if (GetComponent<PlayerController>().IsToBeDestroyed) return;
         GameEvents.GameLoadEnded -= OnRestarted;
         var playerInput = GetComponent<PlayerInput>();
         playerInput.actions["Attack_Melee"].performed -= OnMeleeAttack;

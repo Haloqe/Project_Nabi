@@ -95,9 +95,6 @@ public class PlayerController : Singleton<PlayerController>
         PlayerEvents.ValueChanged += OnValueChanged;
         InGameEvents.EnemySlayed += OnEnemySlayed;
         
-        // Inputs binding
-        _playerInput.actions["OpenBook"].performed += OnOpenBook;
-        
         OnRestarted();
     }
 
@@ -106,13 +103,6 @@ public class PlayerController : Singleton<PlayerController>
         GameEvents.Restarted -= OnRestarted;
         PlayerEvents.ValueChanged -= OnValueChanged;
         InGameEvents.EnemySlayed -= OnEnemySlayed;
-        _playerInput.actions["OpenBook"].performed -= OnOpenBook;
-    }
-    
-    private void OnOpenBook(InputAction.CallbackContext obj)
-    {
-        Debug.Log("Player: Open Book");
-        UIManager.Instance.OpenBook();
     }
 
     private void Start()
@@ -192,7 +182,7 @@ public class PlayerController : Singleton<PlayerController>
         // }
         // count++;
     }
-
+    
     private void OnValueChanged(ECondition condition, float changeAmount)
     {
         switch (condition)
@@ -211,6 +201,11 @@ public class PlayerController : Singleton<PlayerController>
     private void OnOpenMap(InputValue value)
     {
         UIManager.Instance.OpenMap();
+    }
+    
+    private void OnOpenBook(InputValue value)
+    {
+        UIManager.Instance.OpenBook();
     }
 
     // Heal is exclusively used for increase of health from food items

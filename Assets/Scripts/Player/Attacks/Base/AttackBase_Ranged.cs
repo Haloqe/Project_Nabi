@@ -17,7 +17,6 @@ public class AttackBase_Ranged : AttackBase
         _attackInfoInit.ShouldUpdateTension = true;
         _activeBullets = new List<Bullet>();
         
-        GameEvents.Restarted += _activeBullets.Clear;
         InGameEvents.TimeSlowDown += OnTimeManipulate;
         InGameEvents.TimeRevertNormal += OnTimeManipulate;
         Reset();
@@ -26,7 +25,6 @@ public class AttackBase_Ranged : AttackBase
     protected override void OnDestroy()
     {
         base.OnDestroy();
-        GameEvents.Restarted -= _activeBullets.Clear;
         InGameEvents.TimeSlowDown -= OnTimeManipulate;
         InGameEvents.TimeRevertNormal -= OnTimeManipulate;
     }

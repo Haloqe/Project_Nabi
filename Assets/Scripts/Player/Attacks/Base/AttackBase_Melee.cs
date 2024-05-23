@@ -32,7 +32,6 @@ public class AttackBase_Melee : AttackBase
     public override void Start()
     {
         base.Start();
-        Debug.Log("START!");
         _attackType = ELegacyType.Melee;
         _baseDelay = 0.0f;
         _comboDelay = 0.0f; 

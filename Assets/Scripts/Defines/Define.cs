@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public static class Define
+public static class  Define
 {
     // TODO 외부 파일로 뺄 것
     public static ELocalisation Localisation = ELocalisation.KOR;

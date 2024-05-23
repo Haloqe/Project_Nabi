@@ -19,6 +19,7 @@ public class BookUIController : MonoBehaviour
     private readonly static int FlipLeft = Animator.StringToHash("FlipLeft");
     private readonly static int FlipRight = Animator.StringToHash("FlipRight");
     private readonly static int Close = Animator.StringToHash("Close");
+    private readonly static int Open = Animator.StringToHash("Open");
 
     private void Awake()
     {
@@ -46,11 +47,12 @@ public class BookUIController : MonoBehaviour
         {
             page.SetActive(false);
         }
-        _animator.SetTrigger("Open");
+        _animator.SetTrigger(Open);
     }
 
     private IEnumerator DisplayPage(int pageIdx)
     {
+        // TODO tab 3? 추가 안하게되면 3번째탭 지우고 BookTab array로 변경할 것
         // Hide previous page
         _pages[_currPageIdx].SetActive(false);
         _tabs[_currPageIdx].GetComponent<BookTab>()._isActiveTab = false;

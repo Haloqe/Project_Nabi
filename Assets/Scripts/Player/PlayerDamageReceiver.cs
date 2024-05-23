@@ -161,6 +161,11 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     {
         return gameObject;
     }
+
+    public float[] GetEffectRemainingTimes()
+    {
+        return _effectRemainingTimes;
+    }
     
     public void TakeDamage(AttackInfo damageInfo)
     {

@@ -54,7 +54,6 @@ public class EnemyManager : Singleton<EnemyManager>
 
     public void Init(string dataPath)
     {
-        Debug.Log("Initialising Enemy Data");
         Debug.Assert(dataPath != null && File.Exists(dataPath));
 
         using (var reader = new StreamReader(dataPath))
@@ -105,10 +104,10 @@ public class EnemyManager : Singleton<EnemyManager>
         return _enemies[enemyID];
     }
 
-    public GameObject SpawnEnemy(int enemyID, Vector3 spawnLocation)
+    public GameObject SpawnEnemy(int enemyID, Vector3 spawnLocation, bool isSetActive = false)
     {
         var enemy = Instantiate(_enemyPrefabs[enemyID], spawnLocation, Quaternion.identity).GameObject();
-        enemy.SetActive(false);
+        enemy.SetActive(isSetActive);
         enemy.transform.SetParent(_enemiesContainer);
         _spawnedEnemies.Add(enemy.GetComponent<EnemyBase>());
         return enemy;

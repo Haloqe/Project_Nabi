@@ -18,7 +18,6 @@ public class BookTab : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler,
         _baseUI = baseUI;
         _tabIdx = tabIdx;
         _image = GetComponent<Image>();
-        Debug.Log("Tab INIT: " + tabIdx);
     }
 
     private void OnEnable()

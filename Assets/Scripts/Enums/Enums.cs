@@ -57,6 +57,7 @@ public enum EStatusEffect
     Root,
     Pull,
     BuffButterfly,
+    Weakness,
 
     [InspectorName(null)] MAX,
 }
@@ -257,6 +258,8 @@ public enum EEnemyMoveType
     Stationary,
     Flight,
     SpiderA,
+    QueenBee,
+    Scorpion,
 }
 
 public enum EEnemyState

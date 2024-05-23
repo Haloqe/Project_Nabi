@@ -5,7 +5,7 @@ using UnityEngine;
 public abstract class EnemyMovement : MonoBehaviour
 {
     protected EnemyBase _enemyBase;
-    private GameObject _attacker;
+    protected GameObject _player;
     public EEnemyMoveType MoveType;
     public float _moveSpeed;
     public bool IsRooted = false;
@@ -16,16 +16,22 @@ public abstract class EnemyMovement : MonoBehaviour
     protected Rigidbody2D _rigidBody;
     protected Animator _animator;
 
-    public void Init()
+    public virtual void Init()
     {
         _animator = GetComponent<Animator>();
         _rigidBody = GetComponent<Rigidbody2D>();
         _enemyBase = GetComponent<EnemyBase>();
+        _player = GameObject.FindWithTag("Player");
         _moveSpeed = _enemyBase.EnemyData.DefaultMoveSpeed;
         EnableMovement();
     }
 
-    public virtual void ResetMoveSpeed()
+    public void StopMovementCoroutines()
+    {
+        StopAllCoroutines();
+    }
+
+    public void ResetMoveSpeed()
     {
         _moveSpeed = _enemyBase.EnemyData.DefaultMoveSpeed;
     }
@@ -60,15 +66,15 @@ public abstract class EnemyMovement : MonoBehaviour
     public virtual void EnableMovement()
     {
         IsRooted = false;
-        _animator.SetBool("IsRooted", false);
+        _animator.SetBool(Rooted, false);
         EnableFlip();
         // ResetMoveSpeed();
     }
 
-    public virtual void DisableMovement()
+    public void DisableMovement()
     {
         IsRooted = true;
-        _animator.SetBool("IsRooted", true);
+        _animator.SetBool(Rooted, true);
         DisableFlip();
         // _animator.SetBool("IsAttacking", false);
         // _animator.SetBool("IsWalking", false);
@@ -93,16 +99,19 @@ public abstract class EnemyMovement : MonoBehaviour
     private void ExitAttackSequence()
     {
         IsAttackingPlayer = false;
-        _animator.SetBool("IsAttacking", false);
+        if (_animator != null) _animator.SetBool(IsAttacking, false);
     }
 
-    protected Vector2 pullOverallVelocity = Vector2.zero;
+    protected Vector2 PullOverallVelocity = Vector2.zero;
+    private static readonly int Rooted = Animator.StringToHash("IsRooted");
+    private static readonly int IsAttacking = Animator.StringToHash("IsAttacking");
+
     public void StartPullX(int direction, float strength, float duration)
     {
         DisableFlip();
         IsRooted = true;
         IsMoving = false;
-        pullOverallVelocity += new Vector2(direction * strength, 0);
+        PullOverallVelocity += new Vector2(direction * strength, 0);
         StartCoroutine(PullXCoroutine(direction, strength, duration));
     }
 
@@ -112,13 +121,13 @@ public abstract class EnemyMovement : MonoBehaviour
         float elapsedTime = 0;
         while (elapsedTime < duration)
         {
-            _rigidBody.velocity = pullOverallVelocity;
+            _rigidBody.velocity = PullOverallVelocity;
             elapsedTime += Time.fixedUnscaledDeltaTime;
             yield return new WaitForFixedUpdate();
         }
-        pullOverallVelocity -= new Vector2(direction * strength, 0);
-        _rigidBody.velocity = pullOverallVelocity;
-        if (pullOverallVelocity == Vector2.zero) EnableFlip();
+        PullOverallVelocity -= new Vector2(direction * strength, 0);
+        _rigidBody.velocity = PullOverallVelocity;
+        if (PullOverallVelocity == Vector2.zero) EnableFlip();
         
         // while (elapsedTime < duration)
         // {

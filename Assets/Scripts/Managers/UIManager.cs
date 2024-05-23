@@ -111,12 +111,6 @@ public class UIManager : Singleton<UIManager>
         _playerClickIARef = InputActionReference.Create(_uiInputModule.leftClick);
     }
 
-    private void UseUIControl()
-    {
-        if (_playerIAMap != null) _playerIAMap.Disable();
-        _UIIAMap.Enable();
-    }
-
     private void OnGameLoadStarted()
     {
         _uiCamera = GameObject.Find("UI Camera").GetComponent<Camera>();
@@ -142,8 +136,6 @@ public class UIManager : Singleton<UIManager>
         inGameCombatUI.SetActive(true);
         inGameCombatUI.GetComponent<Canvas>().worldCamera = _uiCamera;
         inGameCombatUI.GetComponent<Canvas>().planeDistance = 20;
-        // var bookIcon = inGameCombatUI.transform.Find("BookIcon").GetComponent<Button>();
-        // bookIcon.onClick.AddListener(OpenBook);
         
         // UI - flower bombs
         var flowerSlotRoot = inGameCombatUI.transform.Find("ActiveLayoutGroup").Find("Slot_3");
@@ -162,12 +154,26 @@ public class UIManager : Singleton<UIManager>
         _tensionOverlay.gameObject.SetActive(false);
         _zoomedMap.SetActive(false);
         _loadingScreenUI.SetActive(false);
-        _playerIAMap.Enable();
+        _flowerUIDisplayRemainingTime = 0;
+        UsePlayerControl();
+        UpdateDarkGaugeUI(0);
+    }
+    
+    private void UseUIControl()
+    {
+        if (_playerIAMap != null) _playerIAMap.Disable();
+        _UIIAMap.Enable();
+    }
+
+    private void UsePlayerControl()
+    {
+        if (_playerIAMap != null)
+        {
+            _playerIAMap.Enable();
+        }
         _UIIAMap.Disable();
         _uiInputModule.point = _playerPointIARef;
         _uiInputModule.leftClick = _playerClickIARef;
-        UpdateDarkGaugeUI(0);
-        _flowerUIDisplayRemainingTime = 0;
     }
 
     public void UpdateDarkGaugeUI(float value)
