@@ -137,16 +137,18 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
     
     private bool HandleAttackBuffer(int attackIdx)
     {
-        // No attack can be done if under another attack or under attack delay
+        // If under another attack or under attack delay, check if can save attack buffer
         if (_currAttackIdx != -1 || _isUnderAttackDelay)
         {
+            // Cannot attack immediately
             if (_canBufferAttack) _bufferedAttackIdx = attackIdx;
+            return false;
         }
         // If an attack is saved in the buffer, should play that instead
         return _bufferedAttackIdx == -1;
     }
-    
-    public void OnAttack(int attackIdx)
+
+    private void OnAttack(int attackIdx)
     {
         if (!HandleAttackBuffer(attackIdx)) return;
 

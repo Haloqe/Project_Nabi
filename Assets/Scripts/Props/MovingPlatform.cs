@@ -1,63 +1,59 @@
 using System.Collections;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class MovingPlatform : MonoBehaviour
 {
+    private Rigidbody2D _rigidbody2D;
     public Vector3 MinOffset;
     public Vector3 MaxOffset;
     public float Speed;
 
+    private bool _isPlayerOnPlatform;
     private Vector3 _minPos;
     private Vector3 _maxPos;
-    [SerializeField] private bool _startTowardsMin;
+    public bool isMovingTowardsMin;
 
     private void Start()
     {
+        _rigidbody2D = GetComponent<Rigidbody2D>();
         _minPos = transform.position - MinOffset;
         _maxPos = transform.position + MaxOffset;
-        StartCoroutine(MoveCoroutine(_startTowardsMin ? _minPos : _maxPos));
+        StartCoroutine(MoveCoroutine());
     }
 
-    public void Update()
+    IEnumerator MoveCoroutine()
     {
-        if (transform.position == _minPos)
+        while (true)
         {
-            StartCoroutine(MoveCoroutine(_maxPos));
-        }
-        else if (transform.position == _maxPos)
-        {
-            StartCoroutine(MoveCoroutine(_minPos));
-        }
-    }
-
-    IEnumerator MoveCoroutine(Vector3 target)
-    {
-        Vector3 startPosition = transform.position;
-        float time = 0f;
-
-        while (transform.position != target)
-        {
-            transform.position = Vector3.Lerp(startPosition, target, (time / Vector3.Distance(startPosition, target)) * Speed);
-            time += Time.deltaTime;
-            yield return null;
+            Vector3 target = isMovingTowardsMin ? _minPos : _maxPos;
+            _rigidbody2D.velocity = (target - transform.position).normalized * Speed;
+            while (Vector3.Distance(transform.position, target) > 0.01f) yield return null;
+            isMovingTowardsMin = !isMovingTowardsMin;
         }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.CompareTag("Player"))
+        var player = collision.gameObject;
+        if (player.CompareTag("Player"))
         {
-            collision.gameObject.transform.SetParent(transform);
+            var movementComp = player.GetComponent<PlayerMovement>();
+            if (movementComp.IsOnMovingPlatform) return;
+            
+            _isPlayerOnPlatform = true;
+            movementComp.IsOnMovingPlatform = true;
         }
     }
 
     private void OnTriggerExit2D(Collider2D collision)
     {
+        if (!_isPlayerOnPlatform) return;
+
         var player = collision.gameObject;
         if (player.CompareTag("Player"))
         {
-            player.transform.SetParent(null);
+            _isPlayerOnPlatform = false;
+            player.GetComponent<PlayerMovement>().IsOnMovingPlatform = false;
             player.transform.rotation = Quaternion.identity;
             player.transform.localScale = new Vector3(player.transform.localScale.x, 1, 1);
         }

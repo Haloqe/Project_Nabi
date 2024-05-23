@@ -202,7 +202,7 @@ public class AttackBase_Area : AttackBase
         {
             Damage = new DamageInfo(EDamageType.Base, 0),
             ShouldUpdateTension = false,
-            GravCorePosition = position
+            GravCorePosition = position,
         };
 
         bombEffect = null;
