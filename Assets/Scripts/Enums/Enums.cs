@@ -58,6 +58,7 @@ public enum EStatusEffect
     Pull,
     BuffButterfly,
     Weakness,
+    GravityPull,
 
     [InspectorName(null)] MAX,
 }

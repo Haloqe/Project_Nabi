@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UIElements;
 using Random = UnityEngine.Random;
 
 public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
@@ -47,6 +48,8 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     private float _armour;
     private float _damageCooltimeCounter;
     private float _damageCooltime = 0.3f;
+    private readonly static int IsAttacking = Animator.StringToHash("IsAttacking");
+    private readonly static int AttackSpeed = Animator.StringToHash("AttackSpeed");
 
     private void Awake()
     {
@@ -102,7 +105,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     protected virtual void Initialise() { }
 
     #region Status Effects imposed by the player handling
-    private void HandleNewStatusEffects(List<StatusEffectInfo> statusEffects, int incomingDirectionX = 0)
+    private void HandleNewStatusEffects(List<StatusEffectInfo> statusEffects, Vector3 gravCorePosition, int incomingDirectionX = 0)
     {
         if (statusEffects == null) return;
 
@@ -178,6 +181,12 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
                 
                 case EStatusEffect.Evade or EStatusEffect.Camouflage:
                     if (!_player.AddShadowHost(this)) continue;
+                    break;
+                
+                case EStatusEffect.GravityPull:
+                    if (_movement.MoveType == EEnemyMoveType.Stationary) continue;
+                    IsSilenced = true;
+                    _movement.StartGravityPull(gravCorePosition, statusEffect.Strength, statusEffect.Duration);
                     break;
             }
             UpdateStatusEffectTime(statusEffect.Effect, statusEffect.Duration);
@@ -386,7 +395,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         if (other.CompareTag(Target.tag))
         {
             // 황홀경 status effect
-            if (_animator.GetBool("IsAttacking") && _effectRemainingTimes[(int)EStatusEffect.Ecstasy] > 0)
+            if (_animator.GetBool(IsAttacking) && _effectRemainingTimes[(int)EStatusEffect.Ecstasy] > 0)
             {
                 if (Random.Range(0.0f, 1.0f) <= 0.5f)
                 {
@@ -421,7 +430,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     
     public void TakeDamage(AttackInfo attackInfo)
     {
-        HandleNewStatusEffects(attackInfo.StatusEffects, attackInfo.IncomingDirectionX);
+        HandleNewStatusEffects(attackInfo.StatusEffects, attackInfo.GravCorePosition, attackInfo.IncomingDirectionX);
         
         // 입면 환각
         var hypHallucinationPreserv = _player.playerDamageDealer.BindingSkillPreservations[(int)EWarrior.Sommer];
@@ -465,7 +474,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         }
     }
 
-    public float GetArmour()
+    private float GetArmour()
     {
         if (_effectRemainingTimes[(int)EStatusEffect.Sleep] > 0) return _armour;
         int sommerPreserv = (int)_player.playerDamageDealer.BindingSkillPreservations[(int)EWarrior.Sommer];
@@ -482,7 +491,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         _armour = EnemyData.DefaultArmour;
     }
 
-    public void ChangeHealthByAmount(float amount)
+    private void ChangeHealthByAmount(float amount)
     {
         Debug.Log("[" + gameObject.name + "] Health " + amount);
         if (amount < 0) StartCoroutine(DamagedRoutine());
@@ -579,13 +588,13 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
     public void ChangeAttackSpeedByPercentage(float percentage)
     {
-        float initial = _animator.GetFloat("AttackSpeed");
-        _animator.SetFloat("AttackSpeed", initial * percentage);
+        float initial = _animator.GetFloat(AttackSpeed);
+        _animator.SetFloat(AttackSpeed, initial * percentage);
     }
 
     public void ResetAttackSpeed()
     {
-        _animator.SetFloat("AttackSpeed", 1f);
+        _animator.SetFloat(AttackSpeed, 1f);
     }
     #endregion Enemy Movement
 

@@ -42,18 +42,15 @@ public class Fire : MonoBehaviour
         }
     }
 
-    public void OnGroundContact(Collider2D collision)
-    {
-        collision.GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Static;
-    }
     public void OnEnemyEnter(Collider2D collision)
     {
         if (Utility.IsObjectInList(collision.gameObject, _affectedEnemies)) return;
         IDamageable target = collision.gameObject.GetComponent<IDamageable>();
         if (target != null)
         {
-            Owner.DealDamage(target);
+            Owner.DealDamage(target, true);
             _affectedEnemies.Add(collision.gameObject.GetInstanceID());
         }   
     }
+    
 }
