@@ -80,6 +80,13 @@ public class EnemyMovement_Scorpion : EnemyMovement
         _lineRenderer = GetComponent<LineRenderer>();
     }
     
+    public override void EnableMovement()
+    {
+        IsRooted = false;
+        EnableFlip();
+        // ResetMoveSpeed();
+    }
+    
     private IEnumerator Bounce(Rigidbody2D rb, float speed)
     {
         int direction = 1;

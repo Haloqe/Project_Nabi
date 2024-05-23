@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.Mathematics;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -19,7 +18,6 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     // status effect attributes
     public bool IsSilenced { get; private set; }
     public bool IsSilencedExceptCleanse { get; private set; }
-    [NamedArray(typeof(EStatusEffect))] public GameObject[] DebuffEffects;
     [NamedArray(typeof(EDamageType))] public GameObject[] DamageEffects;
     private int[] _activeDOTCounts;
     private float[] _effectRemainingTimes;
@@ -28,12 +26,6 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     private Animator _animator;
     private SpriteRenderer _spriteRenderer;
     private readonly static int IsDead = Animator.StringToHash("IsDead");
-
-    private void Awake()
-    {
-        _animator = GetComponent<Animator>();
-        _spriteRenderer = GetComponent<SpriteRenderer>();
-    }
     
     private void OnRestarted()
     {
@@ -48,8 +40,11 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     private void Start()
     {
         _playerController = PlayerController.Instance;
-        PlayerEvents.defeated += OnDefeated;
-        GameEvents.restarted += OnRestarted;
+        _animator = GetComponent<Animator>();
+        _spriteRenderer = GetComponent<SpriteRenderer>();
+        
+        PlayerEvents.Defeated += OnDefeated;
+        GameEvents.Restarted += OnRestarted;
         
         _playerMovement = GetComponent<PlayerMovement>();
         _effectRemainingTimes = new float[(int)EStatusEffect.MAX];
@@ -57,6 +52,12 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
             Comparer<float>.Create(delegate (float x, float y) { return y.CompareTo(x); })
         );
         _activeDOTCounts = new int[(int)EDamageType.MAX];
+    }
+
+    private void OnDestroy()
+    {
+        PlayerEvents.Defeated -= OnDefeated;
+        GameEvents.Restarted -= OnRestarted;
     }
 
     private void Update()
@@ -67,7 +68,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     //updates the remaining time of various status effects
     private void UpdateStatusEffectTimes()
     {
-        float deltaTime = Time.deltaTime;
+        float deltaTime = Time.unscaledDeltaTime;
         bool shouldCheckUpdateMovement = false;
         bool shouldCheckUpdateSilenceEx = false;
 
@@ -84,7 +85,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
             EStatusEffect currEffect = (EStatusEffect)i;
             if (_effectRemainingTimes[i] <= 0)
             {
-                SetVFXActive(i, false);
+                _playerController.SetVFXActive(i, false);
                 _effectRemainingTimes[i] = 0.0f;
 
                 if (i == (int)EStatusEffect.Silence)
@@ -133,7 +134,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         bool removed = false;
         foreach (float strength in _slowRemainingTimes.Keys.ToList())
         {
-            _slowRemainingTimes[strength] -= Time.deltaTime;
+            _slowRemainingTimes[strength] -= Time.unscaledDeltaTime;
             if (_slowRemainingTimes[strength] <= 0.0f)
             {
                 _slowRemainingTimes.Remove(strength);
@@ -145,7 +146,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         if (_slowRemainingTimes.Count == 0)
         {
             _playerMovement.ResetMoveSpeed();
-            SetVFXActive(EStatusEffect.Slow, false);
+            _playerController.SetVFXActive(EStatusEffect.Slow, false);
         }
         else if (removed)
         {
@@ -168,7 +169,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     
     public void TakeDamage(AttackInfo damageInfo)
     {
-        // Evade
+        // Attempt evade
         if (Random.value <= _playerController.EvasionRate)
         {
             UIManager.Instance.DisplayPlayerEvadePopUp();
@@ -176,7 +177,6 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         }
         
         // Evade failed?
-        Utility.PrintDamageInfo("Player", damageInfo);
         HandleNewDamage(damageInfo.Damage, damageInfo.AttackerArmourPenetration);
         HandleNewStatusEffects(damageInfo.StatusEffects);
     }    
@@ -185,6 +185,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     {
         // 플레이어 방어력 처리
         damage.TotalAmount = Mathf.Max(damage.TotalAmount - (_playerController.Armour - attackerArmourPenetration), 0);
+        Debug.Log("Player damaged: " + damage.TotalAmount);
         StartCoroutine(DamageCoroutine(damage));
     }
 
@@ -246,15 +247,16 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         }
     }
 
-    public void ChangeHealthByAmount(float amount, bool byEnemy = true)
+    public void ChangeHealthByAmount(float changeAmount, bool byEnemy = true)
     {
         // TODO hit/heal effect
-        if (amount < 0) StartCoroutine(DamagedRoutine());
-        _health = Mathf.Clamp(_health + amount, 0, _maxHealth);
-        PlayerEvents.HPChanged.Invoke(amount, GetHPRatio());
+        float prevHPRatio = GetHPRatio();
+        if (changeAmount < 0) StartCoroutine(DamagedRoutine());
+        _health = Mathf.Clamp(_health + changeAmount, 0, _maxHealth);
+        PlayerEvents.HpChanged.Invoke(changeAmount, prevHPRatio, GetHPRatio());
         if (_health == 0)
         {
-            PlayerEvents.defeated.Invoke();
+            PlayerEvents.Defeated.Invoke();
             GameManager.Instance.IsFirstRun = false;
         }
     }
@@ -335,7 +337,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         // apply new effect
         if (_effectRemainingTimes[effectIdx] == 0)
         {
-            SetVFXActive(effectIdx, true);
+            _playerController.SetVFXActive(effectIdx, true);
             Debug.Log("New " + effect.ToString() + " time: " + duration.ToString("0.0000"));
         }
         // or increment effect time
@@ -356,7 +358,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         // check if this is the first slow
         if (_slowRemainingTimes.Count == 0)
         {
-            SetVFXActive(EStatusEffect.Slow, true);
+            _playerController.SetVFXActive(EStatusEffect.Slow, true);
         }
 
         // increment duration if the same strength slow already exists
@@ -384,13 +386,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         Debug.Log("New slow (" + strength + ") time: " + duration.ToString("0.0000"));
     }
 
-    private void SetVFXActive(EStatusEffect effect, bool setActive) => SetVFXActive((int)effect, setActive);
-
-    private void SetVFXActive(int effectIdx, bool setActive)
-    {
-        if (DebuffEffects[effectIdx] == null) return;
-        DebuffEffects[effectIdx].SetActive(setActive);
-    }
+    
 
     /// <summary>
     ///  현재는 isSliencedExceptCleanse 포함해서 제거함. Silenced는 유지.
@@ -400,7 +396,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         for (int i = 0; i < (int)EStatusEffect.MAX; i++)
         {
             if (i == (int)EStatusEffect.Silence) continue;
-            SetVFXActive(i, false);
+            _playerController.SetVFXActive(i, false);
             _effectRemainingTimes[i] = 0.0f;
         }
         _slowRemainingTimes.Clear();

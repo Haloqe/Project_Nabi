@@ -44,6 +44,12 @@ public class EnemySpawner : MonoBehaviour
                     spawnID = Array.FindIndex(_spawnProbabilitiesAcc, probability => probability >= randValue);
                 }
             }
+            
+            // Randomise z-position to handle z-fighting
+            float randZ = UnityEngine.Random.Range(-2f, 2f);
+            transform.position = new Vector3(transform.position.x, transform.position.y, randZ);
+            
+            // Spawn enemy
             enemyManager.SpawnEnemy(spawnID, transform.position);
         }
     }

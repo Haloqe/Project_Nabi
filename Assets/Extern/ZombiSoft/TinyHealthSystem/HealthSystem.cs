@@ -69,7 +69,7 @@ public class HealthSystem : MonoBehaviour
 	//==============================================================
 	private void Regen()
 	{
-		timeleft -= Time.deltaTime;
+		timeleft -= Time.unscaledDeltaTime;
 
 		if (timeleft <= 0.0) // Interval ended - update health & mana and start new interval
 		{
@@ -115,7 +115,6 @@ public class HealthSystem : MonoBehaviour
 			hitPoint = 0;
 
 		UpdateGraphics();
-
 		StartCoroutine(PlayerHurts());
 	}
 

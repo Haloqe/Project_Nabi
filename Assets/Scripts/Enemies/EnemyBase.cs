@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UIElements;
 using Random = UnityEngine.Random;
 
 public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
@@ -47,6 +48,8 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     private float _armour;
     private float _damageCooltimeCounter;
     private float _damageCooltime = 0.3f;
+    private readonly static int IsAttacking = Animator.StringToHash("IsAttacking");
+    private readonly static int AttackSpeed = Animator.StringToHash("AttackSpeed");
 
     private void Awake()
     {
@@ -70,7 +73,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
         _damageInfo = new AttackInfo();
         _damageInfo.Damage = new DamageInfo((EDamageType)Enum.Parse(typeof(EDamageType), EnemyData.DamageType), EnemyData.DefaultDamage);
-        PlayerEvents.defeated += OnPlayerDefeated;
+        PlayerEvents.Defeated += OnPlayerDefeated;
 
         Target = GameObject.FindWithTag("Player");
         _targetDamageable = Target.gameObject.GetComponent<IDamageable>();
@@ -89,20 +92,20 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
     private void OnDestroy()
     {
-        PlayerEvents.defeated -= OnPlayerDefeated;
+        PlayerEvents.Defeated -= OnPlayerDefeated;
     }
 
-    protected virtual void FixedUpdate()
+    protected virtual void Update() 
     {
         UpdateRemainingStatusEffectTimes();
         UpdateMovementState();
-        _damageCooltimeCounter += Time.deltaTime;
+        _damageCooltimeCounter += Time.unscaledDeltaTime;
     }
 
     protected virtual void Initialise() { }
 
     #region Status Effects imposed by the player handling
-    private void HandleNewStatusEffects(List<StatusEffectInfo> statusEffects, int incomingDirectionX = 0)
+    private void HandleNewStatusEffects(List<StatusEffectInfo> statusEffects, Vector3 gravCorePosition, int incomingDirectionX = 0)
     {
         if (statusEffects == null) return;
 
@@ -179,6 +182,12 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
                 case EStatusEffect.Evade or EStatusEffect.Camouflage:
                     if (!_player.AddShadowHost(this)) continue;
                     break;
+                
+                case EStatusEffect.GravityPull:
+                    if (_movement.MoveType == EEnemyMoveType.Stationary) continue;
+                    IsSilenced = true;
+                    _movement.StartGravityPull(gravCorePosition, statusEffect.Strength, statusEffect.Duration);
+                    break;
             }
             UpdateStatusEffectTime(statusEffect.Effect, statusEffect.Duration);
         }
@@ -215,7 +224,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
     private void UpdateRemainingStatusEffectTimes()
     {
-        float deltaTime = Time.deltaTime;
+        float deltaTime = Time.unscaledDeltaTime;
         
         for (int i = 0; i < _effectRemainingTimes.Length; i++)
         {
@@ -275,10 +284,10 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     {
         if (_sommerStackCount <= 0) return;
 
-        _sommerTimeSinceStacked += Time.deltaTime;
+        _sommerTimeSinceStacked += Time.unscaledDeltaTime;
 
         if (_sommerTimeSinceStacked > _effectRemainingTimes[(int)EStatusEffect.Sommer])
-            _sommerStackCount -= _sommerSubtractedStackPerSecond * Time.deltaTime;
+            _sommerStackCount -= _sommerSubtractedStackPerSecond * Time.unscaledDeltaTime;
 
         if (_sommerStackCount >= 10)
         {
@@ -308,7 +317,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         bool removed = false;
         foreach (float strength in _slowRemainingTimes.Keys.ToList())
         {
-            _slowRemainingTimes[strength] -= Time.deltaTime;
+            _slowRemainingTimes[strength] -= Time.unscaledDeltaTime;
             if (_slowRemainingTimes[strength] <= 0.0f)
             {
                 _slowRemainingTimes.Remove(strength);
@@ -386,7 +395,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         if (other.CompareTag(Target.tag))
         {
             // 황홀경 status effect
-            if (_animator.GetBool("IsAttacking") == true && _effectRemainingTimes[(int)EStatusEffect.Ecstasy] > 0)
+            if (_animator.GetBool(IsAttacking) && _effectRemainingTimes[(int)EStatusEffect.Ecstasy] > 0)
             {
                 if (Random.Range(0.0f, 1.0f) <= 0.5f)
                 {
@@ -419,32 +428,42 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         return gameObject;
     }
     
-    public void TakeDamage(AttackInfo damageInfo)
+    public void TakeDamage(AttackInfo attackInfo)
     {
-        Utility.PrintDamageInfo(gameObject.name, damageInfo);
-        HandleNewStatusEffects(damageInfo.StatusEffects, damageInfo.IncomingDirectionX);
+        HandleNewStatusEffects(attackInfo.StatusEffects, attackInfo.GravCorePosition, attackInfo.IncomingDirectionX);
         
         // 입면 환각
         var hypHallucinationPreserv = _player.playerDamageDealer.BindingSkillPreservations[(int)EWarrior.Sommer];
         if (_sommerStackCount <= 0)
         {
-            AttackInfo boostedDamageInfo = damageInfo.Clone();
-            boostedDamageInfo.Damage.TotalAmount += damageInfo.Damage.TotalAmount * Define.SommerHypHallucinationStats[(int)hypHallucinationPreserv];
-            HandleNewDamage(boostedDamageInfo.Damage, boostedDamageInfo.AttackerArmourPenetration);
+            AttackInfo boostedAttackInfo = attackInfo.Clone();
+            boostedAttackInfo.Damage.TotalAmount += attackInfo.Damage.TotalAmount * Define.SommerHypHallucinationStats[(int)hypHallucinationPreserv];
+            HandleNewDamage(boostedAttackInfo.Damage, boostedAttackInfo.AttackerArmourPenetration, attackInfo.ShouldLeech, attackInfo.ShouldUpdateTension);
         }
         // 그 외 경우
         else
         {
-            HandleNewDamage(damageInfo.Damage, damageInfo.AttackerArmourPenetration);
+            HandleNewDamage(attackInfo.Damage, attackInfo.AttackerArmourPenetration, attackInfo.ShouldLeech, attackInfo.ShouldUpdateTension);
         }
     }
 
-    private void HandleNewDamage(DamageInfo damage, float attackerArmourPenetration)
+    private void HandleNewDamage(DamageInfo damage, float attackerArmourPenetration, bool shouldLeech, bool shouldUpdateTension)
     {
-        // 방어력 및 방어관통력 처리
-        damage.TotalAmount -= Mathf.Max(0, damage.TotalAmount - Mathf.Max(GetArmour() - attackerArmourPenetration, 0)); 
-        
+        // 방어력 및 방어 관통력 처리
+        var realDamage = Mathf.Max(0, damage.TotalAmount - Mathf.Max(GetArmour() - attackerArmourPenetration, 0));
+        Debug.Log($"[{name}] Received {damage.TotalAmount}, Armour {GetArmour()}, Attacker's ArmourPen {attackerArmourPenetration}, Final: {realDamage}");
+        damage.TotalAmount = realDamage;
+        if (damage.TotalAmount == 0) return;
         StartCoroutine(DamageCoroutine(damage));
+        
+        // 흡혈 여부
+        if (shouldLeech)
+        {
+            _player.Heal(realDamage * -1 * 
+                Define.NightShadeLeechStats[(int)_player.playerDamageDealer.BindingSkillPreservations[(int)EWarrior.NightShade]]);
+        }
+        // 장력 게이지
+        if (shouldUpdateTension) UIManager.Instance.IncrementTensionGaugeUI();
 
         // if (asleep) then wake up
         if (_effectRemainingTimes[(int)EStatusEffect.Sleep] > 0)
@@ -455,10 +474,10 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         }
     }
 
-    public float GetArmour()
+    private float GetArmour()
     {
         if (_effectRemainingTimes[(int)EStatusEffect.Sleep] > 0) return _armour;
-        int sommerPreserv = (int)PlayerController.Instance.playerDamageDealer.BindingSkillPreservations[(int)EWarrior.Sommer];
+        int sommerPreserv = (int)_player.playerDamageDealer.BindingSkillPreservations[(int)EWarrior.Sommer];
         return Mathf.Max(0, EnemyData.DefaultArmour - EnemyData.DefaultArmour * Define.SommerSleepArmourReduceAmounts[sommerPreserv]);
     }
 
@@ -472,9 +491,9 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         _armour = EnemyData.DefaultArmour;
     }
 
-    public void ChangeHealthByAmount(float amount)
+    private void ChangeHealthByAmount(float amount)
     {
-        Debug.Log("[" + gameObject.name + "] got damaged " + amount);
+        Debug.Log("[" + gameObject.name + "] Health " + amount);
         if (amount < 0) StartCoroutine(DamagedRoutine());
         Health = Mathf.Clamp(Health + amount, 0, EnemyData.MaxHealth);
         if (Health == 0) Die();
@@ -491,7 +510,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
             yield return null;
         }
         // Damage Over Time (DOT) damage
-        // Deals damage.TotalAmount of damage every damage.Tick seconds for damage.Duration
+        // Deals damage.TotalAmount of damage every damage. Tick seconds for damage.Duration
         else
         {
             float damagePerTick = damage.TotalAmount / (damage.Duration / damage.Tick + 1);
@@ -569,13 +588,13 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
     public void ChangeAttackSpeedByPercentage(float percentage)
     {
-        float initial = _animator.GetFloat("AttackSpeed");
-        _animator.SetFloat("AttackSpeed", initial * percentage);
+        float initial = _animator.GetFloat(AttackSpeed);
+        _animator.SetFloat(AttackSpeed, initial * percentage);
     }
 
     public void ResetAttackSpeed()
     {
-        _animator.SetFloat("AttackSpeed", 1f);
+        _animator.SetFloat(AttackSpeed, 1f);
     }
     #endregion Enemy Movement
 

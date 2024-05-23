@@ -48,7 +48,6 @@ public class Legacy_Ranged : ActiveLegacySO
         // Turbela
         if (target != null && warrior == EWarrior.Turbela && ++_attackCount == 3)
         {
-            Debug.Log("Buff");
             TurbelaBuffButterfly();
             _attackCount = 0;
         }

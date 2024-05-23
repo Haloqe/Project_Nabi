@@ -24,6 +24,13 @@ public enum EDamageType
     MAX,
 }
 
+public enum EBuffs
+{
+    Fast,
+    Heal,
+    MAX,
+}
+
 public enum EStatusEffect
 {
     None,
@@ -51,6 +58,7 @@ public enum EStatusEffect
     Pull,
     BuffButterfly,
     Weakness,
+    GravityPull,
 
     [InspectorName(null)] MAX,
 }
@@ -82,6 +90,7 @@ public enum ELegacyPreservation
 public enum EBuffType
 {
     None, 
+    
     StatUpgrade,
     SpawnAreaIncrease,
     BindingSkillUpgrade,
@@ -93,8 +102,13 @@ public enum EBuffType
     SommerHypHallucination,         // 소머 - 입면 환각
             
     TurbelaMaxButterfly,            // 투르벨라 - 군락지 소환
-    TurbelaDoubleSpawn,         // 투르벨라 - 집단 폭행
+    TurbelaDoubleSpawn,             // 투르벨라 - 집단 폭행
     TurbelaButterflyCrit,           // 투르벨라 - 탄막 폭격
+    
+    NightShadeFastChase,            // 나이트셰이드 - 완벽한 잠행
+    NightShadeShadeBonus,           // 나이트셰이드 - 한밤의 신기루
+    
+    AttackDamageMultiply,           // 공격 타입별 데미지 추가
 }
 
 public enum EStatusEffectUpgradeType
@@ -162,6 +176,7 @@ public enum EPlayerAttackType
     Melee_Combo,
     Ranged,
     Dash,
+    Area,
     MAX,
 }
 
@@ -188,6 +203,21 @@ public enum EStat
     ArmourPenetration,
     EvasionRate,
     HealEfficiency,
+}
+
+public enum EArborType
+{
+    Default,
+    Regret,
+    Joy,
+}
+
+public enum ETensionState
+{
+    Innate,
+    Overheated,
+    Overloaded,
+    Recovery,
 }
 #endregion
 
@@ -254,11 +284,12 @@ public enum EPortalType
 
 public enum EFlowerType
 {
-    NectarFlower,
-    IncendiaryFlower,
-    StickyFlower,
-    BlizzardFlower,
-    GravityFlower
+    NectarFlower,       // 회복
+    IncendiaryFlower,   // 화염
+    StickyFlower,       // 젤리
+    BlizzardFlower,     // 냉기
+    GravityFlower,      // 중력
+    MAX,
 };
 #endregion Interaction
 

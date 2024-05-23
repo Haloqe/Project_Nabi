@@ -23,8 +23,11 @@ public class PassiveLegacySOEditor : Editor
             
             case EBuffType.EnemyItemDropRate:
             case EBuffType.SpawnAreaIncrease:
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("BuffIncreaseMethod"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("BuffIncreaseAmounts"), true);
                 break;
             
+            case EBuffType.NightShadeFastChase:
             case EBuffType.BindingSkillUpgrade:
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("Stats"), true);
                 break;
@@ -34,8 +37,14 @@ public class PassiveLegacySOEditor : Editor
             case EBuffType.TurbelaMaxButterfly:
             case EBuffType.TurbelaDoubleSpawn:
             case EBuffType.TurbelaButterflyCrit:
+            case EBuffType.NightShadeShadeBonus:
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("Stats"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("SavedInDefine"), true);
+                break;
+            
+            case EBuffType.AttackDamageMultiply:
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("AttackType"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("Stats"), true);
                 break;
         }
 

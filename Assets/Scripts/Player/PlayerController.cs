@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
@@ -13,31 +14,37 @@ public class PlayerController : Singleton<PlayerController>
     public PlayerDamageReceiver playerDamageReceiver;
     public PlayerDamageDealer playerDamageDealer;
     public PlayerInventory playerInventory;
+    public GameObject nightShadeCollider;
     
     // Centrally controlled variables
+    public float DefaultGravityScale { get; private set; }
     private int _slayedEnemiesCount = 0;
+    public float HpCriticalThreshold { get; private set; }
+    [NamedArray(typeof(EStatusEffect))] public GameObject[] statusEffects;
+    [NamedArray(typeof(EBuffs))] public GameObject[] buffEffects;
     
     // Stats
     public float Strength => _baseStrength * _strengthMultiplier;
     public float Armour => _baseArmour * _armourMultiplier;
     public float ArmourPenetration => _baseArmourPenetration * _armourPenetrationMultiplier;
-    public float EvasionRate => _baseEvasionRate * _evasionRateMultiplier + evasionRateAdditionAtMax;
-    public float CriticalRate => _baseCritcalRate * _criticalRateMultiplier;
     public float HealEfficiency => _baseHealEfficiency * _healEfficiencyMultiplier;
+    public float EvasionRate => _baseEvasionRate + _evasionRateAddition + evasionRateAdditionAtMax;
+    public float CriticalRate => _baseCritcalRate + _criticalRateAddition;
 
-    private float _baseStrength = 1.0f;
+    private float _baseStrength = 3.0f;
     private float _baseArmour = 0.0f;
     private float _baseArmourPenetration = 0.0f;
     private float _baseEvasionRate = 0.0f;
     private float _baseCritcalRate = 0.0f;
     private float _baseHealEfficiency = 1.0f;
     
+    // 확률은 +, 일반 숫자값은 *
     private float _strengthMultiplier = 1.0f;
     private float _armourMultiplier = 1.0f;
     private float _armourPenetrationMultiplier = 1.0f;
-    private float _evasionRateMultiplier = 1.0f;  
-    private float _criticalRateMultiplier = 1.0f;  
     private float _healEfficiencyMultiplier = 1.0f;
+    private float _evasionRateAddition = 0.0f;  
+    private float _criticalRateAddition = 0.0f;  
     public float evasionRateAdditionAtMax = 0.0f;
     
     // Legacy related (Buffs)
@@ -47,6 +54,8 @@ public class PlayerController : Singleton<PlayerController>
     public ELegacyPreservation TurbelaMaxButterflyPreserv { private set; get; }
     public ELegacyPreservation TurbelaDoubleSpawnPreserv { private set; get; }
     public ELegacyPreservation TurbelaButterflyCritPreserv { private set; get; }
+    public ELegacyPreservation NightShadeFastChasePreserv { private set; get; }
+    public ELegacyPreservation NightShadeShadeBonusPreserv { private set; get; }
 
     // Upgrades
     private Dictionary<EStat, List<(int legacyID, SLegacyStatUpgradeData data)>> _appliedStatUpgrades;
@@ -57,13 +66,20 @@ public class PlayerController : Singleton<PlayerController>
     private readonly int _shadowHostLimit = 3;
     private readonly float _shadowHostAutoUpdateInterval = 2f;
     private readonly float _shadowHostAutoUpdateAmount = 1.5f;
+    public float[] nightShadeFastChaseStats;
+    public float[] nightShadeShadeBonusStats;
     
-
     protected override void Awake()
     {
         base.Awake();
-        if (_toBeDestroyed) return;
+        if (IsToBeDestroyed) return;
 
+        // Initialise values
+        HpCriticalThreshold = 0.33f;
+        nightShadeShadeBonusStats = new float[]{0,0,0,0,0};
+        DefaultGravityScale = 3.0f;
+        
+        // Get player components
         _playerInput = GetComponent<PlayerInput>();
         playerMovement = GetComponent<PlayerMovement>();
         playerDamageReceiver = GetComponent<PlayerDamageReceiver>();
@@ -72,18 +88,21 @@ public class PlayerController : Singleton<PlayerController>
         _animator = GetComponent<Animator>();
         _appliedStatUpgrades = new Dictionary<EStat, List<(int legacyID, SLegacyStatUpgradeData data)>>();
         _shadowHosts = new List<EnemyBase>();
+        nightShadeCollider = GetComponentInChildren<NightShadeCollider>(includeInactive: true).gameObject;
         
-        // Input Binding for Attacks
-        _playerInput.actions["Attack_Melee"].performed += _ => playerDamageDealer.OnAttack(0);
-        _playerInput.actions["Attack_Range"].performed += _ => playerDamageDealer.OnAttack(1);
-        _playerInput.actions["Attack_Dash"].performed += _ => playerDamageDealer.OnAttack(2);
-        _playerInput.actions["Attack_Area"].performed += _ => playerDamageDealer.OnAttack(3);
-
         // Events binding
-        GameEvents.restarted += OnRestarted;
+        GameEvents.Restarted += OnRestarted;
         PlayerEvents.ValueChanged += OnValueChanged;
         InGameEvents.EnemySlayed += OnEnemySlayed;
+        
         OnRestarted();
+    }
+
+    private void OnDestroy()
+    {
+        GameEvents.Restarted -= OnRestarted;
+        PlayerEvents.ValueChanged -= OnValueChanged;
+        InGameEvents.EnemySlayed -= OnEnemySlayed;
     }
 
     private void Start()
@@ -106,7 +125,7 @@ public class PlayerController : Singleton<PlayerController>
         _strengthMultiplier = 1.0f;
         _armourMultiplier = 1.0f;
         _armourPenetrationMultiplier = 1.0f;
-        _evasionRateMultiplier = 1.0f;
+        _evasionRateAddition = 0.0f;
         _healEfficiencyMultiplier = 1.0f;
         evasionRateAdditionAtMax = 0.0f;
         
@@ -117,6 +136,8 @@ public class PlayerController : Singleton<PlayerController>
         TurbelaMaxButterflyPreserv = ELegacyPreservation.MAX; 
         TurbelaDoubleSpawnPreserv = ELegacyPreservation.MAX; 
         TurbelaButterflyCritPreserv = ELegacyPreservation.MAX;
+        NightShadeFastChasePreserv = ELegacyPreservation.MAX;
+        NightShadeShadeBonusPreserv = ELegacyPreservation.MAX;
 
         // Reset ecstasy effect
         if (_ecstasyAffected != null)
@@ -129,6 +150,7 @@ public class PlayerController : Singleton<PlayerController>
         
         // Initialise NightShade data
         _shadowHosts.Clear();
+        nightShadeCollider.SetActive(false);
     }
 
     void OnMove(InputValue value)
@@ -141,12 +163,30 @@ public class PlayerController : Singleton<PlayerController>
         playerMovement.SetJump(value.isPressed);
     }
 
-    private int count = -1;
+    int count = 0;
     void OnTestAction(InputValue value)
     {
-        
+        playerInventory.AddFlower(1);
+        playerInventory.AddFlower(1);
+        playerInventory.AddFlower(1);
+        playerInventory.AddFlower(1);
+        playerInventory.AddFlower(1);
+        // playerInventory.AddFlower(2);
+        // playerInventory.AddFlower(3);
+        // playerInventory.AddFlower(4);
+        //playerDamageReceiver.ChangeHealthByAmount(-1000);
+        //playerInventory.ChangeGoldByAmount(600);
+        // if (count == 0)
+        // {
+        //     playerInventory.AddFlower((int)EFlowerType.IncendiaryFlower);
+        // }
+        // else
+        // {
+        //     playerDamageReceiver.ChangeHealthByAmount(-1000);
+        // }
+        // count++;
     }
-
+    
     private void OnValueChanged(ECondition condition, float changeAmount)
     {
         switch (condition)
@@ -162,15 +202,20 @@ public class PlayerController : Singleton<PlayerController>
         PlayerEvents.ValueChanged.Invoke(ECondition.SlayedEnemiesCount, +1);
     }
     
-
     private void OnOpenMap(InputValue value)
     {
-        UIManager.Instance.ToggleMap();
+        UIManager.Instance.OpenMap();
+    }
+    
+    private void OnOpenBook(InputValue value)
+    {
+        UIManager.Instance.OpenBook();
     }
 
     // Heal is exclusively used for increase of health from food items
     public void Heal(float amount)
     {
+        buffEffects[(int)EBuffs.Heal].SetActive(true);
         playerDamageReceiver.ChangeHealthByAmount(amount * HealEfficiency, false);
     }
 
@@ -192,12 +237,21 @@ public class PlayerController : Singleton<PlayerController>
         //     _appliedStatUpgrades.Add(upgradeData.Stat, new List<(int legacyID, SLegacyStatUpgradeData data)>{(legacyID, upgradeData)});
         // }
         
-        // Update value - multiplier
-        // 피의 갑주를 제외한 모든 stat update는 현재 multiplier 형식이기에 통일하였음
         string enumString = upgradeData.Stat.ToString();
         string decapitalizedEnumString = char.ToLower(enumString[0]) + enumString.Substring(1);
-        var multiplierFieldInfo = GetType().GetField($"_{decapitalizedEnumString}Multiplier", BindingFlags.NonPublic | BindingFlags.Instance);
-        multiplierFieldInfo.SetValue(this, (float)multiplierFieldInfo.GetValue(this) + upgradeData.IncreaseAmounts[(int)preservation]);
+        
+        // Update value - multiplier
+        if (upgradeData.isMultiplier)
+        {
+            var multiplierFieldInfo = GetType().GetField($"_{decapitalizedEnumString}Multiplier", BindingFlags.NonPublic | BindingFlags.Instance);
+            multiplierFieldInfo.SetValue(this, (float)multiplierFieldInfo.GetValue(this) + upgradeData.IncreaseAmounts[(int)preservation]);
+        }
+        // Update value - addition
+        else
+        {
+            var additionFieldInfo = GetType().GetField($"_{decapitalizedEnumString}Addition", BindingFlags.NonPublic | BindingFlags.Instance);
+            additionFieldInfo.SetValue(this, (float)additionFieldInfo.GetValue(this) + upgradeData.IncreaseAmounts[(int)preservation]);
+        }
         
         // Display text
         string[] upText = {" Up!", " 업!"};
@@ -310,5 +364,18 @@ public class PlayerController : Singleton<PlayerController>
             yield return wait;
             playerDamageDealer.UpdateNightShadeDarkGauge(_shadowHostAutoUpdateAmount);
         }
+    }
+    
+    public void SetVFXActive(EStatusEffect effect, bool setActive) => SetVFXActive((int)effect, setActive);
+
+    public void SetVFXActive(int effectIdx, bool setActive)
+    {
+        if (statusEffects[effectIdx] == null) return;
+        statusEffects[effectIdx].SetActive(setActive);
+    }
+
+    public void AddCriticalRate(float value)
+    {
+        _criticalRateAddition = Mathf.Max(0, _criticalRateAddition + value);
     }
 }

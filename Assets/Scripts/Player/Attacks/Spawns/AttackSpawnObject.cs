@@ -18,6 +18,7 @@ public class AttackSpawnObject : MonoBehaviour
     public bool HasDamage;
     [NamedArray(typeof(ELegacyPreservation))] public float[] 
         relativeDamages = new float[4];
+    public bool ShouldUpdateTension;
 
     [Space(10)] [Header("Status Effect")] 
     public bool HasStatusEffect;
@@ -29,10 +30,10 @@ public class AttackSpawnObject : MonoBehaviour
         _dealIntervalWait = new WaitForSeconds(DealInterval);
         _attackersList = new List<IDamageable>();
         _playerDamageDealer = PlayerController.Instance.playerDamageDealer;
-        var activeLegacy = _playerDamageDealer.AttackBases[(int)attackParentType].activeLegacy;
+        var activeLegacy = _playerDamageDealer.AttackBases[(int)attackParentType].ActiveLegacy;
         EStatusEffect warriorSpecificEffect = PlayerAttackManager.Instance
             .GetWarriorStatusEffect(activeLegacy.warrior, _playerDamageDealer.GetStatusEffectLevel(activeLegacy.warrior));
-        SetAttackInfo(_playerDamageDealer.AttackBases[(int)attackParentType].activeLegacy.preservation);
+        SetAttackInfo(_playerDamageDealer.AttackBases[(int)attackParentType].ActiveLegacy.preservation);
         SetWarriorSpecificStatusEffect(warriorSpecificEffect);
     }
     
@@ -54,23 +55,22 @@ public class AttackSpawnObject : MonoBehaviour
         {
             _attackInfo.StatusEffects.Add(StatusEffectInfos[(int)preservation]);
         }
+        _attackInfo.ShouldUpdateTension = ShouldUpdateTension;
         _attackInfo.SetAttackDirToMyFront(_playerDamageDealer.gameObject);
     }
     
     private void OnTriggerEnter2D(Collider2D other)
     {
         IDamageable target = other.gameObject.GetComponent<IDamageable>();
-        if (target != null && (HasDamage || HasStatusEffect))
-        {
-            _attackersList.Add(target);
-            StartCoroutine(DealCoroutine(target));
-        }
+        if (target == null || _attackersList.Contains(target) || !HasDamage && !HasStatusEffect) return;
+        _attackersList.Add(target);
+        StartCoroutine(DealCoroutine(target));
     }
     
     private void OnTriggerExit2D(Collider2D other)
     {
         IDamageable target = other.gameObject.GetComponent<IDamageable>();
-        if (target != null && (HasDamage || HasStatusEffect))
+        if (target != null)
         {
             _attackersList.Remove(target);
         }

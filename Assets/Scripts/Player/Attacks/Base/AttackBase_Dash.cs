@@ -1,6 +1,4 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -8,43 +6,43 @@ using UnityEngine;
 public class AttackBase_Dash : AttackBase
 {
     private Rigidbody2D _rigidbody2D;
-    private float _dashStrength = 8;
+    private float _dashStrength = 2.5f;
     private float _dashDuration = 0.35f;
-    private readonly static int AttackIndex = Animator.StringToHash("AttackIndex");
     
     // Nightshade Dash
     private float _nightShadeDashTimeLimit;
     private GameObject _nightShadeDashPrefab;
     private GameObject _nightShadeDashShadow;
+    private readonly static int DashEnd = Animator.StringToHash("DashEnd");
+    private readonly static int Teleport = Animator.StringToHash("Teleport");
 
     public override void Start()
     {
         base.Start();
+        _attackType = ELegacyType.Dash;
         _attackInfoInit = new AttackInfo();
         _nightShadeDashPrefab = Resources.Load("Prefabs/Player/NightShadeDash").GameObject();
+        _rigidbody2D = _player.GetComponent<Rigidbody2D>();
         Reset();
     }
     
-    public override void Reset()
+    protected override void Reset()
     {
         base.Reset();
-        _rigidbody2D = GetComponent<Rigidbody2D>();
-        VFXObject.GetComponent<ParticleSystemRenderer>()
-            .material.mainTexture = Resources.Load<Texture2D>("Sprites/Player/VFX/Default/Dash");
         _nightShadeDashShadow = null;
     }
 
     public override void Attack()
     {
-        if (activeWarrior == EWarrior.NightShade)
+        if (ActiveLegacy != null && ActiveLegacy.warrior == EWarrior.NightShade)
         {
             NightShadeDash();
         }
         else
         {
             _animator.SetInteger(AttackIndex, (int)ELegacyType.Dash);
-            VFXObject.transform.localScale = new Vector3(Mathf.Sign(gameObject.transform.localScale.x), 1.0f, 1.0f);
-            VFXObject.SetActive(true);
+            baseEffector.transform.localScale = new Vector3(Mathf.Sign(_player.localScale.x), 1.0f, 1.0f);
+            baseEffector.SetActive(true);
             StartCoroutine(DashCoroutine());
         }
     }
@@ -52,7 +50,7 @@ public class AttackBase_Dash : AttackBase
     // Is current dash attack NightShade's second dash (teleport)?
     public bool IsCurrentNightShadeTpDash()
     {
-        return _nightShadeDashShadow != null;
+        return _nightShadeDashShadow != null; 
     }
     
     private void NightShadeDash()
@@ -61,8 +59,8 @@ public class AttackBase_Dash : AttackBase
         if (_nightShadeDashShadow == null)
         {
             // Instantiate shadow at player's position and match direction
-            _nightShadeDashShadow = Instantiate(_nightShadeDashPrefab, transform.position, quaternion.identity);
-            _nightShadeDashShadow.transform.localScale = transform.localScale;
+            _nightShadeDashShadow = Instantiate(_nightShadeDashPrefab, _player.position, quaternion.identity);
+            _nightShadeDashShadow.transform.localScale = _player.localScale;
             
             // Make the shadow dash
             StartCoroutine(nameof(NightShadeDashCoroutine));
@@ -74,11 +72,11 @@ public class AttackBase_Dash : AttackBase
         }
     }
 
-    public IEnumerator NightShadeTeleportCoroutine()
+    private IEnumerator NightShadeTeleportCoroutine()
     {
         // Start teleport effect
         var shadowAnimator = _nightShadeDashShadow.GetComponent<Animator>(); 
-        shadowAnimator.SetTrigger("Teleport");
+        shadowAnimator.SetTrigger(Teleport);
         yield return null;
         
         // Wait until the effect ends
@@ -88,11 +86,11 @@ public class AttackBase_Dash : AttackBase
         }
         
         // Match position and look direction
-        transform.position = _nightShadeDashShadow.transform.position;
-        if (!_playerMovement.IsMoving) transform.localScale = _nightShadeDashShadow.transform.localScale;
+        _player.position = _nightShadeDashShadow.transform.position;
+        if (!_playerMovement.IsMoving) _player.localScale = _nightShadeDashShadow.transform.localScale;
         
         // Teleport attack
-        ((Legacy_Dash)activeLegacy).OnDashEnd();
+        ((Legacy_Dash)ActiveLegacy).OnDashEnd();
             
         // Reset shadow
         StopCoroutine(nameof(NightShadeDashCoroutine));
@@ -106,13 +104,15 @@ public class AttackBase_Dash : AttackBase
         float tpTimeLimit = 6f;
         float nsMultiplier = 1.5f; 
         var shadowRb = _nightShadeDashShadow.GetComponent<Rigidbody2D>();
-        shadowRb.velocity = new Vector2(-_nightShadeDashShadow.transform.localScale.x * _dashStrength * nsMultiplier, 0f);
-        yield return new WaitForSeconds(_dashDuration);
+        shadowRb.velocity = new Vector2(
+            (-_nightShadeDashShadow.transform.localScale.x * _dashStrength * nsMultiplier
+            * _playerMovement.MoveSpeed * _playerMovement.moveSpeedMultiplier) / Time.timeScale, 0f);
+        yield return new WaitForSecondsRealtime(_dashDuration);
 
         // End Dash
-        _nightShadeDashShadow.GetComponent<Animator>().SetTrigger("DashEnd");
+        _nightShadeDashShadow.GetComponent<Animator>().SetTrigger(DashEnd);
         shadowRb.velocity = Vector2.zero;
-        yield return new WaitForSeconds(tpTimeLimit - _dashDuration);
+        yield return new WaitForSecondsRealtime(tpTimeLimit - _dashDuration);
         
         // Remove shadow when tp time limit ends
         Destroy(_nightShadeDashShadow);
@@ -122,24 +122,32 @@ public class AttackBase_Dash : AttackBase
     private IEnumerator DashCoroutine()
     {
         // Start Dash
-        float prevGravity = _rigidbody2D.gravityScale;
         _rigidbody2D.gravityScale = 0f;
-        _rigidbody2D.velocity = new Vector2(-transform.localScale.x * _dashStrength, 0f);
+        _rigidbody2D.velocity = new Vector2(
+            (-_player.localScale.x * _dashStrength * _playerMovement.MoveSpeed 
+            * _playerMovement.moveSpeedMultiplier) / Time.timeScale, 0f);
         Coroutine legacyCoroutine = null;
-        if (activeLegacy)
+        
+        // Legacy extra effect?
+        if (ActiveLegacy)
         {
-            ((Legacy_Dash)activeLegacy).OnDashBegin();
-            legacyCoroutine = StartCoroutine(((Legacy_Dash)activeLegacy).DashSpawnCoroutine());
+            ((Legacy_Dash)ActiveLegacy).OnDashBegin();
+            legacyCoroutine = StartCoroutine(((Legacy_Dash)ActiveLegacy).DashSpawnCoroutine());
         }
-        yield return new WaitForSeconds(_dashDuration);
+        
+        // Delay during dash
+        yield return new WaitForSecondsRealtime(_dashDuration);
 
         // End Dash
-        VFXObject.SetActive(false);
+        baseEffector.SetActive(false);
         _damageDealer.OnAttackEnd(ELegacyType.Dash);
-        _rigidbody2D.gravityScale = prevGravity;
-        if (activeLegacy)
+        _rigidbody2D.gravityScale = _playerController.DefaultGravityScale / Time.timeScale;
+        _rigidbody2D.velocity = Vector2.zero;
+        
+        // Legacy extra effect?
+        if (ActiveLegacy)
         {
-            ((Legacy_Dash)activeLegacy).OnDashEnd();
+            ((Legacy_Dash)ActiveLegacy).OnDashEnd();
             if (legacyCoroutine != null) StopCoroutine(legacyCoroutine);
         }
     }

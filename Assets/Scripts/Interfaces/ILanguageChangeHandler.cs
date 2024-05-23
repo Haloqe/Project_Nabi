@@ -9,7 +9,7 @@ public abstract class LanguageChangeHandlerBase : MonoBehaviour, ILanguageChange
 {
     protected virtual void Awake()
     {
-        GameEvents.languageChanged += OnLanguageChanged;
+        GameEvents.LanguageChanged += OnLanguageChanged;
     }
 
     public abstract void OnLanguageChanged();

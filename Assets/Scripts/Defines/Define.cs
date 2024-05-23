@@ -36,8 +36,8 @@ public static class  Define
         { EStatusEffect.Sommer, EStatusEffect.Sommer },   // 소머
         { EStatusEffect.Ecstasy, EStatusEffect.Ecstasy }, // 유포리아
         { EStatusEffect.Swarm, EStatusEffect.Cloud },     // 투르벨라
-        //{ EStatusEffect.Poison, EStatusEffect.Leech },          // 버논
-        { EStatusEffect.Evade, EStatusEffect.Evade },      // 나이트셰이드
+        //{ EStatusEffect.Poison, EStatusEffect.Leech },  // 버논
+        { EStatusEffect.Evade, EStatusEffect.Evade },     // 나이트셰이드
     };
 
     // Enemy Commons
@@ -48,8 +48,12 @@ public static class  Define
         new Color(0.3686275f, 0.5727299f, 0.5960785f, 1f),
         new Color(0.8962264f, 0.1070962f, 0.3534198f, 1f),
         new Color(0.5811201f, 0.3677168f, 0.6320754f, 1f),
-        //new Color(0.6778889f, 0.144654f, 0.8679245f, 1f),
-        new Color(0.505518f, 0.5366948f, 0.5660378f, 1f),
+        new Color(0.0868f, 0.0468f, 0.390f, 1f),
+    };
+    public static string[,] AttackTypeNames = new string[,]
+    {
+        { "Melee attack", "Ranged attack", "Dash attack", "Area attack" },
+        { "근접 공격", "원거리 공격", "대시 공격", "폭탄 공격" },
     };
     public static string[,] LegacyPreservationNames = new string[,]
     {
@@ -73,13 +77,11 @@ public static class  Define
     public static float[] EuphoriaEnemyGoldDropBuffStats = new float[5];
     public static float[] SommerHypHallucinationStats = new float[5];
     public static float[] SommerSleepArmourReduceAmounts = new float[5];
-    public static float[] TurbelaMaxButterflyStats =
-    {
-        6, 6, 6, 6, 6,
-    };
+    public static float[] TurbelaMaxButterflyStats = { 6, 6, 6, 6, 6 };
     public static float[] TurbelaDoubleSpawnStats = new float[5];
     public static float[] TurbelaExtraDamageStats = new float[5];
     public static float[] TurbelaButterflyCritStats = new float[5];
+    public static float[] NightShadeLeechStats = new float[5];
     public static float[][] EcstasyBuffStats =
     {
         new[] {0.5f, 0.75f, 1.0f, 1.25f}, // 사마귀 - 방어력 % 

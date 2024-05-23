@@ -41,6 +41,7 @@ public class Bomb : MonoBehaviour
             yield return null;
         }
         _collider.enabled = false;
+
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -48,12 +49,10 @@ public class Bomb : MonoBehaviour
         if (collision.gameObject.CompareTag("Enemy") == false) return;
         if (Utility.IsObjectInList(collision.gameObject, _affectedEnemies)) return;
 
-        Debug.Log("Enemy Hit!");
-
         IDamageable target = collision.gameObject.GetComponent<IDamageable>();
         if (target != null)
         {
-            Owner.DealDamage(target);
+            Owner.DealDamage(target, false);
             _affectedEnemies.Add(collision.gameObject.GetInstanceID());
         }
     }

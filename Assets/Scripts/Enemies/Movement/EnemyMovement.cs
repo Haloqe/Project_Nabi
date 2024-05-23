@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class EnemyMovement : MonoBehaviour
@@ -15,6 +14,14 @@ public abstract class EnemyMovement : MonoBehaviour
     public bool IsFlippable = true;
     protected Rigidbody2D _rigidBody;
     protected Animator _animator;
+    private readonly static int Rooted = Animator.StringToHash("IsRooted");
+
+    //used for pull
+    private Vector2 _pullOverallVelocity = Vector2.zero;
+    Vector2 pullForce;
+    public float influenceRange;
+    public float distanceToGravField;
+    private readonly static int IsAttacking = Animator.StringToHash("IsAttacking");
 
     public virtual void Init()
     {
@@ -41,19 +48,19 @@ public abstract class EnemyMovement : MonoBehaviour
         _moveSpeed = _enemyBase.EnemyData.DefaultMoveSpeed * percentage;
     }
 
-    public void FlipEnemy()
+    protected void FlipEnemy()
     {
         transform.localScale = new Vector2(
             -1 * transform.localScale.x, transform.localScale.y);
     }
 
-    public void FlipEnemyTowardsMovement()
+    protected void FlipEnemyTowardsMovement()
     {
         if (_rigidBody.velocity.x >= 0.01f) transform.localScale = new Vector3(1f, 1f, 1f);
         else transform.localScale = new Vector3(-1f, 1f, 1f);
     }
 
-    public void FlipEnemyTowardsTarget()
+    protected void FlipEnemyTowardsTarget()
     {
         if (transform.position.x - _enemyBase.Target.transform.position.x >= 0)
         {
@@ -63,7 +70,7 @@ public abstract class EnemyMovement : MonoBehaviour
         }
     }
 
-    public void EnableMovement()
+    public virtual void EnableMovement()
     {
         IsRooted = false;
         _animator.SetBool(Rooted, false);
@@ -102,16 +109,12 @@ public abstract class EnemyMovement : MonoBehaviour
         if (_animator != null) _animator.SetBool(IsAttacking, false);
     }
 
-    protected Vector2 PullOverallVelocity = Vector2.zero;
-    private static readonly int Rooted = Animator.StringToHash("IsRooted");
-    private static readonly int IsAttacking = Animator.StringToHash("IsAttacking");
-
     public void StartPullX(int direction, float strength, float duration)
     {
         DisableFlip();
         IsRooted = true;
         IsMoving = false;
-        PullOverallVelocity += new Vector2(direction * strength, 0);
+        _pullOverallVelocity += new Vector2(direction * strength, 0);
         StartCoroutine(PullXCoroutine(direction, strength, duration));
     }
 
@@ -121,20 +124,44 @@ public abstract class EnemyMovement : MonoBehaviour
         float elapsedTime = 0;
         while (elapsedTime < duration)
         {
-            _rigidBody.velocity = PullOverallVelocity;
-            elapsedTime += Time.fixedDeltaTime;
+            _rigidBody.velocity = _pullOverallVelocity;
+            elapsedTime += Time.fixedUnscaledDeltaTime;
             yield return new WaitForFixedUpdate();
         }
-        PullOverallVelocity -= new Vector2(direction * strength, 0);
-        _rigidBody.velocity = PullOverallVelocity;
-        if (PullOverallVelocity == Vector2.zero) EnableFlip();
-        
-        // while (elapsedTime < duration)
-        // {
-        //     _rigidBody.AddForce(new Vector2(direction * strength, 0), ForceMode2D.Force);
-        //     elapsedTime += Time.fixedDeltaTime;
-        //     yield return new WaitForFixedUpdate();
-        // }
+        _pullOverallVelocity -= new Vector2(direction * strength, 0);
+        _rigidBody.velocity = _pullOverallVelocity;
+        if (_pullOverallVelocity == Vector2.zero) EnableFlip();
+    }
+
+    public void StartGravityPull(Vector3 gravCorePosition, float strength, float duration)
+    {
+        DisableFlip();
+        StartCoroutine(GravityPullCoroutine(gravCorePosition, strength, duration));
+    }
+
+    // gravCorePosition = fetch the direction of the gravity Field 
+    // strength, duration = constant
+    protected virtual IEnumerator GravityPullCoroutine(Vector3 gravCorePosition, float strength, float duration)
+    {
+        distanceToGravField = Vector2.Distance(gravCorePosition, _rigidBody.position);
+
+        float elapsedTime = 0;
+        while (elapsedTime < duration)
+        {
+            pullForce = ((Vector2)(gravCorePosition) - _rigidBody.position).normalized / distanceToGravField * strength;
+            if(MoveType == EEnemyMoveType.Flight)
+            {
+                _rigidBody.AddForce(pullForce, ForceMode2D.Force);
+            }
+            else
+            {
+                pullForce.y = 0;
+                _rigidBody.AddForce(pullForce, ForceMode2D.Force);
+            }
+            elapsedTime += Time.fixedUnscaledDeltaTime;
+            yield return new WaitForFixedUpdate();
+
+        }
     }
 
     public virtual void Patrol() {}
@@ -142,5 +169,4 @@ public abstract class EnemyMovement : MonoBehaviour
     public virtual void Attack() {}
     public virtual bool PlayerIsInAttackRange() { return false; }
     public virtual bool PlayerIsInDetectRange() { return false; }
-    
 }

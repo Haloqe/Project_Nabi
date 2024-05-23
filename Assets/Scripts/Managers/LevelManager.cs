@@ -42,7 +42,7 @@ public class LevelManager : Singleton<LevelManager>
     protected override void Awake()
     {
         base.Awake();
-        if (_toBeDestroyed) return;
+        if (IsToBeDestroyed) return;
         
         _maxHeight = 1000;
         _maxWidth = 1000;
@@ -550,17 +550,15 @@ public class LevelManager : Singleton<LevelManager>
         // PlayerEvents.spawned.Invoke();
 
         // DEBUG TEMP CODE FROM HERE
-        PlayerController playerController = PlayerController.Instance;
         Transform playerObject = null;
-        
-        if (playerController == null)
+        if (PlayerController.Instance == null)
         {
-            playerObject = Instantiate(GameManager.Instance.Player).gameObject.transform;
+            playerObject = Instantiate(GameManager.Instance.PlayerPrefab).gameObject.transform;
             _playerSpawnPos = GameObject.Find("PlayerStart").transform.position;
         }
         else
         {
-            playerObject = playerController.gameObject.transform;
+            playerObject = PlayerController.Instance.transform;
     
             // If player spawn pos undefined (first game run + not random generated map (debug map))
             if (_playerSpawnPos == Vector3.back)
@@ -569,7 +567,7 @@ public class LevelManager : Singleton<LevelManager>
         playerObject.position = _playerSpawnPos;
         GameObject.Find("Virtual Camera").GetComponent<CinemachineVirtualCamera>().Follow = playerObject;
         
-        PlayerEvents.spawned.Invoke();
+        PlayerEvents.Spawned.Invoke();
     }
 
     private void GenerateMinimap()

@@ -2,14 +2,13 @@ using UnityEngine;
 
 public abstract class Singleton<T> : MonoBehaviour where T : Component
 {
-    protected bool _toBeDestroyed = false;
+    public bool IsToBeDestroyed { get; private set; }
 	private static T _instance;
     public static T Instance
     {
         get
         {
-            if (_instance == null) 
-                _instance = FindObjectOfType<T>();
+            if (_instance == null) _instance = FindObjectOfType<T>();
             return _instance;
         }
     }
@@ -25,7 +24,7 @@ public abstract class Singleton<T> : MonoBehaviour where T : Component
         {
             Debug.Log("Duplicate " + typeof(T) + " detected. Destroying " + gameObject.name);
             Destroy(gameObject);
-            _toBeDestroyed = true;
+            IsToBeDestroyed = true;
         }
     }
 }

@@ -185,14 +185,14 @@ public class Butterfly : MonoBehaviour
         transform.position = _enemy.position + _targetOffset; // _enemy.transform.TransformPoint(_targetOffset);
         
         // Follow trajectory
-        _theta += Time.deltaTime * _attackSpeed * _attackSpeedMultiplier;
+        _theta += Time.unscaledDeltaTime * _attackSpeed * _attackSpeedMultiplier;
         float r = _cloverSize * Mathf.Sin(2 * _theta);
         float x = r * Mathf.Cos(_theta);
         float y = r * Mathf.Sin(_theta);
         transform.position += new Vector3(x, y, 0);
         
         // Update timer
-        _timer += Time.deltaTime / _attackSpeedMultiplier;
+        _timer += Time.unscaledDeltaTime / _attackSpeedMultiplier;
         
         // Attack enemy when at the centre
         if (_timer >= Mathf.PI / (2 * _attackSpeed * _attackSpeedMultiplier)) // use the calculated time interval
@@ -214,7 +214,7 @@ public class Butterfly : MonoBehaviour
         float timer = 0;
         while (timer <= 2.0f)
         {
-            timer += Time.deltaTime;
+            timer += Time.unscaledDeltaTime;
             if (_renderer.isVisible)
             {
                 _isInvisble = false;

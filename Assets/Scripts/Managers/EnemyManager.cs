@@ -18,13 +18,18 @@ public class EnemyManager : Singleton<EnemyManager>
     protected override void Awake()
     {
         base.Awake();
-        if (_toBeDestroyed) return;
+        if (IsToBeDestroyed) return;
         _enemies = new Dictionary<int, SEnemyData>();
         _spawnedEnemies = new List<EnemyBase>();
         GoldPrefab = Resources.Load("Prefabs/Items/Coin").GameObject();
-        GameEvents.mapLoaded += OnMapLoaded;
-        GameEvents.gameLoadEnded += OnGameLoadEnded;
+        GameEvents.MapLoaded += OnMapLoaded;
+        GameEvents.GameLoadEnded += OnGameLoadEnded;
         InGameEvents.EnemySlayed += (enemy => _spawnedEnemies.Remove(enemy));
+        PlayerEvents.Defeated += () =>
+        {
+            StopAllCoroutines();
+            _spawnedEnemies.Clear();
+        };
         
         Init(Application.dataPath + "/Tables/EnemyDataTable.csv");
     }
@@ -33,7 +38,6 @@ public class EnemyManager : Singleton<EnemyManager>
     private void OnMapLoaded()
     {
         _enemiesContainer = new GameObject("Enemies").transform;
-        _spawnedEnemies.Clear();
 
         var spawners = FindObjectsByType<EnemySpawner>(FindObjectsSortMode.None);
         foreach (var spawner in spawners)
@@ -50,7 +54,6 @@ public class EnemyManager : Singleton<EnemyManager>
 
     public void Init(string dataPath)
     {
-        Debug.Log("Initialising Enemy Data");
         Debug.Assert(dataPath != null && File.Exists(dataPath));
 
         using (var reader = new StreamReader(dataPath))

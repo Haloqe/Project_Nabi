@@ -14,15 +14,15 @@ public class TestCameraShake : MonoBehaviour
 
     private void Awake()
     {
-        PlayerEvents.HPChanged += OnPlayerHPChanged;
-        PlayerEvents.defeated += OnPlayerDefeated;
+        PlayerEvents.HpChanged += OnPlayerHPChanged;
+        PlayerEvents.Defeated += OnPlayerDefeated;
         _vCam = GetComponent<CinemachineVirtualCamera>();
         _cbmcp = _vCam.GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>();
         _cbmcp.m_AmplitudeGain = 0.0f;
         _remainingTime = 0.0f;
     }
 
-    public void OnPlayerHPChanged(float changeAmount, float hpRatio)
+    private void OnPlayerHPChanged(float changeAmount, float oldHpRatio, float newHpRatio)
     {
         // TEMP
         if (changeAmount < 0.0f)
@@ -56,7 +56,7 @@ public class TestCameraShake : MonoBehaviour
     {
         if (_remainingTime > 0)
         {
-            _remainingTime -= Time.deltaTime;
+            _remainingTime -= Time.unscaledDeltaTime;
             if (_remainingTime <= 0)
             {
                 StopShake();

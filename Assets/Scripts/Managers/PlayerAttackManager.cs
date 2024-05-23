@@ -5,12 +5,14 @@ using UnityEngine.InputSystem;
 using UnityEngine;
 using System;
 using System.Linq;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine.UI;
 using UnityEditor;
 
 public class PlayerAttackManager : Singleton<PlayerAttackManager>
 {
+    // References
     private PlayerController _playerController;
     private PlayerInput _playerInput;
     private PlayerDamageDealer _playerDamageDealer;
@@ -39,6 +41,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     private Transform _passiveLegacyGroup;
     private GameObject _passiveLegacySlotPrefab;
     private LegacySlotUI[] _activeLegacySlots = new LegacySlotUI[4];
+    private Dictionary<int, LegacySlotUI> _slotDictionary = new Dictionary<int, LegacySlotUI>();
     
     // Other loaded objects
     public GameObject ClockworkPrefab { get; private set; } 
@@ -46,7 +49,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     protected override void Awake()
     {
         base.Awake();
-        if (_toBeDestroyed) return;
+        if (IsToBeDestroyed) return;
         _legacyIconSpriteSheet = Resources.LoadAll<Sprite>("Sprites/Icons/Abilities/PlayerAbilitySpritesheet");
         _collectedLegacyIDs = new HashSet<int>();
         _collectedPassiveIDs = new List<int>();
@@ -54,7 +57,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         _boundActiveLegacyIDs = new int[] {-1,-1,-1};
         _passiveLegacySlotPrefab = Utility.LoadGameObjectFromPath("Prefabs/UI/InGame/PassiveLegacySlot");
         ClockworkPrefab = Resources.Load("Prefabs/Interact/Clockwork").GameObject();
-        GameEvents.restarted += OnRestarted;
+        GameEvents.Restarted += OnRestarted;
 
         Init();
     }
@@ -87,7 +90,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         _passiveLegacyGroup = combatCanvas.transform.Find("PassiveLayoutGroup").transform;
     }
     
-    public void Init()
+    private void Init()
     {
         //Init_WarriorData();
         Init_LegacyData();
@@ -97,11 +100,10 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     
     private void Init_WarriorVFXs()
     {
-        _bulletsByWarrior = new GameObject[(int)EWarrior.MAX];
+        _bulletsByWarrior = new GameObject[(int)EWarrior.MAX + 1];
         _vfxTexturesByWarrior = new Texture2D[(int)EWarrior.MAX][];
         for (int warriorIdx = 0; warriorIdx < (int)EWarrior.MAX; warriorIdx++)
         {
-            string s = "Prefabs/Player/Bullet_" + (EWarrior)warriorIdx;
             _bulletsByWarrior[warriorIdx] = Resources.Load<GameObject>("Prefabs/Player/Bullets/Bullet_" + (EWarrior)warriorIdx);
             _vfxTexturesByWarrior[warriorIdx] = new Texture2D[(int)EPlayerAttackType.MAX];
             for (int attackIdx = 0; attackIdx < (int)EPlayerAttackType.MAX; attackIdx++)
@@ -110,6 +112,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                     "Sprites/Player/VFX/" + (EWarrior)warriorIdx + "/" + (EPlayerAttackType)attackIdx);
             }
         }
+        _bulletsByWarrior[(int)EWarrior.MAX] = Resources.Load<GameObject>("Prefabs/Player/Bullets/Bullet_Default");
     }
 
     private void Init_WarriorData()
@@ -248,7 +251,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     public string GetBoundActiveLegacyName(ELegacyType legacyType)
     {
         int id = _boundActiveLegacyIDs[(int)legacyType];
-        return id == -1 ? String.Empty : _legacies[id].Names[(int)Define.Localisation];
+        return id == -1 ? string.Empty : _legacies[id].Names[(int)Define.Localisation];
     }
     
     private bool IsLegacyCollected(int legacyIdx)
@@ -261,7 +264,6 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         var legacyData = _legacies[legacyID];
         int legacyTypeIdx = (int)legacyData.Type;
         var legacyAsset = _legacySODictionary[legacyID];
-        Debug.Log("CollectLegacy: [" + preservation + "] " + legacyData.Names[1]);
         
         if (legacyData.Type == ELegacyType.Passive)
         {
@@ -271,8 +273,10 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
             
             // Update UI
             var slotObj = Instantiate(_passiveLegacySlotPrefab, _passiveLegacyGroup);
-            slotObj.AddComponent<LegacySlotUI>().Init(legacyData.Warrior, legacyData.Names, legacyData.Descs);
             slotObj.GetComponent<Image>().sprite = GetLegacyIcon(legacyID);
+            var slotUi = slotObj.AddComponent<LegacySlotUI>();
+            slotUi.Init(legacyData.Warrior, legacyData.Names, legacyData.Descs, preservation);
+            _slotDictionary.Add(legacyID, slotUi);
         }
         else
         {
@@ -288,7 +292,8 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
             _activeLegacyIcons[legacyTypeIdx].sprite = GetLegacyIcon(legacyID);
             _activeLegacyIcons[legacyTypeIdx].color = Color.white;
             _activeLegacyOverlays[legacyTypeIdx].fillAmount = 0;
-            _activeLegacySlots[legacyTypeIdx].Init(legacyData.Warrior, legacyData.Names, legacyData.Descs);
+            _activeLegacySlots[legacyTypeIdx].Init(legacyData.Warrior, legacyData.Names, legacyData.Descs, preservation);
+            _slotDictionary.Add(legacyID, _activeLegacySlots[legacyTypeIdx]);
         }
         _collectedLegacyIDs.Add(legacyID);
         _collectedLegacyPreservations.Add(legacyID, preservation);
@@ -299,6 +304,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         int preservationIdx = (int)preservation;
         switch (legacySO.BuffType)
         {
+            // PlayerController에 스탯이 저장되고 스탯 업 UI가 뜨는 경우
             case EBuffType.StatUpgrade:
                 _playerController.UpgradeStat(legacyID, legacySO.StatUpgradeData, preservation);
                 break;
@@ -306,7 +312,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
             case EBuffType.SpawnAreaIncrease:
                 foreach (var attackBase in _playerDamageDealer.AttackBases)
                 {
-                    if (attackBase.activeWarrior == legacySO.warrior)
+                    if (attackBase.ActiveLegacy != null && attackBase.ActiveLegacy.warrior == legacySO.warrior)
                     {
                         attackBase.UpdateSpawnSize(legacySO.BuffIncreaseAmounts[preservationIdx], legacySO.BuffIncreaseMethod);
                     }
@@ -320,6 +326,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                 _playerDamageDealer.UpgradeStatusEffectLevel(legacySO.warrior, preservation, legacySO.Stats);
                 break;
             
+            // Defines.cs에 수치가 저장되고 preservation 변경으로 activate만 하는 경우
             case EBuffType.EuphoriaEnemyGoldDropBuff:
             case EBuffType.EuphoriaEcstasyUpgrade:
             case EBuffType.SommerHypHallucination:
@@ -327,6 +334,21 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
             case EBuffType.TurbelaDoubleSpawn:
             case EBuffType.TurbelaButterflyCrit:
                 _playerController.ActivateBuffByName(legacySO.BuffType, preservation);
+                break;
+            
+            case EBuffType.AttackDamageMultiply:
+                _playerDamageDealer.attackDamageMultipliers[(int)legacySO.AttackType] += (legacySO.Stats[(int)preservation] - 1.0f);
+                break;
+            
+            case EBuffType.NightShadeFastChase:
+                _playerController.nightShadeCollider.SetActive(true);
+                _playerController.ActivateBuffByName(legacySO.BuffType, preservation);
+                _playerController.nightShadeFastChaseStats = legacySO.Stats;
+                break;
+            
+            case EBuffType.NightShadeShadeBonus:
+                _playerController.ActivateBuffByName(legacySO.BuffType, preservation);
+                _playerController.nightShadeShadeBonusStats = legacySO.Stats;
                 break;
         }
     }
@@ -397,8 +419,8 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     {
         return Define.StatusEffectByWarrior[(int)warrior, level];
     }
-    
-    public void UpdateAttackVFX(EWarrior warrior, ELegacyType attackType)
+
+    private void UpdateAttackVFX(EWarrior warrior, ELegacyType attackType)
     { 
         // try get warrior-specific VFX
         switch (attackType)
@@ -408,12 +430,10 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                     var attackBase = (AttackBase_Melee)_playerDamageDealer.AttackBases[(int)attackType];
                     
                     // Base VFX
-                    attackBase.VFXObject.GetComponent<ParticleSystemRenderer>()
-                        .material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Melee_Base);
+                    attackBase.basePSRenderer.material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Melee_Base);
                     
                     // Combo VFX
-                    attackBase.VFXObjCombo.GetComponent<ParticleSystemRenderer>()
-                        .material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Melee_Combo);
+                    attackBase.comboPSRenderer.material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Melee_Combo);
                 }
                 break;
             case ELegacyType.Ranged:
@@ -421,11 +441,10 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                     var attackBase = (AttackBase_Ranged)_playerDamageDealer.AttackBases[(int)attackType];
                     
                     // Base VFX
-                    attackBase.VFXObject.GetComponent<ParticleSystemRenderer>()
-                        .material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Ranged);
+                    attackBase.basePSRenderer.material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Ranged);
                     
                     // bullet
-                    attackBase.SetBullet(_bulletsByWarrior[(int)warrior]);
+                    attackBase.SetBullet(GetBulletPrefab(warrior));
                 }
                 break;
             case ELegacyType.Dash:
@@ -433,9 +452,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                     if (warrior == EWarrior.NightShade) return;
                     
                     // Base VFX
-                    _playerDamageDealer.AttackBases[(int)attackType]
-                        .VFXObject.GetComponent<ParticleSystemRenderer>()
-                        .material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Dash);
+                    _playerDamageDealer.AttackBases[(int)attackType].basePSRenderer.material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Dash);
                 }
                 break;
         }
@@ -444,5 +461,10 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     public Image GetAttackOverlay(ELegacyType attackType)
     {
         return _activeLegacyOverlays[(int)attackType];
+    }
+
+    public GameObject GetBulletPrefab(EWarrior warrior)
+    {
+        return _bulletsByWarrior[(int)warrior];
     }
 }

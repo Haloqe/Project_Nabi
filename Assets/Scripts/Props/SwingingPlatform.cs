@@ -49,9 +49,8 @@ public class SwingingPlatform : MonoBehaviour
         if (player.CompareTag("Player"))
         {
             var movementComp = player.GetComponent<PlayerMovement>();
-            // Return if already in moving platfrom
-            if (movementComp.IsOnMovingPlatform) return;
-            else
+            // Return if already in moving platform
+            if (!movementComp.IsOnMovingPlatform)
             {
                 _isPlayerOnPlatform = true;
                 movementComp.IsOnMovingPlatform = true;
