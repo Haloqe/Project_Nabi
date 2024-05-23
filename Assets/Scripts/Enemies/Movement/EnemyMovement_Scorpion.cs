@@ -7,34 +7,34 @@ using Random = UnityEngine.Random;
 
 public class EnemyMovement_Scorpion : EnemyMovement
 {
+    // attack loop stuff
     private bool _isInAttackSequence;
+    private int _cycleCount = 0;
     
+    // bouncing stuff
+    private Rigidbody2D[] _bouncingPartRigidBodies;
+    private float[] _bouncingSpeeds = {2f, 2.3f, 2.6f, 2.6f};
+    
+    // shooting stuff
     [SerializeField] private GameObject _shooterPositionObject;
     [SerializeField] private GameObject _basePositionObject;
     [SerializeField] private GameObject _shooterObject;
     [SerializeField] private GameObject[] _tailObjects;
     private GameObject _bulletObject;
-    private Rigidbody2D[] _bouncingPartRigidBodies;
-    private Rigidbody2D[] _clawRigidBodies;
-    private GameObject[] _clawObjects;
-    
-    private float[] _bouncingSpeeds = {2f, 2.3f, 2.6f, 2.6f};
-    
-    private Vector3 _stingerDirection;
+    private Vector3 _shooterDirection;
     private Vector3 _playerDirection;
-    private Vector3[] _defaultClawPositions = { new(-15.69f, -2f, 0f), new(10.9f, -2f, 0f) };
-    // private Vector3[] _defaultClawPositions;
-    private Vector3[] _electricClawPositions = { new(-26f, -3f, 0), new(16f, -3f, 0) };
-    // private Vector3[] _electricClawPositions;
-    private Vector3 _midpoint = new(-3.5f, -5f, 0f);
-    
     private bool _isShootingBullets;
     private int _raycastLayerMask;
-    [SerializeField] private LineRenderer _lineRenderer;
-    [SerializeField] private GameObject _electricityObject;
-
-    private int _cycleCount = 0;
-    private static readonly int IsClawAttacking = Animator.StringToHash("IsClawAttacking");
+    private LineRenderer _lineRenderer;
+    
+    // claw stuff
+    [SerializeField] private GameObject[] _armObjects = new GameObject[6];
+    private Vector3[] _defaultClawPositions = new Vector3[2];
+    private Vector3[] _electricClawPositions = new Vector3[2];
+    private float _defaultClawGap = 16f;
+    private float _electricClawGap = 5f;
+    // private static readonly int IsClawAttacking = Animator.StringToHash("IsClawAttacking");
+    
 
     private void Awake()
     {
@@ -48,12 +48,20 @@ public class EnemyMovement_Scorpion : EnemyMovement
             StartCoroutine(Bounce(_bouncingPartRigidBodies[i], _bouncingSpeeds[i]));
         }
         
-        Transform clawObjectsParent = transform.Find("clawObjects");
-        _clawRigidBodies = clawObjectsParent.GetComponentsInChildren<Rigidbody2D>();
-        _clawObjects = new GameObject[_clawRigidBodies.Length];
-        for (int i = 0; i < _clawRigidBodies.Length; i++) { _clawObjects[i] = _clawRigidBodies[i].gameObject; }
+        Vector3 midpoint = gameObject.transform.position;
+        _defaultClawPositions = new []
+        {
+            midpoint + new Vector3(-_defaultClawGap, 0f, 0),
+            midpoint + new Vector3(_defaultClawGap, 0f, 0)
+        };
+        _electricClawPositions = new[]
+        {
+            midpoint + new Vector3(-_electricClawGap, 0, 0),
+            midpoint + -new Vector3(_electricClawGap, 0, 0)
+        };
         
         _raycastLayerMask = LayerMask.GetMask("Platform");
+        _lineRenderer = GetComponent<LineRenderer>();
     }
     
     private IEnumerator Bounce(Rigidbody2D rb, float speed)
@@ -68,7 +76,6 @@ public class EnemyMovement_Scorpion : EnemyMovement
         }
     }
     
-
     private void FlipTail(int negativeOrPositive)
     {
         float[] flipMoveAmount = {1f, 1.7f, -0.3f};
@@ -92,9 +99,9 @@ public class EnemyMovement_Scorpion : EnemyMovement
             if (_shooterObject.transform.localScale.x < Mathf.Epsilon) FlipTail(-1);
         }
 
-        _stingerDirection = _shooterPositionObject.transform.position - _basePositionObject.transform.position;
+        _shooterDirection = _shooterPositionObject.transform.position - _basePositionObject.transform.position;
         _playerDirection = _player.transform.position - _basePositionObject.transform.position;
-        _shooterObject.transform.rotation *= Quaternion.FromToRotation(_stingerDirection, _playerDirection).normalized;
+        _shooterObject.transform.rotation *= Quaternion.FromToRotation(_shooterDirection, _playerDirection).normalized;
     }
 
     private IEnumerator ShootBullet()
@@ -106,7 +113,7 @@ public class EnemyMovement_Scorpion : EnemyMovement
             var bullet = Instantiate(_bulletObject,
                 _shooterPositionObject.transform.position,
                 Quaternion.identity).GetComponent<Scorpion_Bullet>();
-            bullet.Shoot(_stingerDirection);
+            bullet.Shoot(_shooterDirection);
         }
     }
 
@@ -120,9 +127,9 @@ public class EnemyMovement_Scorpion : EnemyMovement
         if (Random.Range(0f, 1f) > 0.5f) direction *= -1;
         _lineRenderer.enabled = true;
         
-        _stingerDirection = _shooterPositionObject.transform.position - _basePositionObject.transform.position;
+        _shooterDirection = _shooterPositionObject.transform.position - _basePositionObject.transform.position;
         _playerDirection = _player.transform.position - _basePositionObject.transform.position;
-        _shooterObject.transform.rotation *= Quaternion.FromToRotation(_stingerDirection, _playerDirection).normalized;
+        _shooterObject.transform.rotation *= Quaternion.FromToRotation(_shooterDirection, _playerDirection).normalized;
 
         _shooterObject.transform.Rotate(0, 0, -direction * rotationDegrees);
         float initialAngle = _shooterObject.transform.eulerAngles.z;
@@ -130,15 +137,15 @@ public class EnemyMovement_Scorpion : EnemyMovement
         while (Mathf.Abs(_shooterObject.transform.eulerAngles.z - initialAngle) <= rotationDegrees * 2)
         {
             Vector3 position = _shooterPositionObject.transform.position;
-            _stingerDirection = position - _basePositionObject.transform.position;
-            if (Physics2D.Raycast(position, _stingerDirection, 100f, _raycastLayerMask))
+            _shooterDirection = position - _basePositionObject.transform.position;
+            if (Physics2D.Raycast(position, _shooterDirection, 100f, _raycastLayerMask))
             {
-                RaycastHit2D hit = Physics2D.Raycast(position, _stingerDirection, 100f, _raycastLayerMask);
+                RaycastHit2D hit = Physics2D.Raycast(position, _shooterDirection, 100f, _raycastLayerMask);
                 Draw2DRay(position, hit.point);
             }
             else
             {
-                Draw2DRay(_shooterPositionObject.transform.position, _stingerDirection * 100f);
+                Draw2DRay(_shooterPositionObject.transform.position, _shooterDirection * 100f);
             }
             _shooterObject.transform.Rotate(0, 0, direction * rotationSpeed * Time.deltaTime);
             yield return null;
@@ -159,44 +166,48 @@ public class EnemyMovement_Scorpion : EnemyMovement
     private IEnumerator ClawAttack()
     {
         _isInAttackSequence = true;
-        StartCoroutine(MoveClaws(_defaultClawPositions, 5f));
+        StartCoroutine(MoveClaws(_defaultClawPositions, 2f));
         GripClaws();
-        _animator.SetBool(IsClawAttacking, true);
+        // StartCoroutine(RotateByAmount(_armObjects[0], 90f, 1, 50f));
+        // _animator.SetBool(IsClawAttacking, true);
+        
+        yield return new WaitForSeconds(3f);
+        Vector3 gap = new Vector3(5f, 0, 0);
+        Vector3 midpoint = gameObject.transform.position;
+        StartCoroutine(MoveClaws(new[] {midpoint - gap, midpoint + gap}, 5f));
         
         yield return new WaitForSeconds(5f);
-        Vector3 gap = new Vector3(2f, 0, 0);
-        StartCoroutine(MoveClaws(new[] {_midpoint - gap, _midpoint + gap}, 50f));
-        
-        yield return new WaitForSeconds(5f);
-        _animator.SetBool(IsClawAttacking, false);
-        StartCoroutine(MoveClaws(_defaultClawPositions, 5f));
+        // _animator.SetBool(IsClawAttacking, false);
+        // StartCoroutine(RotateByAmount(_armObjects[0], 90f, -1, 50f));
+        StartCoroutine(MoveClaws(_defaultClawPositions, 2f));
         _isInAttackSequence = false;
     }
 
     private IEnumerator ElectricityAttack()
     {
-        _isInAttackSequence = true;
-        StartCoroutine(MoveClaws(_electricClawPositions, 5f));
-        for (int i = 0; i <= 1; i++)
-        {
-            _clawObjects[i].GetComponent<SpriteRenderer>().color = Color.cyan;
-            _clawObjects[i].GetComponent<PolygonCollider2D>().enabled = false;
-        }
-        yield return new WaitForSeconds(1f);
-        
-        _electricityObject.SetActive(true);
-        
-        yield return new WaitForSeconds(5f);
-        
-        _electricityObject.SetActive(false);
-        for (int i = 0; i <= 1; i++)
-        {
-            _clawObjects[i].GetComponent<SpriteRenderer>().color = Color.white;
-            _clawObjects[i].GetComponent<PolygonCollider2D>().enabled = true;
-        }
-        StartCoroutine(MoveClaws(_defaultClawPositions, 5f));
-        yield return new WaitForSeconds(2f);
-        _isInAttackSequence = false;
+        // _isInAttackSequence = true;
+        // StartCoroutine(MoveClaws(_electricClawPositions, 5f));
+        // for (int i = 0; i <= 1; i++)
+        // {
+        //     _clawObjects[i].GetComponent<SpriteRenderer>().color = Color.cyan;
+        //     _clawObjects[i].GetComponent<PolygonCollider2D>().enabled = false;
+        // }
+        // yield return new WaitForSeconds(1f);
+        //
+        // _electricityObject.SetActive(true);
+        //
+        // yield return new WaitForSeconds(5f);
+        //
+        // _electricityObject.SetActive(false);
+        // for (int i = 0; i <= 1; i++)
+        // {
+        //     _clawObjects[i].GetComponent<SpriteRenderer>().color = Color.white;
+        //     _clawObjects[i].GetComponent<PolygonCollider2D>().enabled = true;
+        // }
+        // StartCoroutine(MoveClaws(_defaultClawPositions, 5f));
+        // yield return new WaitForSeconds(2f);
+        // _isInAttackSequence = false;
+        yield return null;
     }
 
     private void GroundPound()
@@ -208,14 +219,60 @@ public class EnemyMovement_Scorpion : EnemyMovement
 
     private IEnumerator MoveClaws(Vector3[] finalPositions, float speed)
     {
-        while (!IsCloseEnough(_clawObjects, finalPositions))
+        _isInAttackSequence = true;
+        Vector3[] initialPositions =
         {
-            float step = speed * Time.deltaTime;
-            for (int i = 0; i <= 1; i++)
+            _armObjects[0].transform.position,
+            _armObjects[3].transform.position
+        };
+        Vector3[] directions =
+        {
+            finalPositions[0] - initialPositions[0], // left claw
+            finalPositions[1] - initialPositions[1] // right claw
+        };
+  
+        for (int i = 1; i <= 100 / speed; i++)
+        {
+            float step = speed * i / 100f;
+            MoveClawIK(initialPositions[0] + directions[0] * step, true);
+            MoveClawIK(initialPositions[1] + directions[1] * step, false);
+            yield return null;
+        }
+    }
+    
+    private void MoveClawIK(Vector3 finalPosition, bool isLeftClaw)
+    {
+        int rightClaw = 3;
+        if (isLeftClaw) rightClaw = 0;
+        
+        for (int j = 0; j <= 5; j++)
+        {
+            for (int i = 1; i <= 2; i++)
             {
-                _clawObjects[i].transform.position =
-                    Vector3.MoveTowards(_clawObjects[i].transform.position, finalPositions[i], step);
+                Vector3 a = _armObjects[0 + rightClaw].transform.position - _armObjects[i + rightClaw].transform.position;
+                Vector3 b = finalPosition - _armObjects[i + rightClaw].transform.position;
+                Vector3 cross = Vector3.Cross(b, a).normalized;
+                float rotationAngle = Vector3.Angle(b, a);
+                int direction = -1;
+                if ((int)Mathf.Round(cross.z) == -1) direction *= -1;
+                _armObjects[i + rightClaw].transform.Rotate(0f,0f, direction * rotationAngle);
             }
+        }
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawSphere(_defaultClawPositions[0], 1);
+        Gizmos.DrawSphere(_defaultClawPositions[1], 1);
+    }
+
+    private IEnumerator RotateByAmount(GameObject obj, float angle, int direction, float speed)
+    {
+        float initialAngle = obj.transform.eulerAngles.z;
+        while (Mathf.Abs(obj.transform.eulerAngles.z - initialAngle) <= angle)
+        {
+            obj.transform.Rotate(0, 0, direction * speed * Time.deltaTime);
             yield return null;
         }
     }
@@ -224,50 +281,36 @@ public class EnemyMovement_Scorpion : EnemyMovement
     {
         
     }
-
-    private bool IsCloseEnough(GameObject[] a, Vector3[] b)
-    {
-        for (int i = 0; i <= 1; i++)
-        {
-            if (Vector3.Distance(a[i].transform.position, b[i]) < 0.01f)
-            {
-                a[i].transform.position = b[i];
-            } else {
-                return false;
-            }
-        }
-        return true;
-    }
     
     public override void Attack()
     {
         if (_isShootingBullets) TrackPlayer();
         if (_isInAttackSequence) return;
-
-        if (_cycleCount == 0)
+        
+        switch (_cycleCount)
         {
+            case 0:
             GroundPound();
             _cycleCount++;
-            return;
-        }
-
-        if (_cycleCount >= 2)
-        {
+            break;
+            
+            case >= 2:
             StartCoroutine(ElectricityAttack());
             _cycleCount = 0;
-            return;
+            break;
+            
+            default:
+            GenerateRandomAttack();
+            break;
         }
-        
-        GenerateRandomAttack();
     }
     
     private void GenerateRandomAttack()
     {
-        switch (Math.Floor(Random.Range(0f, 1f)))
+        switch (Math.Floor(Random.Range(0f, 2f)))
         {
             case 0:
             StartCoroutine(ShootLaser());
-            // StartCoroutine(ElectricityAttack());
             break;
 
             case 1:
