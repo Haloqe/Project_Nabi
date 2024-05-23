@@ -7,47 +7,54 @@ using UnityEngine;
 
 public class Monologue : MonoBehaviour
 {
-    public GameObject MonologuePanel;
+    /*public GameObject MonologuePanel;
     public TextMeshProUGUI MonologueText;
     public GameObject parentObject;
-    public string[] MonologueVariant;
+   
     private int index;
 
     public Vector3 offset;
     public float wordSpeed;
     public bool playerIsClose;
-    Camera uiCamera;
+    Camera uiCamera;*/
 
-    private void Start()
+    public string[] MonologueVariant;
+    public Transform chatTransform;
+    public GameObject chatboxPrefab;
+
+   /* private void Start()
     {
         var temp = gameObject.GetComponentInParent<Transform>().position;
         Debug.Log(temp);
         uiCamera = GameObject.Find("UI Camera").GetComponent<Camera>();
-        
+
         var position = uiCamera.WorldToScreenPoint(temp + offset);
         MonologuePanel.transform.position = position;
 
-    }
+    }*/
 
     void Display()
     {
-        MonologuePanel.SetActive(true);
+        GameObject go = Instantiate(chatboxPrefab);
+        go.GetComponent<ChatSystem>().OnDialogue(MonologueVariant, chatTransform);
+        /*MonologuePanel.SetActive(true);
         var element = MonologueVariant[UnityEngine.Random.Range(0, MonologueVariant.Length)];
-        MonologueText.text = element.ToString();
+        MonologueText.text = element.ToString();*/
     }
 
     void OnTriggerEnter2D(Collider2D collision)
     {
         Debug.Log("hello");
-        MonologuePanel.SetActive(true);
+
         if (collision.CompareTag("Player"))
         {
-            InvokeRepeating("Display", 3.0f, 3.0f);
+            
+            Display();
         }
     }
 
-    void OnTriggerExit2D(Collider2D collision)
+   /* void OnTriggerExit2D(Collider2D collision)
     {
-        MonologuePanel.SetActive(false);
-    }
+        
+    }*/
 }
