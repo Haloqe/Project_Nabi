@@ -5,7 +5,6 @@ using UnityEngine.InputSystem;
 using UnityEngine;
 using System;
 using System.Linq;
-using TMPro;
 using Unity.VisualScripting;
 using UnityEngine.UI;
 using UnityEditor;
@@ -64,10 +63,11 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     
     private void OnRestarted()
     {
-        _collectedLegacyIDs = new HashSet<int>();
-        _collectedPassiveIDs = new List<int>();
-        _collectedLegacyPreservations = new Dictionary<int, ELegacyPreservation>();
+        _collectedLegacyIDs.Clear();
+        _collectedPassiveIDs.Clear();
+        _collectedLegacyPreservations.Clear();
         _boundActiveLegacyIDs = new int[] {-1,-1,-1};
+        _slotDictionary.Clear();
     }
 
     public void InitInGameVariables()
@@ -252,6 +252,22 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     {
         int id = _boundActiveLegacyIDs[(int)legacyType];
         return id == -1 ? string.Empty : _legacies[id].Names[(int)Define.Localisation];
+    }
+    
+    public string GetBoundActiveLegacyDesc(ELegacyType legacyType)
+    {
+        int id = _boundActiveLegacyIDs[(int)legacyType];
+        return id == -1 ? string.Empty : _legacies[id].Descs[(int)Define.Localisation];
+    }
+
+    public List<SLegacyData> GetAllBoundPassiveLegacyData()
+    {
+        return _collectedPassiveIDs.Select(id => _legacies[id]).ToList();
+    }
+
+    public List<ELegacyPreservation> GetAllBoundPassiveLegacyPreserv()
+    {
+        return _collectedPassiveIDs.Select(id => _collectedLegacyPreservations[id]).ToList();
     }
     
     private bool IsLegacyCollected(int legacyIdx)

@@ -180,4 +180,10 @@ public static class Utility
             return number.ToString("0.0");
         }
     }
+
+    public static string FormatPercentage(float percentage)
+    {
+        percentage *= 100;
+        return FormatFloat(percentage);
+    }
 }

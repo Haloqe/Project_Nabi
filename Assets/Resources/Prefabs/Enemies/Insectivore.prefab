@@ -332,7 +332,10 @@ MonoBehaviour:
     StatusEffects: []
     IncomingDirectionX: 0
     AttackerArmourPenetration: 0
+    GravCorePosition: {x: 0, y: 0, z: 0}
     CanBeDarkAttack: 0
+    ShouldLeech: 0
+    ShouldUpdateTension: 0
 --- !u!114 &3751648719412672287
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -352,6 +355,8 @@ MonoBehaviour:
   IsChasingPlayer: 0
   IsAttackingPlayer: 0
   IsFlippable: 1
+  influenceRange: 0
+  distanceToGravField: 0
 --- !u!50 &6289651156969581947
 Rigidbody2D:
   serializedVersion: 4

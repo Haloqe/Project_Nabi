@@ -20,8 +20,8 @@ public class GravityField : MonoBehaviour
     public void OnTriggerEnter2D(Collider2D collision)
     {
         Debug.Log("collided with enemies");
-        if (Utility.IsObjectInList(collision.gameObject, _affectedEnemies)) return;
-        IDamageable target = collision.gameObject.GetComponent<IDamageable>();
+        IDamageable target = collision.gameObject.GetComponentInParent<IDamageable>();
+        if (Utility.IsObjectInList(target.GetGameObject(), _affectedEnemies)) return;
 
         if (target != null)
         {

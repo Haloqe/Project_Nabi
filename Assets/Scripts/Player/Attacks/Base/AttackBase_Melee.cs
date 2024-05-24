@@ -136,9 +136,9 @@ public class AttackBase_Melee : AttackBase
     {
         // Check if the hit target is valid
         if (collision.gameObject.CompareTag("Enemy") == false) return;
-        if (Utility.IsObjectInList(collision.gameObject, _affectedEnemies)) return;
-        IDamageable target = collision.gameObject.GetComponent<IDamageable>();
+        IDamageable target = collision.gameObject.GetComponentInParent<IDamageable>();
         if (target == null) return;
+        if (Utility.IsObjectInList(target.GetGameObject(), _affectedEnemies)) return;
 
         // Recalculate damage based on current player strength
         _attackComboInfo.Damage.TotalAmount = _damageComboInfo.BaseDamage + _playerController.Strength * _damageComboInfo.RelativeDamage;

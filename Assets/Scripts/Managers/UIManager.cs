@@ -98,6 +98,7 @@ public class UIManager : Singleton<UIManager>
         _UIIAMap.FindAction("Close").performed += OnClose;
         _UIIAMap.FindAction("CloseMap").performed += OnCloseMap;
         _UIIAMap.FindAction("CloseBook").performed += OnCloseBook;
+        _UIIAMap.FindAction("NextPage").performed += OnNextPage;
         _UIIAMap.FindAction("Navigate").performed += OnNavigate;
         _UIIAMap.FindAction("Navigate").canceled += OnNavigate;
         _UIIAMap.FindAction("Reset").performed += OnReset;
@@ -362,6 +363,14 @@ public class UIManager : Singleton<UIManager>
             _bookUIController.StartCloseBookAnimation();
         }
     }
+    
+    private void OnNextPage(InputAction.CallbackContext obj)
+    {
+        if (_activeFocusedUI == _bookUI)
+        {
+            _bookUIController.OnNextPage();
+        }
+    }
 
     public void OpenMap()
     {
@@ -400,6 +409,10 @@ public class UIManager : Singleton<UIManager>
         if (_activeFocusedUI == _zoomedMap)
         {
             _mapController.OnNavigate(value);
+        }
+        else if (_activeFocusedUI == _bookUI)
+        {
+            _bookUIController.OnNavigate(value);
         }
         else if (_activeFocusedUI == _warriorUIObject)
         {

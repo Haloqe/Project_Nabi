@@ -39,6 +39,7 @@ public class MapController : MonoBehaviour
         _navigationValue = Vector2.zero;
         _camSize = _mapCameraComponent.orthographicSize = _defaultCamSize;
     }
+    
     private void Update()
     {
         if (_isLerping) return;

@@ -61,7 +61,7 @@ public class AttackSpawnObject : MonoBehaviour
     
     private void OnTriggerEnter2D(Collider2D other)
     {
-        IDamageable target = other.gameObject.GetComponent<IDamageable>();
+        IDamageable target = other.gameObject.GetComponentInParent<IDamageable>();
         if (target == null || _attackersList.Contains(target) || !HasDamage && !HasStatusEffect) return;
         _attackersList.Add(target);
         StartCoroutine(DealCoroutine(target));

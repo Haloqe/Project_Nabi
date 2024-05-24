@@ -1,9 +1,7 @@
-using System;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Serialization;
 
-public class BookStatusPage : MonoBehaviour
+public class BookStatusPage : BookPage
 {
     // References
     private GameManager _gameManager;
@@ -27,13 +25,13 @@ public class BookStatusPage : MonoBehaviour
     [SerializeField] private TextMeshProUGUI[] attackTMPs;
     [SerializeField] private TextMeshProUGUI totalTMP;
 
-    private void Awake()
+    public override void Init()
     {
         _gameManager = GameManager.Instance;
         _playerController = PlayerController.Instance;
     }
     
-    private void OnEnable()
+    public override void OnBookOpen()
     {
         // Left Page
         deathTMP.text = "DEATHS: " + _gameManager.PlayerMetaInfo.NumDeaths;
@@ -44,10 +42,10 @@ public class BookStatusPage : MonoBehaviour
         // Right Page
         healthTMP.text = "체력: " + _playerController.playerDamageReceiver.BaseHealth;
         strengthTMP.text = "공격력: " + _playerController.BaseStrength;
-        criticalRateTMP.text = "치명타 확률: " + _playerController.BaseCriticalRate + "%";
+        criticalRateTMP.text = "치명타 확률: " + Utility.FormatPercentage(_playerController.BaseCriticalRate) + "%";
         armourTMP.text = "방어력: " + _playerController.BaseArmour;
         armourPenetrationTMP.text = "방어 관통력: " + _playerController.BaseArmourPenetration;
-        evasionRateTMP.text = "회피율: " + _playerController.BaseEvasionRate + "%";
+        evasionRateTMP.text = "회피율: " + Utility.FormatPercentage(_playerController.BaseEvasionRate) + "%";
         healEfficiencyTMP.text = "회복 효율: " + _playerController.BaseHealEfficiency;
         
         // Additions
@@ -62,10 +60,10 @@ public class BookStatusPage : MonoBehaviour
         // Addition texts
         if (healthDiff != 0) healthTMP.text += $"<color=#32a852> (+{Utility.FormatFloat(healthDiff)})</color>";
         if (strengthDiff != 0) strengthTMP.text += $"<color=#32a852> (+{Utility.FormatFloat(strengthDiff)})</color>";
-        if (critRateDiff != 0) criticalRateTMP.text += $"<color=#32a852> (+{Utility.FormatFloat(critRateDiff)})</color>";
+        if (critRateDiff != 0) criticalRateTMP.text += $"<color=#32a852> (+{Utility.FormatPercentage(critRateDiff)}%)</color>";
         if (armourDiff != 0) armourTMP.text += $"<color=#32a852> (+{Utility.FormatFloat(armourDiff)})</color>";
         if (armourPenetrationDiff != 0) armourPenetrationTMP.text += $"<color=#32a852> (+{Utility.FormatFloat(armourPenetrationDiff)})</color>";
-        if (evasionRateDiff != 0) evasionRateTMP.text += $"<color=#32a852> (+{Utility.FormatFloat(evasionRateDiff)})</color>";
+        if (evasionRateDiff != 0) evasionRateTMP.text += $"<color=#32a852> (+{Utility.FormatPercentage(evasionRateDiff)}%)</color>";
         if (healEfficiencyDiff != 0) healEfficiencyTMP.text += $"<color=#32a852> (+{Utility.FormatFloat(healEfficiencyDiff)})</color>";
         
         // Attack Additions
@@ -76,5 +74,15 @@ public class BookStatusPage : MonoBehaviour
         }
         if (_playerController.playerDamageDealer.totalDamageMultiplier != 1)
             totalTMP.text += $"<color=#00A7B7> (X{Utility.FormatFloat(_playerController.playerDamageDealer.totalDamageMultiplier)})</00A7B7>";
+    }
+
+    public override void OnPageOpen()
+    {
+        
+    }
+    
+    public override void OnNavigate(Vector2 value)
+    {
+        
     }
 }
