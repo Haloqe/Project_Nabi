@@ -166,4 +166,18 @@ public static class Utility
         return "<color=#" + ColorUtility.ToHtmlStringRGBA(Define.WarriorMainColours[(int)warrior])
             + ">[" + Define.WarriorNames[(int)Define.Localisation, (int)warrior] + "]</color>";
     }
+    
+    public static string FormatFloat(float number)
+    {
+        if (number % 1 == 0)
+        {
+            // If the number has no decimal place
+            return number.ToString("0");
+        }
+        else
+        {
+            // If the number has a decimal place, cut to first decimal place
+            return number.ToString("0.0");
+        }
+    }
 }

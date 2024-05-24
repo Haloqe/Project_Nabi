@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Random = UnityEngine.Random;
@@ -419,7 +420,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     public virtual void DealDamage(IDamageable target, AttackInfo damageInfo)
     {
         damageInfo.AttackerArmourPenetration = EnemyData.DefaultArmourPenetration;
-        target.TakeDamage(damageInfo);
+        target.TakeDamage(damageInfo.Clone());
     }
 
     // Received Damage Handling
@@ -436,14 +437,14 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         var hypHallucinationPreserv = _player.playerDamageDealer.BindingSkillPreservations[(int)EWarrior.Sommer];
         if (_sommerStackCount <= 0)
         {
-            AttackInfo boostedAttackInfo = attackInfo.Clone();
-            boostedAttackInfo.Damage.TotalAmount += attackInfo.Damage.TotalAmount * Define.SommerHypHallucinationStats[(int)hypHallucinationPreserv];
-            HandleNewDamage(boostedAttackInfo.Damage, boostedAttackInfo.AttackerArmourPenetration, attackInfo.ShouldLeech, attackInfo.ShouldUpdateTension);
+            DamageInfo boostedDamageInfo = attackInfo.Damage.Clone();
+            boostedDamageInfo.TotalAmount += attackInfo.Damage.TotalAmount * Define.SommerHypHallucinationStats[(int)hypHallucinationPreserv];
+            HandleNewDamage(boostedDamageInfo, attackInfo.AttackerArmourPenetration, attackInfo.ShouldLeech, attackInfo.ShouldUpdateTension);
         }
         // 그 외 경우
         else
         {
-            HandleNewDamage(attackInfo.Damage, attackInfo.AttackerArmourPenetration, attackInfo.ShouldLeech, attackInfo.ShouldUpdateTension);
+            HandleNewDamage(attackInfo.Damage.Clone(), attackInfo.AttackerArmourPenetration, attackInfo.ShouldLeech, attackInfo.ShouldUpdateTension);
         }
     }
 

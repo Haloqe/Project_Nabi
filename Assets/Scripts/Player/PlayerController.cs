@@ -16,34 +16,36 @@ public class PlayerController : Singleton<PlayerController>
     public PlayerInventory playerInventory;
     public GameObject nightShadeCollider;
     
+    private UIManager _uiManager;
+    private GameManager _gameManager;
+    
     // Centrally controlled variables
     public float DefaultGravityScale { get; private set; }
-    private int _slayedEnemiesCount = 0;
     public float HpCriticalThreshold { get; private set; }
     [NamedArray(typeof(EStatusEffect))] public GameObject[] statusEffects;
     [NamedArray(typeof(EBuffs))] public GameObject[] buffEffects;
     
     // Stats
-    public float Strength => _baseStrength * _strengthMultiplier;
-    public float Armour => _baseArmour * _armourMultiplier;
-    public float ArmourPenetration => _baseArmourPenetration * _armourPenetrationMultiplier;
-    public float HealEfficiency => _baseHealEfficiency * _healEfficiencyMultiplier;
-    public float EvasionRate => _baseEvasionRate + _evasionRateAddition + evasionRateAdditionAtMax;
-    public float CriticalRate => _baseCritcalRate + _criticalRateAddition;
+    public float Strength => BaseStrength * _strengthMultiplier;
+    public float Armour => BaseArmour * _armourMultiplier;
+    public float ArmourPenetration => BaseArmourPenetration * _armourPenetrationMultiplier;
+    public float HealEfficiency => BaseHealEfficiency * _healEfficiencyMultiplier;
+    public float EvasionRate => BaseEvasionRate + _evasionRateAddition + evasionRateAdditionAtMax;
+    public float CriticalRate => BaseCriticalRate + _criticalRateAddition;
 
-    private float _baseStrength = 3.0f;
-    private float _baseArmour = 0.0f;
-    private float _baseArmourPenetration = 0.0f;
-    private float _baseEvasionRate = 0.0f;
-    private float _baseCritcalRate = 0.0f;
-    private float _baseHealEfficiency = 1.0f;
+    public float BaseStrength { get; private set; }
+    public float BaseArmour { get; private set; }
+    public float BaseArmourPenetration { get; private set; }
+    public float BaseEvasionRate { get; private set; }
+    public float BaseCriticalRate { get; private set; }
+    public float BaseHealEfficiency { get; private set; }
     
     // 확률은 +, 일반 숫자값은 *
     private float _strengthMultiplier = 1.0f;
     private float _armourMultiplier = 1.0f;
     private float _armourPenetrationMultiplier = 1.0f;
     private float _healEfficiencyMultiplier = 1.0f;
-    private float _evasionRateAddition = 0.0f;  
+    private float _evasionRateAddition = 0.0f;
     private float _criticalRateAddition = 0.0f;  
     public float evasionRateAdditionAtMax = 0.0f;
     
@@ -79,7 +81,16 @@ public class PlayerController : Singleton<PlayerController>
         nightShadeShadeBonusStats = new float[]{0,0,0,0,0};
         DefaultGravityScale = 3.0f;
         
-        // Get player components
+        BaseStrength = 3.0f;
+        BaseArmour = 3.0f;
+        BaseArmourPenetration = 0.0f;
+        BaseEvasionRate = 0.0f;
+        BaseCriticalRate = 0.0f;
+        BaseHealEfficiency = 1.0f;
+        
+        // Get components
+        _uiManager = UIManager.Instance;
+        _gameManager = GameManager.Instance;
         _playerInput = GetComponent<PlayerInput>();
         playerMovement = GetComponent<PlayerMovement>();
         playerDamageReceiver = GetComponent<PlayerDamageReceiver>();
@@ -166,15 +177,10 @@ public class PlayerController : Singleton<PlayerController>
     int count = 0;
     void OnTestAction(InputValue value)
     {
-        playerInventory.AddFlower(1);
-        playerInventory.AddFlower(1);
-        playerInventory.AddFlower(1);
-        playerInventory.AddFlower(1);
-        playerInventory.AddFlower(1);
         // playerInventory.AddFlower(2);
         // playerInventory.AddFlower(3);
         // playerInventory.AddFlower(4);
-        //playerDamageReceiver.ChangeHealthByAmount(-1000);
+        playerDamageReceiver.ChangeHealthByAmount(-1000);
         //playerInventory.ChangeGoldByAmount(600);
         // if (count == 0)
         // {
@@ -191,25 +197,26 @@ public class PlayerController : Singleton<PlayerController>
     {
         switch (condition)
         {
-            case ECondition.SlayedEnemiesCount:
-                _slayedEnemiesCount += (int)changeAmount;
-                break;
+            // case ECondition.SlayedEnemiesCount:
+            //     _slayedEnemiesCount += (int)changeAmount;
+            //     break;
         }
     }
     
     private void OnEnemySlayed(EnemyBase slayedEnemy)
     {
-        PlayerEvents.ValueChanged.Invoke(ECondition.SlayedEnemiesCount, +1);
+        //PlayerEvents.ValueChanged.Invoke(ECondition.SlayedEnemiesCount, +1);
+        _gameManager.PlayerMetaInfo.NumKills++;
     }
     
     private void OnOpenMap(InputValue value)
     {
-        UIManager.Instance.OpenMap();
+        _uiManager.OpenMap();
     }
     
     private void OnOpenBook(InputValue value)
     {
-        UIManager.Instance.OpenBook();
+        _uiManager.OpenBook();
     }
 
     // Heal is exclusively used for increase of health from food items
@@ -256,7 +263,7 @@ public class PlayerController : Singleton<PlayerController>
         // Display text
         string[] upText = {" Up!", " 업!"};
         var text = Define.StatNames[(int)Define.Localisation, (int)upgradeData.Stat] + upText[(int)Define.Localisation];
-        UIManager.Instance.DisplayTextPopUp(text, transform.position + new Vector3(0, 2.3f, 0), transform);
+        _uiManager.DisplayTextPopUp(text, transform.position + new Vector3(0, 2.3f, 0), transform);
         
         // if (upgradeData.HasApplyCondition)
         // {

@@ -11,7 +11,7 @@ public class AttackBase_Ranged : AttackBase
     {
         base.Start();
         _attackType = ELegacyType.Ranged;
-        _damageInfoInit.BaseDamage = 3.0f;
+        _damageInfoInit.BaseDamage = 20.0f;
         _attackInfoInit.Damage.TotalAmount = _damageInfoInit.BaseDamage + _playerController.Strength * _damageInfoInit.RelativeDamage;
         _attackInfoInit.CanBeDarkAttack = true;
         _attackInfoInit.ShouldUpdateTension = true;

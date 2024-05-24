@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -12,8 +13,11 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     private PlayerController _playerController;
 
     // TEMP health attributes
-    private float _health = 300;
-    private float _maxHealth = 300;
+    private float _currHealth;
+    public float MaxHealth => BaseHealth + _additionalHealth;
+    public float BaseHealth { get; private set; }
+    private float _additionalHealth;
+    
 
     // status effect attributes
     public bool IsSilenced { get; private set; }
@@ -32,13 +36,16 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         Array.Clear(_effectRemainingTimes, 0, _effectRemainingTimes.Length);
         Array.Clear(_activeDOTCounts, 0, _activeDOTCounts.Length);
         _slowRemainingTimes.Clear();
-        _health = _maxHealth;
+        _currHealth = MaxHealth;
         IsSilenced = false;
         IsSilencedExceptCleanse = false;
+        _currHealth = MaxHealth;
     }
     
     private void Start()
     {
+        BaseHealth = 300;
+        _currHealth = MaxHealth;
         _playerController = PlayerController.Instance;
         _animator = GetComponent<Animator>();
         _spriteRenderer = GetComponent<SpriteRenderer>();
@@ -177,7 +184,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         }
         
         // Evade failed?
-        HandleNewDamage(damageInfo.Damage, damageInfo.AttackerArmourPenetration);
+        HandleNewDamage(damageInfo.Damage.Clone(), damageInfo.AttackerArmourPenetration);
         HandleNewStatusEffects(damageInfo.StatusEffects);
     }    
 
@@ -252,11 +259,12 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         // TODO hit/heal effect
         float prevHPRatio = GetHPRatio();
         if (changeAmount < 0) StartCoroutine(DamagedRoutine());
-        _health = Mathf.Clamp(_health + changeAmount, 0, _maxHealth);
+        _currHealth = Mathf.Clamp(_currHealth + changeAmount, 0, MaxHealth);
         PlayerEvents.HpChanged.Invoke(changeAmount, prevHPRatio, GetHPRatio());
-        if (_health == 0)
+        if (_currHealth == 0)
         {
             PlayerEvents.Defeated.Invoke();
+            GameManager.Instance.PlayerMetaInfo.NumDeaths++;
             GameManager.Instance.IsFirstRun = false;
         }
     }
@@ -271,7 +279,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
 
     public float GetHPRatio()
     {
-        return _health / _maxHealth;
+        return _currHealth / MaxHealth;
     }
     #endregion Damage Dealing and Receiving
 

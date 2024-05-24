@@ -3,6 +3,7 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : Singleton<GameManager>
 {
+    public PlayerMetaInfo PlayerMetaInfo { get; private set; }
     public GameObject PlayerPrefab;
 
     // Used for changing active scene through portals
@@ -20,6 +21,7 @@ public class GameManager : Singleton<GameManager>
     {
         base.Awake();
         if (IsToBeDestroyed) return;
+        PlayerMetaInfo = new PlayerMetaInfo();
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
