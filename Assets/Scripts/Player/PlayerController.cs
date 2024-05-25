@@ -84,7 +84,7 @@ public class PlayerController : Singleton<PlayerController>
         BaseStrength = 3.0f;
         BaseArmour = 3.0f;
         BaseArmourPenetration = 0.0f;
-        BaseEvasionRate = 0.0f;
+        BaseEvasionRate = 1.0f;
         BaseCriticalRate = 0.0f;
         BaseHealEfficiency = 1.0f;
         
@@ -263,7 +263,7 @@ public class PlayerController : Singleton<PlayerController>
         // Display text
         string[] upText = {" Up!", " 업!"};
         var text = Define.StatNames[(int)Define.Localisation, (int)upgradeData.Stat] + upText[(int)Define.Localisation];
-        _uiManager.DisplayTextPopUp(text, transform.position + new Vector3(0, 2.3f, 0), transform);
+        _uiManager.DisplayTextPopUp(text, transform.position, transform);
         
         // if (upgradeData.HasApplyCondition)
         // {

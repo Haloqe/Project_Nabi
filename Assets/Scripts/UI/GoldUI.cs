@@ -1,4 +1,3 @@
-using System;
 using System.Globalization;
 using TMPro;
 using UnityEngine;
@@ -18,9 +17,15 @@ public class GoldUI : MonoBehaviour
         PlayerEvents.GoldChanged += OnPlayerGoldChanged;
     }
 
+    private void OnDestroy()
+    {
+        PlayerEvents.GoldChanged -= OnPlayerGoldChanged;
+    }
+
     private void Start()
     {
         _playerInventory = PlayerController.Instance.playerInventory;
+        _goldText.text = _playerInventory.Gold.ToString(CultureInfo.CurrentCulture);
     }
 
     private void OnPlayerGoldChanged()

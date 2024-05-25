@@ -6,6 +6,7 @@ public static class PlayerEvents
     public static UnityAction Defeated;
     public static UnityAction Spawned;
     public static UnityAction GoldChanged;
+    public static UnityAction SoulShardChanged;
     public static UnityAction<ECondition, float> ValueChanged;
     public static UnityAction StrengthChanged;
 }

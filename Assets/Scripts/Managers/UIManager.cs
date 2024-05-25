@@ -29,6 +29,7 @@ public class UIManager : Singleton<UIManager>
     private GameObject _evadePopupPrefab;
     private GameObject _textPopupPrefab;
     private GameObject _critPopupPrefab;
+    private GameObject _soulPopupPrefab;
     private GameObject _bookPrefab;
 
     // UI Instantiated Objects
@@ -277,6 +278,7 @@ public class UIManager : Singleton<UIManager>
         _evadePopupPrefab       = Utility.LoadGameObjectFromPath(path + "InGame/TextPopUp/EvadeUI");
         _textPopupPrefab        = Utility.LoadGameObjectFromPath(path + "InGame/TextPopUp/GeneralTextUI");
         _critPopupPrefab        = Utility.LoadGameObjectFromPath(path + "InGame/TextPopUp/CritPopUp");
+        _soulPopupPrefab        = Utility.LoadGameObjectFromPath(path + "InGame/TextPopUp/SoulPopUp");
         _bookPrefab             = Utility.LoadGameObjectFromPath(path + "InGame/Book/BookCanvas");
         
         _warriorUIPrefabs = new GameObject[(int)EWarrior.MAX];
@@ -461,20 +463,28 @@ public class UIManager : Singleton<UIManager>
     // InGame popup
     public void DisplayTextPopUp(string text, Vector3 position, Transform parent = null)
     {
-        var ui = Instantiate(_textPopupPrefab, position, quaternion.identity);
+        var ui = Instantiate(_textPopupPrefab, position + playerUpOffset, quaternion.identity);
         ui.GetComponent<TextPopUpUI>().Init(parent, text);
     }
-    
+    private Vector3 playerUpOffset = new Vector3(0, 2.3f, 0);
     // InGame popup - crit
     public void DisplayCritPopUp(Vector3 position)
     {
-        var ui = Instantiate(_critPopupPrefab, position, quaternion.identity);
+        var ui = Instantiate(_critPopupPrefab, position + playerUpOffset, quaternion.identity);
         ui.GetComponent<TextPopUpUI>().Init(null, string.Empty, 0.4f);
     }
     
     public void DisplayPlayerEvadePopUp()
     {
-        Instantiate(_evadePopupPrefab, _playerController.transform.position + new Vector3(0, 2.3f, 0), quaternion.identity);
+        Instantiate(_evadePopupPrefab, _playerController.transform.position + playerUpOffset, quaternion.identity);
+    }
+    
+    // InGame popup - soul
+    public void DisplaySoulPopUp()
+    {
+        var popup = Instantiate(_soulPopupPrefab);
+        popup.GetComponent<RectTransform>().position = _playerController.transform.position + playerUpOffset;
+        Destroy(popup, 1f);
     }
 
     // Flower

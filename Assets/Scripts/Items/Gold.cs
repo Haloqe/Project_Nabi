@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -23,7 +22,7 @@ public class Gold : MonoBehaviour
         force.z = 0.0f;
         //force.y = Mathf.Abs(force.y); // Ensure the force is always upwards
         _rb.AddForce(force.normalized * 2.8f, ForceMode2D.Impulse);
-        _rb.drag = 1.5f;
+        _rb.drag = 1.7f;
         StartCoroutine(WaitCoroutine());
     }
 

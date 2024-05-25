@@ -9,6 +9,7 @@ public class PlayerInventory : MonoBehaviour
     
     // Variables
     public int Gold { get; private set; }
+    public int SoulShard { get; private set; }
     private int[] _numFlowers = new int[5];
     private int _currentSelectedFlower = 0;
     
@@ -41,6 +42,13 @@ public class PlayerInventory : MonoBehaviour
     {
         Gold += amount;
         PlayerEvents.GoldChanged.Invoke();
+    }
+    
+    public void CollectSoulShard()
+    {
+        SoulShard++;
+        _uiManager.DisplaySoulPopUp();
+        PlayerEvents.SoulShardChanged.Invoke();
     }
 
     public bool TryBuyItem(int price)

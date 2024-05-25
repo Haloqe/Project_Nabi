@@ -239,7 +239,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         {
             infoToSend.Damage.TotalAmount *= 2;
             isCritAttack = true;
-            UIManager.Instance.DisplayCritPopUp(transform.position + new Vector3(0, 2.3f, 0));
+            UIManager.Instance.DisplayCritPopUp(transform.position);
         }
 
         // 어둠 게이지 완충 공격: 추가 데미지 및 흡혈 여부

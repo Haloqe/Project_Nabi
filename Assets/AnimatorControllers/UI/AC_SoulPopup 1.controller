@@ -1,14 +1,14 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1102 &-6405614007337917619
+--- !u!1102 &-7174034619858659817
 AnimatorState:
   serializedVersion: 6
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: TextWorldUI
-  m_Speed: 1
+  m_Name: A_GoldSoulPopup
+  m_Speed: 0.4
   m_CycleOffset: 0
   m_Transitions: []
   m_StateMachineBehaviours: []
@@ -20,7 +20,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 5f7984153bf7da74f923fa374e514799, type: 2}
+  m_Motion: {fileID: 7400000, guid: 6f98c9d2890561f4aa497ea51b803b9a, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -32,7 +32,7 @@ AnimatorController:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: TextUI
+  m_Name: AC_SoulPopup 1
   serializedVersion: 5
   m_AnimatorParameters: []
   m_AnimatorLayers:
@@ -58,8 +58,8 @@ AnimatorStateMachine:
   m_Name: Base Layer
   m_ChildStates:
   - serializedVersion: 1
-    m_State: {fileID: -6405614007337917619}
-    m_Position: {x: 300, y: 110, z: 0}
+    m_State: {fileID: -7174034619858659817}
+    m_Position: {x: 250, y: 120, z: 0}
   m_ChildStateMachines: []
   m_AnyStateTransitions: []
   m_EntryTransitions: []
@@ -69,4 +69,4 @@ AnimatorStateMachine:
   m_EntryPosition: {x: 50, y: 120, z: 0}
   m_ExitPosition: {x: 800, y: 120, z: 0}
   m_ParentStateMachinePosition: {x: 800, y: 20, z: 0}
-  m_DefaultState: {fileID: -6405614007337917619}
+  m_DefaultState: {fileID: -7174034619858659817}
