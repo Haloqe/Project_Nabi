@@ -178,7 +178,7 @@ public class WarriorUIController : MonoBehaviour
     {
         if (_confirmPanelObject.activeSelf)
         {
-            var res = _player.playerInventory.TryBuyItem(_legacyChangePrice);
+            var res = _player.playerInventory.TryBuyWithGold(_legacyChangePrice);
             if (!res)
             {
                 if (_activeShakeCoroutine != null) StopCoroutine(_activeShakeCoroutine);

@@ -129,7 +129,7 @@ public class BookUIController : MonoBehaviour
         _pages[_currPageIdx].OnNavigate(value);
     }
 
-    public void OnNextPage()
+    public void OnTab()
     {
         if (!_isFlipOver) return;
         _isFlipOver = false;

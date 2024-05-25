@@ -264,8 +264,6 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         if (_currHealth == 0)
         {
             PlayerEvents.Defeated.Invoke();
-            GameManager.Instance.PlayerMetaInfo.NumDeaths++;
-            GameManager.Instance.IsFirstRun = false;
         }
     }
     

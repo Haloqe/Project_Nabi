@@ -32,7 +32,7 @@ public class SoulShard : MonoBehaviour
     {
         if (_isInteracting) return;
         _isInteracting = true;
-        PlayerController.Instance.playerInventory.CollectSoulShard();
+        PlayerController.Instance.playerInventory.ChangeSoulShardByAmount(1);
         Destroy(gameObject);
     }
 

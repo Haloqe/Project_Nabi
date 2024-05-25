@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 public class PlayerInventory : MonoBehaviour
@@ -44,22 +43,26 @@ public class PlayerInventory : MonoBehaviour
         PlayerEvents.GoldChanged.Invoke();
     }
     
-    public void CollectSoulShard()
+    public void ChangeSoulShardByAmount(int amount)
     {
-        SoulShard++;
-        _uiManager.DisplaySoulPopUp();
+        SoulShard += amount;
         PlayerEvents.SoulShardChanged.Invoke();
     }
 
-    public bool TryBuyItem(int price)
+    public bool TryBuyWithGold(int price)
     {
-        if (Gold >= price)
-        {
-            ChangeGoldByAmount(-price);
-            _uiManager.DisplayGoldPopUp(-price);
-            return true;
-        }
-        return false;
+        if (Gold < price) return false;
+        ChangeGoldByAmount(-price);
+        _uiManager.DisplayGoldPopUp(-price);
+        return true;
+    }
+
+    public bool TryBuyWithSoulShard(int price)
+    {
+        if (SoulShard < price) return false;
+        ChangeSoulShardByAmount(-price);
+        _uiManager.DisplaySoulPopUp(-price);
+        return true;
     }
 
     // Store the number of flower bombs the player owns

@@ -33,6 +33,7 @@ public class UIManager : Singleton<UIManager>
     private GameObject _goldPlusPopupPrefab;
     private GameObject _goldMinusPopupPrefab;
     private GameObject _bookPrefab;
+    private GameObject _metaUpgradeUIPrefab;
 
     // UI Instantiated Objects
     private GameObject _mainMenuUI;
@@ -43,6 +44,7 @@ public class UIManager : Singleton<UIManager>
     private GameObject _zoomedMap;
     private GameObject _loadingScreenUI;
     private GameObject _bookUI;
+    private GameObject _metaUpgradeUI;
     
     // UI Mechanism Script
     private MainMenuUIController _mainMenuUIController;
@@ -50,6 +52,7 @@ public class UIManager : Singleton<UIManager>
     private MapController _mapController;
     private DefeatedUIController _defeatedUIController;
     private BookUIController _bookUIController;
+    private MetaUIController _metaUIController;
     
     // Minor Controllable Objects
     private Slider _playerHPSlider;
@@ -101,7 +104,7 @@ public class UIManager : Singleton<UIManager>
         _UIIAMap.FindAction("Close").performed += OnClose;
         _UIIAMap.FindAction("CloseMap").performed += OnCloseMap;
         _UIIAMap.FindAction("CloseBook").performed += OnCloseBook;
-        _UIIAMap.FindAction("NextPage").performed += OnNextPage;
+        _UIIAMap.FindAction("Tab").performed += OnTab;
         _UIIAMap.FindAction("Navigate").performed += OnNavigate;
         _UIIAMap.FindAction("Navigate").canceled += OnNavigate;
         _UIIAMap.FindAction("Reset").performed += OnReset;
@@ -125,6 +128,8 @@ public class UIManager : Singleton<UIManager>
         inGameCombatUI      = Instantiate(_inGameCombatPrefab, Vector3.zero, Quaternion.identity).GameObject();
         _zoomedMap          = Instantiate(_zoomedMapPrefab, Vector3.zero, Quaternion.identity).GameObject();
         _bookUI             = Instantiate(_bookPrefab, Vector3.zero, Quaternion.identity).GameObject();
+        _metaUpgradeUI      = Instantiate(_metaUpgradeUIPrefab, Vector3.zero, Quaternion.identity).GameObject();
+        _metaUIController   = _metaUpgradeUI.GetComponent<MetaUIController>();
         _bookUIController   = _bookUI.GetComponentInChildren<BookUIController>();
         _defeatedUIController = _defeatedUI.GetComponent<DefeatedUIController>();
         _mapController      = _zoomedMap.GetComponent<MapController>();
@@ -284,6 +289,7 @@ public class UIManager : Singleton<UIManager>
         _goldMinusPopupPrefab   = Utility.LoadGameObjectFromPath(path + "InGame/TextPopUp/GoldMinusPopUp");
         _goldPlusPopupPrefab    = Utility.LoadGameObjectFromPath(path + "InGame/TextPopUp/GoldPlusPopUp");
         _bookPrefab             = Utility.LoadGameObjectFromPath(path + "InGame/Book/BookCanvas");
+        _metaUpgradeUIPrefab    = Utility.LoadGameObjectFromPath(path + "InGame/MetaUpgradeCanvas");
         
         _warriorUIPrefabs = new GameObject[(int)EWarrior.MAX];
         for (int i = 0; i < (int)EWarrior.MAX; i++)
@@ -356,6 +362,11 @@ public class UIManager : Singleton<UIManager>
         Destroy(interactor.gameObject);
         return true;
     }
+    
+    public void OpenMetaUpgradeUI()
+    {
+        if (_activeFocusedUI == null) OpenFocusedUI(_metaUpgradeUI, true);
+    }
 
     public void OpenBook()
     {
@@ -370,11 +381,15 @@ public class UIManager : Singleton<UIManager>
         }
     }
     
-    private void OnNextPage(InputAction.CallbackContext obj)
+    private void OnTab(InputAction.CallbackContext obj)
     {
         if (_activeFocusedUI == _bookUI)
         {
-            _bookUIController.OnNextPage();
+            _bookUIController.OnTab();
+        }
+        else if (_activeFocusedUI == _metaUpgradeUI)
+        {
+            _metaUIController.OnTab();
         }
     }
 
@@ -425,6 +440,10 @@ public class UIManager : Singleton<UIManager>
         {
             _warriorUIController.OnNavigate(value);
         } 
+        else if (_activeFocusedUI == _metaUpgradeUI)
+        {
+            _metaUIController.OnNavigate(value);
+        }
         else if (_activeFocusedUI == _defeatedUI)
         {
             _defeatedUIController.OnNavigate(value);
@@ -454,6 +473,10 @@ public class UIManager : Singleton<UIManager>
         if (_activeFocusedUI == _warriorUIObject)
         {
             _warriorUIController.OnSubmit();
+        }
+        else if (_activeFocusedUI == _metaUpgradeUI)
+        {
+            _metaUIController.OnSubmit();
         }
         else if (_activeFocusedUI == _defeatedUI)
         {
@@ -485,10 +508,12 @@ public class UIManager : Singleton<UIManager>
     }
     
     // InGame popup - soul
-    public void DisplaySoulPopUp()
+    public void DisplaySoulPopUp(int value)
     {
+        var valueText = value < 0 ? value.ToString() : "+" + value;
         var popup = Instantiate(_soulPopupPrefab);
         popup.GetComponent<RectTransform>().position = _playerController.transform.position + playerUpOffset;
+        popup.GetComponentInChildren<TextMeshProUGUI>().text = valueText;
         Destroy(popup, 1f);
     }
     

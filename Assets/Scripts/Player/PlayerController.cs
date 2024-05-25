@@ -177,10 +177,18 @@ public class PlayerController : Singleton<PlayerController>
     int count = 0;
     void OnTestAction(InputValue value)
     {
+        if (count == 0)
+        {
+            playerInventory.ChangeSoulShardByAmount(1000);
+            count++;
+        }
+        else
+        {
+            playerDamageReceiver.ChangeHealthByAmount(-1000);
+        }
         // playerInventory.AddFlower(2);
         // playerInventory.AddFlower(3);
         // playerInventory.AddFlower(4);
-        playerDamageReceiver.ChangeHealthByAmount(-1000);
         //playerInventory.ChangeGoldByAmount(600);
         // if (count == 0)
         // {

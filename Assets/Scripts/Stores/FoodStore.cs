@@ -89,7 +89,7 @@ public class FoodStore : MonoBehaviour
             
             // Try buy
             int activeIdx = _activeFoodIdx;
-            bool buySucceeded = PlayerController.Instance.playerInventory.TryBuyItem(_foodsToSell[activeIdx].Price);
+            bool buySucceeded = PlayerController.Instance.playerInventory.TryBuyWithGold(_foodsToSell[activeIdx].Price);
             if (!buySucceeded) return;
             PlayerController.Instance.Heal(_foodsToSell[activeIdx].HealthPoint);
             

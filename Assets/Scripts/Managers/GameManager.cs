@@ -22,7 +22,9 @@ public class GameManager : Singleton<GameManager>
         base.Awake();
         if (IsToBeDestroyed) return;
         PlayerMetaInfo = new PlayerMetaInfo();
+        PlayerMetaInfo.Reset();
         SceneManager.sceneLoaded += OnSceneLoaded;
+        PlayerEvents.Defeated += OnPlayerDefeated;
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode loadMode)
@@ -88,7 +90,9 @@ public class GameManager : Singleton<GameManager>
             Destroy(PlayerController.Instance.gameObject);
         }
         
+        // TEMP TODO
         IsFirstRun = true;
+        PlayerMetaInfo.Reset();
         SceneManager.LoadScene("Scenes/MainMenu");
     }
 
@@ -100,5 +104,12 @@ public class GameManager : Singleton<GameManager>
 #else
         Application.Quit();
 #endif
+    }
+
+    private void OnPlayerDefeated()
+    {
+        IsFirstRun = false;
+        PlayerMetaInfo.NumDeaths++;
+        PlayerMetaInfo.NumSouls = PlayerController.Instance.playerInventory.SoulShard;
     }
 }
