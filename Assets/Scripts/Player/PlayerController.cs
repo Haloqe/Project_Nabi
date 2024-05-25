@@ -15,16 +15,16 @@ public class PlayerController : Singleton<PlayerController>
     public PlayerDamageDealer playerDamageDealer;
     public PlayerInventory playerInventory;
     public GameObject nightShadeCollider;
-    
+
     private UIManager _uiManager;
     private GameManager _gameManager;
-    
+
     // Centrally controlled variables
     public float DefaultGravityScale { get; private set; }
     public float HpCriticalThreshold { get; private set; }
     [NamedArray(typeof(EStatusEffect))] public GameObject[] statusEffects;
     [NamedArray(typeof(EBuffs))] public GameObject[] buffEffects;
-    
+
     // Stats
     public float Strength => BaseStrength * _strengthMultiplier;
     public float Armour => BaseArmour * _armourMultiplier;
@@ -39,16 +39,16 @@ public class PlayerController : Singleton<PlayerController>
     public float BaseEvasionRate { get; private set; }
     public float BaseCriticalRate { get; private set; }
     public float BaseHealEfficiency { get; private set; }
-    
+
     // 확률은 +, 일반 숫자값은 *
     private float _strengthMultiplier = 1.0f;
     private float _armourMultiplier = 1.0f;
     private float _armourPenetrationMultiplier = 1.0f;
     private float _healEfficiencyMultiplier = 1.0f;
     private float _evasionRateAddition = 0.0f;
-    private float _criticalRateAddition = 0.0f;  
+    private float _criticalRateAddition = 0.0f;
     public float evasionRateAdditionAtMax = 0.0f;
-    
+
     // Legacy related (Buffs)
     public ELegacyPreservation EuphoriaEnemyGoldDropBuffPreserv { private set; get; }
     public ELegacyPreservation EuphoriaEcstasyUpgradePreserv { private set; get; }
@@ -62,7 +62,7 @@ public class PlayerController : Singleton<PlayerController>
     // Upgrades
     private Dictionary<EStat, List<(int legacyID, SLegacyStatUpgradeData data)>> _appliedStatUpgrades;
     private List<EnemyBase>[] _ecstasyAffected;
-    
+
     // NightShade
     private List<EnemyBase> _shadowHosts;
     private readonly int _shadowHostLimit = 3;
@@ -70,7 +70,7 @@ public class PlayerController : Singleton<PlayerController>
     private readonly float _shadowHostAutoUpdateAmount = 1.5f;
     public float[] nightShadeFastChaseStats;
     public float[] nightShadeShadeBonusStats;
-    
+
     protected override void Awake()
     {
         base.Awake();
@@ -78,16 +78,19 @@ public class PlayerController : Singleton<PlayerController>
 
         // Initialise values
         HpCriticalThreshold = 0.33f;
-        nightShadeShadeBonusStats = new float[]{0,0,0,0,0};
+        nightShadeShadeBonusStats = new float[]
+        {
+            0, 0, 0, 0, 0
+        };
         DefaultGravityScale = 3.0f;
-        
+
         BaseStrength = 3.0f;
         BaseArmour = 3.0f;
         BaseArmourPenetration = 0.0f;
-        BaseEvasionRate = 1.0f;
+        BaseEvasionRate = 0.0f;
         BaseCriticalRate = 0.0f;
         BaseHealEfficiency = 1.0f;
-        
+
         // Get components
         _uiManager = UIManager.Instance;
         _gameManager = GameManager.Instance;
@@ -100,12 +103,12 @@ public class PlayerController : Singleton<PlayerController>
         _appliedStatUpgrades = new Dictionary<EStat, List<(int legacyID, SLegacyStatUpgradeData data)>>();
         _shadowHosts = new List<EnemyBase>();
         nightShadeCollider = GetComponentInChildren<NightShadeCollider>(includeInactive: true).gameObject;
-        
+
         // Events binding
         GameEvents.Restarted += OnRestarted;
         PlayerEvents.ValueChanged += OnValueChanged;
         InGameEvents.EnemySlayed += OnEnemySlayed;
-        
+
         OnRestarted();
     }
 
@@ -126,11 +129,11 @@ public class PlayerController : Singleton<PlayerController>
     private void OnRestarted()
     {
         StopAllCoroutines();
-        
+
         // Initialise animator
         _animator.Rebind();
         _animator.Update(0f);
-        
+
         // Initialise player stats
         _appliedStatUpgrades.Clear();
         _strengthMultiplier = 1.0f;
@@ -139,13 +142,13 @@ public class PlayerController : Singleton<PlayerController>
         _evasionRateAddition = 0.0f;
         _healEfficiencyMultiplier = 1.0f;
         evasionRateAdditionAtMax = 0.0f;
-        
+
         // Initialise legacy preservations
         EuphoriaEnemyGoldDropBuffPreserv = ELegacyPreservation.MAX;
         EuphoriaEcstasyUpgradePreserv = ELegacyPreservation.MAX;
-        SommerHypHallucinationPreserv = ELegacyPreservation.MAX; 
-        TurbelaMaxButterflyPreserv = ELegacyPreservation.MAX; 
-        TurbelaDoubleSpawnPreserv = ELegacyPreservation.MAX; 
+        SommerHypHallucinationPreserv = ELegacyPreservation.MAX;
+        TurbelaMaxButterflyPreserv = ELegacyPreservation.MAX;
+        TurbelaDoubleSpawnPreserv = ELegacyPreservation.MAX;
         TurbelaButterflyCritPreserv = ELegacyPreservation.MAX;
         NightShadeFastChasePreserv = ELegacyPreservation.MAX;
         NightShadeShadeBonusPreserv = ELegacyPreservation.MAX;
@@ -158,7 +161,7 @@ public class PlayerController : Singleton<PlayerController>
                 enemyList.Clear();
             }
         }
-        
+
         // Initialise NightShade data
         _shadowHosts.Clear();
         nightShadeCollider.SetActive(false);
@@ -200,7 +203,7 @@ public class PlayerController : Singleton<PlayerController>
         // }
         // count++;
     }
-    
+
     private void OnValueChanged(ECondition condition, float changeAmount)
     {
         switch (condition)
@@ -210,18 +213,18 @@ public class PlayerController : Singleton<PlayerController>
             //     break;
         }
     }
-    
+
     private void OnEnemySlayed(EnemyBase slayedEnemy)
     {
         //PlayerEvents.ValueChanged.Invoke(ECondition.SlayedEnemiesCount, +1);
         _gameManager.PlayerMetaInfo.NumKills++;
     }
-    
+
     private void OnOpenMap(InputValue value)
     {
         _uiManager.OpenMap();
     }
-    
+
     private void OnOpenBook(InputValue value)
     {
         _uiManager.OpenBook();
@@ -241,7 +244,7 @@ public class PlayerController : Singleton<PlayerController>
             // TODO 피의 갑주
             return;
         }
-        
+
         // Add to applied stat upgrades
         // if (!_appliedStatUpgrades.TryGetValue(upgradeData.Stat, out List<(int legacyID, SLegacyStatUpgradeData data)> list))
         // {
@@ -251,10 +254,10 @@ public class PlayerController : Singleton<PlayerController>
         // {
         //     _appliedStatUpgrades.Add(upgradeData.Stat, new List<(int legacyID, SLegacyStatUpgradeData data)>{(legacyID, upgradeData)});
         // }
-        
+
         string enumString = upgradeData.Stat.ToString();
         string decapitalizedEnumString = char.ToLower(enumString[0]) + enumString.Substring(1);
-        
+
         // Update value - multiplier
         if (upgradeData.isMultiplier)
         {
@@ -267,12 +270,15 @@ public class PlayerController : Singleton<PlayerController>
             var additionFieldInfo = GetType().GetField($"_{decapitalizedEnumString}Addition", BindingFlags.NonPublic | BindingFlags.Instance);
             additionFieldInfo.SetValue(this, (float)additionFieldInfo.GetValue(this) + upgradeData.IncreaseAmounts[(int)preservation]);
         }
-        
+
         // Display text
-        string[] upText = {" Up!", " 업!"};
+        string[] upText =
+        {
+            " Up!", " 업!"
+        };
         var text = Define.StatNames[(int)Define.Localisation, (int)upgradeData.Stat] + upText[(int)Define.Localisation];
         _uiManager.DisplayTextPopUp(text, transform.position, transform);
-        
+
         // if (upgradeData.HasApplyCondition)
         // {
         //     var applyCond = upgradeData.UpgradeApplyCondition;
@@ -289,12 +295,13 @@ public class PlayerController : Singleton<PlayerController>
         //     }
         // }
     }
-    
+
     // Legacy - Enum 이름에 해당하는 boolean 값을 찾아서 activate
     public void ActivateBuffByName(EBuffType legacyBuff, ELegacyPreservation preservation)
     {
         // Activate buff
-        var fieldInfo = GetType().GetField($"<{legacyBuff}Preserv>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.IgnoreCase | BindingFlags.Public);
+        var fieldInfo = GetType().GetField($"<{legacyBuff}Preserv>k__BackingField",
+            BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.IgnoreCase | BindingFlags.Public);
         fieldInfo.SetValue(this, preservation);
     }
 
@@ -309,16 +316,16 @@ public class PlayerController : Singleton<PlayerController>
         if (_ecstasyAffected[id].Contains(appliedEnemy)) return;
         _ecstasyAffected[id].Add(appliedEnemy);
         if (_ecstasyAffected[id].Count > 1) return;
-        
+
         // Apply buff
-        var buffValue = EuphoriaEcstasyUpgradePreserv == ELegacyPreservation.MAX ? 
+        var buffValue = EuphoriaEcstasyUpgradePreserv == ELegacyPreservation.MAX ?
             Define.EcstasyBuffStats[id][preserv] : Define.EcstasyUpgradedBuffStats[id][preserv];
         switch (appliedEnemy.EnemyData.ID)
         {
             case 0: // VoidMantis: 방어력 버프
                 _armourMultiplier += buffValue;
                 break;
-            
+
             case 1: // Insectivore: 원거리 공격 버프
                 playerDamageDealer.attackDamageMultipliers[(int)EPlayerAttackType.Ranged] += buffValue;
                 break;
@@ -336,14 +343,14 @@ public class PlayerController : Singleton<PlayerController>
         if (!_ecstasyAffected[id].Contains(appliedEnemy)) return;
         _ecstasyAffected[id].Remove(appliedEnemy);
         if (_ecstasyAffected[id].Count > 0) return;
-        
+
         // Remove the applied effect
         switch (appliedEnemy.EnemyData.ID)
         {
             case 0: // VoidMantis
                 _armourMultiplier = 1.0f;
                 break;
-            
+
             case 1: // Insectivore
                 playerDamageDealer.attackDamageMultipliers[(int)EPlayerAttackType.Ranged] = 1.0f;
                 break;
@@ -354,10 +361,10 @@ public class PlayerController : Singleton<PlayerController>
     {
         // Max number of shadow hosts reached?
         if (_shadowHosts.Count >= _shadowHostLimit) return false;
-        
+
         // Already a shadow host?
         if (_shadowHosts.Contains(enemy)) return false;
-        
+
         // Add enemy to the list
         _shadowHosts.Add(enemy);
         StartCoroutine(nameof(ShadowHostAutoUpdateCoroutine));
@@ -367,7 +374,7 @@ public class PlayerController : Singleton<PlayerController>
     public void RemoveShadowHost(EnemyBase enemy)
     {
         _shadowHosts.Remove(enemy);
-        StopCoroutine(nameof(ShadowHostAutoUpdateCoroutine));   
+        StopCoroutine(nameof(ShadowHostAutoUpdateCoroutine));
     }
 
     // Update dark gauge every few seconds from shadow hosts
@@ -380,12 +387,12 @@ public class PlayerController : Singleton<PlayerController>
             playerDamageDealer.UpdateNightShadeDarkGauge(_shadowHostAutoUpdateAmount);
         }
     }
-    
+
     public void SetVFXActive(EStatusEffect effect, bool setActive) => SetVFXActive((int)effect, setActive);
 
     public void SetVFXActive(int effectIdx, bool setActive)
     {
-        if (statusEffects[effectIdx] == null) return;
+        if (effectIdx >= statusEffects.Length || statusEffects[effectIdx] == null) return;
         statusEffects[effectIdx].SetActive(setActive);
     }
 

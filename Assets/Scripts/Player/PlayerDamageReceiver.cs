@@ -11,6 +11,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     // reference to other components
     private PlayerMovement _playerMovement;
     private PlayerController _playerController;
+    private UIManager _uiManager;
 
     // TEMP health attributes
     private float _currHealth;
@@ -46,6 +47,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     {
         BaseHealth = 300;
         _currHealth = MaxHealth;
+        _uiManager = UIManager.Instance;
         _playerController = PlayerController.Instance;
         _animator = GetComponent<Animator>();
         _spriteRenderer = GetComponent<SpriteRenderer>();
@@ -179,7 +181,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         // Attempt evade
         if (Random.value <= _playerController.EvasionRate)
         {
-            UIManager.Instance.DisplayPlayerEvadePopUp();
+            _uiManager.DisplayPlayerEvadePopUp();
             return;
         }
         
