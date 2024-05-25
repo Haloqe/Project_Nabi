@@ -37,7 +37,7 @@ public class BookStatusPage : BookPage
         deathTMP.text = "DEATHS: " + _gameManager.PlayerMetaInfo.NumDeaths;
         killTMP.text = "KILLS: " + _gameManager.PlayerMetaInfo.NumKills;
         goldTMP.text = "GOLD: " + _playerController.playerInventory.Gold;
-        soulTMP.text = "SOULS: " + _gameManager.PlayerMetaInfo.NumSouls;
+        soulTMP.text = "SOULS: " + _playerController.playerInventory.SoulShard;
         
         // Right Page
         healthTMP.text = "체력: " + _playerController.playerDamageReceiver.BaseHealth;

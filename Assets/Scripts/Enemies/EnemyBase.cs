@@ -618,11 +618,13 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         }
         
         // Drop coins
-        for (int i = 0; i < goldToDrop / 10 + 1; i++)
-        {
+        UIManager.Instance.DisplayGoldPopUp(goldToDrop);
+        for (int i = 0; i < goldToDrop / 5 + 1; i++) 
+        {   
             // Instantiate a coin at the enemy's position
             var coin = Instantiate(_enemyManager.GoldPrefab, transform.position, Quaternion.identity).GetComponent<Gold>();
-            coin.value = (i < goldToDrop / 10) ? 10 : goldToDrop % 10;
+            coin.value = (i < goldToDrop / 5) ? 5 : goldToDrop % 5;
+            Debug.Log("i: " + i + " value: " + coin.value);
         }
     }
 

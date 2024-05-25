@@ -30,6 +30,8 @@ public class UIManager : Singleton<UIManager>
     private GameObject _textPopupPrefab;
     private GameObject _critPopupPrefab;
     private GameObject _soulPopupPrefab;
+    private GameObject _goldPlusPopupPrefab;
+    private GameObject _goldMinusPopupPrefab;
     private GameObject _bookPrefab;
 
     // UI Instantiated Objects
@@ -279,6 +281,8 @@ public class UIManager : Singleton<UIManager>
         _textPopupPrefab        = Utility.LoadGameObjectFromPath(path + "InGame/TextPopUp/GeneralTextUI");
         _critPopupPrefab        = Utility.LoadGameObjectFromPath(path + "InGame/TextPopUp/CritPopUp");
         _soulPopupPrefab        = Utility.LoadGameObjectFromPath(path + "InGame/TextPopUp/SoulPopUp");
+        _goldMinusPopupPrefab   = Utility.LoadGameObjectFromPath(path + "InGame/TextPopUp/GoldMinusPopUp");
+        _goldPlusPopupPrefab    = Utility.LoadGameObjectFromPath(path + "InGame/TextPopUp/GoldPlusPopUp");
         _bookPrefab             = Utility.LoadGameObjectFromPath(path + "InGame/Book/BookCanvas");
         
         _warriorUIPrefabs = new GameObject[(int)EWarrior.MAX];
@@ -484,6 +488,16 @@ public class UIManager : Singleton<UIManager>
     {
         var popup = Instantiate(_soulPopupPrefab);
         popup.GetComponent<RectTransform>().position = _playerController.transform.position + playerUpOffset;
+        Destroy(popup, 1f);
+    }
+    
+    // InGame popup - gold
+    public void DisplayGoldPopUp(int value)
+    {
+        var valueText = value < 0 ? value.ToString() : "+" + value;
+        var popup = Instantiate(value < 0 ? _goldMinusPopupPrefab : _goldPlusPopupPrefab);
+        popup.GetComponent<RectTransform>().position = _playerController.transform.position + playerUpOffset;
+        popup.GetComponentInChildren<TextMeshProUGUI>().text = valueText;
         Destroy(popup, 1f);
     }
 

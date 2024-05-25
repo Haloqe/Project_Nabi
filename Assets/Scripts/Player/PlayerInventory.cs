@@ -41,6 +41,7 @@ public class PlayerInventory : MonoBehaviour
     public void ChangeGoldByAmount(int amount)
     {
         Gold += amount;
+        Debug.Log("collected: " + amount);
         PlayerEvents.GoldChanged.Invoke();
     }
     
@@ -56,6 +57,7 @@ public class PlayerInventory : MonoBehaviour
         if (Gold >= price)
         {
             ChangeGoldByAmount(-price);
+            _uiManager.DisplayGoldPopUp(-price);
             return true;
         }
         return false;

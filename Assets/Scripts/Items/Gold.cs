@@ -8,6 +8,7 @@ public class Gold : MonoBehaviour
     private Rigidbody2D _rb;
     private Transform _playerTransform;
     private bool _isMovingTowardsPlayer;
+    private bool _isInteracting;
 
     private void Awake()
     {
@@ -41,7 +42,8 @@ public class Gold : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (!other.CompareTag("Player")) return;
+        if (_isInteracting) return;
+        _isInteracting = true;
         PlayerController.Instance.playerInventory.ChangeGoldByAmount(value);
         Destroy(gameObject);
     }
