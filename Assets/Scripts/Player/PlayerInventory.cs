@@ -41,7 +41,6 @@ public class PlayerInventory : MonoBehaviour
     public void ChangeGoldByAmount(int amount)
     {
         Gold += amount;
-        Debug.Log("collected: " + amount);
         PlayerEvents.GoldChanged.Invoke();
     }
     

@@ -1,19 +1,21 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
 public class SoulShard : MonoBehaviour
 {
     private bool _isInteracting;
-    
-    private void Start()
-    {
-        StartCoroutine(BounceCoroutine());
-    }
+    private Rigidbody2D _rb;
 
+    private void Awake()
+    {
+        _rb = GetComponent<Rigidbody2D>();
+    }
+    
     private IEnumerator BounceCoroutine()
     {
         Vector3 lowestPos = transform.position;
-        Vector3 highestPos = transform.position + new Vector3(0, 0.2f, 0);
+        Vector3 highestPos = transform.position + new Vector3(0, 0.3f, 0);
         
         while (true)
         {
@@ -32,5 +34,16 @@ public class SoulShard : MonoBehaviour
         _isInteracting = true;
         PlayerController.Instance.playerInventory.CollectSoulShard();
         Destroy(gameObject);
+    }
+
+    private void OnCollisionEnter2D(Collision2D other)
+    {
+        Debug.Log("CollisionEnter");
+        if (_rb.velocity.y <= 0.01f)
+        {
+            Debug.Log("StartBounce");
+            _rb.gravityScale = 0f;
+            StartCoroutine(BounceCoroutine());
+        }
     }
 }

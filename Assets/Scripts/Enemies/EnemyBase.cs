@@ -551,6 +551,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
             
         StopAllCoroutines();
         DropGold();
+        DropSoulShard();
         Destroy(gameObject);
     }
     #endregion Damage Dealing and Receiving
@@ -624,7 +625,30 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
             // Instantiate a coin at the enemy's position
             var coin = Instantiate(_enemyManager.GoldPrefab, transform.position, Quaternion.identity).GetComponent<Gold>();
             coin.value = (i < goldToDrop / 5) ? 5 : goldToDrop % 5;
-            Debug.Log("i: " + i + " value: " + coin.value);
+        }
+    }
+
+    private void DropSoulShard()
+    {
+        int amount = EnemyData.SoulShardDropAmount;
+        float chance = EnemyData.SoulShardDropChance;
+        int amountToDrop = 0;
+        for (int i = 0; i < amount; i++)
+        {
+            if (Random.value < chance) amountToDrop++;
+        }
+        if (amountToDrop == 0) return;
+        
+        float angleStep = 180f / Mathf.Max(1, amountToDrop - 1);
+        float currentAngle = amountToDrop == 1 ? 0 : -90f;
+
+        for (int i = 0; i < amountToDrop; i++)
+        {
+            GameObject soulShard = Instantiate(_enemyManager.SoulShardPrefab, transform.position + new Vector3(0,0.1f, 0), Quaternion.identity);
+            Rigidbody2D rb = soulShard.GetComponent<Rigidbody2D>();
+            Vector2 direction = new Vector2(Mathf.Sin(currentAngle * Mathf.Deg2Rad), Mathf.Abs(Mathf.Sin(currentAngle * Mathf.Deg2Rad)));
+            rb.AddForce(direction * 5f, ForceMode2D.Impulse);
+            currentAngle += angleStep;
         }
     }
 
