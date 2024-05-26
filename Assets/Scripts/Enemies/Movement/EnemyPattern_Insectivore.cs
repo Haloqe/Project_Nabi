@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class EnemyMovement_Stationary : EnemyMovement
+public class EnemyPattern_Insectivore : EnemyPattern
 {
     SpriteRenderer _spriteRenderer;
     private bool _isHidden = true;
@@ -19,23 +19,18 @@ public class EnemyMovement_Stationary : EnemyMovement
     public override void Patrol()
     {
         _animator.SetBool(IsAttacking, false);
-        if (_enemyBase.ActionTimeCounter <= 0)
-        {
-            if (Random.Range(0.0f, 1.0f) <= 0.5f)
-            {
-                FlipEnemy();
-                _enemyBase.ActionTimeCounter = Random.Range(_enemyBase.EnemyData.IdleAverageDuration * 0.5f, _enemyBase.EnemyData.IdleAverageDuration * 1.5f);
-            }
-        }
+        if (_enemyBase.ActionTimeCounter > 0) return;
+        if (Random.Range(0.0f, 1.0f) > 0.5f) return;
+        FlipEnemy();
+        _enemyBase.ActionTimeCounter = Random.Range(_enemyBase.EnemyData.IdleAverageDuration * 0.5f,
+            _enemyBase.EnemyData.IdleAverageDuration * 1.5f);
     }
 
     public override void Chase()
     {
-        if (IsFlippable)
-        {
-            FlipEnemyTowardsTarget();
-            _animator.SetBool(IsAttacking, false);
-        }
+        if (!IsFlippable) return;
+        FlipEnemyTowardsTarget();
+        _animator.SetBool(IsAttacking, false);
     }
 
     public override void Attack()

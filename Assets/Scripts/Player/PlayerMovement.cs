@@ -28,11 +28,14 @@ public class PlayerMovement : MonoBehaviour
     private readonly float _defaultJumpForce = 13f;
     public float jumpForce;
     private bool _isJumping;
+    private bool _isRunningUpwardVelocityCoroutine;
     private int _jumpCounter;
     private readonly float _coyoteTime = 0.2f;
     private float _coyoteTimeCounter;
     private readonly float _jumpBufferTime = 0.2f;
     private float _jumpBufferTimeCounter;
+    private float _upwardsGravityScale = 2f;
+    private float _downwardsGravityScale = 5f;
 
     // attack
     private bool _isAttacking;
@@ -90,11 +93,9 @@ public class PlayerMovement : MonoBehaviour
     private void Update()
     {
         _animator.SetBool(Moving, IsMoving && !_isRooted);
-        if (_isJumping)
-        {
-            _coyoteTimeCounter -= Time.unscaledDeltaTime;
-            _jumpBufferTimeCounter -= Time.unscaledDeltaTime;
-        }
+        
+        _coyoteTimeCounter -= Time.unscaledDeltaTime;
+        _jumpBufferTimeCounter -= Time.unscaledDeltaTime;
     }
 
     private void FixedUpdate()
@@ -105,6 +106,21 @@ public class PlayerMovement : MonoBehaviour
         _rigidbody2D.velocity = _additionalVelocity.magnitude != 0 ? 
             new Vector2(_additionalVelocity.x / Time.timeScale, _additionalVelocity.y + _rigidbody2D.velocity.y) : 
             new Vector2((_moveDirection.x * MoveSpeed * moveSpeedMultiplier) / Time.timeScale, _rigidbody2D.velocity.y);
+        
+        if (!_isJumping)
+        {
+            _rigidbody2D.gravityScale = _playerController.DefaultGravityScale;
+            return;
+        }
+        
+        if (_isRunningUpwardVelocityCoroutine && _jumpCounter <= 1)
+        {
+            _rigidbody2D.gravityScale = _upwardsGravityScale;
+        }
+        else if (!_isRunningUpwardVelocityCoroutine || _rigidbody2D.velocity.y < 0)
+        {
+            _rigidbody2D.gravityScale = _downwardsGravityScale;
+        }
     }
 
     private void OnTimeRevertNormal()
@@ -219,23 +235,63 @@ public class PlayerMovement : MonoBehaviour
         IsMoving = false;
     }
 
-    public void SetJump(bool value)
+    // public void SetJump(bool value)
+    // {
+    //     // Can the player jump?
+    //     if (!value) return;
+    //     if (isDashing) return;
+    //     if (_isRooted || _isAttacking) return;
+    //     if (_coyoteTimeCounter < 0f && _jumpCounter >= 2) return;
+    //     
+    //     // Is this a second jump?
+    //     if (_jumpCounter > 1) {
+    //         _jumpBufferTimeCounter = _jumpBufferTime;
+    //         _animator.SetBool(IsDoubleJumping, true);
+    //     }
+    //
+    //     _rigidbody2D.velocity = new Vector2(_rigidbody2D.velocity.x, jumpForce / Time.timeScale);
+    //     _jumpCounter += 1;
+    //     _jumpBufferTimeCounter = 0;
+    // }
+
+    public void StartJump()
     {
-        // Can the player jump?
-        if (!value) return;
+        // can the player jump?
         if (isDashing) return;
         if (_isRooted || _isAttacking) return;
         if (_coyoteTimeCounter < 0f && _jumpCounter >= 2) return;
         
-        // Is this a second jump?
-        if (_jumpCounter > 1) {
+        // is this a second jump?
+        if (_jumpCounter >= 1)
+        {
             _jumpBufferTimeCounter = _jumpBufferTime;
             _animator.SetBool(IsDoubleJumping, true);
         }
-
-        _rigidbody2D.velocity = new Vector2(_rigidbody2D.velocity.x, jumpForce / Time.timeScale);
+        
+        StartCoroutine(nameof(UpwardVelocityCoroutine));
         _jumpCounter += 1;
         _jumpBufferTimeCounter = 0;
+    }
+
+    public void StopJump()
+    {
+        StopCoroutine(nameof(UpwardVelocityCoroutine));
+        _isRunningUpwardVelocityCoroutine = false;
+    }
+
+    private IEnumerator UpwardVelocityCoroutine()
+    {
+        _isRunningUpwardVelocityCoroutine = true;
+        
+        float jumpTimeCounter = 0f;
+        while (jumpTimeCounter <= 0.25f)
+        {
+            yield return null;
+            _rigidbody2D.velocity = new Vector2(_rigidbody2D.velocity.x, jumpForce / Time.timeScale);
+            jumpTimeCounter += Time.unscaledDeltaTime;
+        }
+        
+        _isRunningUpwardVelocityCoroutine = false;
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -248,7 +304,8 @@ public class PlayerMovement : MonoBehaviour
         _coyoteTimeCounter = _coyoteTime;
         _animator.SetBool(IsJumping, _isJumping);
         _animator.SetBool(IsDoubleJumping, _isJumping);
-        if (_jumpBufferTimeCounter > 0f) SetJump(true);
+        // if (_jumpBufferTimeCounter > 0f) SetJump(true);
+        if (_jumpBufferTimeCounter > 0f) StartJump();
     }
 
     private void OnTriggerExit2D(Collider2D other)

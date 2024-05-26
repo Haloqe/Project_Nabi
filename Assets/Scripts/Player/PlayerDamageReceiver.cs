@@ -129,7 +129,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
 
     private void UpdateSlowTimes()
     {
-        if (_slowRemainingTimes.Count == 0) return;
+        if (_slowRemainingTimes.Count == 0 || _slowRemainingTimes == null) return;
 
         bool removed = false;
         foreach (float strength in _slowRemainingTimes.Keys.ToList())
@@ -264,7 +264,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     // TODO FIX: damage visualisation
     private IEnumerator DamagedRoutine()
     {
-        _spriteRenderer.color = new Color(0.6f, 0.05f, 0.05f);
+        _spriteRenderer.color = new Color(0.267f, 0.9f, 0.99f);
         yield return new WaitForSeconds(0.1f);
         _spriteRenderer.color = Color.white;
     }

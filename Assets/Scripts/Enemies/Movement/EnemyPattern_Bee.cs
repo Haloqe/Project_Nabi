@@ -4,7 +4,7 @@ using UnityEngine;
 using Pathfinding;
 using Random = UnityEngine.Random;
 
-public class EnemyMovement_Flight : EnemyMovement
+public class EnemyPattern_Bee : EnemyPattern
 {
     private float _nextWaypointDistance = 3f;
     private Path _path;
@@ -45,14 +45,16 @@ public class EnemyMovement_Flight : EnemyMovement
     public override void Patrol()
     {
         if (!_directionIsFlipping && Physics2D.OverlapCircle(transform.position, 0.8f, _platformLayer))
-            StartCoroutine(nameof(FlipDirection));
+        {
+            StartCoroutine(FlipDirection());
+        }
 
         Vector2 force = _patrolDirection * (100f * Time.deltaTime);
         _rigidBody.AddForce(force);
         FlipEnemyTowardsMovement();
 
         if (_directionIsChosen) return;
-        StartCoroutine(nameof(ChooseRandomDirection));
+        StartCoroutine(ChooseRandomDirection());
     }
 
     private IEnumerator ChooseRandomDirection()
@@ -100,7 +102,8 @@ public class EnemyMovement_Flight : EnemyMovement
         if (_currentWaypoint >= _path.vectorPath.Count) return;
 
         Vector2 direction = ((Vector2)_path.vectorPath[_currentWaypoint] - _rigidBody.position).normalized;
-        Vector2 force = direction * (_moveSpeed * Time.deltaTime * 100f);
+        direction += new Vector2(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f));
+        Vector2 force = direction * (_moveSpeed * Time.deltaTime * 160f);
         _rigidBody.AddForce(force);
 
         float distance = Vector2.Distance(_rigidBody.position, _path.vectorPath[_currentWaypoint]);
@@ -136,6 +139,7 @@ public class EnemyMovement_Flight : EnemyMovement
         int directionFacing = 1;
         if (_targetPosition.x > transform.position.x) directionFacing *= -1;
         Vector3 position = _targetPosition + new Vector3(directionFacing * 3f, 3f, 0);
+        position += new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), 0);
         yield return MoveToPosition(position, _moveSpeed, true);
         _rigidBody.velocity = new Vector3(0f, 0f, 0f);
         yield return new WaitForSeconds(1f);
@@ -193,7 +197,8 @@ public class EnemyMovement_Flight : EnemyMovement
 
     // void OnDrawGizmos()
     // {
-    //     Gizmos.DrawWireSphere(transform.position, _enemyBase.EnemyData.DetectRangeX);
-    //     Gizmos.DrawWireCube(transform.position - transform.up, new Vector2 (_enemyBase.EnemyData.AttackRangeX, _enemyBase.EnemyData.AttackRangeY));
+        // Gizmos.DrawWireSphere(transform.position, _enemyBase.EnemyData.DetectRangeX);
+        // Gizmos.DrawWireSphere(transform.position, 0.8f);
+        // Gizmos.DrawWireCube(transform.position - transform.up, new Vector2 (_enemyBase.EnemyData.AttackRangeX, _enemyBase.EnemyData.AttackRangeY));
     // }
 }

@@ -49,7 +49,7 @@ public class Bomb : MonoBehaviour
         if (collision.gameObject.CompareTag("Enemy") == false) return;
         if (Utility.IsObjectInList(collision.gameObject, _affectedEnemies)) return;
 
-        IDamageable target = collision.gameObject.GetComponent<IDamageable>();
+        IDamageable target = collision.gameObject.GetComponentInParent<IDamageable>();
         if (target != null)
         {
             Owner.DealDamage(target, false);

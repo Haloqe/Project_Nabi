@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Interactions;
 
 public class PlayerController : Singleton<PlayerController>
 {
@@ -94,6 +95,8 @@ public class PlayerController : Singleton<PlayerController>
         GameEvents.Restarted += OnRestarted;
         PlayerEvents.ValueChanged += OnValueChanged;
         InGameEvents.EnemySlayed += OnEnemySlayed;
+        _playerInput.actions["Jump"].started += OnStartJump;
+        _playerInput.actions["Jump"].canceled += OnReleaseJump;
         
         OnRestarted();
     }
@@ -158,9 +161,19 @@ public class PlayerController : Singleton<PlayerController>
         playerMovement.SetMoveDirection(value.Get<Vector2>());
     }
 
-    void OnJump(InputValue value)
+    // void OnJump(InputValue value)
+    // {
+    //     playerMovement.SetJump(value.isPressed);
+    // }
+
+    void OnStartJump(InputAction.CallbackContext obj)
     {
-        playerMovement.SetJump(value.isPressed);
+        playerMovement.StartJump();
+    }
+
+    void OnReleaseJump(InputAction.CallbackContext obj)
+    {
+        playerMovement.StopJump();
     }
 
     int count = 0;

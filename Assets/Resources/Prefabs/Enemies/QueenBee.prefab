@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 4717224106885222221}
   m_Layer: 8
   m_Name: BattleCry (4)
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -102,7 +102,7 @@ GameObject:
   - component: {fileID: 2810213203428236973}
   m_Layer: 8
   m_Name: BattleCry (6)
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -244,7 +244,7 @@ GameObject:
   - component: {fileID: 5534451427759461599}
   m_Layer: 8
   m_Name: alternative (1)
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -331,7 +331,7 @@ GameObject:
   - component: {fileID: 8493954048759522660}
   m_Layer: 8
   m_Name: alternative (5)
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -420,7 +420,7 @@ GameObject:
   - component: {fileID: 2971753119786715808}
   m_Layer: 8
   m_Name: BattleCry (3)
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -510,7 +510,7 @@ GameObject:
   - component: {fileID: 6500351506551634158}
   m_Layer: 8
   m_Name: alternative (2)
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -722,9 +722,9 @@ Rigidbody2D:
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_SleepingMode: 1
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
   m_Constraints: 4
 --- !u!114 &2795431480703099929
 MonoBehaviour:
@@ -764,7 +764,7 @@ MonoBehaviour:
   - {fileID: 0}
   _neighboringEnemyColliderSize: {x: 0, y: 0}
   _neighboringEnemyColliderHeight: 0
-  _damageInfo:
+  DamageInfo:
     Damage:
       Type: 0
       TotalAmount: 0
@@ -830,7 +830,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0.63179016, y: 0.42119277}
+  m_Offset: {x: 0.63179016, y: 0.56202906}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -841,7 +841,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.98757935, y: 2.5511549}
+  m_Size: {x: 0.98757935, y: 1.1008788}
   m_EdgeRadius: 0
 --- !u!1 &4494401330723719496
 GameObject:
@@ -855,7 +855,7 @@ GameObject:
   - component: {fileID: 7315941457202129615}
   m_Layer: 8
   m_Name: BattleCry (5)
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -945,7 +945,7 @@ GameObject:
   - component: {fileID: 7866298202229344932}
   m_Layer: 8
   m_Name: alternative (4)
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1032,7 +1032,7 @@ GameObject:
   - component: {fileID: 8416970589307590865}
   m_Layer: 8
   m_Name: BattleCry
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1070,7 +1070,7 @@ GameObject:
   - component: {fileID: 2633236959155639038}
   m_Layer: 8
   m_Name: BodySlam
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1107,7 +1107,7 @@ GameObject:
   - component: {fileID: 3393261358559529940}
   m_Layer: 8
   m_Name: BattleCry (7)
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1229,7 +1229,7 @@ GameObject:
   - component: {fileID: 9141529710820430274}
   m_Layer: 8
   m_Name: Idle
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1315,7 +1315,7 @@ GameObject:
   - component: {fileID: 9173933053973262702}
   m_Layer: 8
   m_Name: AttackHitbox
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1350,7 +1350,7 @@ GameObject:
   - component: {fileID: 6035729308580008805}
   m_Layer: 8
   m_Name: BattleCry (1)
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1437,7 +1437,7 @@ GameObject:
   - component: {fileID: 2118256986965163195}
   m_Layer: 8
   m_Name: alternative (3)
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1525,7 +1525,7 @@ GameObject:
   - component: {fileID: 1557168410228786964}
   m_Layer: 8
   m_Name: BattleCry (2)
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

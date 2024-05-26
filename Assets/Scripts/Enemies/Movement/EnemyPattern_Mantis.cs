@@ -3,7 +3,7 @@ using System.Collections;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-public class EnemyMovement_LinearPath : EnemyMovement
+public class EnemyPattern_Mantis : EnemyPattern
 {
 
     // Ground detection

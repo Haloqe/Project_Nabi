@@ -45,7 +45,7 @@ public class Fire : MonoBehaviour
     public void OnEnemyEnter(Collider2D collision)
     {
         if (Utility.IsObjectInList(collision.gameObject, _affectedEnemies)) return;
-        IDamageable target = collision.gameObject.GetComponent<IDamageable>();
+        IDamageable target = collision.gameObject.GetComponentInParent<IDamageable>();
         if (target != null)
         {
             Owner.DealDamage(target, true);

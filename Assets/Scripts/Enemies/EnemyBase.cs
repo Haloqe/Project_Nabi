@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Random = UnityEngine.Random;
@@ -16,9 +17,10 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     protected EnemyManager _enemyManager;
     public SEnemyData EnemyData;
     protected PlayerController _player;
+    protected UnityEngine.Object _takeDamageVFXPrefab;
     
-    // Movement
-    protected EnemyMovement _movement;
+    // Pattern
+    protected EnemyPattern Pattern;
     public GameObject Target;
     protected IDamageable _targetDamageable;
     public float ActionTimeCounter = 0f;
@@ -42,7 +44,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     [SerializeField] float _neighboringEnemyColliderHeight;
 
     //Enemy health attribute
-    public AttackInfo _damageInfo;
+    public AttackInfo DamageInfo;
     private float Health;
     private SpriteRenderer _spriteRenderer;
     private float _armour;
@@ -62,22 +64,23 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         _rigidbody2D = GetComponent<Rigidbody2D>();
         _animator = GetComponent<Animator>();
         _enemyManager = EnemyManager.Instance;
-        EnemyData = _enemyManager.GetEnemyData(typeID); 
+        EnemyData = _enemyManager.GetEnemyData(typeID);
+        _takeDamageVFXPrefab = Resources.Load("Prefabs/Effects/TakeDamageVFX");
         
         _effectRemainingTimes = new float[(int)EStatusEffect.MAX];
         _slowRemainingTimes = new SortedDictionary<float, float> (
             Comparer<float>.Create((x, y) => y.CompareTo(x))
         );
         // DebuffEffects = new GameObject[(int)EStatusEffect.MAX];
-        _movement = GetComponent<EnemyMovement>();
+        Pattern = GetComponent<EnemyPattern>();
 
-        _damageInfo = new AttackInfo();
-        _damageInfo.Damage = new DamageInfo((EDamageType)Enum.Parse(typeof(EDamageType), EnemyData.DamageType), EnemyData.DefaultDamage);
+        DamageInfo = new AttackInfo();
+        DamageInfo.Damage = new DamageInfo((EDamageType)Enum.Parse(typeof(EDamageType), EnemyData.DamageType), EnemyData.DefaultDamage);
         PlayerEvents.Defeated += OnPlayerDefeated;
 
         Target = GameObject.FindWithTag("Player");
         _targetDamageable = Target.gameObject.GetComponent<IDamageable>();
-        _movement.Init();
+        Pattern.Init();
 
         Health = EnemyData.MaxHealth;
         _armour = EnemyData.DefaultArmour;
@@ -86,7 +89,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     private void OnPlayerDefeated()
     {
         StopAllCoroutines();
-        _movement.StopMovementCoroutines();
+        Pattern.StopMovementCoroutines();
         _playerIsDefeated = true;
     }
 
@@ -131,7 +134,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
                 case EStatusEffect.Sommer:
                     if (_sommerStackCount <= 0)
                     {
-                        _movement.ChangeSpeedByPercentage(statusEffect.Strength);
+                        Pattern.ChangeSpeedByPercentage(statusEffect.Strength);
                         ChangeAttackSpeedByPercentage(statusEffect.Strength);
                         // Debug.Log("This is the first stack of sommer. Change in move speed and attack speed is applied. now its move speed is " + _movement._moveSpeed + " and attack speed " + _animator.GetFloat("AttackSpeed"));
                     }
@@ -173,10 +176,10 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
                     break;
                 
                 case EStatusEffect.Pull:
-                    if (_movement.MoveType == EEnemyMoveType.Stationary) continue;
+                    if (Pattern.MoveType == EEnemyMoveType.Stationary) continue;
                     ShouldDisableMovement = true;
                     IsSilenced = true;
-                    _movement.StartPullX(incomingDirectionX, statusEffect.Strength, statusEffect.Duration);
+                    Pattern.StartPullX(incomingDirectionX, statusEffect.Strength, statusEffect.Duration);
                     break;
                 
                 case EStatusEffect.Evade or EStatusEffect.Camouflage:
@@ -184,9 +187,9 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
                     break;
                 
                 case EStatusEffect.GravityPull:
-                    if (_movement.MoveType == EEnemyMoveType.Stationary) continue;
+                    if (Pattern.MoveType == EEnemyMoveType.Stationary) continue;
                     IsSilenced = true;
-                    _movement.StartGravityPull(gravCorePosition, statusEffect.Strength, statusEffect.Duration);
+                    Pattern.StartGravityPull(gravCorePosition, statusEffect.Strength, statusEffect.Duration);
                     break;
             }
             UpdateStatusEffectTime(statusEffect.Effect, statusEffect.Duration);
@@ -194,7 +197,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
         if (ShouldDisableMovement)
         {
-            _movement.DisableMovement();
+            Pattern.DisableMovement();
         }
         ShouldDisableMovement = false;
     }
@@ -246,7 +249,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
                 if (currEffect is EStatusEffect.Sleep or EStatusEffect.Root or EStatusEffect.Airborne or EStatusEffect.Stun or EStatusEffect.Pull)
                 {
-                    _movement.EnableMovement();
+                    Pattern.EnableMovement();
                 }
 
                 if (currEffect is EStatusEffect.Airborne or EStatusEffect.Stun or EStatusEffect.Silence or EStatusEffect.Pull)
@@ -291,7 +294,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
         if (_sommerStackCount >= 10)
         {
-            _movement.ResetMoveSpeed();
+            Pattern.ResetMoveSpeed();
             ResetAttackSpeed();
             _sommerTimeSinceStacked = 0;
             _sommerStackCount = 0;
@@ -304,7 +307,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         else if (_sommerStackCount <= 0)
         {
             SetVFXActive((int)EStatusEffect.Sommer, false);
-            _movement.ResetMoveSpeed();
+            Pattern.ResetMoveSpeed();
             ResetAttackSpeed();
             _effectRemainingTimes[(int)EStatusEffect.Sommer] = 0;
         }
@@ -328,12 +331,12 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         // update slow strength (i.e. move speed)
         if (_slowRemainingTimes.Count == 0)
         {
-            _movement.ResetMoveSpeed();
+            Pattern.ResetMoveSpeed();
             SetVFXActive(EStatusEffect.Slow, false);
         }
         else if (removed)
         {
-            _movement.ChangeSpeedByPercentage(_slowRemainingTimes.First().Key);
+            Pattern.ChangeSpeedByPercentage(_slowRemainingTimes.First().Key);
         }
     }
 
@@ -368,7 +371,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         }
 
         // else, add new slow
-        _movement.ChangeSpeedByPercentage(strength);
+        Pattern.ChangeSpeedByPercentage(strength);
         _slowRemainingTimes.Add(strength, duration);
         Debug.Log("New slow (" + strength + ") time: " + duration.ToString("0.0000"));
     }
@@ -391,35 +394,47 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (_damageCooltimeCounter <= _damageCooltime) return;
-        if (other.CompareTag(Target.tag))
+        if (other.gameObject.layer == LayerMask.NameToLayer("PlayerAbility"))
         {
-            // 황홀경 status effect
-            if (_animator.GetBool(IsAttacking) && _effectRemainingTimes[(int)EStatusEffect.Ecstasy] > 0)
-            {
-                if (Random.Range(0.0f, 1.0f) <= 0.5f)
-                {
-                    Debug.Log(gameObject.name + " missed!");
-                    Collider2D[] foesToDamage = Physics2D.OverlapBoxAll(transform.position + new Vector3 (0, _neighboringEnemyColliderHeight, 0), _neighboringEnemyColliderSize, 0, LayerMask.GetMask("Enemy"));
-                    AttackInfo damageToFoes = _damageInfo.Clone();
-                    damageToFoes.Damage.TotalAmount *= 0.25f;
-                    foreach (Collider2D col in foesToDamage)
-                    {
-                        DealDamage(col.gameObject.GetComponent<IDamageable>(), damageToFoes);
-                    }
-                    return;
-                }
-            }
-            DealDamage(_targetDamageable, _damageInfo);
-            _damageCooltimeCounter = 0f;
+            int direction = 1;
+            if (_player.transform.localScale.x >= 0) direction = -1;
+            Instantiate(_takeDamageVFXPrefab, other.ClosestPoint(transform.position), Quaternion.Euler(new Vector3(-15f, direction * 90f, 0)));
+            return;
         }
+
+        if (other.gameObject.layer == LayerMask.NameToLayer("PlayerAbility_IncludeWall"))
+        {
+            Instantiate(_takeDamageVFXPrefab, other.transform.position, Quaternion.identity);
+            return;
+        }
+        
+        if (_damageCooltimeCounter <= _damageCooltime) return;
+        if (!other.CompareTag(Target.tag)) return;
+        // 황홀경 status effect
+        if (_animator.GetBool(IsAttacking) && _effectRemainingTimes[(int)EStatusEffect.Ecstasy] > 0)
+        {
+            if (Random.Range(0.0f, 1.0f) <= 0.5f)
+            {
+                Debug.Log(gameObject.name + " missed!");
+                Collider2D[] foesToDamage = Physics2D.OverlapBoxAll(transform.position + new Vector3 (0, _neighboringEnemyColliderHeight, 0), _neighboringEnemyColliderSize, 0, LayerMask.GetMask("Enemy"));
+                AttackInfo damageToFoes = DamageInfo.Clone();
+                damageToFoes.Damage.TotalAmount *= 0.25f;
+                foreach (Collider2D col in foesToDamage)
+                {
+                    DealDamage(col.gameObject.GetComponent<IDamageable>(), damageToFoes);
+                }
+                return;
+            }
+        }
+        DealDamage(_targetDamageable, DamageInfo);
+        _damageCooltimeCounter = 0f;
     }
 
     // Dealing damage to the player Handling
     public virtual void DealDamage(IDamageable target, AttackInfo damageInfo)
     {
         damageInfo.AttackerArmourPenetration = EnemyData.DefaultArmourPenetration;
-        target.TakeDamage(damageInfo);
+        target.TakeDamage(damageInfo.Clone());
     }
 
     // Received Damage Handling
@@ -468,7 +483,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         // if (asleep) then wake up
         if (_effectRemainingTimes[(int)EStatusEffect.Sleep] > 0)
         {
-            _movement.EnableMovement();
+            Pattern.EnableMovement();
             _effectRemainingTimes[(int)EStatusEffect.Sleep] = -1;
             // Debug.Log("sleep ended.");
         }
@@ -536,9 +551,11 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     // TODO FIX: damage visualisation
     private IEnumerator DamagedRoutine()
     {
-        _spriteRenderer.color = new Color(0.6f, 0.05f, 0.05f);
-        yield return new WaitForSeconds(0.1f);
-        _spriteRenderer.color = Color.white;
+        // _spriteRenderer.color = new Color(0.267f, 0.9f, 0.99f);
+        // yield return new WaitForSeconds(0.1f);
+        // _spriteRenderer.color = Color.white;
+        // Instantiate(_takeDamageVFXPrefab, transform.position, Quaternion.identity);
+        yield break;
     }
 
     private void Die()
@@ -559,30 +576,30 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     {
         if (_playerIsDefeated)
         {
-            _movement.Patrol();
+            Pattern.Patrol();
             return;
         }
         
-        if (_movement.IsRooted) return;
+        if (Pattern.IsRooted) return;
         ActionTimeCounter -= Time.deltaTime;
         
-        if (_movement.PlayerIsInAttackRange() || _movement.IsAttackingPlayer)
+        if (Pattern.PlayerIsInAttackRange() || Pattern.IsAttackingPlayer)
         {
-            _movement.Attack();
+            Pattern.Attack();
         }
-        else if (_movement.PlayerIsInDetectRange())
+        else if (Pattern.PlayerIsInDetectRange())
         {
-            _movement.IsChasingPlayer = true;
+            Pattern.IsChasingPlayer = true;
             ActionTimeCounter = EnemyData.ChasePlayerDuration;
-            _movement.Chase();
+            Pattern.Chase();
         }
-        else if (_movement.IsChasingPlayer)
+        else if (Pattern.IsChasingPlayer)
         {
-            _movement.Chase();
+            Pattern.Chase();
         }
         else
         {
-            _movement.Patrol();
+            Pattern.Patrol();
         }
     }
 

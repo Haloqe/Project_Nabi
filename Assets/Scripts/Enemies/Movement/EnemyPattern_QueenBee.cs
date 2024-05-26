@@ -7,7 +7,7 @@ using UnityEngine;
 using Random = UnityEngine.Random;
 
 
-public class EnemyMovement_QueenBee : EnemyMovement
+public class EnemyPattern_QueenBee : EnemyPattern
 {
     private bool _isBouncing = true;
     private bool _beesAreCommanded;
@@ -15,6 +15,8 @@ public class EnemyMovement_QueenBee : EnemyMovement
     private bool _justFinishedAttack = true;
     private UnityEngine.Object _spawnVFXPrefab;
     private GameObject _bombObject;
+    private EnemyManager _enemyManager;
+    private Vector3[] _bombPositions = new Vector3[13];
     private static readonly int IsAttacking = Animator.StringToHash("IsAttacking");
     private static readonly int AttackIndex = Animator.StringToHash("AttackIndex");
 
@@ -29,6 +31,13 @@ public class EnemyMovement_QueenBee : EnemyMovement
     {
         base.Init();
         StartCoroutine(Bounce());
+        _enemyManager = EnemyManager.Instance;
+
+        float gap = 3f;
+        for (int i = 0; i < _bombPositions.Length; i++)
+        {
+            _bombPositions[i] = new Vector3(-19.5f + gap * i, -7f, 0);
+        }
     }
 
     public override void Attack()
@@ -41,11 +50,11 @@ public class EnemyMovement_QueenBee : EnemyMovement
             return;
         }
         
-        GameObject[] allBees = GameObject.FindGameObjectsWithTag("Enemy");
-        bool lessThanTwoBees = allBees.Length <= 2;
+        EnemyPattern_Bee[] allBees = FindObjectsOfType<EnemyPattern_Bee>();
+        bool lessThanTwoBees = allBees.Length <= 1;
         if (lessThanTwoBees)
         {
-            StartCoroutine(SpawnMinions(3));
+            StartCoroutine(SpawnMinions(Mathf.FloorToInt(Random.Range(3, 6))));
             return;
         }
         
@@ -82,8 +91,13 @@ public class EnemyMovement_QueenBee : EnemyMovement
 
     private IEnumerator MoveToPosition(Vector3 destination, float speed, bool facingTarget = true)
     {
-        Vector3 moveDirection = (destination - transform.position).normalized;
-        while (!IsCloseEnough(gameObject, destination))
+        transform.position = new Vector3(Mathf.Clamp(transform.position.x, -19.69f, 14.99f),
+            Mathf.Clamp(transform.position.y, -6.79f, 7.99f), 0f);
+        Vector3 clampedDestination = new Vector3(Mathf.Clamp(destination.x, -19.7f, 15f), Mathf.Clamp(destination.y, -6.8f, 8f), 0);
+        Vector3 moveDirection = (clampedDestination - transform.position).normalized;
+        while (!IsCloseEnough(gameObject, clampedDestination)
+               && transform.position.x is >= -19.7f and <= 15f
+               && transform.position.y is >= -6.8f and <= 8f)
         {
             _rigidBody.velocity = moveDirection * speed;
             if (facingTarget) FlipEnemyTowardsTarget();
@@ -146,11 +160,11 @@ public class EnemyMovement_QueenBee : EnemyMovement
         yield return new WaitForSeconds(1f);
         _animator.SetBool(IsAttacking, false);
         
-        Vector3 spawnLocation = transform.position;
+        Vector3 spawnLocation = _player.transform.position;
         for (int i = 0; i < spawnAmount; i++)
         {
             spawnLocation += new Vector3(Random.Range(0, 3f), Random.Range(0, 3f), 0);
-            EnemyManager.Instance.SpawnEnemy(2, spawnLocation, true).GetComponent<EnemyMovement_Flight>().SendQueenSpawnedInfo();
+            _enemyManager.SpawnEnemy(2, spawnLocation, true).GetComponent<EnemyPattern_Bee>().SendQueenSpawnedInfo();
             Instantiate(_spawnVFXPrefab, spawnLocation, Quaternion.identity);
         }
 
@@ -167,17 +181,9 @@ public class EnemyMovement_QueenBee : EnemyMovement
         yield return new WaitForSeconds(1f);
         _animator.SetBool(IsAttacking, false);
 
-        float gap = 4f;
-        float playerPositionX = _player.transform.position.x;
-        Vector3[] bombPositions = {
-            new(playerPositionX - gap, -7f, 0),
-            new(playerPositionX, -7f, 0),
-            new(playerPositionX + gap, -7f, 0)
-        };
-
-        for (int i = 0; i <= 2; i++)
+        foreach (Vector3 position in _bombPositions)
         {
-            Instantiate(_bombObject, bombPositions[i], Quaternion.identity);
+            Instantiate(_bombObject, position, Quaternion.identity);
         }
     }
 
@@ -194,7 +200,7 @@ public class EnemyMovement_QueenBee : EnemyMovement
         _rigidBody.velocity = new Vector2(0f, 0f);
         _animator.SetBool(IsAttacking, true);
         _animator.SetInteger(AttackIndex, 2);
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(0.8f);
         
         float dashSpeed = _moveSpeed * 3.5f;
         yield return MoveToPosition(finalPosition, dashSpeed, false);
@@ -217,8 +223,12 @@ public class EnemyMovement_QueenBee : EnemyMovement
         yield return new WaitForSeconds(1f);
         _animator.SetBool(IsAttacking, false);
         
-        List<GameObject> allBees = GameObject.FindGameObjectsWithTag("Enemy").ToList();
-        allBees.Remove(gameObject);
+        EnemyPattern_Bee[] allBeesScript = FindObjectsOfType<EnemyPattern_Bee>();
+        GameObject[] allBees = new GameObject[allBeesScript.Length];
+        for (int i = 0; i < allBeesScript.Length; i++)
+        {
+            allBees[i] = allBeesScript[i].gameObject;
+        }
 
         int attackOrDefense = (int)Math.Floor(Random.Range(0.0f, 2f));
         _beesAreCommanded = true;
@@ -229,7 +239,7 @@ public class EnemyMovement_QueenBee : EnemyMovement
             foreach (GameObject b in allBees)
             {
                 EnemyBase beeBase = b.GetComponent<EnemyBase>();
-                EnemyMovement beeMovement = b.GetComponent<EnemyMovement>();
+                EnemyPattern beeMovement = b.GetComponent<EnemyPattern>();
                 GameObject attackCommandVFX = b.transform.Find("AttackCommandVFX").gameObject;
                 beeMovement.ChangeSpeedByPercentage(1.3f);
                 beeBase.ChangeAttackSpeedByPercentage(1.3f);
@@ -261,7 +271,7 @@ public class EnemyMovement_QueenBee : EnemyMovement
             {
                 if (b == null) continue;
                 EnemyBase beeBase = b.GetComponent<EnemyBase>();
-                EnemyMovement beeMovement = b.GetComponent<EnemyMovement>();
+                EnemyPattern beeMovement = b.GetComponent<EnemyPattern>();
                 GameObject attackCommandVFX = b.transform.Find("AttackCommandVFX").gameObject;
                 
                 beeMovement.ResetMoveSpeed();

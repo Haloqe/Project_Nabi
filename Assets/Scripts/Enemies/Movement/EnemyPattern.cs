@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public abstract class EnemyMovement : MonoBehaviour
+public abstract class EnemyPattern : MonoBehaviour
 {
     protected EnemyBase _enemyBase;
     protected GameObject _player;
@@ -56,17 +56,22 @@ public abstract class EnemyMovement : MonoBehaviour
 
     protected void FlipEnemyTowardsMovement()
     {
-        if (_rigidBody.velocity.x >= 0.01f) transform.localScale = new Vector3(1f, 1f, 1f);
-        else transform.localScale = new Vector3(-1f, 1f, 1f);
+        if (_rigidBody.velocity.x <= 0)
+        {
+            if (transform.localScale.x > 0) FlipEnemy();
+        } else {
+            if (transform.localScale.x < 0) FlipEnemy();
+        }
+
     }
 
     protected void FlipEnemyTowardsTarget()
     {
         if (transform.position.x - _enemyBase.Target.transform.position.x >= 0)
         {
-            if (transform.localScale.x > Mathf.Epsilon) FlipEnemy();
+            if (transform.localScale.x > 0) FlipEnemy();
         } else {
-            if (transform.localScale.x < Mathf.Epsilon) FlipEnemy();
+            if (transform.localScale.x < 0) FlipEnemy();
         }
     }
 

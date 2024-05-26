@@ -21,7 +21,7 @@ public class GravityField : MonoBehaviour
     {
         Debug.Log("collided with enemies");
         if (Utility.IsObjectInList(collision.gameObject, _affectedEnemies)) return;
-        IDamageable target = collision.gameObject.GetComponent<IDamageable>();
+        IDamageable target = collision.gameObject.GetComponentInParent<IDamageable>();
 
         if (target != null)
         {
