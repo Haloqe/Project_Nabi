@@ -51,11 +51,17 @@ public class WarriorUIController : MonoBehaviour
         _numUsedPanels = Mathf.Min(possibleLegacies.Count, 3);
         
         // Select random legacies to display
+        // Has meta upgrade?
+        float[] legacyApperanceByPreserv = Define.LegacyAppearanceByPreservation;
+        int metaLev = GameManager.Instance.PlayerMetaInfo.MetaUpgradeLevels[(int)EMetaUpgrade.BetterLegacyPreserv];
+        if (metaLev != -1) legacyApperanceByPreserv = Define.MetaLegacyAppearanceByPreservation[metaLev];
+        
+        // Select legacies
         _legacies = possibleLegacies.OrderBy(_ => Random.value).Take(_numUsedPanels).ToArray();
         for (int i = 0; i < _numUsedPanels; i++)
         {
             _legacyPreservations[i] = (ELegacyPreservation)Array.FindIndex
-                (Define.LegacyAppearanceByPreservation, possibility => possibility >= Random.value);
+                (legacyApperanceByPreserv, possibility => possibility >= Random.value);
             _legacyPanels[i].AddComponent<LegacyPanel>().Init(this, i);
         }
         _legacyPanels[3].AddComponent<LegacyPanel>().Init(this, 3);

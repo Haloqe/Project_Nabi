@@ -90,6 +90,8 @@ public class UIManager : Singleton<UIManager>
         LoadAllUIPrefabs();
         
         PlayerEvents.Defeated += OnPlayerDefeated;
+        PlayerEvents.StartResurrect += OnPlayerStartResurrect;
+        PlayerEvents.EndResurrect += OnPlayerEndResurrect;
         PlayerEvents.HpChanged += OnPlayerHPChanged;
         PlayerEvents.Spawned += OnPlayerSpawned;
         GameEvents.MainMenuLoaded += OnMainMenuLoaded;
@@ -200,18 +202,12 @@ public class UIManager : Singleton<UIManager>
             0, _playerHPGlobe.rectTransform.rect.height * newHpRatio - _playerHPGlobe.rectTransform.rect.height, 0);
         
         // Update hp text
-        float hp = newHpRatio * 100f;
-        if (Math.Abs(hp % 1) < 0.1) 
-        {
-            _hpText.text = (int)hp + "/100";
-        }
-        else
-        {
-            _hpText.text = hp.ToString("F1") + "/100";
-        }
+        float maxHp = _playerController.playerDamageReceiver.MaxHealth;
+        float hp = newHpRatio * maxHp;
+        _hpText.text = Utility.FormatFloat(hp) + "/" + Utility.FormatFloat(maxHp);
         
         // If HP previously below threshold and just moved over threshold, turn off blood overlay
-        float critHpRatio = PlayerController.Instance.HpCriticalThreshold;
+        float critHpRatio = _playerController.HpCriticalThreshold;
         if (oldHpRatio <= critHpRatio) 
         {
             if (newHpRatio > critHpRatio)
@@ -272,6 +268,18 @@ public class UIManager : Singleton<UIManager>
         CloseFocusedUI();
         _playerIAMap.Disable();
         StartCoroutine(GameOverCoroutine());
+    }
+    
+    private void OnPlayerStartResurrect()
+    {
+        StopCoroutine(nameof(BloodOverlayCoroutine));
+        CloseFocusedUI();
+        _playerIAMap.Disable();
+    }
+    
+    private void OnPlayerEndResurrect()
+    {
+        UsePlayerControl();
     }
     
     private void LoadAllUIPrefabs()

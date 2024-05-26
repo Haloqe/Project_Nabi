@@ -92,4 +92,16 @@ public static class  Define
         new[] {0.5f, 0.75f, 1.0f, 1.25f},  // 사마귀 - 방어력 % 
         new[] {0.05f, 0.1f, 0.15f, 0.25f}, // 식충 - 원거리 공격의 공격력
     };
+    
+    // META Upgrades
+    public static float[][] MetaLegacyAppearanceByPreservation = new float[][]
+    {
+        new [] { 0.6f, 0.6f + 0.2f, 0.8f + 0.15f, 0.95f + 0.05f },
+        new [] { 0.6f, 0.6f + 0.2f, 0.8f + 0.15f, 0.95f + 0.05f },
+        new [] { 0.6f, 0.6f + 0.2f, 0.8f + 0.15f, 0.95f + 0.05f },
+    };
+    public static int[] MetaHealthAdditions = new int[]{20,30,40};
+    public static float[] MetaCriticalRateAdditions = new float[]{0.05f,0.07f,0.3f};
+    public static float[] MetaResurrectionHealthRatio = new float[]{0.3f,0.5f,1.0f};
+    public static float[] MetaAttackDamageAdditions = new float[]{5,10,18};
 }

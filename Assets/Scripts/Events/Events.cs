@@ -4,6 +4,8 @@ public static class PlayerEvents
 {
     public static UnityAction<float, float, float> HpChanged;
     public static UnityAction Defeated;
+    public static UnityAction StartResurrect;
+    public static UnityAction EndResurrect;
     public static UnityAction Spawned;
     public static UnityAction GoldChanged;
     public static UnityAction SoulShardChanged;

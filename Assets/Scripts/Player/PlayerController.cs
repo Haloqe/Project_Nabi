@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
@@ -26,7 +25,7 @@ public class PlayerController : Singleton<PlayerController>
     [NamedArray(typeof(EBuffs))] public GameObject[] buffEffects;
 
     // Stats
-    public float Strength => BaseStrength * _strengthMultiplier;
+    public float Strength => (BaseStrength + strengthAddition) * _strengthMultiplier;
     public float Armour => BaseArmour * _armourMultiplier;
     public float ArmourPenetration => BaseArmourPenetration * _armourPenetrationMultiplier;
     public float HealEfficiency => BaseHealEfficiency * _healEfficiencyMultiplier;
@@ -41,6 +40,7 @@ public class PlayerController : Singleton<PlayerController>
     public float BaseHealEfficiency { get; private set; }
 
     // 확률은 +, 일반 숫자값은 *
+    public float strengthAddition = 0.0f;
     private float _strengthMultiplier = 1.0f;
     private float _armourMultiplier = 1.0f;
     private float _armourPenetrationMultiplier = 1.0f;
@@ -107,6 +107,7 @@ public class PlayerController : Singleton<PlayerController>
         // Events binding
         GameEvents.Restarted += OnRestarted;
         PlayerEvents.ValueChanged += OnValueChanged;
+        PlayerEvents.StartResurrect += OnPlayerStartResurrect;
         InGameEvents.EnemySlayed += OnEnemySlayed;
 
         OnRestarted();
@@ -116,6 +117,7 @@ public class PlayerController : Singleton<PlayerController>
     {
         GameEvents.Restarted -= OnRestarted;
         PlayerEvents.ValueChanged -= OnValueChanged;
+        PlayerEvents.StartResurrect -= OnPlayerStartResurrect;
         InGameEvents.EnemySlayed -= OnEnemySlayed;
     }
 
@@ -142,6 +144,7 @@ public class PlayerController : Singleton<PlayerController>
         _evasionRateAddition = 0.0f;
         _healEfficiencyMultiplier = 1.0f;
         evasionRateAdditionAtMax = 0.0f;
+        strengthAddition = 0.0f;
 
         // Initialise legacy preservations
         EuphoriaEnemyGoldDropBuffPreserv = ELegacyPreservation.MAX;
@@ -165,6 +168,19 @@ public class PlayerController : Singleton<PlayerController>
         // Initialise NightShade data
         _shadowHosts.Clear();
         nightShadeCollider.SetActive(false);
+    }
+
+    private void OnPlayerStartResurrect()
+    {
+        StopAllCoroutines();
+        if (_ecstasyAffected != null)
+        {
+            foreach (var enemyList in _ecstasyAffected)
+            {
+                enemyList.Clear();
+            }
+        }
+        _shadowHosts.Clear();
     }
 
     void OnMove(InputValue value)

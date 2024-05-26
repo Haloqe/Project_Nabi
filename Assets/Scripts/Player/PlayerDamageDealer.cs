@@ -65,6 +65,8 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         
         // Bind events
         GameEvents.GameLoadEnded += OnRestarted;
+        PlayerEvents.Defeated += OnPlayerDefeated;
+        PlayerEvents.StartResurrect += OnPlayerDefeated;
         
         // Input Binding for Attacks
         var playerInput = GetComponent<PlayerInput>();
@@ -73,11 +75,24 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         playerInput.actions["Attack_Dash"].performed += OnDashAttack;
         playerInput.actions["Attack_Area"].performed += OnAreaAttack;
     }
+    
+    private void OnPlayerDefeated()
+    {
+        foreach (var butterfly in _spawnedButterflies) Destroy(butterfly);
+        _spawnedButterflies.Clear();
+        _dashUIOverlay.fillAmount = 0.0f;
+        _canBufferAttack = true;
+        _currAttackIdx = -1;
+        _bufferedAttackIdx = -1;
+        ResetNightShadeDarkGauge();
+    }
 
     private void OnDestroy()
     {
         if (GetComponent<PlayerController>().IsToBeDestroyed) return;
         GameEvents.GameLoadEnded -= OnRestarted;
+        PlayerEvents.Defeated -= OnPlayerDefeated;
+        PlayerEvents.StartResurrect -= OnPlayerDefeated;
         var playerInput = GetComponent<PlayerInput>();
         playerInput.actions["Attack_Melee"].performed -= OnMeleeAttack;
         playerInput.actions["Attack_Range"].performed -= OnRangedAttack;
@@ -200,7 +215,6 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
     public void OnAttackEnd(ELegacyType attackType)
     {
         // 막은거 풀기
-        Debug.Log("Attack end: curr idx set to -1");
         _currAttackIdx = -1;
         _animator.SetInteger(AttackIndex, -1);
         if (attackType == ELegacyType.Melee) AttackBases[(int)attackType].baseEffector.SetActive(false);

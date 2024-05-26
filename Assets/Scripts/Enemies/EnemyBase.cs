@@ -313,7 +313,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
     private void UpdateSlowTimes()
     {
-        if (_slowRemainingTimes.Count == 0) return;
+        if (_slowRemainingTimes == null || _slowRemainingTimes.Count == 0) return;
 
         bool removed = false;
         foreach (float strength in _slowRemainingTimes.Keys.ToList())

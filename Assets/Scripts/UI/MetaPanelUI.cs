@@ -1,12 +1,13 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class MetaPanelUI : MonoBehaviour
 {
     [SerializeField] private MetaUIController baseUI;
     [SerializeField] private GameObject selectedOutline;
-    [SerializeField] private GameObject unSelectedOutline;
+    [FormerlySerializedAs("unSelectedOutline")] [SerializeField] private GameObject unselectedOutline;
     [SerializeField] private TextMeshProUGUI descText;
     [SerializeField] private TextMeshProUGUI costText;
     [SerializeField] private Image[] levelSlots;
@@ -22,7 +23,7 @@ public class MetaPanelUI : MonoBehaviour
         _unlockedLevel = MetaInfo.MetaUpgradeLevels[metaIndex];
         _selectedLevel = 0;
         
-        unSelectedOutline.SetActive(true);
+        unselectedOutline.SetActive(true);
         selectedOutline.SetActive(false);
         
         for (int i = 0; i <= _unlockedLevel; i++)
@@ -43,14 +44,14 @@ public class MetaPanelUI : MonoBehaviour
 
     public void OnSelectMetaPanel()
     {
-        unSelectedOutline.SetActive(false);
+        unselectedOutline.SetActive(false);
         selectedOutline.SetActive(true);
         SelectLevelSlot(_unlockedLevel == -1 ? 0 : _unlockedLevel);
     }
     
     public void OnUnselectMetaPanel()
     {
-        unSelectedOutline.SetActive(true);
+        unselectedOutline.SetActive(true);
         selectedOutline.SetActive(false);
         if (_unlockedLevel == -1)
         {
@@ -107,6 +108,7 @@ public class MetaPanelUI : MonoBehaviour
     {
         levelSlots[_selectedLevel].color = Color.white;
         MetaInfo.MetaUpgradeLevels[metaIndex] = ++_unlockedLevel;
+        baseUI.ApplyMetaUpgrade(metaIndex, _unlockedLevel);
     }
     
     public void OnNavigate(Vector2 value)
