@@ -219,6 +219,15 @@ public enum ETensionState
     Overloaded,
     Recovery,
 }
+
+public enum EMetaUpgrade
+{
+    BetterLegacyPreserv,
+    HealthAddition,
+    CritRateAddition,
+    Resurrection,
+    StrengthAddition,
+}
 #endregion
 
 //--------------------------------------------------------------------------------

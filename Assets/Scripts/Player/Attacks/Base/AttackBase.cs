@@ -97,7 +97,7 @@ public abstract class AttackBase : MonoBehaviour
     public void BindActiveLegacy(ActiveLegacySO legacyAsset, ELegacyPreservation preservation)
     {
         ActiveLegacy = legacyAsset;
-        ActiveLegacy.Init(gameObject.transform);
+        ActiveLegacy.Init(_player);
         UpdateActiveLegacyPreservation(preservation);
     }
 
@@ -120,10 +120,16 @@ public abstract class AttackBase : MonoBehaviour
             _attackInfo.Damage.TotalAmount += extra.BaseDamage + _playerController.Strength * extra.RelativeDamage;
         }
     }
-    
-    public virtual void UpdateLegacyStatusEffect()
+
+    public void UpdateLegacyStatusEffectSpecificWarrior(EWarrior warriorToUpdate)
     {
         if (ActiveLegacy == null) return;
+        if (ActiveLegacy.warrior != warriorToUpdate) return;
+        UpdateLegacyStatusEffect();
+    }
+    
+    protected virtual void UpdateLegacyStatusEffect()
+    {
         var legacyPreservation = (int)ActiveLegacy.preservation;
         
         // Get the newest status effect
@@ -153,9 +159,8 @@ public abstract class AttackBase : MonoBehaviour
         _attackInfo.StatusEffects = newStatusEffectsBase;
     }
 
-    private void UpdateActiveLegacyPreservation(ELegacyPreservation preservation)
+    public void UpdateActiveLegacyPreservation(ELegacyPreservation preservation)
     {
-        if (ActiveLegacy == null) return;
         ActiveLegacy.preservation = preservation;
         RecalculateDamage();
         UpdateLegacyStatusEffect();

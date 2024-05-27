@@ -63,7 +63,13 @@ public class AttackInfo
 
     public AttackInfo Clone()
     {
-        return new AttackInfo(Damage, StatusEffects, IncomingDirectionX, GravCorePosition, CanBeDarkAttack, ShouldUpdateTension);
+        var info = new AttackInfo(Damage, StatusEffects, IncomingDirectionX, GravCorePosition, CanBeDarkAttack, ShouldUpdateTension);
+        //info.Damage = info.Damage.Clone();
+        // for (int i = 0; i < info.StatusEffects.Count; i++)
+        // {
+        //     info.StatusEffects[i] = StatusEffects[i].Clone();
+        // }
+        return info;
     }
 }
 
@@ -91,6 +97,11 @@ public class DamageInfo
     public DamageInfo(EDamageType type, float amount, float duration, float interval) : this(type, amount, duration)
     {
         Tick = interval;
+    }
+
+    public DamageInfo Clone()
+    {
+        return new DamageInfo(Type, TotalAmount, Duration, Tick);
     }
 }
 
@@ -121,5 +132,10 @@ public class StatusEffectInfo
     public StatusEffectInfo(EStatusEffect type, float strength, float duration, float chance) : this(type, strength, duration)
     {
         Chance = chance;
+    }
+
+    public StatusEffectInfo Clone()
+    {
+        return new StatusEffectInfo(Effect, Strength, Duration, Chance);
     }
 }

@@ -5,7 +5,6 @@ using UnityEngine.InputSystem;
 using UnityEngine;
 using System;
 using System.Linq;
-using TMPro;
 using Unity.VisualScripting;
 using UnityEngine.UI;
 using UnityEditor;
@@ -16,7 +15,6 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     private PlayerController _playerController;
     private PlayerInput _playerInput;
     private PlayerDamageDealer _playerDamageDealer;
-    private PlayerDamageReceiver _playerDamageReceiver;
     private SWarrior[] _warriors;
     
     // All legacies
@@ -64,10 +62,11 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     
     private void OnRestarted()
     {
-        _collectedLegacyIDs = new HashSet<int>();
-        _collectedPassiveIDs = new List<int>();
-        _collectedLegacyPreservations = new Dictionary<int, ELegacyPreservation>();
+        _collectedLegacyIDs.Clear();
+        _collectedPassiveIDs.Clear();
+        _collectedLegacyPreservations.Clear();
         _boundActiveLegacyIDs = new int[] {-1,-1,-1};
+        _slotDictionary.Clear();
     }
 
     public void InitInGameVariables()
@@ -75,7 +74,6 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         _playerController = PlayerController.Instance;
         _playerInput = FindObjectOfType<PlayerInput>();
         _playerDamageDealer = FindObjectOfType<PlayerDamageDealer>();
-        _playerDamageReceiver = FindObjectOfType<PlayerDamageReceiver>();
 
         // UI 
         var combatCanvas = UIManager.Instance.inGameCombatUI;
@@ -236,7 +234,8 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                         if (fieldInfo != null) fieldInfo.SetValue(null, asset.Stats);
                     }
                 }
-                
+
+                legacyAsset.id = legacy.ID;
                 legacyAsset.SetWarrior((EWarrior)warrior);
                 _legacySODictionary.Add(legacy.ID, legacyAsset);
             }
@@ -248,10 +247,31 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
 
 #region Ability Collection
     //------------------------------------------------------------------------------------
+    public string GetLegacyName(int id)
+    {
+        return _legacies[id].Names[(int)Define.Localisation];
+    }
+    
     public string GetBoundActiveLegacyName(ELegacyType legacyType)
     {
         int id = _boundActiveLegacyIDs[(int)legacyType];
         return id == -1 ? string.Empty : _legacies[id].Names[(int)Define.Localisation];
+    }
+    
+    public string GetBoundActiveLegacyDesc(ELegacyType legacyType)
+    {
+        int id = _boundActiveLegacyIDs[(int)legacyType];
+        return id == -1 ? string.Empty : _legacies[id].Descs[(int)Define.Localisation];
+    }
+
+    public List<SLegacyData> GetAllBoundPassiveLegacyData()
+    {
+        return _collectedPassiveIDs.Select(id => _legacies[id]).ToList();
+    }
+
+    public List<ELegacyPreservation> GetAllBoundPassiveLegacyPreserv()
+    {
+        return _collectedPassiveIDs.Select(id => _collectedLegacyPreservations[id]).ToList();
     }
     
     private bool IsLegacyCollected(int legacyIdx)
@@ -373,6 +393,76 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                 
                 // TODO
             }
+        }
+    }
+
+    public ELegacyPreservation GetLegacyPreservation(int legacyID)
+    {
+        return _collectedLegacyPreservations[legacyID];
+    }
+    
+    public void UpdateLegacyPreservation(int legacyID)
+    {
+        _collectedLegacyPreservations[legacyID]++;
+
+        // Update Info
+        ELegacyType legacyType = _legacies[legacyID].Type;
+        if (legacyType == ELegacyType.Passive)
+        {
+            UpdatePassiveLegacyPreservation(legacyID);
+        }
+        else
+        {
+            _playerDamageDealer.AttackBases[(int)legacyType]
+                .UpdateActiveLegacyPreservation(_collectedLegacyPreservations[legacyID]);
+        }
+        
+        // Update UI
+        _slotDictionary[legacyID].OnUpdatePreservation();
+    }
+
+    private void UpdatePassiveLegacyPreservation(int legacyID)
+    {
+        ELegacyPreservation newPreserv = _collectedLegacyPreservations[legacyID];
+        var legacySO = (PassiveLegacySO)_legacySODictionary[legacyID];
+        switch (legacySO.BuffType)
+        {
+            case EBuffType.StatUpgrade:
+                _playerController.UpdateStatPreservation(legacySO.StatUpgradeData, newPreserv);
+                break;
+            
+            case EBuffType.SpawnAreaIncrease:
+                foreach (var attackBase in _playerDamageDealer.AttackBases)
+                {
+                    if (attackBase.ActiveLegacy != null && attackBase.ActiveLegacy.warrior == legacySO.warrior)
+                    {
+                        attackBase.UpdateSpawnSize(legacySO.BuffIncreaseAmounts[(int)newPreserv], legacySO.BuffIncreaseMethod);
+                    }
+                }
+                break; 
+            
+            case EBuffType.EnemyItemDropRate:
+                break;
+            
+            case EBuffType.BindingSkillUpgrade:
+                _playerDamageDealer.UpdateStatusEffectPreservation(legacySO.warrior);
+                break;
+            
+            case EBuffType.EuphoriaEnemyGoldDropBuff:
+            case EBuffType.EuphoriaEcstasyUpgrade:
+            case EBuffType.SommerHypHallucination:
+            case EBuffType.TurbelaMaxButterfly:
+            case EBuffType.TurbelaDoubleSpawn:
+            case EBuffType.TurbelaButterflyCrit:
+            case EBuffType.NightShadeFastChase:
+            case EBuffType.NightShadeShadeBonus:
+                _playerController.ActivateBuffByName(legacySO.BuffType, newPreserv);
+                break;
+            
+            case EBuffType.AttackDamageMultiply:
+                _playerDamageDealer.attackDamageMultipliers[(int)legacySO.AttackType] 
+                    += (legacySO.Stats[(int)newPreserv] - 1.0f) - (legacySO.Stats[(int)newPreserv - 1] - 1.0f);
+                break;
         }
     }
     

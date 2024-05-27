@@ -11,6 +11,7 @@ public class EnemyManager : Singleton<EnemyManager>
     private Dictionary<int, SEnemyData> _enemies;
     private GameObject[] _enemyPrefabs;
     public GameObject GoldPrefab { private set; get; }
+    public GameObject SoulShardPrefab { private set; get; }
     public EnemyVisibilityChecker VisibilityChecker { private set; get; }
     private List<EnemyBase> _spawnedEnemies;
     private Transform _enemiesContainer;
@@ -21,7 +22,8 @@ public class EnemyManager : Singleton<EnemyManager>
         if (IsToBeDestroyed) return;
         _enemies = new Dictionary<int, SEnemyData>();
         _spawnedEnemies = new List<EnemyBase>();
-        GoldPrefab = Resources.Load("Prefabs/Items/Coin").GameObject();
+        GoldPrefab = Resources.Load("Prefabs/Items/Gold").GameObject();
+        SoulShardPrefab = Resources.Load("Prefabs/Items/SoulShard").GameObject();
         GameEvents.MapLoaded += OnMapLoaded;
         GameEvents.GameLoadEnded += OnGameLoadEnded;
         InGameEvents.EnemySlayed += (enemy => _spawnedEnemies.Remove(enemy));
@@ -84,6 +86,8 @@ public class EnemyManager : Singleton<EnemyManager>
                     AttackRangeY = float.Parse(csv.GetField("AttackRangeY")),
                     MinGoldRange = int.Parse(csv.GetField("MinGoldRange")),
                     MaxGoldRange = int.Parse(csv.GetField("MaxGoldRange")),
+                    SoulShardDropAmount = int.Parse(csv.GetField("SoulShardDropAmount")),
+                    SoulShardDropChance = float.Parse(csv.GetField("SoulShardDropChance")),
                 };
 
                 _enemies.Add(data.ID, data);

@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -9,6 +8,7 @@ public class Gold : MonoBehaviour
     private Rigidbody2D _rb;
     private Transform _playerTransform;
     private bool _isMovingTowardsPlayer;
+    private bool _isInteracting;
 
     private void Awake()
     {
@@ -23,7 +23,7 @@ public class Gold : MonoBehaviour
         force.z = 0.0f;
         //force.y = Mathf.Abs(force.y); // Ensure the force is always upwards
         _rb.AddForce(force.normalized * 2.8f, ForceMode2D.Impulse);
-        _rb.drag = 1.5f;
+        _rb.drag = 1.7f;
         StartCoroutine(WaitCoroutine());
     }
 
@@ -42,7 +42,8 @@ public class Gold : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (!other.CompareTag("Player")) return;
+        if (_isInteracting) return;
+        _isInteracting = true;
         PlayerController.Instance.playerInventory.ChangeGoldByAmount(value);
         Destroy(gameObject);
     }

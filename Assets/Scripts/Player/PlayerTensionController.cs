@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
@@ -46,6 +47,14 @@ public class PlayerTensionController : MonoBehaviour
         _fillRecoveryColour = new Color(0.3301887f, 0.3301887f, 0.3301887f, 1f);
         _overloadedColour = new Color(0.83f, 0, 0, 1);
         _slowDownAmount = 0.4f;
+        PlayerEvents.StartResurrect += OnPlayerDefeated;
+        PlayerEvents.Defeated += OnPlayerDefeated;
+    }
+
+    private void OnDestroy()
+    {
+        PlayerEvents.StartResurrect -= OnPlayerDefeated;
+        PlayerEvents.Defeated -= OnPlayerDefeated;
     }
 
     private void Start()
@@ -70,7 +79,19 @@ public class PlayerTensionController : MonoBehaviour
         ResetTension();
         SetTensionState(ETensionState.Innate);
     }
-
+    
+    private void OnPlayerDefeated()
+    {
+        StopAllCoroutines();
+        ResetTension();
+        if (Time.timeScale != 1)
+        {
+            Time.timeScale = 1;
+            InGameEvents.TimeRevertNormal.Invoke();
+        }
+        SetTensionState(ETensionState.Innate);
+    }
+    
     public void ChangeArbor(EArborType newArborType)
     {
         // Remove old arbor

@@ -315,7 +315,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
     private void UpdateSlowTimes()
     {
-        if (_slowRemainingTimes.Count == 0) return;
+        if (_slowRemainingTimes == null || _slowRemainingTimes.Count == 0) return;
 
         bool removed = false;
         foreach (float strength in _slowRemainingTimes.Keys.ToList())
@@ -451,14 +451,14 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         var hypHallucinationPreserv = _player.playerDamageDealer.BindingSkillPreservations[(int)EWarrior.Sommer];
         if (_sommerStackCount <= 0)
         {
-            AttackInfo boostedAttackInfo = attackInfo.Clone();
-            boostedAttackInfo.Damage.TotalAmount += attackInfo.Damage.TotalAmount * Define.SommerHypHallucinationStats[(int)hypHallucinationPreserv];
-            HandleNewDamage(boostedAttackInfo.Damage, boostedAttackInfo.AttackerArmourPenetration, attackInfo.ShouldLeech, attackInfo.ShouldUpdateTension);
+            DamageInfo boostedDamageInfo = attackInfo.Damage.Clone();
+            boostedDamageInfo.TotalAmount += attackInfo.Damage.TotalAmount * Define.SommerHypHallucinationStats[(int)hypHallucinationPreserv];
+            HandleNewDamage(boostedDamageInfo, attackInfo.AttackerArmourPenetration, attackInfo.ShouldLeech, attackInfo.ShouldUpdateTension);
         }
         // 그 외 경우
         else
         {
-            HandleNewDamage(attackInfo.Damage, attackInfo.AttackerArmourPenetration, attackInfo.ShouldLeech, attackInfo.ShouldUpdateTension);
+            HandleNewDamage(attackInfo.Damage.Clone(), attackInfo.AttackerArmourPenetration, attackInfo.ShouldLeech, attackInfo.ShouldUpdateTension);
         }
     }
 
@@ -567,6 +567,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
             
         StopAllCoroutines();
         DropGold();
+        DropSoulShard();
         Destroy(gameObject);
     }
     #endregion Damage Dealing and Receiving
@@ -634,11 +635,36 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         }
         
         // Drop coins
-        for (int i = 0; i < goldToDrop / 10 + 1; i++)
-        {
+        UIManager.Instance.DisplayGoldPopUp(goldToDrop);
+        for (int i = 0; i < goldToDrop / 5 + 1; i++) 
+        {   
             // Instantiate a coin at the enemy's position
             var coin = Instantiate(_enemyManager.GoldPrefab, transform.position, Quaternion.identity).GetComponent<Gold>();
-            coin.value = (i < goldToDrop / 10) ? 10 : goldToDrop % 10;
+            coin.value = (i < goldToDrop / 5) ? 5 : goldToDrop % 5;
+        }
+    }
+
+    private void DropSoulShard()
+    {
+        int amount = EnemyData.SoulShardDropAmount;
+        float chance = EnemyData.SoulShardDropChance;
+        int amountToDrop = 0;
+        for (int i = 0; i < amount; i++)
+        {
+            if (Random.value <= chance) amountToDrop++;
+        }
+        if (amountToDrop == 0) return;
+        
+        float angleStep = 180f / Mathf.Max(1, amountToDrop - 1);
+        float currentAngle = amountToDrop == 1 ? 0 : -90f;
+
+        for (int i = 0; i < amountToDrop; i++)
+        {
+            GameObject soulShard = Instantiate(_enemyManager.SoulShardPrefab, transform.position + new Vector3(0,0.1f, 0), Quaternion.identity);
+            Rigidbody2D rb = soulShard.GetComponent<Rigidbody2D>();
+            Vector2 direction = new Vector2(Mathf.Sin(currentAngle * Mathf.Deg2Rad), Mathf.Abs(Mathf.Sin(currentAngle * Mathf.Deg2Rad)));
+            rb.AddForce(direction * 5f, ForceMode2D.Impulse);
+            currentAngle += angleStep;
         }
     }
 

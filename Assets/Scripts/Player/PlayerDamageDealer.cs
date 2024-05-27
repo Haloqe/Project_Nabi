@@ -1,10 +1,8 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.VisualScripting;
 using UnityEngine.InputSystem;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
@@ -67,6 +65,8 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         
         // Bind events
         GameEvents.GameLoadEnded += OnRestarted;
+        PlayerEvents.Defeated += OnPlayerDefeated;
+        PlayerEvents.StartResurrect += OnPlayerDefeated;
         
         // Input Binding for Attacks
         var playerInput = GetComponent<PlayerInput>();
@@ -75,11 +75,24 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         playerInput.actions["Attack_Dash"].performed += OnDashAttack;
         playerInput.actions["Attack_Area"].performed += OnAreaAttack;
     }
+    
+    private void OnPlayerDefeated()
+    {
+        foreach (var butterfly in _spawnedButterflies) Destroy(butterfly);
+        _spawnedButterflies.Clear();
+        _dashUIOverlay.fillAmount = 0.0f;
+        _canBufferAttack = true;
+        _currAttackIdx = -1;
+        _bufferedAttackIdx = -1;
+        ResetNightShadeDarkGauge();
+    }
 
     private void OnDestroy()
     {
         if (GetComponent<PlayerController>().IsToBeDestroyed) return;
         GameEvents.GameLoadEnded -= OnRestarted;
+        PlayerEvents.Defeated -= OnPlayerDefeated;
+        PlayerEvents.StartResurrect -= OnPlayerDefeated;
         var playerInput = GetComponent<PlayerInput>();
         playerInput.actions["Attack_Melee"].performed -= OnMeleeAttack;
         playerInput.actions["Attack_Range"].performed -= OnRangedAttack;
@@ -202,7 +215,6 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
     public void OnAttackEnd(ELegacyType attackType)
     {
         // 막은거 풀기
-        Debug.Log("Attack end: curr idx set to -1");
         _currAttackIdx = -1;
         _animator.SetInteger(AttackIndex, -1);
         if (attackType == ELegacyType.Melee) AttackBases[(int)attackType].baseEffector.SetActive(false);
@@ -241,7 +253,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         {
             infoToSend.Damage.TotalAmount *= 2;
             isCritAttack = true;
-            UIManager.Instance.DisplayCritPopUp(transform.position + new Vector3(0, 2.3f, 0));
+            UIManager.Instance.DisplayCritPopUp(transform.position);
         }
 
         // 어둠 게이지 완충 공격: 추가 데미지 및 흡혈 여부
@@ -331,6 +343,13 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         }
         BindingSkillPreservations[(int)warrior] = preservation;
         // foreach (var attack in AttackBases) attack.UpdateLegacyStatusEffect();
+    }
+
+    public void UpdateStatusEffectPreservation(EWarrior warrior)
+    {
+        BindingSkillPreservations[(int)warrior]++;
+        foreach (var attack in AttackBases) 
+            attack.UpdateLegacyStatusEffectSpecificWarrior(warrior);
     }
 
     // Turbela

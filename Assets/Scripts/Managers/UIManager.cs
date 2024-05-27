@@ -29,7 +29,11 @@ public class UIManager : Singleton<UIManager>
     private GameObject _evadePopupPrefab;
     private GameObject _textPopupPrefab;
     private GameObject _critPopupPrefab;
+    private GameObject _soulPopupPrefab;
+    private GameObject _goldPlusPopupPrefab;
+    private GameObject _goldMinusPopupPrefab;
     private GameObject _bookPrefab;
+    private GameObject _metaUpgradeUIPrefab;
 
     // UI Instantiated Objects
     private GameObject _mainMenuUI;
@@ -40,6 +44,7 @@ public class UIManager : Singleton<UIManager>
     private GameObject _zoomedMap;
     private GameObject _loadingScreenUI;
     private GameObject _bookUI;
+    private GameObject _metaUpgradeUI;
     
     // UI Mechanism Script
     private MainMenuUIController _mainMenuUIController;
@@ -47,6 +52,7 @@ public class UIManager : Singleton<UIManager>
     private MapController _mapController;
     private DefeatedUIController _defeatedUIController;
     private BookUIController _bookUIController;
+    private MetaUIController _metaUIController;
     
     // Minor Controllable Objects
     private Slider _playerHPSlider;
@@ -84,6 +90,8 @@ public class UIManager : Singleton<UIManager>
         LoadAllUIPrefabs();
         
         PlayerEvents.Defeated += OnPlayerDefeated;
+        PlayerEvents.StartResurrect += OnPlayerStartResurrect;
+        PlayerEvents.EndResurrect += OnPlayerEndResurrect;
         PlayerEvents.HpChanged += OnPlayerHPChanged;
         PlayerEvents.Spawned += OnPlayerSpawned;
         GameEvents.MainMenuLoaded += OnMainMenuLoaded;
@@ -98,6 +106,7 @@ public class UIManager : Singleton<UIManager>
         _UIIAMap.FindAction("Close").performed += OnClose;
         _UIIAMap.FindAction("CloseMap").performed += OnCloseMap;
         _UIIAMap.FindAction("CloseBook").performed += OnCloseBook;
+        _UIIAMap.FindAction("Tab").performed += OnTab;
         _UIIAMap.FindAction("Navigate").performed += OnNavigate;
         _UIIAMap.FindAction("Navigate").canceled += OnNavigate;
         _UIIAMap.FindAction("Reset").performed += OnReset;
@@ -121,6 +130,8 @@ public class UIManager : Singleton<UIManager>
         inGameCombatUI      = Instantiate(_inGameCombatPrefab, Vector3.zero, Quaternion.identity).GameObject();
         _zoomedMap          = Instantiate(_zoomedMapPrefab, Vector3.zero, Quaternion.identity).GameObject();
         _bookUI             = Instantiate(_bookPrefab, Vector3.zero, Quaternion.identity).GameObject();
+        _metaUpgradeUI      = Instantiate(_metaUpgradeUIPrefab, Vector3.zero, Quaternion.identity).GameObject();
+        _metaUIController   = _metaUpgradeUI.GetComponent<MetaUIController>();
         _bookUIController   = _bookUI.GetComponentInChildren<BookUIController>();
         _defeatedUIController = _defeatedUI.GetComponent<DefeatedUIController>();
         _mapController      = _zoomedMap.GetComponent<MapController>();
@@ -191,18 +202,12 @@ public class UIManager : Singleton<UIManager>
             0, _playerHPGlobe.rectTransform.rect.height * newHpRatio - _playerHPGlobe.rectTransform.rect.height, 0);
         
         // Update hp text
-        float hp = newHpRatio * 100f;
-        if (Math.Abs(hp % 1) < 0.1) 
-        {
-            _hpText.text = (int)hp + "/100";
-        }
-        else
-        {
-            _hpText.text = hp.ToString("F1") + "/100";
-        }
+        float maxHp = _playerController.playerDamageReceiver.MaxHealth;
+        float hp = newHpRatio * maxHp;
+        _hpText.text = Utility.FormatFloat(hp) + "/" + Utility.FormatFloat(maxHp);
         
         // If HP previously below threshold and just moved over threshold, turn off blood overlay
-        float critHpRatio = PlayerController.Instance.HpCriticalThreshold;
+        float critHpRatio = _playerController.HpCriticalThreshold;
         if (oldHpRatio <= critHpRatio) 
         {
             if (newHpRatio > critHpRatio)
@@ -265,6 +270,18 @@ public class UIManager : Singleton<UIManager>
         StartCoroutine(GameOverCoroutine());
     }
     
+    private void OnPlayerStartResurrect()
+    {
+        StopCoroutine(nameof(BloodOverlayCoroutine));
+        CloseFocusedUI();
+        _playerIAMap.Disable();
+    }
+    
+    private void OnPlayerEndResurrect()
+    {
+        UsePlayerControl();
+    }
+    
     private void LoadAllUIPrefabs()
     {
         string path = "Prefabs/UI/";
@@ -276,7 +293,11 @@ public class UIManager : Singleton<UIManager>
         _evadePopupPrefab       = Utility.LoadGameObjectFromPath(path + "InGame/TextPopUp/EvadeUI");
         _textPopupPrefab        = Utility.LoadGameObjectFromPath(path + "InGame/TextPopUp/GeneralTextUI");
         _critPopupPrefab        = Utility.LoadGameObjectFromPath(path + "InGame/TextPopUp/CritPopUp");
+        _soulPopupPrefab        = Utility.LoadGameObjectFromPath(path + "InGame/TextPopUp/SoulPopUp");
+        _goldMinusPopupPrefab   = Utility.LoadGameObjectFromPath(path + "InGame/TextPopUp/GoldMinusPopUp");
+        _goldPlusPopupPrefab    = Utility.LoadGameObjectFromPath(path + "InGame/TextPopUp/GoldPlusPopUp");
         _bookPrefab             = Utility.LoadGameObjectFromPath(path + "InGame/Book/BookCanvas");
+        _metaUpgradeUIPrefab    = Utility.LoadGameObjectFromPath(path + "InGame/MetaUpgradeCanvas");
         
         _warriorUIPrefabs = new GameObject[(int)EWarrior.MAX];
         for (int i = 0; i < (int)EWarrior.MAX; i++)
@@ -349,6 +370,11 @@ public class UIManager : Singleton<UIManager>
         Destroy(interactor.gameObject);
         return true;
     }
+    
+    public void OpenMetaUpgradeUI()
+    {
+        if (_activeFocusedUI == null) OpenFocusedUI(_metaUpgradeUI, true);
+    }
 
     public void OpenBook()
     {
@@ -362,9 +388,22 @@ public class UIManager : Singleton<UIManager>
             _bookUIController.StartCloseBookAnimation();
         }
     }
+    
+    private void OnTab(InputAction.CallbackContext obj)
+    {
+        if (_activeFocusedUI == _bookUI)
+        {
+            _bookUIController.OnTab();
+        }
+        else if (_activeFocusedUI == _metaUpgradeUI)
+        {
+            _metaUIController.OnTab();
+        }
+    }
 
     public void OpenMap()
     {
+        Debug.Log("Open map");
         _mapController.ResetMapCamera();
         OpenFocusedUI(_zoomedMap);
     }
@@ -401,10 +440,18 @@ public class UIManager : Singleton<UIManager>
         {
             _mapController.OnNavigate(value);
         }
+        else if (_activeFocusedUI == _bookUI)
+        {
+            _bookUIController.OnNavigate(value);
+        }
         else if (_activeFocusedUI == _warriorUIObject)
         {
             _warriorUIController.OnNavigate(value);
         } 
+        else if (_activeFocusedUI == _metaUpgradeUI)
+        {
+            _metaUIController.OnNavigate(value);
+        }
         else if (_activeFocusedUI == _defeatedUI)
         {
             _defeatedUIController.OnNavigate(value);
@@ -435,6 +482,10 @@ public class UIManager : Singleton<UIManager>
         {
             _warriorUIController.OnSubmit();
         }
+        else if (_activeFocusedUI == _metaUpgradeUI)
+        {
+            _metaUIController.OnSubmit();
+        }
         else if (_activeFocusedUI == _defeatedUI)
         {
             _defeatedUIController.OnSubmit();
@@ -448,20 +499,40 @@ public class UIManager : Singleton<UIManager>
     // InGame popup
     public void DisplayTextPopUp(string text, Vector3 position, Transform parent = null)
     {
-        var ui = Instantiate(_textPopupPrefab, position, quaternion.identity);
+        var ui = Instantiate(_textPopupPrefab, position + playerUpOffset, quaternion.identity);
         ui.GetComponent<TextPopUpUI>().Init(parent, text);
     }
-    
+    private Vector3 playerUpOffset = new Vector3(0, 2.3f, 0);
     // InGame popup - crit
     public void DisplayCritPopUp(Vector3 position)
     {
-        var ui = Instantiate(_critPopupPrefab, position, quaternion.identity);
+        var ui = Instantiate(_critPopupPrefab, position + playerUpOffset, quaternion.identity);
         ui.GetComponent<TextPopUpUI>().Init(null, string.Empty, 0.4f);
     }
     
     public void DisplayPlayerEvadePopUp()
     {
-        Instantiate(_evadePopupPrefab, _playerController.transform.position + new Vector3(0, 2.3f, 0), quaternion.identity);
+        Instantiate(_evadePopupPrefab, _playerController.transform.position + playerUpOffset, quaternion.identity);
+    }
+    
+    // InGame popup - soul
+    public void DisplaySoulPopUp(int value)
+    {
+        var valueText = value < 0 ? value.ToString() : "+" + value;
+        var popup = Instantiate(_soulPopupPrefab);
+        popup.GetComponent<RectTransform>().position = _playerController.transform.position + playerUpOffset;
+        popup.GetComponentInChildren<TextMeshProUGUI>().text = valueText;
+        Destroy(popup, 1f);
+    }
+    
+    // InGame popup - gold
+    public void DisplayGoldPopUp(int value)
+    {
+        var valueText = value < 0 ? value.ToString() : "+" + value;
+        var popup = Instantiate(value < 0 ? _goldMinusPopupPrefab : _goldPlusPopupPrefab);
+        popup.GetComponent<RectTransform>().position = _playerController.transform.position + playerUpOffset;
+        popup.GetComponentInChildren<TextMeshProUGUI>().text = valueText;
+        Destroy(popup, 1f);
     }
 
     // Flower

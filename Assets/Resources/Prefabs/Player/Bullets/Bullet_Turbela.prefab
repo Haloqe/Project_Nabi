@@ -30,7 +30,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.2, y: 1.2, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 9163991889761895277}
@@ -172,8 +172,11 @@ MonoBehaviour:
     StatusEffects: []
     IncomingDirectionX: 0
     AttackerArmourPenetration: 0
+    GravCorePosition: {x: 0, y: 0, z: 0}
     CanBeDarkAttack: 0
-  _shouldRotate: 0
+    ShouldLeech: 0
+    ShouldUpdateTension: 0
+  shouldRotate: 0
 --- !u!1001 &6382735737350706021
 PrefabInstance:
   m_ObjectHideFlags: 0

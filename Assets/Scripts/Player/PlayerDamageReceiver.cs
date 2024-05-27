@@ -10,40 +10,63 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     // reference to other components
     private PlayerMovement _playerMovement;
     private PlayerController _playerController;
-
-    // TEMP health attributes
-    private float _health = 300;
-    private float _maxHealth = 300;
+    private UIManager _uiManager;
+    private GameManager _gameManager;
+    private GameObject _resurrectionVFX;
+    
+    // Health attributes
+    private float _currHealth;
+    public float MaxHealth => BaseHealth + additionalHealth;
+    public float BaseHealth { get; private set; }
+    public float additionalHealth;
+    public bool canResurrect;
+    private bool _resurrectAnimEnded;
+    private bool _shouldNotTakeDamage;
 
     // status effect attributes
+    private bool _isResurrectFinished;
     public bool IsSilenced { get; private set; }
     public bool IsSilencedExceptCleanse { get; private set; }
     [NamedArray(typeof(EDamageType))] public GameObject[] DamageEffects;
     private int[] _activeDOTCounts;
     private float[] _effectRemainingTimes;
     private SortedDictionary<float, float> _slowRemainingTimes; // str,time
+    private List<Coroutine> _activeDamageCoroutines;
 
     private Animator _animator;
     private SpriteRenderer _spriteRenderer;
     private readonly static int IsDead = Animator.StringToHash("IsDead");
-    
+    private readonly static int ShouldResurrect = Animator.StringToHash("ShouldResurrect");
+
     private void OnRestarted()
     {
         Array.Clear(_effectRemainingTimes, 0, _effectRemainingTimes.Length);
         Array.Clear(_activeDOTCounts, 0, _activeDOTCounts.Length);
         _slowRemainingTimes.Clear();
-        _health = _maxHealth;
+        _currHealth = MaxHealth;
+        _shouldNotTakeDamage = false;
         IsSilenced = false;
         IsSilencedExceptCleanse = false;
+        additionalHealth = 0;
+        _currHealth = MaxHealth;
+        canResurrect = _gameManager.PlayerMetaInfo.MetaUpgradeLevels[(int)EMetaUpgrade.Resurrection] != -1;
+        _activeDamageCoroutines.Clear();
     }
     
     private void Start()
     {
+        _resurrectionVFX = transform.Find("ResurrectionVFX").gameObject;
+        _activeDamageCoroutines = new List<Coroutine>();
+        BaseHealth = 100;
+        _currHealth = MaxHealth;
+        canResurrect = false;
+        _uiManager = UIManager.Instance;
+        _gameManager = GameManager.Instance;
         _playerController = PlayerController.Instance;
         _animator = GetComponent<Animator>();
         _spriteRenderer = GetComponent<SpriteRenderer>();
         
-        PlayerEvents.Defeated += OnDefeated;
+        PlayerEvents.Defeated += OnPlayerDefeated;
         GameEvents.Restarted += OnRestarted;
         
         _playerMovement = GetComponent<PlayerMovement>();
@@ -56,7 +79,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
 
     private void OnDestroy()
     {
-        PlayerEvents.Defeated -= OnDefeated;
+        PlayerEvents.Defeated -= OnPlayerDefeated;
         GameEvents.Restarted -= OnRestarted;
     }
 
@@ -169,15 +192,17 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     
     public void TakeDamage(AttackInfo damageInfo)
     {
+        if (_shouldNotTakeDamage) return;
+        
         // Attempt evade
         if (Random.value <= _playerController.EvasionRate)
         {
-            UIManager.Instance.DisplayPlayerEvadePopUp();
+            _uiManager.DisplayPlayerEvadePopUp();
             return;
         }
         
         // Evade failed?
-        HandleNewDamage(damageInfo.Damage, damageInfo.AttackerArmourPenetration);
+        HandleNewDamage(damageInfo.Damage.Clone(), damageInfo.AttackerArmourPenetration);
         HandleNewStatusEffects(damageInfo.StatusEffects);
     }    
 
@@ -188,17 +213,27 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         Debug.Log("Player damaged: " + damage.TotalAmount);
         StartCoroutine(DamageCoroutine(damage));
     }
-
-    private void OnDefeated()
+    
+    private IEnumerator DamageCoroutine(DamageInfo damage)
     {
+        // Run the actual coroutine
+        var damageCoroutine = StartCoroutine(DamageCoroutineInternal(damage));
+        _activeDamageCoroutines.Add(damageCoroutine);
+        yield return damageCoroutine;
+
+        // Coroutine has finished, perform cleanup
+        _activeDamageCoroutines.Remove(damageCoroutine); 
+    }
+
+    private void OnPlayerDefeated()
+    {
+        _shouldNotTakeDamage = true;
         StopAllCoroutines();
         _animator.SetBool(IsDead, true);
         _spriteRenderer.color = Color.white;
-
-        // TODO should save info somewhere, do progressive updates
     }
 
-    private IEnumerator DamageCoroutine(DamageInfo damage)
+    private IEnumerator DamageCoroutineInternal(DamageInfo damage)
     {
         int damageTypeIdx = (int)damage.Type;
         
@@ -222,12 +257,14 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
             }
 
             float damagePerTick = damage.TotalAmount / (damage.Duration / damage.Tick + 1);
-            var damageCoroutine = StartCoroutine(DOTDamageCoroutine(damagePerTick, damage.Tick));
+            var damageCoroutine = StartCoroutine(DOTDamageCoroutineInternal(damagePerTick, damage.Tick));
+            _activeDamageCoroutines.Add(damageCoroutine);
             yield return new WaitForSeconds(damage.Duration + damage.Tick / 2.0f);
 
             // Do cleanup
             // Stop applying damage if the duration is over
             StopCoroutine(damageCoroutine);
+            _activeDamageCoroutines.Remove(damageCoroutine);
 
             // If this is the last effect, activate the VFX
             if (--_activeDOTCounts[damageTypeIdx] == 0 && DamageEffects[damageTypeIdx] != null)
@@ -237,7 +274,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         }
     }
 
-    private IEnumerator DOTDamageCoroutine(float damagePerTick, float tick)
+    private IEnumerator DOTDamageCoroutineInternal(float damagePerTick, float tick)
     {
         while (true)
         {
@@ -252,13 +289,71 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         // TODO hit/heal effect
         float prevHPRatio = GetHPRatio();
         if (changeAmount < 0) StartCoroutine(DamagedRoutine());
-        _health = Mathf.Clamp(_health + changeAmount, 0, _maxHealth);
+        _currHealth = Mathf.Clamp(_currHealth + changeAmount, 0, MaxHealth);
         PlayerEvents.HpChanged.Invoke(changeAmount, prevHPRatio, GetHPRatio());
-        if (_health == 0)
+        if (_currHealth == 0) Die();
+    }
+
+    private void Die()
+    {
+        // Can resurrect?
+        if (canResurrect) StartCoroutine(ResurrectCoroutine());
+        // Die
+        else PlayerEvents.Defeated.Invoke();
+    }
+
+    private void StopAllDamageCoroutines()
+    {
+        foreach (var coroutine in _activeDamageCoroutines)
         {
-            PlayerEvents.Defeated.Invoke();
-            GameManager.Instance.IsFirstRun = false;
+            StopCoroutine(coroutine);
         }
+        _activeDamageCoroutines.Clear();
+    }
+    
+    private IEnumerator ResurrectCoroutine()
+    {
+        // Start resurrect
+        PlayerEvents.StartResurrect.Invoke();
+        Array.Clear(_effectRemainingTimes, 0, _effectRemainingTimes.Length);
+        Array.Clear(_activeDOTCounts, 0, _activeDOTCounts.Length);
+        StopAllDamageCoroutines();
+        _shouldNotTakeDamage = true;
+        _slowRemainingTimes.Clear();
+        _spriteRenderer.color = Color.white;
+        canResurrect = false;
+        _isResurrectFinished = false;
+        IsSilenced = false;
+        
+        IsSilencedExceptCleanse = false;
+        _animator.SetBool(IsDead, true);
+        _animator.SetBool(ShouldResurrect, true);
+
+        yield return null;
+        yield return null;
+        _animator.SetBool(IsDead, false); // prevent transition to death animation
+        
+        // Wait for animation to end
+        yield return new WaitUntil(() => _isResurrectFinished);
+        
+        // End resurrect
+        PlayerEvents.EndResurrect.Invoke();
+        ChangeHealthByAmount(MaxHealth 
+            * Define.MetaResurrectionHealthRatio[_gameManager.PlayerMetaInfo.MetaUpgradeLevels[(int)EMetaUpgrade.Resurrection]]);
+        
+        _animator.Rebind();
+        _animator.Update(0f);
+        _shouldNotTakeDamage = false;
+    }
+
+    public void OnResurrectAnimationStart()
+    {
+        _resurrectionVFX.SetActive(true);
+    }
+    
+    public void OnResurrectAnimationEnd()
+    {
+        _isResurrectFinished = true;
     }
     
     // TODO FIX: damage visualisation
@@ -271,7 +366,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
 
     public float GetHPRatio()
     {
-        return _health / _maxHealth;
+        return _currHealth / MaxHealth;
     }
     #endregion Damage Dealing and Receiving
 
@@ -385,9 +480,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         _slowRemainingTimes.Add(strength, duration);
         Debug.Log("New slow (" + strength + ") time: " + duration.ToString("0.0000"));
     }
-
     
-
     /// <summary>
     ///  현재는 isSliencedExceptCleanse 포함해서 제거함. Silenced는 유지.
     /// </summary>

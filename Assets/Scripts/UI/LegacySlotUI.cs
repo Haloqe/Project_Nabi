@@ -24,29 +24,33 @@ public class LegacySlotUI : LanguageChangeHandlerBase, IPointerEnterHandler, IPo
         _descWarriorText = _descPopUp.transform.Find("WarriorText").GetComponent<TextMeshProUGUI>();
     }
     
-    public override void OnLanguageChanged()
+    public override void UpdateText()
     {
         int localisation = (int)Define.Localisation;
-        _descNameText.text = "<color=#" + ColorUtility.ToHtmlStringRGBA(Define.LegacyPreservationColors[(int)_preserv]) + ">" +
-            "[" + Define.LegacyPreservationNames[localisation, (int)_preserv] + "]</color> " + _names[localisation];
+        _descNameText.text = _names[localisation];
         _descDescText.text = _descs[localisation];
-        _descWarriorText.text = Define.WarriorNames[localisation,(int)_warrior];
-        
-        // TODO Change font
+        _descWarriorText.text = Utility.GetColouredWarriorText(_warrior);
     }
 
     public void Init(EWarrior warrior, List<string> names, List<string> descs, ELegacyPreservation preservation)
     {
         _warrior = warrior;
         _names = names;
+        _preserv = preservation;
         _descs = new List<string>();
         foreach (var desc in descs)
         {
             _descs.Add(desc.Replace("<br>", " "));
         }
+        _descNameText.color = Define.LegacyPreservationColors[(int)_preserv];
         _descWarriorText.color = Define.WarriorMainColours[(int)_warrior];
-        _preserv = preservation;
-        OnLanguageChanged();
+        UpdateText();
+    }
+
+    public void OnUpdatePreservation()
+    {
+        _preserv++;
+        _descNameText.color = Define.LegacyPreservationColors[(int)_preserv];
     }
     
     public void OnPointerEnter(PointerEventData eventData)

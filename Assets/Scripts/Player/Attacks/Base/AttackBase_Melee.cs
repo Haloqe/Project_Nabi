@@ -139,6 +139,7 @@ public class AttackBase_Melee : AttackBase
         if (Utility.IsObjectInList(collision.gameObject, _affectedEnemies)) return;
         IDamageable target = collision.gameObject.GetComponentInParent<IDamageable>();
         if (target == null) return;
+        if (Utility.IsObjectInList(target.GetGameObject(), _affectedEnemies)) return;
 
         // Recalculate damage based on current player strength
         _attackComboInfo.Damage.TotalAmount = _damageComboInfo.BaseDamage + _playerController.Strength * _damageComboInfo.RelativeDamage;
@@ -170,9 +171,8 @@ public class AttackBase_Melee : AttackBase
         _attackComboInfo.Damage.TotalAmount += (extra.BaseDamage + _playerController.Strength * extra.RelativeDamage);
     }
 
-    public override void UpdateLegacyStatusEffect()
+    protected override void UpdateLegacyStatusEffect()
     {
-        if (!ActiveLegacy) return;
         base.UpdateLegacyStatusEffect();
         
         // Combo attack

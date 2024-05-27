@@ -1,7 +1,5 @@
-using System;
 using System.Collections;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 public class MapController : MonoBehaviour
 {
@@ -39,6 +37,7 @@ public class MapController : MonoBehaviour
         _navigationValue = Vector2.zero;
         _camSize = _mapCameraComponent.orthographicSize = _defaultCamSize;
     }
+    
     private void Update()
     {
         if (_isLerping) return;

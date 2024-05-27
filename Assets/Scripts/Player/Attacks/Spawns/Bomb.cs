@@ -47,7 +47,7 @@ public class Bomb : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.gameObject.CompareTag("Enemy") == false) return;
-        if (Utility.IsObjectInList(collision.gameObject, _affectedEnemies)) return;
+        if (Utility.IsObjectInList(collision.gameObject.transform.root.gameObject, _affectedEnemies)) return;
 
         IDamageable target = collision.gameObject.GetComponentInParent<IDamageable>();
         if (target != null)
