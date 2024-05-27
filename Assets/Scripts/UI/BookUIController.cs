@@ -15,7 +15,6 @@ public class BookUIController : MonoBehaviour
     
     // Animation
     private Animator _animator;
-    private Coroutine _pageTurnCoroutine;
     private readonly static int FlipLeft = Animator.StringToHash("FlipLeft");
     private readonly static int FlipRight = Animator.StringToHash("FlipRight");
     private readonly static int Close = Animator.StringToHash("Close");
@@ -56,7 +55,7 @@ public class BookUIController : MonoBehaviour
 
     private IEnumerator DisplayPage(int pageIdx)
     {
-        // TODO tab 3? 추가 안하게되면 3번째탭 지우고 BookTab array로 변경할 것
+        // TODO tab 3? 추가 안하게되면 3번째탭 지우고 BookTab array로 변경, getcomponent 없앨 것
         // Hide previous page
         _pageObjects[_currPageIdx].SetActive(false);
         _tabs[_currPageIdx].GetComponent<BookTab>()._isActiveTab = false;
@@ -65,6 +64,7 @@ public class BookUIController : MonoBehaviour
         // Flip animation?
         if (_currPageIdx != pageIdx)
         {
+            _isFlipOver = false;
             _animator.SetTrigger(_currPageIdx < pageIdx ? FlipLeft : FlipRight);
         
             // Wait until _isFlipOver becomes true
@@ -72,19 +72,16 @@ public class BookUIController : MonoBehaviour
         }
         
         // Display page
-        _isFlipOver = false;
         _currPageIdx = pageIdx;
         _pages[pageIdx].OnPageOpen();
         _pageObjects[pageIdx].SetActive(true);
-        _pageTurnCoroutine = null;
         _isFlipOver = true;
     }
 
     public void OnPointerClickTab(int tabIdx)
     {
-        if (_pageTurnCoroutine != null) return;
         if (!_isFlipOver) return;
-        _pageTurnCoroutine = StartCoroutine(DisplayPage(tabIdx));
+        StartCoroutine(DisplayPage(tabIdx));
     }
 
     public void OnEndFlip()
