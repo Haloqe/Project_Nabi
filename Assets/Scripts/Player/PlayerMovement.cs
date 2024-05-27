@@ -16,7 +16,8 @@ public class PlayerMovement : MonoBehaviour
     private float _defaultBounciness;
 
     // movement    
-    private readonly float _defaultMoveSpeed = 7f;
+    // private readonly float _defaultMoveSpeed = 7f;
+    private readonly float _defaultMoveSpeed = 9f;
     public float MoveSpeed { get; private set; } 
     public float moveSpeedMultiplier = 1f;
     private Vector2 _moveDirection;
@@ -28,7 +29,7 @@ public class PlayerMovement : MonoBehaviour
     private readonly float _defaultJumpForce = 13f;
     public float jumpForce;
     private bool _isJumping;
-    private bool _isRunningUpwardVelocityCoroutine;
+    private bool _isRunningFirstJump;
     private int _jumpCounter;
     private readonly float _coyoteTime = 0.2f;
     private float _coyoteTimeCounter;
@@ -103,9 +104,29 @@ public class PlayerMovement : MonoBehaviour
         // disable extra movement if rooted or dashing or attacking
         if (_isRooted || isDashing || isAreaAttacking/*|| _isAttacking*/) return;
         
-        _rigidbody2D.velocity = _additionalVelocity.magnitude != 0 ? 
-            new Vector2(_additionalVelocity.x / Time.timeScale, _additionalVelocity.y + _rigidbody2D.velocity.y) : 
-            new Vector2((_moveDirection.x * MoveSpeed * moveSpeedMultiplier) / Time.timeScale, _rigidbody2D.velocity.y);
+        if (_moveDirection.x == 0)
+        {
+            _rigidbody2D.velocity = new Vector2(0, _rigidbody2D.velocity.y);
+        }
+        else
+        {
+            float targetSpeed = Mathf.Sign(_moveDirection.x) * MoveSpeed;
+            float speedDifference = targetSpeed - _rigidbody2D.velocity.x;
+            float accelerationRate = 1.5f;
+            float resultantMoveForce =
+                Mathf.Pow(Mathf.Abs(speedDifference) * accelerationRate, 2f) * Mathf.Sign(speedDifference);
+            _rigidbody2D.AddForce(new Vector2(resultantMoveForce, 0f));
+            // if (_moveDirection.x == 0 && Mathf.Abs(_rigidbody2D.velocity.x) <= 0.1f)
+            //     _rigidbody2D.velocity = new Vector2(0, _rigidbody2D.velocity.y);
+        }
+        
+        
+        // _rigidbody2D.velocity = _additionalVelocity.magnitude != 0 ? 
+        //     new Vector2(_additionalVelocity.x / Time.timeScale, _additionalVelocity.y + _rigidbody2D.velocity.y) : 
+        //     new Vector2((_moveDirection.x * MoveSpeed * moveSpeedMultiplier) / Time.timeScale, _rigidbody2D.velocity.y);
+
+        if (_additionalVelocity.magnitude != 0)
+            _rigidbody2D.velocity += new Vector2(_additionalVelocity.x / Time.timeScale, _additionalVelocity.y);
         
         if (!_isJumping)
         {
@@ -113,11 +134,11 @@ public class PlayerMovement : MonoBehaviour
             return;
         }
         
-        if (_isRunningUpwardVelocityCoroutine && _jumpCounter <= 1)
+        if (_isRunningFirstJump && _jumpCounter <= 1)
         {
             _rigidbody2D.gravityScale = _upwardsGravityScale;
         }
-        else if (!_isRunningUpwardVelocityCoroutine || _rigidbody2D.velocity.y < 0)
+        else if (!_isRunningFirstJump || _rigidbody2D.velocity.y < 0)
         {
             _rigidbody2D.gravityScale = _downwardsGravityScale;
         }
@@ -235,63 +256,79 @@ public class PlayerMovement : MonoBehaviour
         IsMoving = false;
     }
 
-    // public void SetJump(bool value)
+    // public void StartMove(Vector2 value)
     // {
-    //     // Can the player jump?
-    //     if (!value) return;
-    //     if (isDashing) return;
-    //     if (_isRooted || _isAttacking) return;
-    //     if (_coyoteTimeCounter < 0f && _jumpCounter >= 2) return;
-    //     
-    //     // Is this a second jump?
-    //     if (_jumpCounter > 1) {
-    //         _jumpBufferTimeCounter = _jumpBufferTime;
-    //         _animator.SetBool(IsDoubleJumping, true);
+    //     _moveDirection = value;
+    //     if (value.x == 0 || _isAttacking || isDashing)
+    //     {
+    //         IsMoving = false;
+    //         return;
     //     }
+    //     
+    //     // Note: Player sprite default direction is left
+    //     IsMoving = true;
+    //     // transform.localScale = new Vector2(-Mathf.Sign(value.x) * Mathf.Abs(transform.localScale.x), transform.localScale.y);
+    //     
+    //     float targetSpeed = Mathf.Sign(_moveDirection.x) * MoveSpeed;
+    //     float speedDifference = targetSpeed - _rigidbody2D.velocity.x;
+    //     float accelerationRate = Mathf.Abs(targetSpeed) > 0.01f ? 1f : 1.5f;
+    //     float resultantMoveForce =
+    //         Mathf.Pow(Mathf.Abs(speedDifference) * accelerationRate, 2f) * Mathf.Sign(speedDifference);
+    //     _rigidbody2D.AddForce(new Vector2(resultantMoveForce, 0f));
     //
-    //     _rigidbody2D.velocity = new Vector2(_rigidbody2D.velocity.x, jumpForce / Time.timeScale);
-    //     _jumpCounter += 1;
-    //     _jumpBufferTimeCounter = 0;
     // }
+    
+
+    public void StopMove()
+    {
+        
+    }
 
     public void StartJump()
     {
         // can the player jump?
-        if (isDashing) return;
         if (_isRooted || _isAttacking) return;
-        if (_coyoteTimeCounter < 0f && _jumpCounter >= 2) return;
-        
-        // is this a second jump?
-        if (_jumpCounter >= 1)
+        if (_coyoteTimeCounter < 0f && _jumpCounter >= 2 || isDashing)
         {
             _jumpBufferTimeCounter = _jumpBufferTime;
-            _animator.SetBool(IsDoubleJumping, true);
+            Debug.Log("jump buffer");
+            return;
         }
         
-        StartCoroutine(nameof(UpwardVelocityCoroutine));
         _jumpCounter += 1;
         _jumpBufferTimeCounter = 0;
+        
+        // is this a second jump?
+        if (_jumpCounter >= 2)
+        {
+            _animator.SetBool(IsDoubleJumping, true);
+            _rigidbody2D.velocity = new Vector2(_rigidbody2D.velocity.x, jumpForce * 1.3f / Time.timeScale);
+            return;
+        }
+        
+        StartCoroutine(nameof(FirstJump));
     }
 
     public void StopJump()
     {
-        StopCoroutine(nameof(UpwardVelocityCoroutine));
-        _isRunningUpwardVelocityCoroutine = false;
+        StopCoroutine(nameof(FirstJump));
+        _isRunningFirstJump = false;
     }
 
-    private IEnumerator UpwardVelocityCoroutine()
+    private IEnumerator FirstJump()
     {
-        _isRunningUpwardVelocityCoroutine = true;
+        _isRunningFirstJump = true;
         
         float jumpTimeCounter = 0f;
-        while (jumpTimeCounter <= 0.25f)
+        while (jumpTimeCounter <= 0.2f)
         {
-            yield return null;
+            if (isDashing) break;
             _rigidbody2D.velocity = new Vector2(_rigidbody2D.velocity.x, jumpForce / Time.timeScale);
             jumpTimeCounter += Time.unscaledDeltaTime;
+            yield return null;
         }
         
-        _isRunningUpwardVelocityCoroutine = false;
+        _isRunningFirstJump = false;
     }
 
     private void OnTriggerEnter2D(Collider2D other)

@@ -5,6 +5,7 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Interactions;
+using UnityEngine.Rendering;
 
 public class PlayerController : Singleton<PlayerController>
 {
@@ -160,6 +161,16 @@ public class PlayerController : Singleton<PlayerController>
     {
         playerMovement.SetMoveDirection(value.Get<Vector2>());
     }
+
+    void OnStartMove(InputValue value)
+    {
+        
+    }
+    
+    // void OnStopMove(InputAction.CallbackContext obj)
+    // {
+    //     
+    // }
 
     // void OnJump(InputValue value)
     // {
