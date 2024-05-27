@@ -37,7 +37,7 @@ public static class Define
         { EStatusEffect.Ecstasy, EStatusEffect.Ecstasy }, // 유포리아
         { EStatusEffect.Swarm, EStatusEffect.Cloud },     // 투르벨라
         //{ EStatusEffect.Poison, EStatusEffect.Leech },          // 버논
-        { EStatusEffect.Evade, EStatusEffect.Camouflage },      // 나이트셰이드
+        { EStatusEffect.Evade, EStatusEffect.Evade },      // 나이트셰이드
     };
 
     // Enemy Commons
@@ -63,12 +63,23 @@ public static class Define
         new Color(0.8584906f, 0.73f, 0.37f, 1f),
         new Color(0.663f, 0.89f, 0.941f, 1f),
     };
+    public static string[,] StatNames =
+    {
+        {"Health", "Strength", "Critical Chance", "Armour", "Armour Penetration", "Evasion Rate", "Heal Efficiency"},
+        {"체력", "공격력", "치명타 확률", "방어력", "방어 관통력", "회피율", "회복 효율"},
+    };
 
     // Legacy related
     public static float[] EuphoriaEnemyGoldDropBuffStats = new float[5];
-    public static float[] TurbelaButterflyAttackTwiceChances = new float[5];
     public static float[] SommerHypHallucinationStats = new float[5];
     public static float[] SommerSleepArmourReduceAmounts = new float[5];
+    public static float[] TurbelaMaxButterflyStats =
+    {
+        6, 6, 6, 6, 6,
+    };
+    public static float[] TurbelaDoubleSpawnStats = new float[5];
+    public static float[] TurbelaExtraDamageStats = new float[5];
+    public static float[] TurbelaButterflyCritStats = new float[5];
     public static float[][] EcstasyBuffStats =
     {
         new[] {0.5f, 0.75f, 1.0f, 1.25f}, // 사마귀 - 방어력 % 

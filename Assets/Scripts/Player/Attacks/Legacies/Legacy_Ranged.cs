@@ -12,6 +12,7 @@ public class Legacy_Ranged : ActiveLegacySO
     public AttackSpawnObject BulletDestroySpawnObject;
     
     private List<GameObject> _manualDestroyList;
+    private int _attackCount = 0;
 
     public override void Init(Transform playerTransform)
     {
@@ -20,6 +21,7 @@ public class Legacy_Ranged : ActiveLegacySO
         _spawnScaleMultiplier = 1.0f;
         if (AttackSpawnObject) AttackSpawnObject.attackParentType = ELegacyType.Ranged;
         if (BulletDestroySpawnObject) BulletDestroySpawnObject.attackParentType = ELegacyType.Ranged;
+        _attackCount = 0;
     }
 
     private void OnAttack()
@@ -41,20 +43,24 @@ public class Legacy_Ranged : ActiveLegacySO
             _manualDestroyList.Add(spawnedObject.gameObject);
     }
 
-    private void OnHit()
+    public void OnHit(IDamageable target, Vector3 bulletPos)
     {
-
-    }
-
-    public void OnBulletDestroy(Vector3 bulletPos)
-    {
-        if (BulletDestroySpawnObject == null) return;
+        // Turbela
+        if (target != null && warrior == EWarrior.Turbela && ++_attackCount == 3)
+        {
+            Debug.Log("Buff");
+            TurbelaBuffButterfly();
+            _attackCount = 0;
+        }
         
         // Spawn bullet destroy effect
-        var obj = Instantiate(BulletDestroySpawnObject, bulletPos, Quaternion.identity);
-        var transform = obj.transform;
-        var localScale = transform.localScale;
-        transform.localScale = new Vector3(localScale.x * _spawnScaleMultiplier, localScale.y * _spawnScaleMultiplier, localScale.z);
+        if (BulletDestroySpawnObject)
+        {
+            var obj = Instantiate(BulletDestroySpawnObject, bulletPos, Quaternion.identity);
+            var transform = obj.transform;
+            var localScale = transform.localScale;
+            transform.localScale = new Vector3(localScale.x * _spawnScaleMultiplier, localScale.y * _spawnScaleMultiplier, localScale.z);
+        }
         
         // Destroy all temporary objects that are manually managed
         foreach (var objToDestroy in _manualDestroyList)
@@ -62,5 +68,17 @@ public class Legacy_Ranged : ActiveLegacySO
             Destroy(objToDestroy);
         }
         _manualDestroyList.Clear();
+    }
+    
+    // For legacy - 선전포고 발포
+    private void TurbelaBuffButterfly()
+    {
+        // Kill one random butterfly
+        _playerDamageDealer.TurbelaKillButterfly(null);
+        
+        // Apply buff to spawned butterflies
+        var duration = ExtraStatusEffects[(int)preservation].Duration;
+        var speedMultiplier = ExtraStatusEffects[(int)preservation].Strength;
+        _playerDamageDealer.TurbelaBuffButterflies(duration, speedMultiplier);
     }
 }

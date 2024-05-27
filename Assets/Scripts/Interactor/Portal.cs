@@ -38,23 +38,23 @@ public class Portal : Interactor
 
     private void LoadGeneralStore()
     {
-        string currStage = GameManager.Instance.CurrStage.ToString().PadLeft(2, '0');
-        string sceneName = "InGame_Stage_" + currStage + "_GeneralStore";
-        if (!Utility.LoadSceneByNameSafe(sceneName)) return;
+        //string currStage = GameManager.Instance.CurrStage.ToString().PadLeft(2, '0');
+        //string sceneName = "InGame_Stage_" + currStage + "_GeneralStore";
+        //if (!Utility.LoadSceneByNameSafe(sceneName)) return;
     }
 
     private void LoadFoodStore()
     {
-        string currStage = GameManager.Instance.CurrStage.ToString().PadLeft(2, '0');
-        string sceneName = "InGame_Stage_" + currStage + "_FoodStore";
-        if (!Utility.LoadSceneByNameSafe(sceneName)) return;
+        //string currStage = GameManager.Instance.CurrStage.ToString().PadLeft(2, '0');
+        //string sceneName = "InGame_Stage_" + currStage + "_FoodStore";
+        //if (!Utility.LoadSceneByNameSafe(sceneName)) return;
     }
 
     // TODO
     private void LoadNextLevel()
     {
-        string currStage = (GameManager.Instance.CurrStage + 1).ToString().PadLeft(2, '0');
-        string sceneName = "InGame_Stage_" + currStage;
-        Debug.AssertFormat(Utility.LoadSceneByNameSafe(sceneName), "Cannot find next level!");
+        //string currStage = (GameManager.Instance.CurrStage + 1).ToString().PadLeft(2, '0');
+        //string sceneName = "InGame_Stage_" + currStage;
+        //Debug.AssertFormat(Utility.LoadSceneByNameSafe(sceneName), "Cannot find next level!");
     }
 }

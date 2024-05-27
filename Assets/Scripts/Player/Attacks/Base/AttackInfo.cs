@@ -9,6 +9,7 @@ public class AttackInfo
     public List<StatusEffectInfo> StatusEffects;
     public int IncomingDirectionX;
     public float AttackerArmourPenetration;
+    public bool CanBeDarkAttack;
 
     public AttackInfo()
     {
@@ -22,9 +23,10 @@ public class AttackInfo
         StatusEffects = statusEffectInfos;
     }
     
-    public AttackInfo(DamageInfo damageInfo, List<StatusEffectInfo> statusEffectInfos, int dir) : this(damageInfo, statusEffectInfos)
+    public AttackInfo(DamageInfo damageInfo, List<StatusEffectInfo> statusEffectInfos, int dir, bool canBeDarkAttack) : this(damageInfo, statusEffectInfos)
     {
         IncomingDirectionX = dir;
+        CanBeDarkAttack = canBeDarkAttack;
     }
 
     // Only X is considered
@@ -39,7 +41,7 @@ public class AttackInfo
 
     public AttackInfo Clone()
     {
-        return new AttackInfo(Damage, StatusEffects, IncomingDirectionX);
+        return new AttackInfo(Damage, StatusEffects, IncomingDirectionX, CanBeDarkAttack);
     }
 }
 

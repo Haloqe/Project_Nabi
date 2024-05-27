@@ -12,8 +12,8 @@ public class GameManager : Singleton<GameManager>
     public GameObject Player;
 
     // Level Details
-    public int PrevStage = 0;
-    public int CurrStage = 0;
+    // public int PrevStage = 0;
+    // public int CurrStage = 0;
 
     // Used for changing active scene through portals
     private Vector3 _playerPrevPosition { get; set; }
@@ -56,6 +56,7 @@ public class GameManager : Singleton<GameManager>
         
         // Generate new map
         if (_shouldRandomGenerateMap) LevelManager.Instance.Generate();
+        GameEvents.mapLoaded.Invoke();
         
         // If not first run, reset variables
         // TODo temp
@@ -72,7 +73,7 @@ public class GameManager : Singleton<GameManager>
     
     public void SaveStageInfo()
     {
-        PrevStage = CurrStage;
+        // PrevStage = CurrStage;
         _playerPrevPosition = PlayerController.Instance.transform.position;
     }
 }

@@ -26,11 +26,17 @@ public class Legacy_Dash : ActiveLegacySO
     {
         // Turbela?
         var cc = StatusEffects[(int)preservation];
-        if (cc.Effect is EStatusEffect.Swarm or EStatusEffect.Cloud)
+        if ((cc.Effect is EStatusEffect.Swarm or EStatusEffect.Cloud) && Random.value <= cc.Chance)
         {
             if (Random.value <= cc.Chance)
             {
-                _playerDamageDealer.SpawnTurbelaButterfly();
+                _playerDamageDealer.TurbelaSpawnButterfly();
+                
+                // Spawn second butterfly?
+                if (Random.value <= Define.TurbelaDoubleSpawnStats[(int)PlayerController.Instance.TurbelaDoubleSpawnPreserv])
+                {
+                    _playerDamageDealer.TurbelaSpawnButterfly();
+                }
             }
         }
         
@@ -94,8 +100,9 @@ public class Legacy_Dash : ActiveLegacySO
             {
                 // Spawn object
                 AttackSpawnObject spawnedObject = null;
-                if (SpawnObject_Peri.IsAttachedToPlayer) spawnedObject = Instantiate(SpawnObject_Peri, _playerTransform);
-                else spawnedObject = Instantiate(SpawnObject_Peri, _playerTransform.position + SpawnObject_Peri.transform.position, Quaternion.identity);
+                spawnedObject = SpawnObject_Peri.IsAttachedToPlayer ? 
+                    Instantiate(SpawnObject_Peri, _playerTransform) : 
+                    Instantiate(SpawnObject_Peri, _playerTransform.position + SpawnObject_Peri.transform.position, Quaternion.identity);
                 
                 // Change scale
                 var transform = spawnedObject.transform;

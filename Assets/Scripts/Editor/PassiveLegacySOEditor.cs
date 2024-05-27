@@ -14,7 +14,7 @@ public class PassiveLegacySOEditor : Editor
         switch (legacySO.BuffType)
         {
             case EBuffType.None:
-            case EBuffType.EcstasyUpgrade:
+            case EBuffType.EuphoriaEcstasyUpgrade:
                 break;
             
             case EBuffType.StatUpgrade:
@@ -23,16 +23,16 @@ public class PassiveLegacySOEditor : Editor
             
             case EBuffType.EnemyItemDropRate:
             case EBuffType.SpawnAreaIncrease:
-            case EBuffType.FoodHealEfficiency:
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("BuffIncreaseMethod"), true);
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("BuffIncreaseAmounts"), true);
                 break;
             
             case EBuffType.BindingSkillUpgrade:
-            case EBuffType.EnemyGoldDropBuff:
-            case EBuffType.HypHallucination:
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("Stats"), true);
+                break;
+            
+            case EBuffType.EuphoriaEnemyGoldDropBuff:
+            case EBuffType.SommerHypHallucination:
             case EBuffType.TurbelaMaxButterfly:
-            case EBuffType.TurbelaDoubleButterfly:
+            case EBuffType.TurbelaDoubleSpawn:
             case EBuffType.TurbelaButterflyCrit:
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("Stats"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("SavedInDefine"), true);

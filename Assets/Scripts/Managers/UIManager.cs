@@ -1,4 +1,7 @@
+using System;
 using System.Collections;
+using TMPro;
+using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -22,6 +25,8 @@ public class UIManager : Singleton<UIManager>
     private GameObject _zoomedMapPrefab;
     private GameObject _loadingScreenPrefab;
     private GameObject[] _warriorUIPrefabs;
+    private GameObject _evadePopupPrefab;
+    private GameObject _textPopupPrefab;
 
     // UI Instantiated Objects
     public GameObject inGameCombatUI;
@@ -37,6 +42,10 @@ public class UIManager : Singleton<UIManager>
     
     // Minor Controllable Objects
     private Slider _playerHPSlider;
+    private Image _playerHPGlobe;
+    private TextMeshProUGUI _hpText;
+    private Slider _darkGaugeSlider;
+    private TextMeshProUGUI _darkGaugeText;
     
     // UI Navigation
     private GameObject _activeFocusedUI;
@@ -86,10 +95,14 @@ public class UIManager : Singleton<UIManager>
         
         _focusedOverlay     = Instantiate(_focusedOverlayPrefab, Vector3.zero, Quaternion.identity).GameObject();
         _defeatedUI         = Instantiate(_defeatedUIPrefab, Vector3.zero, Quaternion.identity).GameObject();
-        inGameCombatUI     = Instantiate(_inGameCombatPrefab, Vector3.zero, Quaternion.identity).GameObject();
+        inGameCombatUI      = Instantiate(_inGameCombatPrefab, Vector3.zero, Quaternion.identity).GameObject();
         _zoomedMap          = Instantiate(_zoomedMapPrefab, Vector3.zero, Quaternion.identity).GameObject();
         _mapController      = _zoomedMap.GetComponent<MapController>();
         _playerHPSlider     = inGameCombatUI.GetComponentInChildren<Slider>();
+        _playerHPGlobe      = inGameCombatUI.transform.Find("Globe").Find("HealthGlobe").Find("HealthGlobeMask").Find("Fill").GetComponent<Image>();
+        _hpText             = inGameCombatUI.transform.Find("Globe").GetComponentInChildren<TextMeshProUGUI>();
+        _darkGaugeSlider    = inGameCombatUI.transform.Find("DarkSlider").GetComponentInChildren<Slider>();
+        _darkGaugeText      = inGameCombatUI.transform.Find("DarkSlider").GetComponentInChildren<TextMeshProUGUI>();
         _zoomedMap.SetActive(false);
         inGameCombatUI.SetActive(true);
         inGameCombatUI.GetComponent<Canvas>().worldCamera = _uiCamera;
@@ -100,11 +113,28 @@ public class UIManager : Singleton<UIManager>
         _loadingScreenUI.SetActive(false);
         _playerIAMap.Enable();
         _UIIAMap.Disable();
+        UpdateDarkGaugeUI(0);
+    }
+
+    public void UpdateDarkGaugeUI(float value)
+    {
+        _darkGaugeSlider.value = value / 100.0f;
+        _darkGaugeText.text = $"{value}/100";
     }
     
     private void OnPlayerHPChanged(float changeAmount, float hpRatio)
     {
-        _playerHPSlider.value = hpRatio;
+        //_playerHPSlider.value = hpRatio;
+        _playerHPGlobe.rectTransform.localPosition = new Vector3(0, _playerHPGlobe.rectTransform.rect.height * hpRatio - _playerHPGlobe.rectTransform.rect.height, 0);
+        float hp = hpRatio * 100f;
+        if (Math.Abs(hp % 1) < 0.1) 
+        {
+            _hpText.text = (int)hp + "/100";
+        }
+        else
+        {
+            _hpText.text = hp.ToString("F1") + "/100";
+        }
     }
 
     private void OnPlayerDefeated()
@@ -122,6 +152,8 @@ public class UIManager : Singleton<UIManager>
         _inGameCombatPrefab     = Utility.LoadGameObjectFromPath(path + "InGame/CombatCanvas");
         _zoomedMapPrefab        = Utility.LoadGameObjectFromPath(path + "InGame/ZoomedMap");
         _loadingScreenPrefab    = Utility.LoadGameObjectFromPath(path + "LoadingCanvas");
+        _evadePopupPrefab       = Utility.LoadGameObjectFromPath(path + "InGame/TextPopUp/EvadeUI");
+        _textPopupPrefab        = Utility.LoadGameObjectFromPath(path + "InGame/TextPopUp/GeneralTextUI");
         
         _warriorUIPrefabs = new GameObject[(int)EWarrior.MAX];
         for (int i = 0; i < (int)EWarrior.MAX; i++)
@@ -174,14 +206,17 @@ public class UIManager : Singleton<UIManager>
         _uiInputModule.point = _playerPointIARef;
     }
 
-    public void OpenWarriorUI(WarriorClockworkInteractor interactor)
+    public bool OpenWarriorUI(Clockwork interactor)
     {
+        if (_activeFocusedUI) return false; 
+        
         _warriorUIObject = Instantiate(_warriorUIPrefabs[(int)interactor.warrior], Vector3.zero, Quaternion.identity).GameObject();
         _warriorUIObject.GetComponent<Canvas>().worldCamera = _uiCamera;
         _warriorUI = _warriorUIObject.GetComponent<WarriorUI>();
         _warriorUI.Initialise(interactor.warrior);
         OpenFocusedUI(_warriorUIObject);
         Destroy(interactor.gameObject);
+        return true;
     }
 
     public void ToggleMap()
@@ -239,5 +274,17 @@ public class UIManager : Singleton<UIManager>
         {
             _warriorUI.OnSubmit();
         }
+    }
+    
+    // InGame popup
+    public void DisplayTextPopUp(string text, Vector3 position, Transform parent = null)
+    {
+        var ui = Instantiate(_textPopupPrefab, position, quaternion.identity);
+        ui.GetComponent<TextUI>().Init(parent, text);
+    }
+    
+    public void DisplayPlayerEvadePopUp()
+    {
+        Instantiate(_evadePopupPrefab, PlayerController.Instance.transform.position + new Vector3(0, 2.3f, 0), quaternion.identity);
     }
 }

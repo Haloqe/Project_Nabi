@@ -20,5 +20,6 @@ public class GameEvents
     public static UnityAction restarted;
     public static UnityAction gameLoadStarted;
     public static UnityAction gameLoadEnded;
+    public static UnityAction mapLoaded;
     public static UnityAction languageChanged;
 }

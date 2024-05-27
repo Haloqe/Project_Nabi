@@ -279,7 +279,14 @@ MonoBehaviour:
   playerDamageReceiver: {fileID: 0}
   playerDamageDealer: {fileID: 0}
   playerInventory: {fileID: 0}
-  HealEfficiency: 1
+  flowerText:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  evadeTextUI: {fileID: 6928738628852909497, guid: b1322be55ca36bc439b6b7ba60c5f371, type: 3}
+  evasionRateAdditionAtMax: 0
 --- !u!114 &5603536338378699506
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -341,9 +348,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca0cfaf45cb72f745bad18e76eb3c720, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  attackDamageMultipliers: []
   CurrAttackIdx: -1
   IsUnderAttackDelay: 0
-  spawnedButterflies: []
 --- !u!114 &3715449111286257277
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -402,6 +409,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   VFXObject: {fileID: 0}
   activeWarrior: 0
+  currentSelectedFlowerIndex: 0
+  vfxAddress: 
 --- !u!61 &7074130228895634554
 BoxCollider2D:
   m_ObjectHideFlags: 0

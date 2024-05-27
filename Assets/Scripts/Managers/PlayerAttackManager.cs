@@ -39,6 +39,9 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     private Transform _passiveLegacyGroup;
     private GameObject _passiveLegacySlotPrefab;
     private LegacySlotUI[] _activeLegacySlots = new LegacySlotUI[4];
+    
+    // Other loaded objects
+    public GameObject ClockworkPrefab { get; private set; } 
 
     protected override void Awake()
     {
@@ -50,7 +53,10 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         _collectedLegacyPreservations = new Dictionary<int, ELegacyPreservation>();
         _boundActiveLegacyIDs = new int[] {-1,-1,-1};
         _passiveLegacySlotPrefab = Utility.LoadGameObjectFromPath("Prefabs/UI/InGame/PassiveLegacySlot");
+        ClockworkPrefab = Resources.Load("Prefabs/Interact/Clockwork").GameObject();
         GameEvents.restarted += OnRestarted;
+
+        Init();
     }
     
     private void OnRestarted()
@@ -223,7 +229,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                     var asset = (PassiveLegacySO)legacyAsset;
                     if (asset.SavedInDefine)
                     {
-                        var fieldInfo = typeof(Define).GetField($"{asset.warrior}{asset.BuffType}Stats");
+                        var fieldInfo = typeof(Define).GetField($"{asset.BuffType}Stats");
                         if (fieldInfo != null) fieldInfo.SetValue(null, asset.Stats);
                     }
                 }
@@ -297,11 +303,6 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                 _playerController.UpgradeStat(legacyID, legacySO.StatUpgradeData, preservation);
                 break;
             
-            case EBuffType.FoodHealEfficiency:
-                _playerController.HealEfficiency = Utility.GetChangedValue(_playerController.HealEfficiency,
-                    legacySO.BuffIncreaseAmounts[preservationIdx], legacySO.BuffIncreaseMethod);
-                break;
-            
             case EBuffType.SpawnAreaIncrease:
                 foreach (var attackBase in _playerDamageDealer.AttackBases)
                 {
@@ -319,9 +320,12 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                 _playerDamageDealer.UpgradeStatusEffectLevel(legacySO.warrior, preservation, legacySO.Stats);
                 break;
             
-            case EBuffType.EnemyGoldDropBuff:
-            case EBuffType.EcstasyUpgrade:
-            case EBuffType.HypHallucination:
+            case EBuffType.EuphoriaEnemyGoldDropBuff:
+            case EBuffType.EuphoriaEcstasyUpgrade:
+            case EBuffType.SommerHypHallucination:
+            case EBuffType.TurbelaMaxButterfly:
+            case EBuffType.TurbelaDoubleSpawn:
+            case EBuffType.TurbelaButterflyCrit:
                 _playerController.ActivateBuffByName(legacySO.BuffType, preservation);
                 break;
         }
