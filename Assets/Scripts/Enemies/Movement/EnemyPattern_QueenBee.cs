@@ -54,7 +54,7 @@ public class EnemyPattern_QueenBee : EnemyPattern
         bool lessThanTwoBees = allBees.Length <= 1;
         if (lessThanTwoBees)
         {
-            StartCoroutine(SpawnMinions(Mathf.FloorToInt(Random.Range(3, 6))));
+            StartCoroutine(SpawnMinions(Random.Range(3, 7)));
             return;
         }
         
@@ -73,7 +73,7 @@ public class EnemyPattern_QueenBee : EnemyPattern
         
         for (int i = 0; i <= 2; i++)
         {
-            switch (Math.Floor(Random.Range(0f, 2f)))
+            switch (Random.Range(0, 2))
             {
                 case 0:
                 yield return BodySlam();
@@ -230,7 +230,7 @@ public class EnemyPattern_QueenBee : EnemyPattern
             allBees[i] = allBeesScript[i].gameObject;
         }
 
-        int attackOrDefense = (int)Math.Floor(Random.Range(0.0f, 2f));
+        int attackOrDefense = Random.Range(0, 2);
         _beesAreCommanded = true;
 
         switch (attackOrDefense)
