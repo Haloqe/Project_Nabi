@@ -635,7 +635,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         int amountToDrop = 0;
         for (int i = 0; i < amount; i++)
         {
-            if (Random.value < chance) amountToDrop++;
+            if (Random.value <= chance) amountToDrop++;
         }
         if (amountToDrop == 0) return;
         

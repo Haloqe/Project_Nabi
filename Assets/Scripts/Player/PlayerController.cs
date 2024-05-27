@@ -222,6 +222,7 @@ public class PlayerController : Singleton<PlayerController>
 
     private void OnValueChanged(ECondition condition, float changeAmount)
     {
+        return;
         switch (condition)
         {
             // case ECondition.SlayedEnemiesCount:
@@ -272,18 +273,18 @@ public class PlayerController : Singleton<PlayerController>
         // }
 
         string enumString = upgradeData.Stat.ToString();
-        string decapitalizedEnumString = char.ToLower(enumString[0]) + enumString.Substring(1);
+        string decapitalisedEnumString = char.ToLower(enumString[0]) + enumString.Substring(1);
 
         // Update value - multiplier
         if (upgradeData.isMultiplier)
         {
-            var multiplierFieldInfo = GetType().GetField($"_{decapitalizedEnumString}Multiplier", BindingFlags.NonPublic | BindingFlags.Instance);
+            var multiplierFieldInfo = GetType().GetField($"_{decapitalisedEnumString}Multiplier", BindingFlags.NonPublic | BindingFlags.Instance);
             multiplierFieldInfo.SetValue(this, (float)multiplierFieldInfo.GetValue(this) + upgradeData.IncreaseAmounts[(int)preservation]);
         }
         // Update value - addition
         else
         {
-            var additionFieldInfo = GetType().GetField($"_{decapitalizedEnumString}Addition", BindingFlags.NonPublic | BindingFlags.Instance);
+            var additionFieldInfo = GetType().GetField($"_{decapitalisedEnumString}Addition", BindingFlags.NonPublic | BindingFlags.Instance);
             additionFieldInfo.SetValue(this, (float)additionFieldInfo.GetValue(this) + upgradeData.IncreaseAmounts[(int)preservation]);
         }
 
@@ -310,6 +311,32 @@ public class PlayerController : Singleton<PlayerController>
         //         };
         //     }
         // }
+    }
+    
+    public void UpdateStatPreservation(SLegacyStatUpgradeData upgradeData, ELegacyPreservation newPreservation)
+    {
+        if (upgradeData.HasUpdateCondition || upgradeData.HasApplyCondition)
+        {
+            // TODO 피의 갑주
+            return;
+        }
+
+        string enumString = upgradeData.Stat.ToString();
+        string decapitalisedEnumString = char.ToLower(enumString[0]) + enumString.Substring(1);
+
+        // Update value - multiplier
+        float increaseAmount = upgradeData.IncreaseAmounts[(int)newPreservation] - upgradeData.IncreaseAmounts[(int)newPreservation - 1];
+        if (upgradeData.isMultiplier)
+        {
+            var multiplierFieldInfo = GetType().GetField($"_{decapitalisedEnumString}Multiplier", BindingFlags.NonPublic | BindingFlags.Instance);
+            multiplierFieldInfo.SetValue(this, (float)multiplierFieldInfo.GetValue(this) + increaseAmount);
+        }
+        // Update value - addition
+        else
+        {
+            var additionFieldInfo = GetType().GetField($"_{decapitalisedEnumString}Addition", BindingFlags.NonPublic | BindingFlags.Instance);
+            additionFieldInfo.SetValue(this, (float)additionFieldInfo.GetValue(this) + increaseAmount);
+        }
     }
 
     // Legacy - Enum 이름에 해당하는 boolean 값을 찾아서 activate

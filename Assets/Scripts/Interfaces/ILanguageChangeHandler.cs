@@ -2,15 +2,15 @@ using UnityEngine;
 
 public interface ILanguageChangeHandler
 {
-    public void OnLanguageChanged();
+    public void UpdateText();
 }
 
 public abstract class LanguageChangeHandlerBase : MonoBehaviour, ILanguageChangeHandler
 {
     protected virtual void Awake()
     {
-        GameEvents.LanguageChanged += OnLanguageChanged;
+        GameEvents.LanguageChanged += UpdateText;
     }
 
-    public abstract void OnLanguageChanged();
+    public abstract void UpdateText();
 }

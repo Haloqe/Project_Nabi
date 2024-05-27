@@ -345,6 +345,13 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         // foreach (var attack in AttackBases) attack.UpdateLegacyStatusEffect();
     }
 
+    public void UpdateStatusEffectPreservation(EWarrior warrior)
+    {
+        BindingSkillPreservations[(int)warrior]++;
+        foreach (var attack in AttackBases) 
+            attack.UpdateLegacyStatusEffectSpecificWarrior(warrior);
+    }
+
     // Turbela
     public void TurbelaSpawnButterfly()
     {

@@ -170,9 +170,8 @@ public class AttackBase_Melee : AttackBase
         _attackComboInfo.Damage.TotalAmount += (extra.BaseDamage + _playerController.Strength * extra.RelativeDamage);
     }
 
-    public override void UpdateLegacyStatusEffect()
+    protected override void UpdateLegacyStatusEffect()
     {
-        if (!ActiveLegacy) return;
         base.UpdateLegacyStatusEffect();
         
         // Combo attack

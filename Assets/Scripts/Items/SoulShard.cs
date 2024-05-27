@@ -38,10 +38,8 @@ public class SoulShard : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D other)
     {
-        Debug.Log("CollisionEnter");
         if (_rb.velocity.y <= 0.01f)
         {
-            Debug.Log("StartBounce");
             _rb.gravityScale = 0f;
             StartCoroutine(BounceCoroutine());
         }

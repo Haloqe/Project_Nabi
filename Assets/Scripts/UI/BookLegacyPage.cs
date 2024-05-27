@@ -33,6 +33,7 @@ public class BookLegacyPage : BookPage
     private string[] _passiveDescs;
     private string[] _passiveWarriors; 
     private string[] _passivePreservations;
+    private int[] _passiveIDs;
 
     private GameObject[] _passiveHighlights;
     private Image[] _passiveIcons;
@@ -100,6 +101,7 @@ public class BookLegacyPage : BookPage
 
             hasActive = true;
             _hasActiveBounds[i] = true;
+            activeIcons[i].sprite = _playerAttackManager.GetLegacyIcon(legacy.id);
             _activeNames[i] = _playerAttackManager.GetBoundActiveLegacyName((ELegacyType)i);
             _activeDescs[i] = _playerAttackManager.GetBoundActiveLegacyDesc((ELegacyType)i);
             _activeWarriors[i] = Utility.GetColouredWarriorText(legacy.warrior);
@@ -116,8 +118,10 @@ public class BookLegacyPage : BookPage
         _passiveDescs = new string[_numBoundPassives];
         _passiveWarriors = new string[_numBoundPassives];
         _passivePreservations = new string[_numBoundPassives];
+        _passiveIDs = new int[_numBoundPassives];
         for (int i = 0; i < _numBoundPassives; i++)
         {
+            _passiveIDs[i] = passives[i].ID;
             _passiveIcons[i].sprite = _playerAttackManager.GetLegacyIcon(passives[i].ID);
             _passiveIcons[i].color = Color.white;
             _passiveNames[i] = passives[i].Names[localisation];
@@ -285,4 +289,18 @@ public class BookLegacyPage : BookPage
 
     private static int ToPassiveIndex(int totalIndex) => totalIndex - 4;
     private static int FromPassiveIndex(int passiveIndex) => passiveIndex + 4;
+
+    public int GetSelectedLegacyID()
+    {
+        if (_newestSelectedIdx == 3) return -1;
+        if (_newestSelectedIdx < 3)
+        {
+            var legacy = _playerController.playerDamageDealer.AttackBases[_newestSelectedIdx].ActiveLegacy;
+            return (legacy == null ? -1 : legacy.id);
+        }
+        else
+        {
+            return _passiveIDs[ToPassiveIndex(_newestSelectedIdx)];
+        }
+    }
 }

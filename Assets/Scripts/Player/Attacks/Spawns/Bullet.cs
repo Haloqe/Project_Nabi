@@ -7,7 +7,7 @@ public class Bullet : MonoBehaviour
     private Rigidbody2D _rigidbody2D;
     
     private float _speed = 14f;
-    private float _lifeTime = 4f;
+    private float _lifeTime = 2.5f;
     private float _timer = 0.0f;
     public float Direction { set; private get; }
     public AttackInfo attackInfo;

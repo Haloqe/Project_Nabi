@@ -8,6 +8,8 @@ using Random = UnityEngine.Random;
 
 public class WarriorUIController : MonoBehaviour
 {
+    // Base
+    private PlayerAttackManager _playerAttackManager;
     private PlayerController _player;
     private int _numUsedPanels;
     private int _hoveredPanelIdx = -1;
@@ -19,6 +21,7 @@ public class WarriorUIController : MonoBehaviour
     private Color _selectedColor;
     private SLegacyData[] _legacies;
 
+    // Confirm
     private GameObject _confirmPanelObject;
     private Transform _confirmContentPanel;
     private TextMeshProUGUI _confirmOldText;
@@ -27,35 +30,52 @@ public class WarriorUIController : MonoBehaviour
     [SerializeField] private GameObject[] _legacyPanels;
     private int _legacyChangePrice;
     private Coroutine _activeShakeCoroutine;
-    private Vector2 _confirmPanelInitialPos;
+    private Vector2 _confirmRectInitialPos;
+    private Vector2 _upgradeRectInitialPos;
+    private RectTransform _confirmRect;
+    
+    // Legacy Upgrade
+    private ELegacyPreservation _highestAppearedPreserv;
+    private GameObject _legacyUpgradeCanvas;
+    private BookLegacyPage _legacyUpgradeController;
+    private GameObject _upgradeFailCanvas;
+    private GameObject _upgradeSucceedCanvas;
+    private float[][] _upgradeSuccessChances;
+    private RectTransform _upgradeRect;
     
     public void Initialise(EWarrior warrior)
     {
-        // Initialise variables
-        _legacyChangePrice = 600;
+        _playerAttackManager = PlayerAttackManager.Instance;
         _player = PlayerController.Instance;
         _warrior = warrior;
+        
+        InitialiseConfirmUI();
+        InitialiseBaseUI();
+        InitialiseUpgradeUI();
+        
+        // Highlight the first panel by default
+        SelectPanel(0);
+    }
+    
+    private void InitialiseBaseUI()
+    {
+        // Initialise variables
+        _legacyChangePrice = 600;
         _legacyPreservations = new ELegacyPreservation[3];
         _panelOutlines = new Outline[4];
         _legacyFullNames = new string[3];
         _hoveredPanelIdx = -1;
-        _confirmPanelObject = transform.Find("ConfirmPanel").gameObject;
-        _confirmContentPanel = _confirmPanelObject.transform.Find("Panel");
-        var names = _confirmContentPanel.Find("Names");
-        _confirmOldText = names.Find("OldText").Find("Name").GetComponent<TextMeshProUGUI>();
-        _confirmNewText = names.Find("NewText").Find("Name").GetComponent<TextMeshProUGUI>();
-        _confirmPanelInitialPos = _confirmContentPanel.GetComponent<RectTransform>().anchoredPosition;
-        
+
         // Retrieve a list of legacies that are not collected yet
-        var possibleLegacies = PlayerAttackManager.Instance.GetBindableLegaciesByWarrior(_warrior);
+        var possibleLegacies = _playerAttackManager.GetBindableLegaciesByWarrior(_warrior);
         _numUsedPanels = Mathf.Min(possibleLegacies.Count, 3);
-        
+
         // Select random legacies to display
         // Has meta upgrade?
         float[] legacyApperanceByPreserv = Define.LegacyAppearanceByPreservation;
         int metaLev = GameManager.Instance.PlayerMetaInfo.MetaUpgradeLevels[(int)EMetaUpgrade.BetterLegacyPreserv];
         if (metaLev != -1) legacyApperanceByPreserv = Define.MetaLegacyAppearanceByPreservation[metaLev];
-        
+
         // Select legacies
         _legacies = possibleLegacies.OrderBy(_ => Random.value).Take(_numUsedPanels).ToArray();
         for (int i = 0; i < _numUsedPanels; i++)
@@ -65,7 +85,8 @@ public class WarriorUIController : MonoBehaviour
             _legacyPanels[i].AddComponent<LegacyPanel>().Init(this, i);
         }
         _legacyPanels[3].AddComponent<LegacyPanel>().Init(this, 3);
-        
+        _highestAppearedPreserv = _legacyPreservations.Max();
+
         // Hide unused panels
         for (int i = _numUsedPanels; i < 3; i++)
         {
@@ -77,9 +98,9 @@ public class WarriorUIController : MonoBehaviour
         {
             _panelOutlines[i] = _legacyPanels[i].GetComponent<Outline>();
             _legacyPanels[i].transform.Find("Icon").GetComponent<Image>().sprite =
-                PlayerAttackManager.Instance.GetLegacyIcon(_legacies[i].ID);
+                _playerAttackManager.GetLegacyIcon(_legacies[i].ID);
             var nameTmp = _legacyPanels[i].transform.Find("NameText").GetComponent<TextMeshProUGUI>();
-            nameTmp.text = "[" + Define.LegacyPreservationNames[(int)Define.Localisation, (int)_legacyPreservations[i]] + "] " 
+            nameTmp.text = "[" + Define.LegacyPreservationNames[(int)Define.Localisation, (int)_legacyPreservations[i]] + "] "
                 + _legacies[i].Names[(int)Define.Localisation];
             nameTmp.color = Define.LegacyPreservationColors[(int)_legacyPreservations[i]];
             var descTmp = _legacyPanels[i].transform.Find("DescText").GetComponent<TextMeshProUGUI>();
@@ -92,19 +113,52 @@ public class WarriorUIController : MonoBehaviour
         _panelOutlines[3] = _legacyPanels[3].GetComponent<Outline>();
         var guideText = _confirmContentPanel.Find("ChangeGuideText").GetComponent<TextMeshProUGUI>();
         guideText.text = _legacyChangePrice + guideText.text;
-        
-        
+
         // Initialise color
         var baseColor = _panelOutlines[0].effectColor;
-        _hoveredColor = new Color(baseColor.r, baseColor.g, baseColor.b , 0.08f);
-        _selectedColor = new Color(baseColor.r, baseColor.g, baseColor.b , 0.3f);
+        _hoveredColor = new Color(baseColor.r, baseColor.g, baseColor.b, 0.08f);
+        _selectedColor = new Color(baseColor.r, baseColor.g, baseColor.b, 0.3f);
+    }
+
+    private void InitialiseUpgradeUI()
+    {
+        _legacyUpgradeCanvas = transform.Find("LegacyUpgradeCanvas").gameObject;
+        _legacyUpgradeController = _legacyUpgradeCanvas.GetComponentInChildren<BookLegacyPage>();
+        _upgradeFailCanvas = _legacyUpgradeCanvas.transform.Find("UpgradeFail").gameObject;
+        _upgradeSucceedCanvas = _legacyUpgradeCanvas.transform.Find("UpgradeSucceed").gameObject;
+        _upgradeRect = _legacyUpgradeCanvas.transform.Find("Content").GetComponent<RectTransform>();
+        _upgradeRectInitialPos = _upgradeRect.anchoredPosition;
         
-        // Highlight the first panel by default
-        SelectPanel(0);
+        _upgradeSuccessChances = new float[][]
+        {
+            new [] {0.50f, 0.15f, 0.00f},
+            new [] {0.75f, 0.25f, 0.05f},
+            new [] {0.90f, 0.35f, 0.15f},
+            new [] {1.00f, 0.50f, 0.30f},
+        };
+        _legacyUpgradeController.Init();
+        _legacyUpgradeController.OnBookOpen();
+        _legacyUpgradeCanvas.transform.Find("Content").Find("Page_1").Find("Desc").GetComponentInChildren<TextMeshProUGUI>().text
+            = $"{Utility.GetColouredPreservationText(_highestAppearedPreserv)} 태엽을 제물로 바쳐 이미 보유한 유산의 보존도를 한 단계 높입니다." +
+            $"\n성공 확률: [닳은] {Utility.FormatPercentage(_upgradeSuccessChances[(int)_highestAppearedPreserv][0])}% " +
+            $"[빛바랜] {Utility.FormatPercentage(_upgradeSuccessChances[(int)_highestAppearedPreserv][1])}% " +
+            $"[온전한] {Utility.FormatPercentage(_upgradeSuccessChances[(int)_highestAppearedPreserv][2])}%";
+    }
+
+    private void InitialiseConfirmUI()
+    {
+        _confirmPanelObject = transform.Find("ConfirmPanel").gameObject;
+        _confirmContentPanel = _confirmPanelObject.transform.Find("Panel");
+        var names = _confirmContentPanel.Find("Names");
+        _confirmOldText = names.Find("OldText").Find("Name").GetComponent<TextMeshProUGUI>();
+        _confirmNewText = names.Find("NewText").Find("Name").GetComponent<TextMeshProUGUI>();
+        _confirmRect = _confirmContentPanel.GetComponent<RectTransform>();
+        _confirmRectInitialPos = _confirmRect.anchoredPosition;
     }
 
     public void OnPointerEnterPanel(int index)
     {
+        if (_legacyUpgradeCanvas.activeSelf || _confirmPanelObject.activeSelf) return;
         if (index == _selectedPanelIdx) return;
         _panelOutlines[index].enabled = true;
         _panelOutlines[index].effectColor = _hoveredColor;
@@ -113,6 +167,7 @@ public class WarriorUIController : MonoBehaviour
     
     public void OnPointerExitPanel(int index)
     {
+        if (_legacyUpgradeCanvas.activeSelf || _confirmPanelObject.activeSelf) return;
         if (index == _selectedPanelIdx) return;
         _panelOutlines[index].enabled = false;
         _hoveredPanelIdx = -1;
@@ -120,13 +175,14 @@ public class WarriorUIController : MonoBehaviour
 
     public void OnPointerClickPanel(int panelIndex)
     {
+        if (_legacyUpgradeCanvas.activeSelf || _confirmPanelObject.activeSelf) return;
         SelectPanel(panelIndex);
         
         // 다른 태엽 보존도 높이기 옵션
         if (panelIndex == 3)
         {
-            Debug.Log("태엽 보존도 높이기: NOT IMPLEMENTED");
-            UIManager.Instance.CloseFocusedUI();
+            _legacyUpgradeController.OnPageOpen();
+            _legacyUpgradeCanvas.SetActive(true);
             return;
         }
         
@@ -139,7 +195,7 @@ public class WarriorUIController : MonoBehaviour
         }
         
         // Active
-        string boundLegacyName = PlayerAttackManager.Instance.GetBoundActiveLegacyName(_legacies[panelIndex].Type);
+        string boundLegacyName = _playerAttackManager.GetBoundActiveLegacyName(_legacies[panelIndex].Type);
         if (string.IsNullOrEmpty(boundLegacyName))
         {
             CollectLegacy(panelIndex); 
@@ -157,7 +213,7 @@ public class WarriorUIController : MonoBehaviour
         AttackBase attackBase = _player.playerDamageDealer.AttackBases[(int)attackType];
         string oldText = Utility.GetColouredWarriorText(attackBase.ActiveLegacy.warrior) + " " +
             Utility.GetColouredPreservationText(attackBase.ActiveLegacy.preservation) + "\n" +
-            PlayerAttackManager.Instance.GetBoundActiveLegacyName(attackType);
+            _playerAttackManager.GetBoundActiveLegacyName(attackType);
         _confirmOldText.text = oldText;
         
         string newText = Utility.GetColouredWarriorText(_legacies[panelIndex].Warrior) + " " +
@@ -167,8 +223,7 @@ public class WarriorUIController : MonoBehaviour
         
         // Header
         var headerTMP = _confirmContentPanel.Find("TitleText").GetComponent<TextMeshProUGUI>();
-        headerTMP.text = Define.AttackTypeNames[(int)Define.Localisation, (int)attackType] +
-            "이 다음과 같이 변경됩니다.";
+        headerTMP.text = Define.AttackTypeNames[(int)Define.Localisation, (int)attackType] + "이 다음과 같이 변경됩니다.";
         
         // Display UI
         _confirmPanelObject.SetActive(true);
@@ -176,13 +231,21 @@ public class WarriorUIController : MonoBehaviour
     
     private void CollectLegacy(int panelIndex)
     {
-        PlayerAttackManager.Instance.CollectLegacy(_legacies[panelIndex].ID, _legacyPreservations[panelIndex]);
+        _playerAttackManager.CollectLegacy(_legacies[panelIndex].ID, _legacyPreservations[panelIndex]);
         UIManager.Instance.CloseFocusedUI();   
     }
     
     public void OnSubmit()
     {
-        if (_confirmPanelObject.activeSelf)
+        if (_upgradeFailCanvas.activeSelf || _upgradeSucceedCanvas.activeSelf)
+        {
+            return;
+        }
+        if (_legacyUpgradeCanvas.activeSelf)
+        {
+            TryUpgradeLegacy();
+        }
+        else if (_confirmPanelObject.activeSelf)
         {
             var res = _player.playerInventory.TryBuyWithGold(_legacyChangePrice);
             if (!res)
@@ -202,55 +265,118 @@ public class WarriorUIController : MonoBehaviour
             OnPointerClickPanel(_selectedPanelIdx);
         }
     }
+
+    private void TryUpgradeLegacy()
+    {
+        int id = _legacyUpgradeController.GetSelectedLegacyID();
+        if (id == -1 || _playerAttackManager.GetLegacyPreservation(id) == ELegacyPreservation.Pristine)
+        {
+            if (_activeShakeCoroutine != null) StopCoroutine(_activeShakeCoroutine);
+            _activeShakeCoroutine = StartCoroutine(ShakeCoroutine());
+        }
+        else
+        {
+            if (_activeShakeCoroutine != null) StopCoroutine(_activeShakeCoroutine);
+            
+            // Try upgrade
+            int targetPreserv = (int)_playerAttackManager.GetLegacyPreservation(id);
+            if (Random.value <= _upgradeSuccessChances[(int)_highestAppearedPreserv][targetPreserv])
+            {
+                // Upgrade success
+                _upgradeSucceedCanvas.transform.Find("DetailText").GetComponent<TextMeshProUGUI>().text =
+                    $"{Utility.GetColouredPreservationText((ELegacyPreservation)targetPreserv + 1)} {_playerAttackManager.GetLegacyName(id)} 획득";
+                _upgradeSucceedCanvas.SetActive(true);
+                _playerAttackManager.UpdateLegacyPreservation(id);
+            }
+            else
+            {
+                // Upgrade fail
+                _upgradeFailCanvas.SetActive(true);
+            }
+            _legacyUpgradeCanvas.GetComponent<Animator>().SetTrigger("Show");
+            StartCoroutine(UpgradeResultDelayCoroutine());
+        }
+    }
+
+    private IEnumerator UpgradeResultDelayCoroutine()
+    {
+        yield return new WaitForSecondsRealtime(1.8f);
+        UIManager.Instance.CloseFocusedUI();
+    }
     
     private IEnumerator ShakeCoroutine()
     {
-        var rectTransform = _confirmContentPanel.GetComponent<RectTransform>();
-        rectTransform.anchoredPosition = _confirmPanelInitialPos;
+        bool confirmPanelShake = _confirmPanelObject.activeSelf; 
+        RectTransform rect = confirmPanelShake ? _confirmRect : _upgradeRect;
+        rect.anchoredPosition = confirmPanelShake ? _confirmRectInitialPos : _upgradeRectInitialPos;
         float elapsed = 0.0f;
 
         while (elapsed < 0.5f)
         {
             float x = Random.Range(-1f, 1f) * 3f;
             x *= 1.0f - (elapsed / 0.5f);
-            rectTransform.anchoredPosition = new Vector2(x, rectTransform.anchoredPosition.y);
+            rect.anchoredPosition = new Vector2(x, rect.anchoredPosition.y);
             elapsed += Time.deltaTime;
             yield return null;
         }
 
-        rectTransform.anchoredPosition = _confirmPanelInitialPos;
+        rect.anchoredPosition = confirmPanelShake ? _confirmRectInitialPos : _upgradeRectInitialPos;
     }
 
     public void OnCancel()
     {
-        if (!_confirmPanelObject.activeSelf) return;
-        _confirmPanelObject.SetActive(false);
+        if (_upgradeFailCanvas.activeSelf || _upgradeSucceedCanvas.activeSelf)
+        {
+            return;
+        }
+        if (_legacyUpgradeCanvas.activeSelf)
+        {
+            _legacyUpgradeCanvas.SetActive(false);
+        }
+        else if (_confirmPanelObject.activeSelf)
+        {
+            _confirmPanelObject.SetActive(false);
+        }
     }
     
     public void OnNavigate(Vector2 value)
     {
-        if (_confirmPanelObject.activeSelf) return;
-        switch (value.y)
+        if (_upgradeFailCanvas.activeSelf || _upgradeSucceedCanvas.activeSelf)
         {
-            // Left or Right
-            case 0:
-                return;
-            // Up
-            case > 0:
-                {
-                    if (_selectedPanelIdx == 0) SelectPanel(3);
-                    else if (_selectedPanelIdx == 3) SelectPanel(_numUsedPanels - 1);
-                    else SelectPanel(_selectedPanelIdx - 1);
-                    break;
-                }
-            // Down
-            case < 0:
-                {
-                    if (_selectedPanelIdx == 3) SelectPanel(0);
-                    else if (_selectedPanelIdx == _numUsedPanels - 1) SelectPanel(3);
-                    else SelectPanel(_selectedPanelIdx + 1);
-                    break;
-                }
+            return;
+        }
+        if (_legacyUpgradeCanvas.activeSelf)
+        {
+            _legacyUpgradeController.OnNavigate(value);
+        }
+        else if (_confirmPanelObject.activeSelf)
+        {
+            return;
+        }
+        else
+        {
+            switch (value.y)
+            {
+                // Left or Right
+                case 0:
+                    return;
+                // Up
+                case > 0:
+                    {
+                        if (_selectedPanelIdx == 0) SelectPanel(3);
+                        else if (_selectedPanelIdx == 3) SelectPanel(_numUsedPanels - 1);
+                        else SelectPanel(_selectedPanelIdx - 1);
+                        break;
+                    }
+                // Down
+                case < 0:
+                    {
+                        if (_selectedPanelIdx == 3) SelectPanel(0);
+                        else if (_selectedPanelIdx == _numUsedPanels - 1) SelectPanel(3);
+                        else SelectPanel(_selectedPanelIdx + 1);
+                        break;
+                    }
+            }
         }
     }
 

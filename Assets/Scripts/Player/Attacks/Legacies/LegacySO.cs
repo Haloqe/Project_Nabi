@@ -2,6 +2,7 @@ using UnityEngine;
 
 public abstract class LegacySO : ScriptableObject
 {
+    public int id;
     public EWarrior warrior;
     public ELegacyPreservation preservation;
 
