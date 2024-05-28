@@ -5,10 +5,9 @@ public class GameManager : Singleton<GameManager>
 {
     public PlayerMetaInfo PlayerMetaInfo { get; private set; }
     public GameObject PlayerPrefab;
-
-    // Used for changing active scene through portals
-    private Vector3 _playerPrevPosition { get; set; }
-    private Vector3 _playerNextPosition { get; set; }
+    
+    // References
+    private PlayerController _player;
     
     // DEBUG Only
     private int _debugIngameBuildIdx;
@@ -71,23 +70,18 @@ public class GameManager : Singleton<GameManager>
         // When all set, spawn player 
         LevelManager.Instance.SpawnPlayer();
         PlayerAttackManager.Instance.InitInGameVariables();
+        _player = PlayerController.Instance;
         
         // End loading
         GameEvents.GameLoadEnded.Invoke();
     }
     
-    public void SaveStageInfo()
-    {
-        // PrevStage = CurrStage;
-        _playerPrevPosition = PlayerController.Instance.transform.position;
-    }
-    
     public void LoadMainMenu()
     {
         // If player exists (ingame->mainmenu), destroy the player
-        if (PlayerController.Instance)
+        if (_player)
         {
-            Destroy(PlayerController.Instance.gameObject);
+            Destroy(_player.gameObject);
         }
         
         // TEMP TODO
@@ -110,6 +104,6 @@ public class GameManager : Singleton<GameManager>
     {
         IsFirstRun = false;
         PlayerMetaInfo.NumDeaths++;
-        PlayerMetaInfo.NumSouls = PlayerController.Instance.playerInventory.SoulShard;
+        PlayerMetaInfo.NumSouls = _player.playerInventory.SoulShard;
     }
 }

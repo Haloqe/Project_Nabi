@@ -46,6 +46,7 @@ public class PlayerInventory : MonoBehaviour
     public void ChangeSoulShardByAmount(int amount)
     {
         SoulShard += amount;
+        _uiManager.DisplaySoulPopUp(amount);
         PlayerEvents.SoulShardChanged.Invoke();
     }
 
@@ -61,7 +62,6 @@ public class PlayerInventory : MonoBehaviour
     {
         if (SoulShard < price) return false;
         ChangeSoulShardByAmount(-price);
-        _uiManager.DisplaySoulPopUp(-price);
         return true;
     }
 

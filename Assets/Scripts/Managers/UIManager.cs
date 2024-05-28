@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using TMPro;
 using Unity.Mathematics;
@@ -34,6 +33,7 @@ public class UIManager : Singleton<UIManager>
     private GameObject _goldMinusPopupPrefab;
     private GameObject _bookPrefab;
     private GameObject _metaUpgradeUIPrefab;
+    private GameObject _roomGuidePrefab;
 
     // UI Instantiated Objects
     private GameObject _mainMenuUI;
@@ -42,6 +42,7 @@ public class UIManager : Singleton<UIManager>
     private GameObject _warriorUIObject;
     private GameObject _focusedOverlay;
     private GameObject _zoomedMap;
+    private GameObject _minimap;
     private GameObject _loadingScreenUI;
     private GameObject _bookUI;
     private GameObject _metaUpgradeUI;
@@ -143,6 +144,7 @@ public class UIManager : Singleton<UIManager>
         _playerTensionController  = inGameCombatUI.transform.Find("TensionSlider").GetComponent<PlayerTensionController>();
         _bloodOverlay       = inGameCombatUI.transform.Find("BloodOverlay").GetComponent<Image>();
         _tensionOverlay     = inGameCombatUI.transform.Find("TensionOverlay").GetComponent<Image>();
+        _minimap            = inGameCombatUI.transform.Find("MinimapContainer").Find("Minimap").gameObject;
         
         inGameCombatUI.SetActive(true);
         inGameCombatUI.GetComponent<Canvas>().worldCamera = _uiCamera;
@@ -298,6 +300,7 @@ public class UIManager : Singleton<UIManager>
         _goldPlusPopupPrefab    = Utility.LoadGameObjectFromPath(path + "InGame/TextPopUp/GoldPlusPopUp");
         _bookPrefab             = Utility.LoadGameObjectFromPath(path + "InGame/Book/BookCanvas");
         _metaUpgradeUIPrefab    = Utility.LoadGameObjectFromPath(path + "InGame/MetaUpgradeCanvas");
+        _roomGuidePrefab        = Utility.LoadGameObjectFromPath(path + "InGame/RoomGuideUI");
         
         _warriorUIPrefabs = new GameObject[(int)EWarrior.MAX];
         for (int i = 0; i < (int)EWarrior.MAX; i++)
@@ -326,7 +329,7 @@ public class UIManager : Singleton<UIManager>
         _playerAttackManager = PlayerAttackManager.Instance;
         _playerController = PlayerController.Instance;
         _playerHPSlider.value = 1;
-        _playerIAMap = FindObjectOfType<PlayerInput>().actions.FindActionMap("Player");
+        _playerIAMap = _playerController.GetComponent<PlayerInput>().actions.FindActionMap("Player");
         _playerIAMap.Enable();
         _UIIAMap.Disable();
         
@@ -358,14 +361,14 @@ public class UIManager : Singleton<UIManager>
         _uiInputModule.leftClick = _playerClickIARef;
     }
 
-    public bool OpenWarriorUI(Clockwork interactor)
+    public bool OpenWarriorUI(Clockwork interactor, bool isPristineClockwork = false)
     {
         if (_activeFocusedUI) return false; 
         
         _warriorUIObject = Instantiate(_warriorUIPrefabs[(int)interactor.warrior], Vector3.zero, Quaternion.identity).GameObject();
         _warriorUIObject.GetComponent<Canvas>().worldCamera = _uiCamera;
         _warriorUIController = _warriorUIObject.GetComponent<WarriorUIController>();
-        _warriorUIController.Initialise(interactor.warrior);
+        _warriorUIController.Initialise(interactor.warrior, isPristineClockwork);
         OpenFocusedUI(_warriorUIObject);
         Destroy(interactor.gameObject);
         return true;
@@ -522,7 +525,7 @@ public class UIManager : Singleton<UIManager>
         var popup = Instantiate(_soulPopupPrefab);
         popup.GetComponent<RectTransform>().position = _playerController.transform.position + playerUpOffset;
         popup.GetComponentInChildren<TextMeshProUGUI>().text = valueText;
-        Destroy(popup, 1f);
+        Destroy(popup, 2.5f);
     }
     
     // InGame popup - gold
@@ -600,5 +603,24 @@ public class UIManager : Singleton<UIManager>
             _flowerUILeft.SetActive(false);
             _flowerUIRight.SetActive(false);
         }
+    }
+    
+    // Portal UIs
+    public void OnEnterSecretRoom(string roomName, string description)
+    {
+        var ui = Instantiate(_roomGuidePrefab, Vector3.zero, Quaternion.identity).GetComponent<RoomGuideUI>();
+        ui.InitSecretRoomGuide(roomName, description);
+    }
+    
+    public void DisableMap()
+    {
+        _minimap.SetActive(false);
+        _playerController.IsMapEnabled = false;
+    }
+    
+    public void EnableMap()
+    {
+        _minimap.SetActive(true);
+        _playerController.IsMapEnabled = true;
     }
 }

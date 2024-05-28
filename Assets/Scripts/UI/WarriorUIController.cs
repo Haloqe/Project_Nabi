@@ -11,11 +11,14 @@ public class WarriorUIController : MonoBehaviour
     // Base
     private PlayerAttackManager _playerAttackManager;
     private PlayerController _player;
+    [SerializeField] private TextMeshProUGUI _titleTMP;
+    [SerializeField] private EWarrior _warrior;
+    [SerializeField] private GameObject[] _legacyPanels;
     private int _numUsedPanels;
     private int _hoveredPanelIdx = -1;
     private int _selectedPanelIdx;
     private ELegacyPreservation[] _legacyPreservations;
-    [SerializeField] private EWarrior _warrior;
+    private Outline[] _panelOutlines;
     private String[] _legacyFullNames;
     private Color _hoveredColor;
     private Color _selectedColor;
@@ -26,15 +29,13 @@ public class WarriorUIController : MonoBehaviour
     private Transform _confirmContentPanel;
     private TextMeshProUGUI _confirmOldText;
     private TextMeshProUGUI _confirmNewText;
-    private Outline[] _panelOutlines;
-    [SerializeField] private GameObject[] _legacyPanels;
     private int _legacyChangePrice;
     private Coroutine _activeShakeCoroutine;
-    private Vector2 _confirmRectInitialPos;
-    private Vector2 _upgradeRectInitialPos;
     private RectTransform _confirmRect;
+    private Vector2 _confirmRectInitialPos;
     
     // Legacy Upgrade
+    private Vector2 _upgradeRectInitialPos;
     private ELegacyPreservation _highestAppearedPreserv;
     private GameObject _legacyUpgradeCanvas;
     private BookLegacyPage _legacyUpgradeController;
@@ -43,21 +44,21 @@ public class WarriorUIController : MonoBehaviour
     private float[][] _upgradeSuccessChances;
     private RectTransform _upgradeRect;
     
-    public void Initialise(EWarrior warrior)
+    public void Initialise(EWarrior warrior, bool isPristineClockwork)
     {
         _playerAttackManager = PlayerAttackManager.Instance;
         _player = PlayerController.Instance;
         _warrior = warrior;
         
         InitialiseConfirmUI();
-        InitialiseBaseUI();
+        InitialiseBaseUI(isPristineClockwork);
         InitialiseUpgradeUI();
         
         // Highlight the first panel by default
         SelectPanel(0);
     }
     
-    private void InitialiseBaseUI()
+    private void InitialiseBaseUI(bool isPristineClockwork)
     {
         // Initialise variables
         _legacyChangePrice = 600;
@@ -80,8 +81,15 @@ public class WarriorUIController : MonoBehaviour
         _legacies = possibleLegacies.OrderBy(_ => Random.value).Take(_numUsedPanels).ToArray();
         for (int i = 0; i < _numUsedPanels; i++)
         {
-            _legacyPreservations[i] = (ELegacyPreservation)Array.FindIndex
-                (legacyApperanceByPreserv, possibility => possibility >= Random.value);
+            if (isPristineClockwork)
+            {
+                _legacyPreservations[i] = ELegacyPreservation.Pristine;
+            }
+            else
+            {
+                _legacyPreservations[i] = (ELegacyPreservation)Array.FindIndex
+                    (legacyApperanceByPreserv, possibility => possibility >= Random.value);
+            }
             _legacyPanels[i].AddComponent<LegacyPanel>().Init(this, i);
         }
         _legacyPanels[3].AddComponent<LegacyPanel>().Init(this, 3);

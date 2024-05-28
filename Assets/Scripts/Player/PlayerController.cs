@@ -10,17 +10,19 @@ public class PlayerController : Singleton<PlayerController>
 {
     // Reference to other player components
     private Animator _animator;
-    private PlayerInput _playerInput;
     public PlayerMovement playerMovement;
     public PlayerDamageReceiver playerDamageReceiver;
     public PlayerDamageDealer playerDamageDealer;
     public PlayerInventory playerInventory;
     public GameObject nightShadeCollider;
+    public PlayerInput playerInput;
+    private InputActionMap _playerIAMap;
 
     private UIManager _uiManager;
     private GameManager _gameManager;
 
     // Centrally controlled variables
+    public bool IsMapEnabled;
     public float DefaultGravityScale { get; private set; }
     public float HpCriticalThreshold { get; private set; }
     [NamedArray(typeof(EStatusEffect))] public GameObject[] statusEffects;
@@ -96,11 +98,12 @@ public class PlayerController : Singleton<PlayerController>
         // Get components
         _uiManager = UIManager.Instance;
         _gameManager = GameManager.Instance;
-        _playerInput = GetComponent<PlayerInput>();
         playerMovement = GetComponent<PlayerMovement>();
         playerDamageReceiver = GetComponent<PlayerDamageReceiver>();
         playerDamageDealer = GetComponent<PlayerDamageDealer>();
         playerInventory = GetComponent<PlayerInventory>();
+        playerInput = GetComponent<PlayerInput>();
+        _playerIAMap = playerInput.actions.FindActionMap("Player");
         _animator = GetComponent<Animator>();
         _appliedStatUpgrades = new Dictionary<EStat, List<(int legacyID, SLegacyStatUpgradeData data)>>();
         _shadowHosts = new List<EnemyBase>();
@@ -262,7 +265,7 @@ public class PlayerController : Singleton<PlayerController>
 
     private void OnOpenMap(InputValue value)
     {
-        _uiManager.OpenMap();
+        if (IsMapEnabled) _uiManager.OpenMap();
     }
 
     private void OnOpenBook(InputValue value)
@@ -466,4 +469,7 @@ public class PlayerController : Singleton<PlayerController>
     {
         _criticalRateAddition = Mathf.Max(0, _criticalRateAddition + value);
     }
+
+    public void DisablePlayerInput() => _playerIAMap.Disable();
+    public void EnablePlayerInput() => _playerIAMap.Enable();
 }

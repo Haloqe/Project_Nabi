@@ -508,7 +508,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
     private void ChangeHealthByAmount(float amount)
     {
-        Debug.Log("[" + gameObject.name + "] Health " + amount);
+        //Debug.Log("[" + gameObject.name + "] Health " + amount);
         if (amount < 0) StartCoroutine(DamagedRoutine());
         Health = Mathf.Clamp(Health + amount, 0, EnemyData.MaxHealth);
         if (Health == 0) Die();
@@ -558,7 +558,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         yield break;
     }
 
-    private void Die()
+    public void Die(bool shouldDropReward = true)
     {
         // Inform player
         if (_effectRemainingTimes[(int)EStatusEffect.Ecstasy] > 0) 
@@ -566,8 +566,11 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         InGameEvents.EnemySlayed?.Invoke(this);
             
         StopAllCoroutines();
-        DropGold();
-        DropSoulShard();
+        if (shouldDropReward)
+        {
+            DropGold();
+            DropSoulShard();
+        }
         Destroy(gameObject);
     }
     #endregion Damage Dealing and Receiving

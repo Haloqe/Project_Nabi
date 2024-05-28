@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
@@ -6,10 +7,12 @@ public class EnemySpawner : MonoBehaviour
     public int spawnLimit;
     [NamedArray(typeof(EEnemyType))] public float[] spawnProbabilities;
     private float[] _spawnProbabilitiesAcc;
-
-    public void Spawn()
+    private List<GameObject> _spawnedEnemies;
+    
+    public List<GameObject> Spawn()
     {
-        if (spawnLimit == 0) return;
+        _spawnedEnemies = new List<GameObject>(spawnLimit);
+        if (spawnLimit == 0) return _spawnedEnemies;
         
         // Save accumulated probabilities
         _spawnProbabilitiesAcc = new float[spawnProbabilities.Length];
@@ -45,12 +48,16 @@ public class EnemySpawner : MonoBehaviour
                 }
             }
             
+            // Randomise x-position a bit
+            float randX = UnityEngine.Random.Range(-3f, 3f);
             // Randomise z-position to handle z-fighting
             float randZ = UnityEngine.Random.Range(-2f, 2f);
-            transform.position = new Vector3(transform.position.x, transform.position.y, randZ);
+            transform.position = new Vector3(transform.position.x + randX, transform.position.y, randZ);
+            
             
             // Spawn enemy
-            enemyManager.SpawnEnemy(spawnID, transform.position);
+            _spawnedEnemies.Add(enemyManager.SpawnEnemy(spawnID, transform.position));
         }
+        return _spawnedEnemies;
     }
 }

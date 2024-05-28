@@ -286,9 +286,10 @@ public enum EEnemyState
 #region Interaction
 public enum EPortalType
 {
-    GeneralStore,
-    FoodStore,
-    NextLevel,
+    CombatToSecret,
+    SecretToCombat,
+    CombatToMeta,
+    MetaToCombat,
 }
 
 public enum EFlowerType
@@ -353,5 +354,7 @@ public enum EEnemyType
     VoidMantis,
     Insectivore,
     Bee,
+    Spider,
+    QueenBee,
 }
 #endregion

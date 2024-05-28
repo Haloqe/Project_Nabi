@@ -30,8 +30,8 @@ public class ClockworkSpawner : Interactor
     
     protected override void OnInteract(InputAction.CallbackContext obj)
     {
-        if (_isInteracting) return;
-        _isInteracting = true;
+        if (IsInteracting) return;
+        IsInteracting = true;
 
         StartCoroutine(InteractCoroutine());
     }

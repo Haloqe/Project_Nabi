@@ -38,6 +38,9 @@ public class LevelManager : Singleton<LevelManager>
     // Clockwork spawners
     [SerializeField] private int clockworkLimit = 10;
     private List<ClockworkSpawner[]> _clockworkSpawnersByRoom;
+    
+    // Secret Rooms
+    private List<SecretRoom>[] _secretRoomsByLevel;
 
     protected override void Awake()
     {
@@ -62,6 +65,8 @@ public class LevelManager : Singleton<LevelManager>
             Vector3Int.left, Vector3Int.right
         };
         _generatedRooms = new List<GameObject>();
+        
+        // SecretRoomTeleportPositions
 
         InitialiseRooms();
         GenerateLevelGraph();
@@ -77,7 +82,7 @@ public class LevelManager : Singleton<LevelManager>
         _clockworkSpawnersByRoom = new List<ClockworkSpawner[]>();
         _roomsContainer = GameObject.Find("Rooms").transform;
         _mapTilemap = GameObject.Find("Map").GetComponent<Tilemap>();
-        _superWallTilemap = GameObject.FindWithTag("Ground").GetComponent<Tilemap>();
+        _superWallTilemap = GameObject.Find("Wall").GetComponent<Tilemap>();
         
         // Level generation
         GenerateLevel();
@@ -145,9 +150,8 @@ public class LevelManager : Singleton<LevelManager>
     private void GenerateLevel()
     {
         // Clear tiles
-        _superWallTilemap.ClearAllTiles();
+        //_superWallTilemap.ClearAllTiles();
         //MapTilemap.ClearAllTiles();
-
         // Add starting room
         _openDoorInfos[_levelGraph.GetNumRooms()] = new List<SDoorInfo>{
                  new SDoorInfo(EConnectionType.Vertical, EDoorDirection.Up, new Vector3Int(500, 499, 0)),
@@ -439,10 +443,24 @@ public class LevelManager : Singleton<LevelManager>
         //AddSurroundingWallTiles();
         GenerateMinimap();
         SetClockworkSpawners();
+        SetSecretRooms();
     }
     
     private void SetClockworkSpawners()
     {
+        // Should not spawn clockworks?
+        if (clockworkLimit <= 0)
+        {
+            foreach (var spawnersInRoom in _clockworkSpawnersByRoom)
+            {
+                foreach (var spawner in spawnersInRoom)
+                {
+                    Destroy(spawner.gameObject);
+                }
+            }
+            return;
+        }
+        
         // Split in the middle
         var roomsCount = _clockworkSpawnersByRoom.Count;
         var roomMid = roomsCount % 2 == 0 ? roomsCount / 2 - 1 : roomsCount / 2; // the last room index to be included in the first half
@@ -498,6 +516,21 @@ public class LevelManager : Singleton<LevelManager>
         }
     }
 
+    private void SetSecretRooms()
+    {
+        _secretRoomsByLevel = new [] { new List<SecretRoom>(), new List<SecretRoom>(), new List<SecretRoom>() };
+        var secretRooms = FindObjectsByType<SecretRoom>(FindObjectsSortMode.None);
+        foreach (var secretRoom in secretRooms)
+        {
+            _secretRoomsByLevel[secretRoom.roomLevel].Add(secretRoom);
+        }
+    }
+
+    public List<SecretRoom> GetSecretRooms(int roomLevel)
+    {
+        return _secretRoomsByLevel[roomLevel];
+    }
+    
     private void AddSurroundingWallTiles()
     {
         _superWallTilemap.CompressBounds();

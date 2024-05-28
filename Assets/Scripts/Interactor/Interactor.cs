@@ -4,18 +4,38 @@ using UnityEngine.InputSystem;
 public abstract class Interactor : MonoBehaviour
 {
     private InputAction _interactAction;
-    protected bool _isInteracting;
+    protected bool IsInteracting;
+    private bool _isInteractionBound;
+    private int _playerInteractingPartsCount;
 
-    protected virtual void Start()
+    private void Awake()
     {
-        _interactAction = FindObjectOfType<PlayerInput>().actions["Player/Interact"];
+        var player = PlayerController.Instance;
+        if (player != null) BindInteraction();
+        PlayerEvents.Spawned += BindInteraction;
+    }
+
+    private void OnDestroy()
+    {
+        PlayerEvents.Spawned -= BindInteraction;
+    }
+
+    private void BindInteraction()
+    {
+        if (_isInteractionBound) return;
+        _interactAction = PlayerController.Instance.playerInput.actions["Player/Interact"];
+        _isInteractionBound = true;
     }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (other.CompareTag("Player"))
         {
-            _interactAction.performed += OnInteract;
+            if (_playerInteractingPartsCount == 0)
+            {
+                _interactAction.performed += OnInteract;
+            }
+            _playerInteractingPartsCount++;
         }
     }
 
@@ -23,7 +43,12 @@ public abstract class Interactor : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            _interactAction.performed -= OnInteract;
+            _playerInteractingPartsCount--;
+            if (_playerInteractingPartsCount == 0)
+            {
+                _interactAction.performed -= OnInteract;
+                IsInteracting = false;
+            }
         }
     }
 

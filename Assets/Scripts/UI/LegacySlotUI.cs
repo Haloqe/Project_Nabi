@@ -56,6 +56,7 @@ public class LegacySlotUI : LanguageChangeHandlerBase, IPointerEnterHandler, IPo
     public void OnPointerEnter(PointerEventData eventData)
     {
         if (_names == null) return;
+        Debug.Log("Pointerenter " + _names[1]);
         _descPopUp.SetActive(true);
     }
     

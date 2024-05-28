@@ -17,11 +17,11 @@ public class GeneralStore : MonoBehaviour
     private Image _activeItemImage;
     private Coroutine _activeFillRoutine;
 
-    private int _minItemsToSell = 3;
-    private int _maxItemsToSell = 5;
-    private int _minRelicsToSell = 0;
-    private int _maxRelicsToSell = 2;
-    private int _activeRelicIdx = -1;
+    // private int _minItemsToSell = 3;
+    // private int _maxItemsToSell = 5;
+    // private int _minRelicsToSell = 0;
+    // private int _maxRelicsToSell = 2;
+    // private int _activeRelicIdx = -1;
 
     //private List<SRelicData> _relicsToSellData;
     //private List<Object> _relicObjects;
@@ -85,7 +85,7 @@ public class GeneralStore : MonoBehaviour
 
     public void HideItemUI()
     {
-        _activeRelicIdx = -1;
+        //_activeRelicIdx = -1;
         if (_UIAnimator != null) _UIAnimator.SetTrigger("HideTrigger");
     }
 
