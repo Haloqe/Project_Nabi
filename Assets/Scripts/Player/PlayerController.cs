@@ -114,8 +114,8 @@ public class PlayerController : Singleton<PlayerController>
         PlayerEvents.ValueChanged += OnValueChanged;
         PlayerEvents.StartResurrect += OnPlayerStartResurrect;
         InGameEvents.EnemySlayed += OnEnemySlayed;
-        _playerInput.actions["Jump"].started += OnStartJump;
-        _playerInput.actions["Jump"].canceled += OnReleaseJump;
+        playerInput.actions["Jump"].started += OnStartJump;
+        playerInput.actions["Jump"].canceled += OnReleaseJump;
         OnRestarted();
     }
 
@@ -132,6 +132,7 @@ public class PlayerController : Singleton<PlayerController>
         _ecstasyAffected = new List<EnemyBase>[EnemyManager.Instance.NumEnemyTypes];
         for (int i = 0; i < EnemyManager.Instance.NumEnemyTypes; i++)
             _ecstasyAffected[i] = new List<EnemyBase>();
+        IsMapEnabled = true;
     }
 
     private void OnRestarted()
@@ -174,6 +175,7 @@ public class PlayerController : Singleton<PlayerController>
         // Initialise NightShade data
         _shadowHosts.Clear();
         nightShadeCollider.SetActive(false);
+        IsMapEnabled = true;
     }
 
     private void OnPlayerStartResurrect()

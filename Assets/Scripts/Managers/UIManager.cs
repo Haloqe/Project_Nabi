@@ -406,7 +406,6 @@ public class UIManager : Singleton<UIManager>
 
     public void OpenMap()
     {
-        Debug.Log("Open map");
         _mapController.ResetMapCamera();
         OpenFocusedUI(_zoomedMap);
     }

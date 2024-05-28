@@ -98,10 +98,10 @@ public class PlayerTensionController : MonoBehaviour
         // TODO: 축 바닥에 버리고, 영구히 사라지는 효과
         
         // TODO: Get new arbor
-        switch (_arborType)
-        {
-            
-        }
+        // switch (_arborType)
+        // {
+        //     
+        // }
     }
 
     private void ResetTension() => SetTensionValue(0);
