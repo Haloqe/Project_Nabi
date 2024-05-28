@@ -29,7 +29,6 @@ public class Portal : Interactor
         switch (portalType)
         {
             case EPortalType.CombatToSecret:
-                _uiManager.DisableMap();
                 SetSecretRoomTeleportPosition();
                 break;
             
@@ -80,6 +79,7 @@ public class Portal : Interactor
         // Teleport
         _player.transform.position = _destination;
         yield return null;
+        OnPlayerEnterNextRoom();
         yield return null;
         
         // Fade out
@@ -95,17 +95,38 @@ public class Portal : Interactor
         OnEndTeleport();
     }
 
+    private void OnPlayerEnterNextRoom()
+    {
+        switch (portalType)
+        {
+            case EPortalType.CombatToSecret:
+                _uiManager.DisableMap();
+                connectedSecretRoom.OnEnter(transform.position);
+                break;
+            
+            case EPortalType.SecretToCombat:
+                _uiManager.EnableMap();
+                connectedSecretRoom.OnExit();
+                break;
+            
+            case EPortalType.CombatToMeta:
+                break;
+            
+            case EPortalType.MetaToCombat:
+                // Do something
+                break;
+        }
+    }
+    
     private void OnEndTeleport()
     {
         switch (portalType)
         {
             case EPortalType.CombatToSecret:
-                connectedSecretRoom.OnEnter(transform.position);
                 Destroy(gameObject);
                 break;
             
             case EPortalType.SecretToCombat:
-                connectedSecretRoom.OnExit();
                 break;
             
             case EPortalType.CombatToMeta:

@@ -615,12 +615,14 @@ public class UIManager : Singleton<UIManager>
     public void DisableMap()
     {
         _minimap.SetActive(false);
+        _minimap.transform.parent.gameObject.SetActive(false);
         _playerController.IsMapEnabled = false;
     }
     
     public void EnableMap()
     {
         _minimap.SetActive(true);
+        _minimap.transform.parent.gameObject.SetActive(true);
         _playerController.IsMapEnabled = true;
     }
 }

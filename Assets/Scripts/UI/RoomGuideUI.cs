@@ -1,7 +1,6 @@
 using System.Collections;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class RoomGuideUI : MonoBehaviour
@@ -32,20 +31,20 @@ public class RoomGuideUI : MonoBehaviour
         float alpha = 0;
         while (alpha < 1)
         {
-            alpha += Time.unscaledDeltaTime * 1.5f;
+            alpha += Time.unscaledDeltaTime * 1.4f;
             roomNameText.color = new Color(roomNameText.color.r, roomNameText.color.g, roomNameText.color.b, alpha);
             descriptionText.color = new Color(descriptionText.color.r, descriptionText.color.g, descriptionText.color.b, alpha);
             panel.color = new Color(panel.color.r, panel.color.g, panel.color.b, alpha);
             yield return null;
         }
         
-        // Display for some time
+        // Display ui for a while
         yield return new WaitForSecondsRealtime(2f);
 
         // Quickly increase transparency
         while (alpha > 0)
         {
-            alpha -= Time.unscaledDeltaTime * 1.5f;
+            alpha -= Time.unscaledDeltaTime * 1.4f;
             roomNameText.color = new Color(roomNameText.color.r, roomNameText.color.g, roomNameText.color.b, alpha);
             descriptionText.color = new Color(descriptionText.color.r, descriptionText.color.g, descriptionText.color.b, alpha);
             panel.color = new Color(panel.color.r, panel.color.g, panel.color.b, alpha);

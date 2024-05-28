@@ -68,10 +68,10 @@ public class SecretRoom : MonoBehaviour
     private IEnumerator EnemyKillTimeLimitCoroutine()
     {
         yield return new WaitForSecondsRealtime(enemyKillTimeLimit + 0.1f);
-        Debug.Log("Time limit reached: " + enemyKillTimeLimit + " seconds");
         var player = PlayerController.Instance;
         player.transform.position = _exitDestination;
         player.EnablePlayerInput();
+        UIManager.Instance.EnableMap();
         OnExit();
     }
 
