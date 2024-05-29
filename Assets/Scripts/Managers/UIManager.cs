@@ -605,10 +605,10 @@ public class UIManager : Singleton<UIManager>
     }
     
     // Portal UIs
-    public void OnEnterSecretRoom(string roomName, string description)
+    public void OnEnterHiddenRoom(string roomName, string description)
     {
         var ui = Instantiate(_roomGuidePrefab, Vector3.zero, Quaternion.identity).GetComponent<RoomGuideUI>();
-        ui.InitSecretRoomGuide(roomName, description);
+        ui.InitHiddenRoomGuide(roomName, description);
     }
     
     public void DisableMap()

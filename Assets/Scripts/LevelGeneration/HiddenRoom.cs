@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
 
-public class SecretRoom : MonoBehaviour
+public class HiddenRoom : MonoBehaviour
 {
     public string roomName;
     public int roomLevel; // 0 - Lowest, 1 - Medium, 2 - Highest
@@ -22,7 +22,7 @@ public class SecretRoom : MonoBehaviour
         _returnPortal = GetComponentInChildren<Portal>(includeInactive: true);
         _enemySpawner = GetComponentInChildren<EnemySpawner>(includeInactive: true);
         _returnPortal.portalType = EPortalType.SecretToCombat;
-        _returnPortal.connectedSecretRoom = this;
+        _returnPortal.connectedHiddenRoom = this;
     }
 
     public void OnEnter(Vector3 previousPos)
@@ -32,7 +32,7 @@ public class SecretRoom : MonoBehaviour
         _returnPortal.SetDestination(previousPos);
         _chest.ResetReward(roomLevel);
         string desc = enemyKillTimeLimit > 0 ? $"시간 제한: {enemyKillTimeLimit}초" : string.Empty;
-        UIManager.Instance.OnEnterSecretRoom(roomName, desc);
+        UIManager.Instance.OnEnterHiddenRoom(roomName, desc);
         
         if (roomLevel is 0 or 1)
         {

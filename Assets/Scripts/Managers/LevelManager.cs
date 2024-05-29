@@ -40,7 +40,7 @@ public class LevelManager : Singleton<LevelManager>
     private List<ClockworkSpawner[]> _clockworkSpawnersByRoom;
     
     // Secret Rooms
-    private List<SecretRoom>[] _secretRoomsByLevel;
+    private List<HiddenRoom>[] _hiddenRoomsByLevel;
 
     protected override void Awake()
     {
@@ -66,7 +66,7 @@ public class LevelManager : Singleton<LevelManager>
         };
         _generatedRooms = new List<GameObject>();
         
-        // SecretRoomTeleportPositions
+        // HiddenRoomTeleportPositions
 
         InitialiseRooms();
         GenerateLevelGraph();
@@ -443,7 +443,7 @@ public class LevelManager : Singleton<LevelManager>
         //AddSurroundingWallTiles();
         GenerateMinimap();
         SetClockworkSpawners();
-        SetSecretRooms();
+        SetHiddenRooms();
     }
     
     private void SetClockworkSpawners()
@@ -516,19 +516,22 @@ public class LevelManager : Singleton<LevelManager>
         }
     }
 
-    private void SetSecretRooms()
+    private void SetHiddenRooms()
     {
-        _secretRoomsByLevel = new [] { new List<SecretRoom>(), new List<SecretRoom>(), new List<SecretRoom>() };
-        var secretRooms = FindObjectsByType<SecretRoom>(FindObjectsSortMode.None);
-        foreach (var secretRoom in secretRooms)
+        _hiddenRoomsByLevel = new [] { new List<HiddenRoom>(), new List<HiddenRoom>(), new List<HiddenRoom>() };
+        var hiddenRooms = FindObjectsByType<HiddenRoom>(FindObjectsSortMode.None);
+        foreach (var hiddenRoom in hiddenRooms)
         {
-            _secretRoomsByLevel[secretRoom.roomLevel].Add(secretRoom);
+            _hiddenRoomsByLevel[hiddenRoom.roomLevel].Add(hiddenRoom);
         }
     }
 
-    public List<SecretRoom> GetSecretRooms(int roomLevel)
+    public List<HiddenRoom> GetHiddenRooms(int roomLevel)
     {
-        return _secretRoomsByLevel[roomLevel];
+        Debug.AssertFormat(_hiddenRoomsByLevel != null, "Hidden room array is not set.");
+        Debug.AssertFormat(_hiddenRoomsByLevel[roomLevel].Count > 0,
+            $"No hidden room [level {roomLevel}] is found. Please add and try again.");
+        return _hiddenRoomsByLevel[roomLevel];
     }
     
     private void AddSurroundingWallTiles()

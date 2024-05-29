@@ -7,15 +7,15 @@ using Random = UnityEngine.Random;
 
 public class Portal : Interactor
 {
+    public bool _isHidden;
     private PlayerController _player;
     private UIManager _uiManager;
     public EPortalType portalType;
     private Vector3 _destination;
-    public SecretRoom connectedSecretRoom;
-    private readonly static float[] _secretRoomChanceByLevel = new float[]
-    {
-        //0.1f, 0.8f + 0.1f, 1.0f,
-        0.0f, 0.0f, 1.0f,
+    public HiddenRoom connectedHiddenRoom;
+    private readonly static float[] _hiddenRoomChanceByLevel = new float[]
+    { 
+        0.1f, 0.9f, 1.0f,
     };
 
     protected override void OnInteract(InputAction.CallbackContext obj)
@@ -29,7 +29,7 @@ public class Portal : Interactor
         switch (portalType)
         {
             case EPortalType.CombatToSecret:
-                SetSecretRoomTeleportPosition();
+                SetHiddenRoomTeleportPosition();
                 break;
             
             case EPortalType.SecretToCombat:
@@ -47,18 +47,18 @@ public class Portal : Interactor
         StartCoroutine(TeleportCoroutine());
     }
 
-    private void SetSecretRoomTeleportPosition()
+    private void SetHiddenRoomTeleportPosition()
     {
         // Randomly select room level to teleport to
-        int roomLevel = Array.FindIndex(_secretRoomChanceByLevel, possibility => possibility >= Random.value);
+        int roomLevel = Array.FindIndex(_hiddenRoomChanceByLevel, possibility => possibility >= Random.value);
         
         // Randomly select secret room
-        List<SecretRoom> rooms = LevelManager.Instance.GetSecretRooms(roomLevel);
-        connectedSecretRoom = rooms[Random.Range(0, rooms.Count)];
-        connectedSecretRoom.PrewarmRoom();
+        List<HiddenRoom> rooms = LevelManager.Instance.GetHiddenRooms(roomLevel);
+        connectedHiddenRoom = rooms[Random.Range(0, rooms.Count)];
+        connectedHiddenRoom.PrewarmRoom();
 
         // Teleport
-        _destination = connectedSecretRoom.transform.position;
+        _destination = connectedHiddenRoom.transform.position;
     }
 
     private IEnumerator TeleportCoroutine()
@@ -101,12 +101,12 @@ public class Portal : Interactor
         {
             case EPortalType.CombatToSecret:
                 _uiManager.DisableMap();
-                connectedSecretRoom.OnEnter(transform.position);
+                connectedHiddenRoom.OnEnter(transform.position);
                 break;
             
             case EPortalType.SecretToCombat:
                 _uiManager.EnableMap();
-                connectedSecretRoom.OnExit();
+                connectedHiddenRoom.OnExit();
                 break;
             
             case EPortalType.CombatToMeta:
@@ -123,7 +123,7 @@ public class Portal : Interactor
         switch (portalType)
         {
             case EPortalType.CombatToSecret:
-                Destroy(gameObject);
+                Destroy(_isHidden? gameObject.transform.parent.gameObject : gameObject);
                 break;
             
             case EPortalType.SecretToCombat:
