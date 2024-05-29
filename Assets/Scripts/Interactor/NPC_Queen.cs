@@ -6,14 +6,17 @@ public class NPC_Queen : Interactor
 {
     private UIManager _uiManager;
 
-    private void Awake()
+    protected override void Start()
     {
+        base.Start();
         _uiManager = UIManager.Instance;
         StartCoroutine(BounceCoroutine());
     }
     
     protected override void OnInteract(InputAction.CallbackContext obj)
     {
+        if (IsInteracting) return;
+        IsInteracting = true;
         _uiManager.OpenMetaUpgradeUI();
     }
 

@@ -74,6 +74,10 @@ public class AttackBase_Dash : AttackBase
 
     private IEnumerator NightShadeTeleportCoroutine()
     {
+        // Save info in case shadow disappears while waiting for the effect
+        var targetPos = _nightShadeDashShadow.transform.position;
+        var targetScale = _nightShadeDashShadow.transform.localScale;
+        
         // Start teleport effect
         var shadowAnimator = _nightShadeDashShadow.GetComponent<Animator>(); 
         shadowAnimator.SetTrigger(Teleport);
@@ -86,8 +90,8 @@ public class AttackBase_Dash : AttackBase
         }
         
         // Match position and look direction
-        _player.position = _nightShadeDashShadow.transform.position;
-        if (!_playerMovement.IsMoving) _player.localScale = _nightShadeDashShadow.transform.localScale;
+        _player.position = targetPos;
+        if (!_playerMovement.IsMoving) _player.localScale = targetScale;
         
         // Teleport attack
         ((Legacy_Dash)ActiveLegacy).OnDashEnd();

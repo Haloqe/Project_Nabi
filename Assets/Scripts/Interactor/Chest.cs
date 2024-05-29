@@ -12,8 +12,9 @@ public class Chest : Interactor
     private readonly static int Open = Animator.StringToHash("Open");
     private readonly static int Close = Animator.StringToHash("Close");
 
-    private void Start()
+    protected override void Start()
     {
+        base.Start();
         _animator = GetComponent<Animator>();
     }
     

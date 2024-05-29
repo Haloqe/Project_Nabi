@@ -7,8 +7,9 @@ using UnityEngine.InputSystem;
 public abstract class InteractorHold : MonoBehaviour
 {
     private InputAction _interactAction;
+    private int _playerInteractingPartsCount;
 
-    private void Awake()
+    protected virtual void Start()
     {
         _interactAction = FindObjectOfType<PlayerInput>().actions["Player/Interact_Hold"];
     }
@@ -17,10 +18,14 @@ public abstract class InteractorHold : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            OnEnterArea();
-            _interactAction.started += OnInteractStarted;
-            _interactAction.performed += OnInteractPerformed;
-            _interactAction.canceled += OnInteractCanceled;
+            if (_playerInteractingPartsCount == 0)
+            {
+                OnEnterArea();
+                _interactAction.started += OnInteractStarted;
+                _interactAction.performed += OnInteractPerformed;
+                _interactAction.canceled += OnInteractCanceled;
+            }
+            _playerInteractingPartsCount++;
         }
     }
 
@@ -28,10 +33,14 @@ public abstract class InteractorHold : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            OnExitArea();
-            _interactAction.started -= OnInteractStarted;
-            _interactAction.performed -= OnInteractPerformed;
-            _interactAction.canceled -= OnInteractCanceled;
+            _playerInteractingPartsCount--;
+            if (_playerInteractingPartsCount == 0)
+            {
+                OnExitArea();
+                _interactAction.started -= OnInteractStarted;
+                _interactAction.performed -= OnInteractPerformed;
+                _interactAction.canceled -= OnInteractCanceled;
+            }
         }
     }
 

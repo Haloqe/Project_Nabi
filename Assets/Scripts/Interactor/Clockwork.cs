@@ -13,8 +13,9 @@ public class Clockwork : Interactor
         transform.Rotate(0, 0, -50.0f * Time.deltaTime);
     }
 
-    private void Start()
+    protected override void Start()
     {
+        base.Start();
         pristineEffect.SetActive(isPristineClockwork);
     }
 

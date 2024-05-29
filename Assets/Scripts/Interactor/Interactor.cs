@@ -8,14 +8,14 @@ public abstract class Interactor : MonoBehaviour
     private bool _isInteractionBound;
     private int _playerInteractingPartsCount;
 
-    private void Awake()
+    protected virtual void Start()
     {
         var player = PlayerController.Instance;
         if (player != null) BindInteraction();
         PlayerEvents.Spawned += BindInteraction;
     }
 
-    private void OnDestroy()
+    protected virtual void OnDestroy()
     {
         PlayerEvents.Spawned -= BindInteraction;
     }

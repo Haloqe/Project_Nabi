@@ -124,8 +124,8 @@ public class WarriorUIController : MonoBehaviour
 
         // Initialise color
         var baseColor = _panelOutlines[0].effectColor;
-        _hoveredColor = new Color(baseColor.r, baseColor.g, baseColor.b, 0.08f);
-        _selectedColor = new Color(baseColor.r, baseColor.g, baseColor.b, 0.3f);
+        _hoveredColor = new Color(baseColor.r, baseColor.g, baseColor.b, 0.15f);
+        _selectedColor = new Color(baseColor.r, baseColor.g, baseColor.b, 0.65f);
     }
 
     private void InitialiseUpgradeUI()
