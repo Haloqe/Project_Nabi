@@ -133,13 +133,13 @@ public class EnemyPattern_Scorpion : EnemyPattern
                 (_tailObjects[i].transform.position.x + flipMoveAmount[i] * negativeOrPositive),
                 _tailObjects[i].transform.position.y);
         }
-        // _shooterPositionObject.GetComponent<ParticleSystemRenderer>().flip = negativeOrPositive == 1
-        //     ? Vector3.left
-        //     : Vector3.zero;
-        _shooterPositionObject.transform.localScale =
-            new Vector3(_shooterPositionObject.transform.localScale.x * -1, 1f, 1f);
-        _shooterPositionObject.transform.eulerAngles =
-            new Vector3(0, 0, -1f * _shooterPositionObject.transform.eulerAngles.z);
+        _shooterPositionObject.transform.localEulerAngles = negativeOrPositive == -1
+            ? new Vector3(0, 0, 10f)
+            : new Vector3(0, 0, 70f);
+        // _shooterPositionObject.transform.localScale =
+        //     new Vector3(_shooterPositionObject.transform.localScale.x * -1, 1f, 1f);
+        // _shooterPositionObject.transform.localEulerAngles =
+        //     new Vector3(0, 0, -1f * _shooterPositionObject.transform.localEulerAngles.z);
     }
 
     private void TrackPlayer()
@@ -357,7 +357,7 @@ public class EnemyPattern_Scorpion : EnemyPattern
         yield return MoveClaws(_defaultClawPositions, 2f);
         yield return RotateByAmount(10f, 1, 50f);
         
-        _animator.SetTrigger("ClawAttack");
+        _animator.SetTrigger("GroundPound");
         yield return new WaitForSeconds(2f);
         yield return MoveClaws(_clawAttackPositions, 5f);
         
