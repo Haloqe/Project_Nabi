@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using UnityEngine;
 
@@ -6,10 +5,17 @@ public class SoulShard : MonoBehaviour
 {
     private bool _isInteracting;
     private Rigidbody2D _rb;
+    private float _lifetimeThreshold = 100.0f;
 
     private void Awake()
     {
         _rb = GetComponent<Rigidbody2D>();
+    }
+    
+    private IEnumerator LifetimeCoroutine()
+    {
+        yield return new WaitForSecondsRealtime(_lifetimeThreshold);
+        Destroy(gameObject);
     }
     
     private IEnumerator BounceCoroutine()

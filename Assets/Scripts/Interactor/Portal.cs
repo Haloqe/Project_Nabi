@@ -13,10 +13,9 @@ public class Portal : Interactor
     public EPortalType portalType;
     private Vector3 _destination;
     public HiddenRoom connectedHiddenRoom;
-    private readonly static float[] _hiddenRoomChanceByLevel = new float[]
+    private readonly static float[] HiddenRoomChanceByLevel = new float[]
     { 
-        //0.1f, 0.9f, 1.0f,
-        0, 0, 1
+        0.50f, 0.95f, 1.0f,
     };
 
     protected override void OnInteract(InputAction.CallbackContext obj)
@@ -51,7 +50,7 @@ public class Portal : Interactor
     private void SetHiddenRoomTeleportPosition()
     {
         // Randomly select room level to teleport to
-        int roomLevel = Array.FindIndex(_hiddenRoomChanceByLevel, possibility => possibility >= Random.value);
+        int roomLevel = Array.FindIndex(HiddenRoomChanceByLevel, possibility => possibility >= Random.value);
         
         // Randomly select secret room
         List<HiddenRoom> rooms = LevelManager.Instance.GetHiddenRooms(roomLevel);
