@@ -10,7 +10,8 @@ public class GameManager : Singleton<GameManager>
     private PlayerController _player;
     
     // DEBUG Only
-    private int _debugIngameBuildIdx;
+    private int _playerSceneBuildIdx;   // 플레이어가 실행한 씬
+    private int _randMapBuildIdx;       // 테스트용 랜덤 제너레이션 씬
     
     public bool HasSaveData { get; private set; }
     // todo temp
@@ -22,6 +23,7 @@ public class GameManager : Singleton<GameManager>
         if (IsToBeDestroyed) return;
         PlayerMetaInfo = new PlayerMetaInfo();
         PlayerMetaInfo.Reset();
+        _randMapBuildIdx = SceneManager.GetSceneByName("Scenes/MapGen_InGame").buildIndex;
         SceneManager.sceneLoaded += OnSceneLoaded;
         PlayerEvents.Defeated += OnPlayerDefeated;
     }
@@ -34,7 +36,7 @@ public class GameManager : Singleton<GameManager>
         }
         else if (scene.name.Contains("InGame"))
         {
-            _debugIngameBuildIdx = scene.buildIndex;
+            _playerSceneBuildIdx = scene.buildIndex;
             PostLoadInGame();
         }
     }
@@ -45,9 +47,8 @@ public class GameManager : Singleton<GameManager>
         UIManager.Instance.DisplayLoadingScreen();
         
         // Load new in-game scene
-        int randGenMapIdx = SceneManager.GetSceneByName("Scenes/MapGen_InGame").buildIndex;
         // TEMP TODO
-        SceneManager.LoadScene(_debugIngameBuildIdx == randGenMapIdx ? randGenMapIdx : _debugIngameBuildIdx);
+        SceneManager.LoadScene(_playerSceneBuildIdx == _randMapBuildIdx ? _randMapBuildIdx : _playerSceneBuildIdx);
     }
     
     private void PostLoadInGame()
@@ -56,7 +57,7 @@ public class GameManager : Singleton<GameManager>
         GameEvents.GameLoadStarted.Invoke();
         
         // Generate new map
-        if (_debugIngameBuildIdx == SceneManager.GetSceneByName("Scenes/MapGen_InGame").buildIndex)
+        if (_playerSceneBuildIdx == SceneManager.GetSceneByName("Scenes/MapGen_InGame").buildIndex)
         {
             LevelManager.Instance.Generate();
         }

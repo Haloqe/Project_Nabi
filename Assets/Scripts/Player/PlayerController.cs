@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Interactions;
-using UnityEngine.Rendering;
 
 public class PlayerController : Singleton<PlayerController>
 {

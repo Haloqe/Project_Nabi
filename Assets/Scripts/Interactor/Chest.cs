@@ -6,6 +6,7 @@ public class Chest : Interactor
     [SerializeField] private GameObject goldPrefab;
     [SerializeField] private GameObject soulShardPrefab;
     [SerializeField] private GameObject clockworkPrefab;
+    [SerializeField] private GameObject superfoodPrefab;
     private int _rewardLevel;
     private Animator _animator;
     public bool IsOpen { get; private set; }
@@ -40,31 +41,31 @@ public class Chest : Interactor
             case 0:
                 {
                     // Fixed drop
-                    DropGold(20, 50);
+                    DropGold(30, 40);
                 }
                 break;
             case 1:
                 {
                     // Fixed drop
-                    DropGold(100, 150);
+                    DropGold(100, 120);
                     
                     // Random drop
-                    float r = Random.value;
-                    if (r <= 0.6f) DropSoulShard(3, 5);   // 60% Soul shard
-                    else if (r <= 0.90f) DropArbor();     // 30% Arbor
-                    else DropClockwork(isPristine:false); // 10% Clockwork
+                    if (Random.value <= 0.4f) DropSoulShard(1,3);   // 60% Soul shard
                 }
                 break;
             case 2:
                 {
                     // Fixed drop
-                    DropGold(300, 500);
-                    DropSoulShard(3, 5);
+                    DropGold(300, 350);
+                    DropSoulShard(3, 4);
                     
                     // Random drop
                     float r = Random.value;
-                    if (r <= 0.5f) DropArborScroll();
-                    else DropClockwork(isPristine:true);
+                    DropSuperfood();
+                    if (r <= 0.5f) DropArbor();                             // 50% Arbor
+                    else if (r <= 0.8f) DropSuperfood();                    // 30% Superfood
+                    else if (r <= 0.95f) DropClockwork(isPristine:false);   // 15% Clockwork
+                    else DropClockwork(isPristine:true);                    // 5% Pristine clockwork
                 }
                 break;
         }
@@ -115,8 +116,12 @@ public class Chest : Interactor
         clockwork.isPristineClockwork = isPristine;
     }
 
-    private void DropArborScroll()
+    private void DropSuperfood()
     {
-        
+        GameObject superfood = Instantiate(superfoodPrefab, transform.position + new Vector3(0,0.1f, 0), Quaternion.identity);
+        Rigidbody2D rb = superfood.GetComponent<Rigidbody2D>();
+        var randDir = Random.onUnitSphere;
+        randDir = new Vector3(randDir.x, Mathf.Abs(randDir.y), 0);
+        rb.AddForce(randDir * Random.Range(3, 5.5f), ForceMode2D.Impulse);
     }
 }

@@ -15,7 +15,8 @@ public class Portal : Interactor
     public HiddenRoom connectedHiddenRoom;
     private readonly static float[] _hiddenRoomChanceByLevel = new float[]
     { 
-        0.1f, 0.9f, 1.0f,
+        //0.1f, 0.9f, 1.0f,
+        0, 0, 1
     };
 
     protected override void OnInteract(InputAction.CallbackContext obj)
