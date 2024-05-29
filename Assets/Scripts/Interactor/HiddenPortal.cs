@@ -44,12 +44,11 @@ public class HiddenPortal : MonoBehaviour
     private IEnumerator RevealCoroutine()
     {
         // Gradually reveal portal
-        float alpha = _portalSpriteRenderer.color.a;
-        while (alpha < 0.9f)
+        var portalColour = _portalSpriteRenderer.color;
+        while (portalColour.a < 0.9f)
         {
-            alpha += Time.unscaledDeltaTime * 0.4f;
-            var portalColour = _portalSpriteRenderer.color;
-            _portalSpriteRenderer.color = new Color(portalColour.r, portalColour.g, portalColour.b, alpha);
+            portalColour.a += Time.unscaledDeltaTime * 0.4f;
+            _portalSpriteRenderer.color = portalColour;
             yield return null;
         }
         
@@ -57,11 +56,10 @@ public class HiddenPortal : MonoBehaviour
         _portalCollider2D.enabled = true;
         
         // Reveal the rest
-        while (alpha < 1f)
+        while (portalColour.a < 1f)
         {
-            alpha += Time.unscaledDeltaTime * 0.4f;
-            var portalColour = _portalSpriteRenderer.color;
-            _portalSpriteRenderer.color = new Color(portalColour.r, portalColour.g, portalColour.b, alpha);
+            portalColour.a += Time.unscaledDeltaTime * 0.4f;
+            _portalSpriteRenderer.color = portalColour;
             yield return null;
         }
         
@@ -74,12 +72,11 @@ public class HiddenPortal : MonoBehaviour
         _portalCollider2D.enabled = false;
         
         // Gradually hide portal
-        float alpha = _portalSpriteRenderer.color.a;
-        while (alpha > 0)
+        var portalColour = _portalSpriteRenderer.color;
+        while (portalColour.a < 0.9f)
         {
-            alpha -= Time.unscaledDeltaTime * 1.2f;
-            var portalColour = _portalSpriteRenderer.color;
-            _portalSpriteRenderer.color = new Color(portalColour.r, portalColour.g, portalColour.b, alpha);
+            portalColour.a -= Time.unscaledDeltaTime * 1.2f;
+            _portalSpriteRenderer.color = portalColour;
             yield return null;
         }
         _activeHideCoroutine = null;

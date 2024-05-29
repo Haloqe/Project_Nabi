@@ -69,10 +69,11 @@ public class Portal : Interactor
         _player.DisablePlayerInput();
         
         // Fade in
+        var color = playerSpriteRenderer.color;
         while (playerSpriteRenderer.color.a > 0)
         {
-            var color = playerSpriteRenderer.color;
-            playerSpriteRenderer.color = new Color(color.r, color.g, color.b, color.a - 1f * Time.unscaledDeltaTime);
+            color.a -= 1f * Time.unscaledDeltaTime;
+            playerSpriteRenderer.color = color;
             yield return null;
         }
         
@@ -85,8 +86,8 @@ public class Portal : Interactor
         // Fade out
         while (playerSpriteRenderer.color.a < 1)
         {
-            var color = playerSpriteRenderer.color;
-            playerSpriteRenderer.color = new Color(color.r, color.g, color.b, color.a + 1f * Time.unscaledDeltaTime);
+            color.a += 1f * Time.unscaledDeltaTime;
+            playerSpriteRenderer.color = color;
             yield return null;
         }
         

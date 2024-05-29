@@ -47,12 +47,12 @@ public class EnemyPattern_Insectivore : EnemyPattern
 
     private IEnumerator FadeIn()
     {
-        for (float i = 0.05f; i <= 1; i += 0.05f)
+        Color color = _spriteRenderer.material.color;
+        while (color.a < 1)
         {
-            Color color = _spriteRenderer.material.color;
-            color.a = i;
+            color.a += 0.6f * Time.deltaTime;
             _spriteRenderer.material.color = color;
-            yield return new WaitForSeconds(0.05f);
+            yield return null;
         }
     }
 
