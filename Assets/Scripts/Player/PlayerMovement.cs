@@ -22,7 +22,7 @@ public class PlayerMovement : MonoBehaviour
     public float moveSpeedMultiplier = 1f;
     private Vector2 _moveDirection;
     public bool IsMoving { get; private set; }
-    private bool _isRooted = false;
+    public bool IsRooted { get; private set; }
     public bool IsOnMovingPlatform = false;
 
     // jumping
@@ -35,8 +35,8 @@ public class PlayerMovement : MonoBehaviour
     private float _coyoteTimeCounter;
     private readonly float _jumpBufferTime = 0.2f;
     private float _jumpBufferTimeCounter;
-    private float _upwardsGravityScale = 2f;
-    private float _downwardsGravityScale = 5f;
+    public float UpwardsGravityScale { get; private set; }
+    public float DownwardsGravityScale { get; private set; }
 
     // attack
     private bool _isAttacking;
@@ -48,11 +48,13 @@ public class PlayerMovement : MonoBehaviour
     private readonly static int Moving = Animator.StringToHash("IsMoving");
     private readonly static int IsDoubleJumping = Animator.StringToHash("IsDoubleJumping");
     private readonly static int IsJumping = Animator.StringToHash("IsJumping");
-    
+
+    public bool isRangedAttacking;
 
     private void Start()
     {
         GameEvents.Restarted += OnRestarted;
+        PlayerEvents.Defeated += OnDefeated;
         InGameEvents.TimeSlowDown += OnTimeSlowDown;
         InGameEvents.TimeRevertNormal += OnTimeRevertNormal;
         
@@ -64,6 +66,8 @@ public class PlayerMovement : MonoBehaviour
         _jumpCounter = 0;
         _isJumping = true;
         IsMoving = false;
+        UpwardsGravityScale = 2f;
+        DownwardsGravityScale = 5f;
 
         _mainCollider = GetComponents<BoxCollider2D>()[0];
         _defaultBounciness = _mainCollider.sharedMaterial.bounciness;
@@ -73,86 +77,119 @@ public class PlayerMovement : MonoBehaviour
     private void OnDestroy()
     {
         GameEvents.Restarted -= OnRestarted;
+        PlayerEvents.Defeated -= OnDefeated;
         InGameEvents.TimeSlowDown -= OnTimeSlowDown;
         InGameEvents.TimeRevertNormal -= OnTimeRevertNormal;
     }
 
+    private void OnDefeated()
+    {
+        _moveDirection = Vector2.zero;
+        _additionalVelocity = Vector2.zero;
+    }
+    
     private void OnRestarted()
     {
-        RemoveDebuffs();
-        ResetFriction();
-        ResetBounciness();
         _isAttacking = false;
-        isDashing = false;
+        isDashing = false; 
         isAreaAttacking = false;
         _jumpCounter = 0;
         _isJumping = false;
         moveSpeedMultiplier = 1f;
+        
+        RemoveDebuffs();
+        ResetFriction();
+        ResetBounciness();
+        ResetMoveSpeed();
         OnTimeRevertNormal();
     }
 
     private void Update()
     {
-        _animator.SetBool(Moving, IsMoving && !_isRooted);
-        
+        _animator.SetBool(Moving, IsMoving && !IsRooted);
         _coyoteTimeCounter -= Time.unscaledDeltaTime;
         _jumpBufferTimeCounter -= Time.unscaledDeltaTime;
     }
 
     private void FixedUpdate()
     {
-        // disable extra movement if rooted or dashing or attacking
-        if (_isRooted || isDashing || isAreaAttacking/*|| _isAttacking*/) return;
+        // Disable extra movement if is rooted, dashing, or area-attacking
+        if (IsRooted || isDashing || isAreaAttacking) return;
         
-        if (_moveDirection.x == 0)
-        {
-            _rigidbody2D.velocity = new Vector2(0, _rigidbody2D.velocity.y);
-        }
-        else
-        {
-            float targetSpeed = Mathf.Sign(_moveDirection.x) * MoveSpeed;
-            float speedDifference = targetSpeed - _rigidbody2D.velocity.x;
-            float accelerationRate = 1.5f;
-            float resultantMoveForce =
-                Mathf.Pow(Mathf.Abs(speedDifference) * accelerationRate, 2f) * Mathf.Sign(speedDifference);
-            _rigidbody2D.AddForce(new Vector2(resultantMoveForce, 0f));
-            // if (_moveDirection.x == 0 && Mathf.Abs(_rigidbody2D.velocity.x) <= 0.1f)
-            //     _rigidbody2D.velocity = new Vector2(0, _rigidbody2D.velocity.y);
-        }
-        
-        
-        // _rigidbody2D.velocity = _additionalVelocity.magnitude != 0 ? 
-        //     new Vector2(_additionalVelocity.x / Time.timeScale, _additionalVelocity.y + _rigidbody2D.velocity.y) : 
-        //     new Vector2((_moveDirection.x * MoveSpeed * moveSpeedMultiplier) / Time.timeScale, _rigidbody2D.velocity.y);
+        // Movement-driven velocity
+        _rigidbody2D.velocity = new Vector2((_moveDirection.x * MoveSpeed * moveSpeedMultiplier) / Time.timeScale, _rigidbody2D.velocity.y);
 
-        if (_additionalVelocity.magnitude != 0)
-            _rigidbody2D.velocity += new Vector2(_additionalVelocity.x / Time.timeScale, _additionalVelocity.y);
+        // Animation-driven velocity
+        if (animStopMove)
+            _rigidbody2D.velocity = Vector2.zero;
+        else if (_additionalVelocity.magnitude != 0)
+            _rigidbody2D.velocity = _additionalVelocity / Time.timeScale;
         
-        if (!_isJumping)
+        // Alter gravity scale while jumping
+        // TODO MOVE somewhere else
+        if (!isRangedAttacking)
         {
-            _rigidbody2D.gravityScale = _playerController.DefaultGravityScale;
-            return;
-        }
-        
-        if (_isRunningFirstJump && _jumpCounter <= 1)
-        {
-            _rigidbody2D.gravityScale = _upwardsGravityScale;
-        }
-        else if (!_isRunningFirstJump || _rigidbody2D.velocity.y < 0)
-        {
-            _rigidbody2D.gravityScale = _downwardsGravityScale;
+            if (!_isJumping)
+            {
+                _rigidbody2D.gravityScale = _playerController.DefaultGravityScale;
+            }
+            else
+            {
+                if (_isRunningFirstJump && _jumpCounter <= 1)
+                {
+                    _rigidbody2D.gravityScale = UpwardsGravityScale;
+                }
+                else if (!_isRunningFirstJump || _rigidbody2D.velocity.y < 0)
+                {
+                    _rigidbody2D.gravityScale = DownwardsGravityScale;
+                }
+            }
+            // During time slow, increase gravity scale
+            if (Time.timeScale != 1)
+            {
+                _rigidbody2D.gravityScale /= (Time.timeScale * Time.timeScale);
+            }
         }
     }
 
     private void OnTimeRevertNormal()
     {
-        _rigidbody2D.gravityScale = _playerController.DefaultGravityScale;
+        if (!_isJumping)
+        {
+            _rigidbody2D.gravityScale = _playerController.DefaultGravityScale;
+        }
+        else 
+        {
+            if (_isRunningFirstJump && _jumpCounter <= 1)
+            {
+                _rigidbody2D.gravityScale = UpwardsGravityScale;
+            }
+            else if (!_isRunningFirstJump || _rigidbody2D.velocity.y < 0)
+            {
+                _rigidbody2D.gravityScale = DownwardsGravityScale;
+            }
+        }
         FixVelocity();
     }
     
     private void OnTimeSlowDown()
     {
-        _rigidbody2D.gravityScale = _playerController.DefaultGravityScale / (Time.timeScale * Time.timeScale);
+        if (!_isJumping)
+        {
+            _rigidbody2D.gravityScale = _playerController.DefaultGravityScale;
+        }
+        else 
+        {
+            if (_isRunningFirstJump && _jumpCounter <= 1)
+            {
+                _rigidbody2D.gravityScale = UpwardsGravityScale;
+            }
+            else if (!_isRunningFirstJump || _rigidbody2D.velocity.y < 0)
+            {
+                _rigidbody2D.gravityScale = DownwardsGravityScale;
+            }
+        }
+        _rigidbody2D.gravityScale /= Time.timeScale * Time.timeScale;
         FixVelocity();
     }
 
@@ -206,9 +243,16 @@ public class PlayerMovement : MonoBehaviour
     public void SetMoveDirection(Vector2 value)
     {
         _moveDirection = value;
-        if (value.x == 0 || _isAttacking || isDashing)
+        if (value.x == 0 || isDashing)
         {
             IsMoving = false;
+        }
+        else if (_isAttacking)
+        {
+            if (value.x != 0 && _playerController.playerDamageDealer.IsAttackBufferAvailable)
+            {
+                savedLookDirection = value;
+            }
         }
         else
         {
@@ -218,11 +262,18 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    public Vector3 savedLookDirection = Vector3.zero;
+    public void UpdateLookDirectionOnAttackEnd()
+    {
+        transform.localScale = new Vector2(-Mathf.Sign(savedLookDirection.x) 
+            * Mathf.Abs(transform.localScale.x), transform.localScale.y);
+    }
+
     public void EnableMovement(bool strict)
     {
         if (strict)
         {
-            _isRooted = false;
+            IsRooted = false;
         }
         else
         {
@@ -240,7 +291,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (strict)
         {
-            _isRooted = true;
+            IsRooted = true;
             _rigidbody2D.velocity = Vector2.zero;
         }
         else
@@ -278,16 +329,10 @@ public class PlayerMovement : MonoBehaviour
     //
     // }
     
-
-    public void StopMove()
-    {
-        
-    }
-
     public void StartJump()
     {
         // can the player jump?
-        if (_isRooted || _isAttacking) return;
+        if (IsRooted || _isAttacking) return;
         if (_coyoteTimeCounter < 0f && _jumpCounter >= 2 || isDashing)
         {
             _jumpBufferTimeCounter = _jumpBufferTime;
@@ -358,14 +403,14 @@ public class PlayerMovement : MonoBehaviour
     {
         if (MoveSpeed <= _defaultMoveSpeed) MoveSpeed = _defaultMoveSpeed;
         if (jumpForce <= _defaultJumpForce) jumpForce = _defaultJumpForce;
-        _isRooted = false;
+        IsRooted = false;
     }
 
     #region Animation Event Handlers
     // Move horizontally to the direction the character is facing
     public void AnimEvent_StartMoveHorizontal(float xVelocity)
     {
-        if (_isRooted) return;
+        if (IsRooted) return;
 
         // Cast a ray to check a wall
         Vector2 playerCentre = new Vector2(transform.position.x, transform.position.y + 0.1f);
@@ -376,6 +421,17 @@ public class PlayerMovement : MonoBehaviour
         // If no wall in front, move forward
         float dir = -Mathf.Sign(gameObject.transform.localScale.x);
         _additionalVelocity = new Vector2(_additionalVelocity.x + dir * xVelocity, _additionalVelocity.y);
+    }
+
+    public void AnimEvent_StopMove()
+    {
+        animStopMove = true;
+    }
+
+    private bool animStopMove;
+    public void AnimEvent_StartMove()
+    {
+        animStopMove = false;
     }
     
     public void AnimEvent_StartMoveVertical(float yVelocity)

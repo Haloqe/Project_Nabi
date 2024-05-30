@@ -21,45 +21,47 @@ public class HiddenPortal : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        _playerInteractingPartsCount++;
-        if (_playerInteractingPartsCount != 1) return;
+        if (++_playerInteractingPartsCount > 1) return;
         
         if (_activeHideCoroutine != null)
             StopCoroutine(_activeHideCoroutine);
         
         _activeRevealCoroutine = StartCoroutine(RevealCoroutine());
+        Debug.Log("Start revealing");
     }
 
     private void OnTriggerExit2D(Collider2D other)
     {
-        _playerInteractingPartsCount--;
-        if (_playerInteractingPartsCount != 0) return;
+        if (--_playerInteractingPartsCount > 0) return;
         
         if (_activeRevealCoroutine != null)
             StopCoroutine(_activeRevealCoroutine);
 
         _activeHideCoroutine = StartCoroutine(HideCoroutine());
+        Debug.Log("End revealing");
     }
 
     private IEnumerator RevealCoroutine()
     {
         // Gradually reveal portal
-        var portalColour = _portalSpriteRenderer.color;
-        while (portalColour.a < 0.9f)
+        float alpha = _portalSpriteRenderer.color.a;
+        while (alpha < 0.8f)
         {
-            portalColour.a += Time.unscaledDeltaTime * 0.4f;
-            _portalSpriteRenderer.color = portalColour;
+            alpha += Time.unscaledDeltaTime * 0.4f;
+            var portalColour = _portalSpriteRenderer.color;
+            _portalSpriteRenderer.color = new Color(portalColour.r, portalColour.g, portalColour.b, alpha);
             yield return null;
         }
-        
+
         // Activate portal
         _portalCollider2D.enabled = true;
-        
+
         // Reveal the rest
-        while (portalColour.a < 1f)
+        while (alpha < 1f)
         {
-            portalColour.a += Time.unscaledDeltaTime * 0.4f;
-            _portalSpriteRenderer.color = portalColour;
+            alpha += Time.unscaledDeltaTime * 0.4f;
+            var portalColour = _portalSpriteRenderer.color;
+            _portalSpriteRenderer.color = new Color(portalColour.r, portalColour.g, portalColour.b, alpha);
             yield return null;
         }
         
@@ -73,9 +75,9 @@ public class HiddenPortal : MonoBehaviour
         
         // Gradually hide portal
         var portalColour = _portalSpriteRenderer.color;
-        while (portalColour.a < 0.9f)
+        while (portalColour.a > 0)
         {
-            portalColour.a -= Time.unscaledDeltaTime * 1.2f;
+            portalColour.a -= Time.deltaTime * 1.2f;
             _portalSpriteRenderer.color = portalColour;
             yield return null;
         }

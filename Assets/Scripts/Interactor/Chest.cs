@@ -9,9 +9,8 @@ public class Chest : Interactor
     [SerializeField] private GameObject superfoodPrefab;
     private int _rewardLevel;
     private Animator _animator;
-    public bool IsOpen { get; private set; }
+    private bool _isOpen;
     private readonly static int Open = Animator.StringToHash("Open");
-    private readonly static int Close = Animator.StringToHash("Close");
 
     protected override void Start()
     {
@@ -21,9 +20,9 @@ public class Chest : Interactor
     
     protected override void OnInteract(InputAction.CallbackContext obj)
     {
-        if (IsInteracting || IsOpen) return;
+        if (IsInteracting || _isOpen) return;
         IsInteracting = true;
-        IsOpen = true;
+        _isOpen = true;
         if (_animator == null) DropRewards();
         else _animator.SetTrigger(Open);
     }
@@ -75,15 +74,24 @@ public class Chest : Interactor
         // Calculate how much gold to drop
         int goldToDrop = Random.Range(minRange, maxRange + 1);
         
+        // Set force depending on reward level
+        float goldForce = _rewardLevel switch
+        {
+            0 => 6f,
+            1 => 8f,
+            2 => 11f,
+        };
+
         // Drop coins
-        UIManager.Instance.DisplayGoldPopUp(goldToDrop);
         for (int i = 0; i < goldToDrop / 5 + 1; i++) 
         {   
-            // Instantiate a coin at the enemy's position
             var coin = Instantiate(goldPrefab, transform.position, Quaternion.identity).GetComponent<Gold>();
             coin.value = (i < goldToDrop / 5) ? 5 : goldToDrop % 5;
-            coin.SetForce(11f);
+            coin.SetForce(goldForce);
         }
+        
+        // Display UI
+        UIManager.Instance.DisplayGoldPopUp(goldToDrop);
     }
 
     private void DropSoulShard(int minRange, int maxRange)

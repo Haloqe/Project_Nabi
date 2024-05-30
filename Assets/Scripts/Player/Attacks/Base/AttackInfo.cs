@@ -61,15 +61,28 @@ public class AttackInfo
         if (!attacker.CompareTag("Player")) IncomingDirectionX *= -1;
     }
 
-    public AttackInfo Clone()
+    public AttackInfo Clone(bool cloneDamage, bool cloneStatusEffect)
     {
         var info = new AttackInfo(Damage, StatusEffects, IncomingDirectionX, GravCorePosition, CanBeDarkAttack, ShouldUpdateTension);
-        //info.Damage = info.Damage.Clone();
-        // for (int i = 0; i < info.StatusEffects.Count; i++)
-        // {
-        //     info.StatusEffects[i] = StatusEffects[i].Clone();
-        // }
+        if (cloneDamage)
+        {
+            info.Damage = info.Damage.Clone();
+        }
+        if (cloneStatusEffect)
+        {
+            info.StatusEffects = GetClonedStatusEffect();
+        }
         return info;
+    }
+
+    public List<StatusEffectInfo> GetClonedStatusEffect()
+    {
+        var clone = new List<StatusEffectInfo>();
+        foreach (var t in StatusEffects)
+        {
+            clone.Add(t.Clone());
+        }
+        return clone;
     }
 }
 
@@ -114,7 +127,7 @@ public class StatusEffectInfo
     public float Chance;
 
     public StatusEffectInfo() { }
-    public StatusEffectInfo(EStatusEffect type) : this()
+    public StatusEffectInfo(EStatusEffect type)
     {
         Effect = type;
         Strength = 1;

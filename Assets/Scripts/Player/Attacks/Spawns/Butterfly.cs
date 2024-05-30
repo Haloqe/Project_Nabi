@@ -9,10 +9,10 @@ using Random = UnityEngine.Random;
 public class Butterfly : MonoBehaviour
 {
     // Variables
-    private readonly float _lifeTime = 30f;
+    private readonly float _lifeTime = 20f;
     private readonly float _detectInterval = 1f;    // Time interval to detect if enemy is in range
     private readonly float _attackSpeed = 1f;       // Speed of the butterfly while attacking
-    private readonly float _flySpeed = 0.022f;      // Speed of the butterfly while traveling towards target
+    private readonly float _flySpeed = 0.04f;      // Speed of the butterfly while traveling towards target
     private readonly float _cloverSize = 1.7f;      // Size of the clover leaves
     private float _attackSpeedMultiplier = 1f;
     private int _buffStack = 0;
@@ -32,7 +32,8 @@ public class Butterfly : MonoBehaviour
     private Coroutine _flyCoroutine;
     
     // References
-    public float relativeDamage;
+    private float baseDamage;
+    private float relativeDamage;
     private EnemyVisibilityChecker _visibilityChecker;
     private AttackInfo _attackInfo;
     private PlayerDamageDealer _playerDamageDealer;
@@ -53,12 +54,14 @@ public class Butterfly : MonoBehaviour
         _playerDamageDealer = _playerController.playerDamageDealer;
         
         // Initial position
-        _player = PlayerController.Instance.transform;
+        _player = _playerController.transform;
         transform.position = _player.position + GetRandomOffsetNearPlayer();
         
         // Damage
+        baseDamage = 3;
+        relativeDamage = 2; 
         _attackInfo = new AttackInfo();
-        _attackInfo.Damage.TotalAmount = PlayerController.Instance.Strength * (relativeDamage + extraRelativeDamage);
+        _attackInfo.Damage.TotalAmount = baseDamage + _playerController.Strength * (relativeDamage + extraRelativeDamage);
     }
 
     private void Start()
@@ -86,7 +89,6 @@ public class Butterfly : MonoBehaviour
         else if (_flyCoroutine == null)
         {
             transform.position = _player.position + _targetOffset;
-
             if (_detectCoroutine == null) _detectCoroutine = StartCoroutine(DetectCoroutine());
         }
     }
@@ -104,13 +106,13 @@ public class Butterfly : MonoBehaviour
                 _flyCoroutine = StartCoroutine(FlyCoroutine(enemy));
                 yield break;
             }
-            yield return new WaitForSeconds(_detectInterval);   
+            yield return new WaitForSecondsRealtime(_detectInterval);   
         }
     }
 
     private Transform GetRandomEnemyInRange(Transform exceptEnemy = null)
     {
-        var visibleEnemies = _visibilityChecker.visibleEnemies;
+        var visibleEnemies = _visibilityChecker.VisibleEnemies;
         if (exceptEnemy) visibleEnemies.Remove(exceptEnemy.gameObject);
         return visibleEnemies.Count == 0 ? null : visibleEnemies[Random.Range(0, visibleEnemies.Count)].transform;
     }
@@ -141,7 +143,7 @@ public class Butterfly : MonoBehaviour
         while (target && Vector3.Distance(transform.position, target.position + _targetOffset) > 0.001f)
         {
             // If enemy goes out of the screen, stop travelling
-            if (target != _player && !_visibilityChecker.visibleEnemies.Contains(target.gameObject))
+            if (target != _player && !_visibilityChecker.VisibleEnemies.Contains(target.gameObject))
             {
                 target = null;
                 break;
@@ -254,7 +256,7 @@ public class Butterfly : MonoBehaviour
 
     private IEnumerator LifeTimeCoroutine()
     {
-        yield return new WaitForSeconds(_lifeTime);
+        yield return new WaitForSecondsRealtime(_lifeTime);
         _playerDamageDealer.TurbelaKillButterfly(this);
     }
 
@@ -274,7 +276,7 @@ public class Butterfly : MonoBehaviour
     private void Attack()
     {
         // Adjust for a critical damage
-        var damageToSend = _attackInfo.Clone();
+        var damageToSend = _attackInfo.Clone(cloneDamage:true, cloneStatusEffect:false);
         var critChanceExtra = Define.TurbelaButterflyCritStats[(int)_playerController.TurbelaButterflyCritPreserv];
         if (Random.value <= _playerController.CriticalRate + critChanceExtra)
         {
@@ -297,7 +299,7 @@ public class Butterfly : MonoBehaviour
         _buffStack++;
         
         // End buff
-        yield return new WaitForSeconds(duration);
+        yield return new WaitForSecondsRealtime(duration);
         if (--_buffStack == 0) _attackSpeedMultiplier = 1.0f;
     }
 }

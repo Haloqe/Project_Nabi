@@ -77,7 +77,7 @@ public static class  Define
     public static float[] EuphoriaEnemyGoldDropBuffStats = new float[5];
     public static float[] SommerHypHallucinationStats = new float[5];
     public static float[] SommerSleepArmourReduceAmounts = new float[5];
-    public static float[] TurbelaMaxButterflyStats = { 6, 6, 6, 6, 6 };
+    public static float[] TurbelaMaxButterflyStats = { 3, 3, 3, 3, 3 };
     public static float[] TurbelaDoubleSpawnStats = new float[5];
     public static float[] TurbelaExtraDamageStats = new float[5];
     public static float[] TurbelaButterflyCritStats = new float[5];

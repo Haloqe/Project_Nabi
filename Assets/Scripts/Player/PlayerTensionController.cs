@@ -68,7 +68,7 @@ public class PlayerTensionController : MonoBehaviour
     private void OnRestarted()
     {
         _incrementStep = 1;
-        _maxTension = 40;
+        _maxTension = 4;
         _arborType = EArborType.Default;
         _overloadDuration = 4.0f;
         _recoveryDuration = 3.0f;

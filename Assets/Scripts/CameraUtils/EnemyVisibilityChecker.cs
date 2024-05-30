@@ -4,20 +4,22 @@ using UnityEngine;
 
 public class EnemyVisibilityChecker : MonoBehaviour
 {
-    public List<GameObject> visibleEnemies { get; private set; }
+    public List<GameObject> VisibleEnemies { get; private set; }
 
     private void Awake()
     {
-        visibleEnemies = new List<GameObject>();
+        VisibleEnemies = new List<GameObject>();
     }
     
     public void AddEnemyToVisibleList(GameObject enemyObj)
     {
-        visibleEnemies.Add(enemyObj);
+        Debug.Log(enemyObj.name + " added to list");
+        VisibleEnemies.Add(enemyObj);
     }
 
     public void RemoveEnemyFromVisibleList(GameObject enemyObj)
     {
-        visibleEnemies.Remove(enemyObj);
+        Debug.Log(enemyObj.name + " removed from the list");
+        VisibleEnemies.Remove(enemyObj);
     }
 }

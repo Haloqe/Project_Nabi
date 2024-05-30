@@ -64,7 +64,7 @@ public class AttackBase_Melee : AttackBase
         
         // Damage
         _damageComboInfo = _damageInfoComboInit;
-        _attackComboInfo = _attackComboInit.Clone();
+        _attackComboInfo = _attackComboInit.Clone(cloneDamage:true, cloneStatusEffect:true);
         _affectedEnemies.Clear();
 
         // VFX
@@ -156,7 +156,7 @@ public class AttackBase_Melee : AttackBase
         _affectedEnemies.Clear();
     }
 
-    public override void RecalculateDamage()
+    protected override void RecalculateDamage()
     {
         base.RecalculateDamage();
         
@@ -177,7 +177,7 @@ public class AttackBase_Melee : AttackBase
         
         // Combo attack
         var legacyPreservation = (int)ActiveLegacy.preservation;
-        var newStatusEffectsCombo = _attackComboInfo.StatusEffects;
+        var newStatusEffectsCombo = _attackComboInfo.GetClonedStatusEffect();
         EStatusEffect warriorSpecificEffect = PlayerAttackManager.Instance
             .GetWarriorStatusEffect(ActiveLegacy.warrior, _damageDealer.GetStatusEffectLevel(ActiveLegacy.warrior));
         var newEffect = new StatusEffectInfo(warriorSpecificEffect,

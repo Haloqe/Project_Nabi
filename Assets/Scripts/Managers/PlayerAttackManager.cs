@@ -301,7 +301,6 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         else
         {
             // Find and bind legacy SO
-            CheckRelevantPassiveLegacies((ActiveLegacySO)legacyAsset);
             _boundActiveLegacyIDs[legacyTypeIdx] = legacyID;
             _playerDamageDealer.AttackBases[legacyTypeIdx].BindActiveLegacy((ActiveLegacySO)legacyAsset, preservation);
             
@@ -314,6 +313,8 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
             _activeLegacyOverlays[legacyTypeIdx].fillAmount = 0;
             _activeLegacySlots[legacyTypeIdx].Init(legacyData.Warrior, legacyData.Names, legacyData.Descs, preservation);
             _slotDictionary.Add(legacyID, _activeLegacySlots[legacyTypeIdx]);
+            
+            CheckRelevantPassiveLegacies((ActiveLegacySO)legacyAsset);
         }
         _collectedLegacyIDs.Add(legacyID);
         _collectedLegacyPreservations.Add(legacyID, preservation);

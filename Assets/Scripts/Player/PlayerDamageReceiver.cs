@@ -40,16 +40,14 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
 
     private void OnRestarted()
     {
-        Array.Clear(_effectRemainingTimes, 0, _effectRemainingTimes.Length);
-        Array.Clear(_activeDOTCounts, 0, _activeDOTCounts.Length);
-        _slowRemainingTimes.Clear();
-        _currHealth = MaxHealth;
-        _shouldNotTakeDamage = false;
+        RemoveAllDebuffs();
         IsSilenced = false;
         IsSilencedExceptCleanse = false;
+        _shouldNotTakeDamage = false;
         additionalHealth = 0;
         _currHealth = MaxHealth;
         canResurrect = _gameManager.PlayerMetaInfo.MetaUpgradeLevels[(int)EMetaUpgrade.Resurrection] != -1;
+        _slowRemainingTimes.Clear();
         _activeDamageCoroutines.Clear();
     }
     
@@ -494,6 +492,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         }
         _slowRemainingTimes.Clear();
         _playerMovement.RemoveDebuffs();
+        Array.Clear(_activeDOTCounts, 0, _activeDOTCounts.Length);
     }
 
     // slow timer와는 별개로 이동속도 버프가 끝난 후 슬로우를 재설정 하기위함.

@@ -258,11 +258,13 @@ public class WarriorUIController : MonoBehaviour
             var res = _player.playerInventory.TryBuyWithGold(_legacyChangePrice);
             if (!res)
             {
+                // Not enough gold to change legacy
                 if (_activeShakeCoroutine != null) StopCoroutine(_activeShakeCoroutine);
                 _activeShakeCoroutine = StartCoroutine(ShakeCoroutine());
             }
             else
             {
+                // Change legacy
                 if (_activeShakeCoroutine != null) StopCoroutine(_activeShakeCoroutine);
                 _confirmPanelObject.SetActive(false);
                 CollectLegacy(_selectedPanelIdx);

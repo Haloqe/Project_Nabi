@@ -383,7 +383,7 @@ Rigidbody2D:
   m_Interpolate: 1
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 0
+  m_Constraints: 5
 --- !u!1 &6188177401511186753
 GameObject:
   m_ObjectHideFlags: 0
@@ -604,6 +604,26 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 8941332028347368610}
     m_Modifications:
+    - target: {fileID: 5040278515580525534, guid: 8ec9c7d1981629d4695c5c7674646844, type: 3}
+      propertyPath: InitialModule.startSize.scalar
+      value: 1.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 6042513751305832026, guid: 8ec9c7d1981629d4695c5c7674646844, type: 3}
+      propertyPath: InitialModule.startSize.scalar
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6042513752938503886, guid: 8ec9c7d1981629d4695c5c7674646844, type: 3}
+      propertyPath: looping
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6042513752938503886, guid: 8ec9c7d1981629d4695c5c7674646844, type: 3}
+      propertyPath: InitialModule.size3D
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6042513752938503886, guid: 8ec9c7d1981629d4695c5c7674646844, type: 3}
+      propertyPath: InitialModule.startSize.scalar
+      value: 1.6
+      objectReference: {fileID: 0}
     - target: {fileID: 6042513753271484180, guid: 8ec9c7d1981629d4695c5c7674646844, type: 3}
       propertyPath: m_Name
       value: VFXEvade

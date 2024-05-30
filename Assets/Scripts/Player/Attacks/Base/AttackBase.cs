@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public abstract class AttackBase : MonoBehaviour
@@ -61,7 +62,7 @@ public abstract class AttackBase : MonoBehaviour
         ActiveLegacy = null;
         
         // Reset attack info
-        _attackInfo = _attackInfoInit.Clone();
+        _attackInfo = _attackInfoInit.Clone(cloneDamage:true, cloneStatusEffect:true);
         _damageInfo = _damageInfoInit;
         
         // Reset VFX material
@@ -106,10 +107,10 @@ public abstract class AttackBase : MonoBehaviour
         if (ActiveLegacy) ActiveLegacy.UpdateSpawnSize(method, increaseAmount);
     }
 
-    public virtual void RecalculateDamage()
+    protected virtual void RecalculateDamage()
     {
         // Calculate the damage with the newest player strength and damage information
-        _attackInfo.Damage.TotalAmount = _damageInfo.BaseDamage + _playerController.Strength * _damageInfo.RelativeDamage;
+        _attackInfo.Damage.TotalAmount = _damageInfoInit.BaseDamage + _playerController.Strength * _damageInfoInit.RelativeDamage;
         
         // Damage multiplier and additional damage from active legacy
         if (ActiveLegacy)
@@ -136,13 +137,13 @@ public abstract class AttackBase : MonoBehaviour
         EStatusEffect warriorSpecificEffect = PlayerAttackManager.Instance
             .GetWarriorStatusEffect(ActiveLegacy.warrior, _damageDealer.GetStatusEffectLevel(ActiveLegacy.warrior));
         
-        // Update status effect of base damage)
-        var newStatusEffectsBase = _attackInfo.StatusEffects;
+        // Update status effect of base damage
+        var newStatusEffectsBase = _attackInfoInit.GetClonedStatusEffect();
         var newEffect = new StatusEffectInfo(warriorSpecificEffect,
             ActiveLegacy.StatusEffects[legacyPreservation].Strength,
             ActiveLegacy.StatusEffects[legacyPreservation].Duration,
             ActiveLegacy.StatusEffects[legacyPreservation].Chance);
-        newStatusEffectsBase.Add(newEffect);    
+        newStatusEffectsBase.Add(newEffect);
         
         // Additional status effect
         if (ActiveLegacy.ExtraStatusEffects != null && ActiveLegacy.ExtraStatusEffects.Length > 0)

@@ -13,6 +13,7 @@ public class Bullet : MonoBehaviour
     public AttackInfo attackInfo;
     private bool _toBeDestroyed;
     [SerializeField] private bool shouldRotate;
+    [SerializeField] private GameObject hitSpawnEffect;
 
     private void Start()
     {
@@ -55,5 +56,6 @@ public class Bullet : MonoBehaviour
     {
         Destroy(gameObject);
         Owner.OnHit(this, target, transform.position, attackInfo);
+        Instantiate(hitSpawnEffect, transform.position, Quaternion.identity);
     }
 }

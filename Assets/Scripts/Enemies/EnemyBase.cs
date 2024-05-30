@@ -13,11 +13,12 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     
     // reference to other components
     protected Rigidbody2D _rigidbody2D;
-    protected Animator _animator;
-    protected EnemyManager _enemyManager;
+    private Animator _animator;
+    private EnemyManager _enemyManager;
     public SEnemyData EnemyData;
-    protected PlayerController _player;
-    protected UnityEngine.Object _takeDamageVFXPrefab;
+    private PlayerController _player;
+    private UnityEngine.Object _takeDamageVFXPrefab;
+    private UIManager _uiManager;
     
     // Pattern
     protected EnemyPattern Pattern;
@@ -60,6 +61,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
     protected virtual void Start()
     {
+        _uiManager = UIManager.Instance;
         _player = PlayerController.Instance;
         _rigidbody2D = GetComponent<Rigidbody2D>();
         _animator = GetComponent<Animator>();
@@ -204,16 +206,14 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
     private void UpdateStatusEffectTime(EStatusEffect effect, float duration)
     {
-        if (duration == 0) return; // TODO to be handled later (장판형 유지스킬)=
-
+        if (duration == 0) return; 
         int effectIdx = (int)effect;
 
-        // apply new effect
+        // Apply new effect
         if (_effectRemainingTimes[effectIdx] <= 0)
         {
             SetVFXActive(effectIdx, true);
             _effectRemainingTimes[effectIdx] = duration;
-            // Debug.Log("it is setting " + effectIdx + " ONNN!!!");
         }
         // or increment effect time
         else
@@ -221,8 +221,8 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
             duration = Mathf.Clamp(duration - _effectRemainingTimes[effectIdx], 0, float.MaxValue);
             _effectRemainingTimes[effectIdx] += duration;
         }
-        // Debug.Log("[" + gameObject.name + "] Apply " + effect + " for " + duration.ToString("F") 
-        //     + " total: " + _effectRemainingTimes[effectIdx].ToString("F"));
+        Debug.Log("[" + gameObject.name + "] Apply " + effect + " for " + duration.ToString("F") 
+            + " total: " + _effectRemainingTimes[effectIdx].ToString("F"));
     }
 
     private void UpdateRemainingStatusEffectTimes()
@@ -244,6 +244,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
             if (_effectRemainingTimes[i] <= 0)
             {
                 SetVFXActive(i, false);
+                Debug.Log("[" + gameObject.name + "] " + currEffect + " ended");
                 
                 _effectRemainingTimes[i] = 0.0f;
 
@@ -417,7 +418,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
             {
                 Debug.Log(gameObject.name + " missed!");
                 Collider2D[] foesToDamage = Physics2D.OverlapBoxAll(transform.position + new Vector3 (0, _neighboringEnemyColliderHeight, 0), _neighboringEnemyColliderSize, 0, LayerMask.GetMask("Enemy"));
-                AttackInfo damageToFoes = DamageInfo.Clone();
+                AttackInfo damageToFoes = DamageInfo.Clone(cloneDamage:true, cloneStatusEffect:false);
                 damageToFoes.Damage.TotalAmount *= 0.25f;
                 foreach (Collider2D col in foesToDamage)
                 {
@@ -434,7 +435,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     public virtual void DealDamage(IDamageable target, AttackInfo damageInfo)
     {
         damageInfo.AttackerArmourPenetration = EnemyData.DefaultArmourPenetration;
-        target.TakeDamage(damageInfo.Clone());
+        target.TakeDamage(damageInfo.Clone(cloneDamage:true, cloneStatusEffect:false));
     }
 
     // Received Damage Handling
@@ -478,7 +479,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
                 Define.NightShadeLeechStats[(int)_player.playerDamageDealer.BindingSkillPreservations[(int)EWarrior.NightShade]]);
         }
         // 장력 게이지
-        if (shouldUpdateTension) UIManager.Instance.IncrementTensionGaugeUI();
+        if (shouldUpdateTension) _uiManager.IncrementTensionGaugeUI();
 
         // if (asleep) then wake up
         if (_effectRemainingTimes[(int)EStatusEffect.Sleep] > 0)
@@ -638,7 +639,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         }
         
         // Drop coins
-        UIManager.Instance.DisplayGoldPopUp(goldToDrop);
+        _uiManager.DisplayGoldPopUp(goldToDrop);
         for (int i = 0; i < goldToDrop / 5 + 1; i++) 
         {   
             // Instantiate a coin at the enemy's position
@@ -673,6 +674,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
     private void OnBecameVisible()
     {
+        Debug.Log("OnBecVis");
         _enemyManager.VisibilityChecker.AddEnemyToVisibleList(gameObject);
     }
 

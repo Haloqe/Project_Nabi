@@ -239,7 +239,7 @@ public class AttackBase_Area : AttackBase
         // 네가 위에서 바꾼건 다 attackInfoInit인데 실제 보내는 데미지는 attackInfo임. 
         // 네 코드가 작동한 이유는 단지 네가 Reset함수를 계속 호출했고 Reset()내부에서 attackInfo = attackInfoInit.clone()을 했기 때문임
         // AttackInfoInit을 건드리지 말고 AttackInfo만 수정하거나 , attackinfo가 없다고 생각하고 attackinfoinit을 데미지로 보낼 것
-        var attackToSend = _attackInfo.Clone();
+        var attackToSend = _attackInfo.Clone(cloneDamage:true, cloneStatusEffect:false);
         attackToSend.Damage.TotalAmount *= _damageDealer.attackDamageMultipliers[(int)EPlayerAttackType.Area];
         Debug.Log("Damage: " + attackToSend.Damage.TotalAmount);
         _damageDealer.DealDamage(target, attackToSend);

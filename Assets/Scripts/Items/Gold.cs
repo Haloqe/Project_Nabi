@@ -7,7 +7,7 @@ public class Gold : MonoBehaviour
     public int value;
     private Rigidbody2D _rb;
     private Collider2D _collider;
-    private Transform _playerTransform;
+    private PlayerController _playerController;
     private bool _isMovingTowardsPlayer;
     private bool _isInteracting;
     public float impulseForce = 4f;
@@ -20,7 +20,7 @@ public class Gold : MonoBehaviour
     {
         _collider = GetComponent<Collider2D>();
         _rb = GetComponent<Rigidbody2D>();
-        _playerTransform = PlayerController.Instance.transform;
+        _playerController = PlayerController.Instance;
         _collider.enabled = false;
     }
     
@@ -52,8 +52,15 @@ public class Gold : MonoBehaviour
     private void Update()
     {
         if (_isInteracting || !_isMovingTowardsPlayer) return;
-        transform.position = Vector3.MoveTowards(transform.position, _playerTransform.position + Vector3.up, 0.45f);
-        if (Vector3.Distance(transform.position, _playerTransform.position) >= _distanceThreshold) AutoCollectGold();
+        
+        // Gradually move towards the player
+        transform.position = Vector3.MoveTowards(transform.position, _playerController.transform.position + Vector3.up, 0.45f);
+        
+        // If the player is too far away, auto-collect
+        if (Vector3.Distance(transform.position, _playerController.transform.position) >= _distanceThreshold)
+        {
+            AutoCollectGold();
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -62,13 +69,13 @@ public class Gold : MonoBehaviour
         _isInteracting = true;
         
         StopAllCoroutines();
-        PlayerController.Instance.playerInventory.ChangeGoldByAmount(value);
+        _playerController.playerInventory.ChangeGoldByAmount(value);
         Destroy(gameObject);
     }
 
     private void AutoCollectGold()
     {
-        PlayerController.Instance.playerInventory.ChangeGoldByAmount(value);
+        _playerController.playerInventory.ChangeGoldByAmount(value);
         Destroy(gameObject);
     }
 }

@@ -11,7 +11,7 @@ public class AttackBase_Ranged : AttackBase
     {
         base.Start();
         _attackType = ELegacyType.Ranged;
-        _damageInfoInit.BaseDamage = 20.0f;
+        _damageInfoInit.BaseDamage = 2.5f;
         _attackInfoInit.Damage.TotalAmount = _damageInfoInit.BaseDamage + _playerController.Strength * _damageInfoInit.RelativeDamage;
         _attackInfoInit.CanBeDarkAttack = true;
         _attackInfoInit.ShouldUpdateTension = true;
@@ -67,7 +67,7 @@ public class AttackBase_Ranged : AttackBase
         var bullet = Instantiate(_bulletPrefab, fireTransform.position, Quaternion.identity).GetComponent<Bullet>();
         bullet.Direction = -Mathf.Sign(_player.localScale.x);
         bullet.Owner = this;
-        bullet.attackInfo = _attackInfo.Clone();
+        bullet.attackInfo = _attackInfo.Clone(cloneDamage:true, cloneStatusEffect:false);
         bullet.attackInfo.Damage.TotalAmount *= _damageDealer.attackDamageMultipliers[(int)EPlayerAttackType.Ranged];
         bullet.attackInfo.SetAttackDirToMyFront(_damageDealer.gameObject);
         _activeBullets.Add(bullet);

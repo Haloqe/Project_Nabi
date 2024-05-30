@@ -79,19 +79,15 @@ public class PlayerController : Singleton<PlayerController>
         if (IsToBeDestroyed) return;
 
         // Initialise values
-        HpCriticalThreshold = 0.33f;
-        nightShadeShadeBonusStats = new float[]
-        {
-            0, 0, 0, 0, 0
-        };
-        DefaultGravityScale = 3.0f;
-
         BaseStrength = 3.0f;
         BaseArmour = 3.0f;
         BaseArmourPenetration = 0.0f;
         BaseEvasionRate = 0.0f;
         BaseCriticalRate = 0.0f;
         BaseHealEfficiency = 1.0f;
+        HpCriticalThreshold = 0.33f;
+        DefaultGravityScale = 3.0f;
+        nightShadeShadeBonusStats = new float[] { 0, 0, 0, 0, 0 };
 
         // Get components
         _uiManager = UIManager.Instance;
@@ -222,15 +218,7 @@ public class PlayerController : Singleton<PlayerController>
     int count = 0;
     void OnTestAction(InputValue value)
     {
-        if (count == 0)
-        {
-            playerInventory.ChangeSoulShardByAmount(1000);
-            count++;
-        }
-        else
-        {
-            playerDamageReceiver.ChangeHealthByAmount(-1000);
-        }
+        playerInventory.ChangeGoldByAmount(100000);
         // playerInventory.AddFlower(2);
         // playerInventory.AddFlower(3);
         // playerInventory.AddFlower(4);

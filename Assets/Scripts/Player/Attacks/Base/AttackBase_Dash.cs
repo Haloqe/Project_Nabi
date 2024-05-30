@@ -5,14 +5,21 @@ using UnityEngine;
 
 public class AttackBase_Dash : AttackBase
 {
+    // Base Dash
     private Rigidbody2D _rigidbody2D;
-    private float _dashStrength = 2.5f;
-    private float _dashDuration = 0.35f;
+    private readonly float _dashStrength = 2.5f;
+    private readonly float _dashDuration = 0.35f;
     
     // Nightshade Dash
-    private float _nightShadeDashTimeLimit;
+    private readonly float _nightShadeDashTimeLimit = 4.5f;
+    private readonly float _nightShadeDashSpeedMultiplier = 1.5f;
+    private bool _hasAliveNightShadeShadow;
+    private bool _isTeleporting;
     private GameObject _nightShadeDashPrefab;
     private GameObject _nightShadeDashShadow;
+    private Animator _nightShadeDashShadowAnimator;
+    private Rigidbody2D _nightShadeDashShadowRigidbody;
+    private readonly static int DashStart = Animator.StringToHash("DashStart");
     private readonly static int DashEnd = Animator.StringToHash("DashEnd");
     private readonly static int Teleport = Animator.StringToHash("Teleport");
 
@@ -29,7 +36,14 @@ public class AttackBase_Dash : AttackBase
     protected override void Reset()
     {
         base.Reset();
+        StopAllCoroutines();
         _nightShadeDashShadow = null;
+        _hasAliveNightShadeShadow = false;
+        _isTeleporting = false;
+        _nightShadeDashShadow = Instantiate(_nightShadeDashPrefab);
+        _nightShadeDashShadowAnimator = _nightShadeDashShadow.GetComponent<Animator>();
+        _nightShadeDashShadowRigidbody = _nightShadeDashShadow.GetComponent<Rigidbody2D>();
+        _nightShadeDashShadow.SetActive(false);
     }
 
     public override void Attack()
@@ -47,25 +61,38 @@ public class AttackBase_Dash : AttackBase
         }
     }
 
+    // Currently teleporting?
+    public bool IsCurrentlyNightShadeTeleporting()
+    {
+        return _isTeleporting;
+    }
+    
     // Is current dash attack NightShade's second dash (teleport)?
     public bool IsCurrentNightShadeTpDash()
     {
-        return _nightShadeDashShadow != null; 
+        return _hasAliveNightShadeShadow && !_isTeleporting; 
     }
     
     private void NightShadeDash()
     {
         // No active shadow
-        if (_nightShadeDashShadow == null)
+        if (!_hasAliveNightShadeShadow)
         {
-            // Instantiate shadow at player's position and match direction
-            _nightShadeDashShadow = Instantiate(_nightShadeDashPrefab, _player.position, quaternion.identity);
+            // Reactivate shadow
+            _nightShadeDashShadow.SetActive(true);
+            _hasAliveNightShadeShadow = true;
+            
+            // Reset animation to its initial state
+            _nightShadeDashShadowAnimator.SetTrigger(DashStart);
+            
+            // Reposition shadow at player's position and match direction
+            _nightShadeDashShadow.transform.position = _player.position;
             _nightShadeDashShadow.transform.localScale = _player.localScale;
             
             // Make the shadow dash
             StartCoroutine(nameof(NightShadeDashCoroutine));
         }
-        // If active shadow exists, play VFX and teleport to the shadow position
+        // If an active shadow exists, play VFX and teleport to the shadow position
         else
         {
             StartCoroutine(NightShadeTeleportCoroutine());
@@ -74,53 +101,47 @@ public class AttackBase_Dash : AttackBase
 
     private IEnumerator NightShadeTeleportCoroutine()
     {
-        // Save info in case shadow disappears while waiting for the effect
-        var targetPos = _nightShadeDashShadow.transform.position;
-        var targetScale = _nightShadeDashShadow.transform.localScale;
-        
         // Start teleport effect
-        var shadowAnimator = _nightShadeDashShadow.GetComponent<Animator>(); 
-        shadowAnimator.SetTrigger(Teleport);
+        _isTeleporting = true;
+        _nightShadeDashShadowAnimator.SetTrigger(Teleport);
         yield return null;
         
         // Wait until the effect ends
-        while (shadowAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime <= 1.0f)
+        while (_nightShadeDashShadowAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1.0f)
         {
             yield return null;
         }
         
         // Match position and look direction
-        _player.position = targetPos;
-        if (!_playerMovement.IsMoving) _player.localScale = targetScale;
+        _player.position = _nightShadeDashShadow.transform.position;
+        if (!_playerMovement.IsMoving) _player.localScale = _nightShadeDashShadow.transform.localScale;
         
         // Teleport attack
         ((Legacy_Dash)ActiveLegacy).OnDashEnd();
             
         // Reset shadow
         StopCoroutine(nameof(NightShadeDashCoroutine));
-        Destroy(_nightShadeDashShadow);
-        _nightShadeDashShadow = null;
+        _nightShadeDashShadow.SetActive(false);
+        _hasAliveNightShadeShadow = false;
+        _isTeleporting = false;
     }
     
     private IEnumerator NightShadeDashCoroutine()
     {
         // Start Dash
-        float tpTimeLimit = 6f;
-        float nsMultiplier = 1.5f; 
-        var shadowRb = _nightShadeDashShadow.GetComponent<Rigidbody2D>();
-        shadowRb.velocity = new Vector2(
-            (-_nightShadeDashShadow.transform.localScale.x * _dashStrength * nsMultiplier
+        _nightShadeDashShadowRigidbody.velocity = new Vector2(
+            (-_nightShadeDashShadow.transform.localScale.x * _dashStrength * _nightShadeDashSpeedMultiplier
             * _playerMovement.MoveSpeed * _playerMovement.moveSpeedMultiplier) / Time.timeScale, 0f);
         yield return new WaitForSecondsRealtime(_dashDuration);
 
         // End Dash
-        _nightShadeDashShadow.GetComponent<Animator>().SetTrigger(DashEnd);
-        shadowRb.velocity = Vector2.zero;
-        yield return new WaitForSecondsRealtime(tpTimeLimit - _dashDuration);
+        _nightShadeDashShadowAnimator.SetTrigger(DashEnd);
+        _nightShadeDashShadowRigidbody.velocity = Vector2.zero;
+        yield return new WaitForSecondsRealtime(_nightShadeDashTimeLimit - _dashDuration);
         
         // Remove shadow when tp time limit ends
-        Destroy(_nightShadeDashShadow);
-        _nightShadeDashShadow = null;
+        _nightShadeDashShadow.SetActive(false);
+        _hasAliveNightShadeShadow = false;
     }
 
     private IEnumerator DashCoroutine()
