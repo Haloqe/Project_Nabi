@@ -1,92 +1,236 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class PlayerMovement : MonoBehaviour
 {
-    // movement
-    [SerializeField] public float DefaultMoveSpeed = 10f;
-    private float _moveSpeed; 
-    private Vector2 _moveDirection;
-    private bool _isMoving;
-    private bool _isRooted = false;
-    public bool _facingRight { get; private set; }
-    private float _inputHorizontal;
-
-
-    // jumping
-    [SerializeField] public float DefaultJumpForce = 10f;
-    private float _jumpForce;
-    private bool _isJumping;
-
-    // others
+    // References
     private Rigidbody2D _rigidbody2D;
     private Animator _animator;
+    private PlayerController _playerController;
+    
+    // physics
+    private BoxCollider2D _mainCollider;
+    private float _defaultFriction;
+    private float _defaultBounciness;
+
+    // movement
+    private readonly float _defaultMoveSpeed = 9f;
+    public float MoveSpeed { get; private set; } 
+    public float moveSpeedMultiplier = 1f;
+    private Vector2 _moveDirection;
+    public bool IsMoving { get; private set; }
+    public bool IsRooted { get; private set; }
+    public bool isOnMovingPlatform;
+    private Vector2 _additionalVelocity;
+
+    // jumping
+    private int _enteredGroundCount;
+    private readonly float _defaultJumpForce = 13f;
+    public float jumpForce;
+    private bool _isJumping;
+    private bool _isRunningFirstJump;
+    private int _jumpCounter;
+    private readonly float _coyoteTime = 0.2f;
+    private float _coyoteTimeCounter;
+    private readonly float _jumpBufferTime = 0.2f;
+    private float _jumpBufferTimeCounter;
+    public float UpwardsGravityScale { get; private set; }
+    public float DownwardsGravityScale { get; private set; }
+
+    // attack
+    private bool _isAttacking;
+    public bool isDashing;
+    public bool isAreaAttacking; 
+    
+    // Others
+    private readonly static int Moving = Animator.StringToHash("IsMoving");
+    private readonly static int IsDoubleJumping = Animator.StringToHash("IsDoubleJumping");
+    private readonly static int IsJumping = Animator.StringToHash("IsJumping");
+
+    public bool isRangedAttacking;
 
     private void Start()
     {
+        GameEvents.Restarted += OnRestarted;
+        PlayerEvents.Defeated += OnDefeated;
+        InGameEvents.TimeSlowDown += OnTimeSlowDown;
+        InGameEvents.TimeRevertNormal += OnTimeRevertNormal;
+        
+        _playerController = PlayerController.Instance;
         _animator = GetComponent<Animator>();
         _rigidbody2D = GetComponent<Rigidbody2D>();
-        _moveSpeed = DefaultMoveSpeed;
-        _jumpForce = DefaultJumpForce;
+        MoveSpeed = _defaultMoveSpeed;
+        jumpForce = _defaultJumpForce;
+        _jumpCounter = 0;
         _isJumping = true;
-        _isMoving = false;
+        IsMoving = false;
+        UpwardsGravityScale = 2f;
+        DownwardsGravityScale = 5f;
+
+        _mainCollider = GetComponents<BoxCollider2D>()[0];
+        _defaultBounciness = _mainCollider.sharedMaterial.bounciness;
+        _defaultFriction = _mainCollider.sharedMaterial.friction;
+    }
+
+    private void OnDestroy()
+    {
+        GameEvents.Restarted -= OnRestarted;
+        PlayerEvents.Defeated -= OnDefeated;
+        InGameEvents.TimeSlowDown -= OnTimeSlowDown;
+        InGameEvents.TimeRevertNormal -= OnTimeRevertNormal;
+    }
+
+    private void OnDefeated()
+    {
+        _moveDirection = Vector2.zero;
+        _additionalVelocity = Vector2.zero;
+    }
+    
+    private void OnRestarted()
+    {
+        _isAttacking = false;
+        isDashing = false; 
+        isAreaAttacking = false;
+        _isJumping = false;
+        _jumpCounter = 0;
+        _enteredGroundCount = 0;
+        moveSpeedMultiplier = 1f;
+        
+        RemoveDebuffs();
+        ResetFriction();
+        ResetBounciness();
+        ResetMoveSpeed();
+        OnTimeRevertNormal();
     }
 
     private void Update()
     {
-        _animator.SetBool("IsMoving", _isMoving && !_isRooted);
+        _animator.SetBool(Moving, IsMoving && !IsRooted);
+        _coyoteTimeCounter -= Time.unscaledDeltaTime;
+        _jumpBufferTimeCounter -= Time.unscaledDeltaTime;
     }
 
     private void FixedUpdate()
     {
-
-        _inputHorizontal = Input.GetAxisRaw("Horizontal");
-
-
-        // disable movement if rooted
-        if (_isRooted) return;
+        // Disable extra movement if is rooted, dashing, or area-attacking
+        if (IsRooted || isDashing || isAreaAttacking) return;
         
-        _rigidbody2D.velocity = new Vector2(_moveDirection.x * _moveSpeed, _rigidbody2D.velocity.y);
-<<<<<<< .merge_file_Yj2HSx
+<<<<<<< HEAD
+        // Movement-driven velocity
+        _rigidbody2D.velocity = new Vector2((_moveDirection.x * MoveSpeed * moveSpeedMultiplier) / Time.timeScale, _rigidbody2D.velocity.y);
 =======
+        _rigidbody2D.velocity = _additionalVelocity.magnitude != 0 ? 
+            new Vector2(_additionalVelocity.x / Time.timeScale, _additionalVelocity.y + _rigidbody2D.velocity.y) : 
+            new Vector2((_moveDirection.x * MoveSpeed * moveSpeedMultiplier) / Time.timeScale, _rigidbody2D.velocity.y);
+>>>>>>> origin/feature/enemy/boss
 
-        if (_inputHorizontal > 0 && !_facingRight)
+        // Animation-driven velocity
+        if (animStopMove)
+            _rigidbody2D.velocity = Vector2.zero;
+        else if (_additionalVelocity.magnitude != 0)
+            _rigidbody2D.velocity = _additionalVelocity / Time.timeScale;
+        
+<<<<<<< HEAD
+        // Alter gravity scale while jumping
+        // TODO MOVE somewhere else
+        if (!isRangedAttacking)
         {
-            Flip();
-        }
-        if(_inputHorizontal <0 && _facingRight)
+            if (!_isJumping)
+            {
+                _rigidbody2D.gravityScale = _playerController.DefaultGravityScale;
+            }
+            else
+            {
+                if (_isRunningFirstJump && _jumpCounter <= 1)
+                {
+                    _rigidbody2D.gravityScale = UpwardsGravityScale;
+                }
+                else if (!_isRunningFirstJump || _rigidbody2D.velocity.y < 0)
+                {
+                    _rigidbody2D.gravityScale = DownwardsGravityScale;
+                }
+            }
+            // During time slow, increase gravity scale
+            if (Time.timeScale != 1)
+            {
+                _rigidbody2D.gravityScale /= (Time.timeScale * Time.timeScale);
+            }
+=======
+        if ((!_isRunningFirstJump || _rigidbody2D.velocity.y < 0) && _isJumping)
         {
-            Flip();
+            _rigidbody2D.gravityScale = _downwardsGravityScale;
+>>>>>>> origin/feature/enemy/boss
         }
-        if (_isJumpPressed && !_isJumping)
-        {
-            //_rigidbody2D.AddForce(new Vector2(0, jumpForce));
-            _rigidbody2D.velocity += (new Vector2(0, _jumpForce));
-        }
->>>>>>> .merge_file_kookmn
     }
 
-    ///<summary>Set move speed to default speed * percentage. If isSlowerThanNow is true, update speed only if 
+    private void OnTimeRevertNormal()
+    {
+        if (!_isJumping)
+        {
+            _rigidbody2D.gravityScale = _playerController.DefaultGravityScale;
+        }
+        else 
+        {
+            if (_isRunningFirstJump && _jumpCounter <= 1)
+            {
+                _rigidbody2D.gravityScale = UpwardsGravityScale;
+            }
+            else if (!_isRunningFirstJump || _rigidbody2D.velocity.y < 0)
+            {
+                _rigidbody2D.gravityScale = DownwardsGravityScale;
+            }
+        }
+        FixVelocity();
+    }
+    
+    private void OnTimeSlowDown()
+    {
+        if (!_isJumping)
+        {
+            _rigidbody2D.gravityScale = _playerController.DefaultGravityScale;
+        }
+        else 
+        {
+            if (_isRunningFirstJump && _jumpCounter <= 1)
+            {
+                _rigidbody2D.gravityScale = UpwardsGravityScale;
+            }
+            else if (!_isRunningFirstJump || _rigidbody2D.velocity.y < 0)
+            {
+                _rigidbody2D.gravityScale = DownwardsGravityScale;
+            }
+        }
+        _rigidbody2D.gravityScale /= Time.timeScale * Time.timeScale;
+        FixVelocity();
+    }
+
+    // TODO
+    private void FixVelocity()
+    {
+        _rigidbody2D.velocity = new Vector2(_rigidbody2D.velocity.x, _rigidbody2D.velocity.y / Time.timeScale);
+    }
+
+    ///<summary>
+    /// Set move speed to default speed * percentage. If isSlowerThanNow is true, update speed only if 
     /// the current speed is slower than the new speed. If onlySpeed is set to false, update both jump force and move speed.
     ///</summary>
     // 디버프 슬로우는 중첩 X, 이속버프 + 슬로우는 중첩 O.
     public void ChangeSpeedByPercentage(float percentage, bool isSlowerThanNow = false, bool onlySpeed = false)
     {
-        float newSpeed = DefaultMoveSpeed * percentage;
+        float newSpeed = _defaultMoveSpeed * percentage;
 
         // if has buff
-        if (_moveSpeed > DefaultMoveSpeed)
+        if (MoveSpeed > _defaultMoveSpeed)
         {
-            newSpeed = _moveSpeed * percentage;
+            newSpeed = MoveSpeed * percentage;
         }
             
-        if (!isSlowerThanNow || _moveSpeed > newSpeed)
+        if (!isSlowerThanNow || MoveSpeed > newSpeed)
         {
-            _moveSpeed = newSpeed;
-            if (!onlySpeed) _jumpForce = DefaultJumpForce * percentage;
+            MoveSpeed = newSpeed;
+            if (!onlySpeed) jumpForce = _defaultJumpForce * percentage;
         }
     }
 
@@ -98,77 +242,248 @@ public class PlayerMovement : MonoBehaviour
 
     private IEnumerator ResetSpeedAfterDuration(float duration)
     {
-        yield return new WaitForSeconds(duration);
+        yield return new WaitForSecondsRealtime(duration);
         ResetMoveSpeed();
-        FindObjectOfType<PlayerCombat>().SetActiveSlow();
+        gameObject.GetComponent<PlayerDamageReceiver>().SetActiveSlow();
     }
 
     public void ResetMoveSpeed()
     {
-        _moveSpeed = DefaultMoveSpeed;
-        _jumpForce = DefaultJumpForce;
+        MoveSpeed = _defaultMoveSpeed;
+        jumpForce = _defaultJumpForce;
     }
 
     public void SetMoveDirection(Vector2 value)
     {
         _moveDirection = value;
-        if (value.x != 0)
+        if (value.x == 0 || isDashing)
         {
-            _isMoving = true;
-            transform.localScale = new Vector2(Mathf.Sign(value.x), transform.localScale.y);
+            IsMoving = false;
         }
-        else _isMoving = false;
+        else if (_isAttacking)
+        {
+            if (value.x != 0 && _playerController.playerDamageDealer.IsAttackBufferAvailable)
+            {
+                savedLookDirection = value;
+            }
+        }
+        else
+        {
+            // Note: Player sprite default direction is left
+            IsMoving = true;
+            transform.localScale = new Vector2(-Mathf.Sign(value.x) * Mathf.Abs(transform.localScale.x), transform.localScale.y);
+        }
     }
 
-    public void EnableDisableMovement(bool shouldEnable)
+    public Vector3 savedLookDirection = Vector3.zero;
+    public void UpdateLookDirectionOnAttackEnd()
     {
-        _isRooted = !shouldEnable;
-        if (!shouldEnable)
+        transform.localScale = new Vector2(-Mathf.Sign(savedLookDirection.x) 
+            * Mathf.Abs(transform.localScale.x), transform.localScale.y);
+    }
+
+    public void EnableMovement(bool strict)
+    {
+        if (strict)
         {
+            IsRooted = false;
+        }
+        else
+        {
+            _isAttacking = false;
+            if (_moveDirection.x != 0)
+            {
+                // Note: Player sprite default direction is left
+                IsMoving = true;
+                transform.localScale = new Vector2(-Mathf.Sign(_moveDirection.x) * Mathf.Abs(transform.localScale.x), transform.localScale.y);
+            }
+        }
+    }
+
+    public void DisableMovement(bool strict)
+    {
+        if (strict)
+        {
+            IsRooted = true;
             _rigidbody2D.velocity = Vector2.zero;
         }
+        else
+        {
+            _isAttacking = true;
+            IsMoving = false;
+        }
     }
 
-    public void SetJump(bool value)
+    public void SetDash()
     {
-        if (_isJumping || _isRooted) return;
-        if (!value) return;
-
-        _rigidbody2D.velocity += (new Vector2(0, _jumpForce));
+        isDashing = true;
+        IsMoving = false;
+    }
+    
+    public void StartJump()
+    {
+        // can the player jump?
+<<<<<<< HEAD
+        if (IsRooted || _isAttacking) return;
+        if (_coyoteTimeCounter < 0f && _jumpCounter >= 2 || isDashing)
+=======
+        if (_isRooted) return;
+        if (_coyoteTimeCounter < 0f && _jumpCounter >= 2 || isDashing || _isAttacking)
+>>>>>>> origin/feature/enemy/boss
+        {
+            _jumpBufferTimeCounter = _jumpBufferTime;
+            return;
+        }
+        
+        _jumpCounter += 1;
+        _jumpBufferTimeCounter = 0;
+        
+        // is this a second jump?
+        if (_jumpCounter >= 2)
+        {
+            _animator.SetBool(IsDoubleJumping, true);
+            _rigidbody2D.velocity = new Vector2(_rigidbody2D.velocity.x, jumpForce * 1.3f / Time.timeScale);
+            return;
+        }
+        
+        _rigidbody2D.gravityScale = _upwardsGravityScale;
+        StartCoroutine(nameof(FirstJump));
     }
 
+    public void StopJump()
+    {
+        StopCoroutine(nameof(FirstJump));
+        _isRunningFirstJump = false;
+    }
+
+    private IEnumerator FirstJump()
+    {
+        _isRunningFirstJump = true;
+        
+        float jumpTimeCounter = 0f;
+        while (jumpTimeCounter <= 0.2f)
+        {
+            if (isDashing) break;
+            _rigidbody2D.velocity = new Vector2(_rigidbody2D.velocity.x, jumpForce / Time.timeScale);
+            jumpTimeCounter += Time.unscaledDeltaTime;
+            yield return null;
+        }
+        
+        _isRunningFirstJump = false;
+    }
+    
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Ground"))
-        {
-            _isJumping = false;
-            _animator.SetBool("IsJumping", _isJumping);
-        }
+        if (!other.CompareTag("Ground")) return;
+        if (++_enteredGroundCount > 1) return;
+        
+        // On the ground
+        _isJumping = false;
+        _jumpCounter = 0;
+        _coyoteTimeCounter = _coyoteTime;
+        _rigidbody2D.gravityScale = _playerController.DefaultGravityScale;
+        _animator.SetBool(IsJumping, _isJumping);
+        _animator.SetBool(IsDoubleJumping, _isJumping);
+        if (_jumpBufferTimeCounter > 0f) StartJump();
     }
 
     private void OnTriggerExit2D(Collider2D other)
     {
-        if (other.CompareTag("Ground"))
-        {
-            _isJumping = true;
-            _animator.SetBool("IsJumping", _isJumping);
-        }
+        if (!other.CompareTag("Ground")) return;
+        if (--_enteredGroundCount > 0) return;
+        
+        // Not on the ground
+        _isJumping = true;
+        _animator.SetBool(IsJumping, _isJumping);
     }
 
     public void RemoveDebuffs()
     {
-        if (_moveSpeed <= DefaultMoveSpeed) _moveSpeed = DefaultMoveSpeed;
-        if (_jumpForce <= DefaultJumpForce) _jumpForce = DefaultJumpForce;
-        _isRooted = false;
+        if (MoveSpeed <= _defaultMoveSpeed) MoveSpeed = _defaultMoveSpeed;
+        if (jumpForce <= _defaultJumpForce) jumpForce = _defaultJumpForce;
+        IsRooted = false;
     }
 
-    void Flip()
+    #region Animation Event Handlers
+    // Move horizontally to the direction the character is facing
+    public void AnimEvent_StartMoveHorizontal(float xVelocity)
     {
-        Vector3 currentScale = gameObject.transform.localScale;
-        //if 1 = facing right, if -1 = facing left
-        currentScale.x *= -1;
-        gameObject.transform.localScale = currentScale;
+        if (IsRooted) return;
 
-        _facingRight = !_facingRight;
+        // Cast a ray to check a wall
+        Vector2 playerCentre = new Vector2(transform.position.x, transform.position.y + 0.1f);
+        Vector2 faceDir = new Vector2(-Mathf.Sign(gameObject.transform.localScale.x), 0f);
+        RaycastHit2D hit = Physics2D.Raycast(playerCentre, faceDir, 1.0f);
+        if (hit.collider != null && hit.collider.gameObject.layer == LayerMask.NameToLayer("Platform")) return;
+
+        // If no wall in front, move forward
+        float dir = -Mathf.Sign(gameObject.transform.localScale.x);
+        _additionalVelocity = new Vector2(_additionalVelocity.x + dir * xVelocity, _additionalVelocity.y);
     }
+
+    public void AnimEvent_StopMove()
+    {
+        animStopMove = true;
+    }
+
+    private bool animStopMove;
+    public void AnimEvent_StartMove()
+    {
+        animStopMove = false;
+    }
+    
+    public void AnimEvent_StartMoveVertical(float yVelocity)
+    {
+        _additionalVelocity = new Vector2(_additionalVelocity.x, yVelocity);
+    }
+
+    public void AnimEvent_StopMoveHorizontal()
+    {
+        _additionalVelocity = new Vector2(0, _additionalVelocity.y);
+    }
+
+    public void AnimEvent_StopMoveVertical()
+    {
+        _additionalVelocity = new Vector2(_additionalVelocity.x, 0);
+    }
+
+    public void MoveForSeconds(Vector2 velocity, float seconds)
+    {
+        StartCoroutine(MoveCoroutine(velocity, seconds));
+    }
+
+    private IEnumerator MoveCoroutine(Vector2 velocity, float seconds)
+    {
+        _rigidbody2D.velocity += velocity;
+        yield return new WaitForSecondsRealtime(seconds);
+        _rigidbody2D.velocity -= velocity;
+    }
+    #endregion 
+
+
+    #region Physics Settings
+    public void SetFriction(float friction)
+    {
+        _mainCollider.sharedMaterial.friction = friction;
+        _mainCollider.enabled = false;
+        _mainCollider.enabled = true;
+    }
+
+    public void ResetFriction()
+    {
+        SetFriction(_defaultFriction);
+    }
+
+    public void SetBounciness(float bounciness)
+    {
+        _mainCollider.sharedMaterial.bounciness = bounciness;
+        _mainCollider.enabled = false;
+        _mainCollider.enabled = true;
+    }
+
+    public void ResetBounciness()
+    {
+        SetBounciness(_defaultBounciness);
+    }
+    #endregion
 }

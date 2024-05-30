@@ -10,18 +10,37 @@ public class Scorpion_Bullet : MonoBehaviour
     
     public void Shoot(Vector3 direction)
     {
-        GetComponent<Rigidbody2D>().velocity = direction.normalized * _speed;
+        Rigidbody2D rigidBody = GetComponent<Rigidbody2D>();
+        rigidBody.velocity = direction.normalized * _speed;
+        rigidBody.AddTorque(3f);
     }
     
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        IDamageable target = collision.gameObject.GetComponentInParent<IDamageable>();
+        GameObject target = collision.gameObject;
         DestroySelf(target);
     }
     
-    private void DestroySelf(IDamageable target)
+    private void DestroySelf(GameObject target)
     {
         Destroy(gameObject);
-        target?.TakeDamage(_bulletAttackInfo);
+        if (target.CompareTag("Player"))
+        {
+            target.GetComponentInParent<IDamageable>().TakeDamage(_bulletAttackInfo);
+            Instantiate(Resources.Load<GameObject>("Prefabs/Effects/ScorpionVFX/BulletHitPlayerVFX"),
+                transform.position, Quaternion.identity);
+            return;
+        }
+
+        Vector3 hitGroundAngle = transform.position.y > -6.5f
+            ? new Vector3(0, 0, Mathf.Sign(transform.position.x) * 90f)
+            : new Vector3(0, 0, 0);
+        Vector3 hitGroundPosition = transform.position.y > -6.5f
+            ? new Vector3(-Mathf.Sign(transform.position.x) * 1.8f, 0, 0)
+            : new Vector3(0, 1.5f, 0);
+        
+        Instantiate(Resources.Load<GameObject>("Prefabs/Effects/ScorpionVFX/BulletHitGroundVFX"),
+            transform.position + hitGroundPosition, 
+            Quaternion.Euler(hitGroundAngle));
     }
 }

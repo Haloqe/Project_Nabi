@@ -9,6 +9,7 @@ using Random = UnityEngine.Random;
 
 public class EnemyPattern_QueenBee : EnemyPattern
 {
+    private BossHealthBar _bossHealthBar;
     private bool _isBouncing = true;
     private bool _beesAreCommanded;
     private bool _isInAttackSequence;
@@ -32,6 +33,8 @@ public class EnemyPattern_QueenBee : EnemyPattern
         base.Init();
         StartCoroutine(Bounce());
         _enemyManager = EnemyManager.Instance;
+        _bossHealthBar = Instantiate(Resources.Load<GameObject>("Prefabs/UI/InGame/BossHealthUI"),
+            Vector3.zero, Quaternion.identity).GetComponentInChildren<BossHealthBar>();
 
         float gap = 3f;
         for (int i = 0; i < _bombPositions.Length; i++)
@@ -54,7 +57,7 @@ public class EnemyPattern_QueenBee : EnemyPattern
         bool lessThanTwoBees = allBees.Length <= 1;
         if (lessThanTwoBees)
         {
-            StartCoroutine(SpawnMinions(Mathf.FloorToInt(Random.Range(3, 6))));
+            StartCoroutine(SpawnMinions(Random.Range(3, 7)));
             return;
         }
         
@@ -73,7 +76,7 @@ public class EnemyPattern_QueenBee : EnemyPattern
         
         for (int i = 0; i <= 2; i++)
         {
-            switch (Math.Floor(Random.Range(0f, 2f)))
+            switch (Random.Range(0, 2))
             {
                 case 0:
                 yield return BodySlam();
@@ -202,7 +205,7 @@ public class EnemyPattern_QueenBee : EnemyPattern
         _animator.SetInteger(AttackIndex, 2);
         yield return new WaitForSeconds(0.8f);
         
-        float dashSpeed = _moveSpeed * 3.5f;
+        float dashSpeed = _moveSpeed * 5f;
         yield return MoveToPosition(finalPosition, dashSpeed, false);
 
         _animator.SetBool(IsAttacking, false);
@@ -230,7 +233,7 @@ public class EnemyPattern_QueenBee : EnemyPattern
             allBees[i] = allBeesScript[i].gameObject;
         }
 
-        int attackOrDefense = (int)Math.Floor(Random.Range(0.0f, 2f));
+        int attackOrDefense = Random.Range(0, 2);
         _beesAreCommanded = true;
 
         switch (attackOrDefense)
@@ -291,6 +294,11 @@ public class EnemyPattern_QueenBee : EnemyPattern
             }
             break;
         }
+    }
+    
+    public override void OnTakeDamage(float damage, float maxHealth)
+    {
+        _bossHealthBar.OnBossHPChanged(damage / maxHealth);
     }
     
     public override bool PlayerIsInAttackRange()

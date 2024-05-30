@@ -2,7 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UIElements;
 using Random = UnityEngine.Random;
 
 public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
@@ -11,13 +13,15 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     
     // reference to other components
     protected Rigidbody2D _rigidbody2D;
-    protected Animator _animator;
-    protected EnemyManager _enemyManager;
+    private Animator _animator;
+    private EnemyManager _enemyManager;
     public SEnemyData EnemyData;
-    protected PlayerController _player;
+    private PlayerController _player;
+    private UnityEngine.Object _takeDamageVFXPrefab;
+    private UIManager _uiManager;
     
-    // Movement
-    protected EnemyMovement _movement;
+    // Pattern
+    protected EnemyPattern Pattern;
     public GameObject Target;
     protected IDamageable _targetDamageable;
     public float ActionTimeCounter = 0f;
@@ -41,12 +45,14 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     [SerializeField] float _neighboringEnemyColliderHeight;
 
     //Enemy health attribute
-    public AttackInfo _damageInfo;
-    private float Health;
+    public AttackInfo DamageInfo;
+    public float Health;
     private SpriteRenderer _spriteRenderer;
     private float _armour;
     private float _damageCooltimeCounter;
     private float _damageCooltime = 0.3f;
+    private readonly static int IsAttacking = Animator.StringToHash("IsAttacking");
+    private readonly static int AttackSpeed = Animator.StringToHash("AttackSpeed");
 
     private void Awake()
     {
@@ -55,26 +61,28 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
     protected virtual void Start()
     {
+        _uiManager = UIManager.Instance;
         _player = PlayerController.Instance;
         _rigidbody2D = GetComponent<Rigidbody2D>();
         _animator = GetComponent<Animator>();
         _enemyManager = EnemyManager.Instance;
-        EnemyData = _enemyManager.GetEnemyData(typeID); 
+        EnemyData = _enemyManager.GetEnemyData(typeID);
+        _takeDamageVFXPrefab = Resources.Load("Prefabs/Effects/TakeDamageVFX");
         
         _effectRemainingTimes = new float[(int)EStatusEffect.MAX];
         _slowRemainingTimes = new SortedDictionary<float, float> (
             Comparer<float>.Create((x, y) => y.CompareTo(x))
         );
         // DebuffEffects = new GameObject[(int)EStatusEffect.MAX];
-        _movement = GetComponent<EnemyMovement>();
+        Pattern = GetComponent<EnemyPattern>();
 
-        _damageInfo = new AttackInfo();
-        _damageInfo.Damage = new DamageInfo((EDamageType)Enum.Parse(typeof(EDamageType), EnemyData.DamageType), EnemyData.DefaultDamage);
+        DamageInfo = new AttackInfo();
+        DamageInfo.Damage = new DamageInfo((EDamageType)Enum.Parse(typeof(EDamageType), EnemyData.DamageType), EnemyData.DefaultDamage);
         PlayerEvents.Defeated += OnPlayerDefeated;
 
         Target = GameObject.FindWithTag("Player");
         _targetDamageable = Target.gameObject.GetComponent<IDamageable>();
-        _movement.Init();
+        Pattern.Init();
 
         Health = EnemyData.MaxHealth;
         _armour = EnemyData.DefaultArmour;
@@ -83,26 +91,26 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     private void OnPlayerDefeated()
     {
         StopAllCoroutines();
-        _movement.StopMovementCoroutines();
+        Pattern.StopMovementCoroutines();
         _playerIsDefeated = true;
     }
 
     private void OnDestroy()
     {
-        PlayerEvents.defeated -= OnPlayerDefeated;
+        PlayerEvents.Defeated -= OnPlayerDefeated;
     }
 
-    protected virtual void FixedUpdate()
+    protected virtual void Update() 
     {
         UpdateRemainingStatusEffectTimes();
         UpdateMovementState();
-        _damageCooltimeCounter += Time.deltaTime;
+        _damageCooltimeCounter += Time.unscaledDeltaTime;
     }
 
     protected virtual void Initialise() { }
 
     #region Status Effects imposed by the player handling
-    private void HandleNewStatusEffects(List<StatusEffectInfo> statusEffects, int incomingDirectionX = 0)
+    private void HandleNewStatusEffects(List<StatusEffectInfo> statusEffects, Vector3 gravCorePosition, int incomingDirectionX = 0)
     {
         if (statusEffects == null) return;
 
@@ -128,7 +136,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
                 case EStatusEffect.Sommer:
                     if (_sommerStackCount <= 0)
                     {
-                        _movement.ChangeSpeedByPercentage(statusEffect.Strength);
+                        Pattern.ChangeSpeedByPercentage(statusEffect.Strength);
                         ChangeAttackSpeedByPercentage(statusEffect.Strength);
                         // Debug.Log("This is the first stack of sommer. Change in move speed and attack speed is applied. now its move speed is " + _movement._moveSpeed + " and attack speed " + _animator.GetFloat("AttackSpeed"));
                     }
@@ -170,14 +178,20 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
                     break;
                 
                 case EStatusEffect.Pull:
-                    if (_movement.MoveType == EEnemyMoveType.Stationary) continue;
+                    if (Pattern.MoveType == EEnemyMoveType.Stationary) continue;
                     ShouldDisableMovement = true;
                     IsSilenced = true;
-                    _movement.StartPullX(incomingDirectionX, statusEffect.Strength, statusEffect.Duration);
+                    Pattern.StartPullX(incomingDirectionX, statusEffect.Strength, statusEffect.Duration);
                     break;
                 
                 case EStatusEffect.Evade or EStatusEffect.Camouflage:
                     if (!_player.AddShadowHost(this)) continue;
+                    break;
+                
+                case EStatusEffect.GravityPull:
+                    if (Pattern.MoveType == EEnemyMoveType.Stationary) continue;
+                    IsSilenced = true;
+                    Pattern.StartGravityPull(gravCorePosition, statusEffect.Strength, statusEffect.Duration);
                     break;
             }
             UpdateStatusEffectTime(statusEffect.Effect, statusEffect.Duration);
@@ -185,23 +199,21 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
         if (ShouldDisableMovement)
         {
-            _movement.DisableMovement();
+            Pattern.DisableMovement();
         }
         ShouldDisableMovement = false;
     }
 
     private void UpdateStatusEffectTime(EStatusEffect effect, float duration)
     {
-        if (duration == 0) return; // TODO to be handled later (장판형 유지스킬)=
-
+        if (duration == 0) return; 
         int effectIdx = (int)effect;
 
-        // apply new effect
+        // Apply new effect
         if (_effectRemainingTimes[effectIdx] <= 0)
         {
             SetVFXActive(effectIdx, true);
             _effectRemainingTimes[effectIdx] = duration;
-            // Debug.Log("it is setting " + effectIdx + " ONNN!!!");
         }
         // or increment effect time
         else
@@ -209,8 +221,8 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
             duration = Mathf.Clamp(duration - _effectRemainingTimes[effectIdx], 0, float.MaxValue);
             _effectRemainingTimes[effectIdx] += duration;
         }
-        // Debug.Log("[" + gameObject.name + "] Apply " + effect + " for " + duration.ToString("F") 
-        //     + " total: " + _effectRemainingTimes[effectIdx].ToString("F"));
+        Debug.Log("[" + gameObject.name + "] Apply " + effect + " for " + duration.ToString("F") 
+            + " total: " + _effectRemainingTimes[effectIdx].ToString("F"));
     }
 
     private void UpdateRemainingStatusEffectTimes()
@@ -232,12 +244,13 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
             if (_effectRemainingTimes[i] <= 0)
             {
                 SetVFXActive(i, false);
+                Debug.Log("[" + gameObject.name + "] " + currEffect + " ended");
                 
                 _effectRemainingTimes[i] = 0.0f;
 
                 if (currEffect is EStatusEffect.Sleep or EStatusEffect.Root or EStatusEffect.Airborne or EStatusEffect.Stun or EStatusEffect.Pull)
                 {
-                    _movement.EnableMovement();
+                    Pattern.EnableMovement();
                 }
 
                 if (currEffect is EStatusEffect.Airborne or EStatusEffect.Stun or EStatusEffect.Silence or EStatusEffect.Pull)
@@ -282,7 +295,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
         if (_sommerStackCount >= 10)
         {
-            _movement.ResetMoveSpeed();
+            Pattern.ResetMoveSpeed();
             ResetAttackSpeed();
             _sommerTimeSinceStacked = 0;
             _sommerStackCount = 0;
@@ -295,7 +308,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         else if (_sommerStackCount <= 0)
         {
             SetVFXActive((int)EStatusEffect.Sommer, false);
-            _movement.ResetMoveSpeed();
+            Pattern.ResetMoveSpeed();
             ResetAttackSpeed();
             _effectRemainingTimes[(int)EStatusEffect.Sommer] = 0;
         }
@@ -303,7 +316,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
     private void UpdateSlowTimes()
     {
-        if (_slowRemainingTimes.Count == 0) return;
+        if (_slowRemainingTimes == null || _slowRemainingTimes.Count == 0) return;
 
         bool removed = false;
         foreach (float strength in _slowRemainingTimes.Keys.ToList())
@@ -319,12 +332,12 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         // update slow strength (i.e. move speed)
         if (_slowRemainingTimes.Count == 0)
         {
-            _movement.ResetMoveSpeed();
+            Pattern.ResetMoveSpeed();
             SetVFXActive(EStatusEffect.Slow, false);
         }
         else if (removed)
         {
-            _movement.ChangeSpeedByPercentage(_slowRemainingTimes.First().Key);
+            Pattern.ChangeSpeedByPercentage(_slowRemainingTimes.First().Key);
         }
     }
 
@@ -359,7 +372,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         }
 
         // else, add new slow
-        _movement.ChangeSpeedByPercentage(strength);
+        Pattern.ChangeSpeedByPercentage(strength);
         _slowRemainingTimes.Add(strength, duration);
         Debug.Log("New slow (" + strength + ") time: " + duration.ToString("0.0000"));
     }
@@ -382,35 +395,49 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (_damageCooltimeCounter <= _damageCooltime) return;
-        if (other.CompareTag(Target.tag))
+        if (other.gameObject.layer == LayerMask.NameToLayer("PlayerAbility"))
         {
-            // 황홀경 status effect
-            if (_animator.GetBool("IsAttacking") && _effectRemainingTimes[(int)EStatusEffect.Ecstasy] > 0)
-            {
-                if (Random.Range(0.0f, 1.0f) <= 0.5f)
-                {
-                    Debug.Log(gameObject.name + " missed!");
-                    Collider2D[] foesToDamage = Physics2D.OverlapBoxAll(transform.position + new Vector3 (0, _neighboringEnemyColliderHeight, 0), _neighboringEnemyColliderSize, 0, LayerMask.GetMask("Enemy"));
-                    AttackInfo damageToFoes = _damageInfo.Clone();
-                    damageToFoes.Damage.TotalAmount *= 0.25f;
-                    foreach (Collider2D col in foesToDamage)
-                    {
-                        DealDamage(col.gameObject.GetComponent<IDamageable>(), damageToFoes);
-                    }
-                    return;
-                }
-            }
-            DealDamage(_targetDamageable, _damageInfo);
-            _damageCooltimeCounter = 0f;
+            int direction = 1;
+            if (_player.transform.localScale.x >= 0) direction = -1;
+            Instantiate(_takeDamageVFXPrefab, other.ClosestPoint(transform.position), Quaternion.Euler(new Vector3(-15f, direction * 90f, 0)));
+            return;
         }
+
+        if (other.gameObject.layer == LayerMask.NameToLayer("PlayerAbility_IncludeWall"))
+        {
+            int direction = 1;
+            if (_player.transform.localScale.x <= 0) direction = -1;
+            Instantiate(_takeDamageVFXPrefab, other.transform.position, Quaternion.Euler(new Vector3(-15f, direction * 90f, 0)));
+            return;
+        }
+        
+        if (_damageCooltimeCounter <= _damageCooltime) return;
+        if (!other.CompareTag(Target.tag)) return;
+        // 황홀경 status effect
+        if (_animator.GetBool(IsAttacking) && _effectRemainingTimes[(int)EStatusEffect.Ecstasy] > 0)
+        {
+            if (Random.Range(0.0f, 1.0f) <= 0.5f)
+            {
+                Debug.Log(gameObject.name + " missed!");
+                Collider2D[] foesToDamage = Physics2D.OverlapBoxAll(transform.position + new Vector3 (0, _neighboringEnemyColliderHeight, 0), _neighboringEnemyColliderSize, 0, LayerMask.GetMask("Enemy"));
+                AttackInfo damageToFoes = DamageInfo.Clone(cloneDamage:true, cloneStatusEffect:false);
+                damageToFoes.Damage.TotalAmount *= 0.25f;
+                foreach (Collider2D col in foesToDamage)
+                {
+                    DealDamage(col.gameObject.GetComponent<IDamageable>(), damageToFoes);
+                }
+                return;
+            }
+        }
+        DealDamage(_targetDamageable, DamageInfo);
+        _damageCooltimeCounter = 0f;
     }
 
     // Dealing damage to the player Handling
     public virtual void DealDamage(IDamageable target, AttackInfo damageInfo)
     {
         damageInfo.AttackerArmourPenetration = EnemyData.DefaultArmourPenetration;
-        target.TakeDamage(damageInfo);
+        target.TakeDamage(damageInfo.Clone(cloneDamage:true, cloneStatusEffect:false));
     }
 
     // Received Damage Handling
@@ -421,20 +448,20 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     
     public void TakeDamage(AttackInfo attackInfo)
     {
-        HandleNewStatusEffects(attackInfo.StatusEffects, attackInfo.IncomingDirectionX);
+        HandleNewStatusEffects(attackInfo.StatusEffects, attackInfo.GravCorePosition, attackInfo.IncomingDirectionX);
         
         // 입면 환각
         var hypHallucinationPreserv = _player.playerDamageDealer.BindingSkillPreservations[(int)EWarrior.Sommer];
         if (_sommerStackCount <= 0)
         {
-            AttackInfo boostedAttackInfo = attackInfo.Clone();
-            boostedAttackInfo.Damage.TotalAmount += attackInfo.Damage.TotalAmount * Define.SommerHypHallucinationStats[(int)hypHallucinationPreserv];
-            HandleNewDamage(boostedAttackInfo.Damage, boostedAttackInfo.AttackerArmourPenetration, attackInfo.ShouldLeech, attackInfo.ShouldUpdateTension);
+            DamageInfo boostedDamageInfo = attackInfo.Damage.Clone();
+            boostedDamageInfo.TotalAmount += attackInfo.Damage.TotalAmount * Define.SommerHypHallucinationStats[(int)hypHallucinationPreserv];
+            HandleNewDamage(boostedDamageInfo, attackInfo.AttackerArmourPenetration, attackInfo.ShouldLeech, attackInfo.ShouldUpdateTension);
         }
         // 그 외 경우
         else
         {
-            HandleNewDamage(attackInfo.Damage, attackInfo.AttackerArmourPenetration, attackInfo.ShouldLeech, attackInfo.ShouldUpdateTension);
+            HandleNewDamage(attackInfo.Damage.Clone(), attackInfo.AttackerArmourPenetration, attackInfo.ShouldLeech, attackInfo.ShouldUpdateTension);
         }
     }
 
@@ -454,26 +481,21 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
                 Define.NightShadeLeechStats[(int)_player.playerDamageDealer.BindingSkillPreservations[(int)EWarrior.NightShade]]);
         }
         // 장력 게이지
-        if (shouldUpdateTension) UIManager.Instance.IncrementTensionGaugeUI();
+        if (shouldUpdateTension) _uiManager.IncrementTensionGaugeUI();
 
         // if (asleep) then wake up
         if (_effectRemainingTimes[(int)EStatusEffect.Sleep] > 0)
         {
-            _movement.EnableMovement();
+            Pattern.EnableMovement();
             _effectRemainingTimes[(int)EStatusEffect.Sleep] = -1;
             // Debug.Log("sleep ended.");
         }
     }
 
-    public float GetArmour()
+    private float GetArmour()
     {
-<<<<<<< HEAD
-        if (_effectRemainingTimes[(int)EStatusEffect.Sleep] > 0) return EnemyData.DefaultArmour;
-        int sommerPreserv = (int)_player.playerDamageDealer.BindingSkillPreservations[(int)EWarrior.Sommer];
-=======
         if (_effectRemainingTimes[(int)EStatusEffect.Sleep] > 0) return _armour;
-        int sommerPreserv = (int)PlayerController.Instance.playerDamageDealer.BindingSkillPreservations[(int)EWarrior.Sommer];
->>>>>>> origin/feature/enemy/queenBee/spawnMinions
+        int sommerPreserv = (int)_player.playerDamageDealer.BindingSkillPreservations[(int)EWarrior.Sommer];
         return Mathf.Max(0, EnemyData.DefaultArmour - EnemyData.DefaultArmour * Define.SommerSleepArmourReduceAmounts[sommerPreserv]);
     }
 
@@ -487,9 +509,14 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         _armour = EnemyData.DefaultArmour;
     }
 
-    public void ChangeHealthByAmount(float amount)
+    private void ChangeHealthByAmount(float amount)
     {
+<<<<<<< HEAD
+        //Debug.Log("[" + gameObject.name + "] Health " + amount);
+=======
         Debug.Log("[" + gameObject.name + "] Health " + amount);
+        Pattern.OnTakeDamage(amount, EnemyData.MaxHealth);
+>>>>>>> origin/feature/enemy/boss
         if (amount < 0) StartCoroutine(DamagedRoutine());
         Health = Mathf.Clamp(Health + amount, 0, EnemyData.MaxHealth);
         if (Health == 0) Die();
@@ -532,12 +559,14 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     // TODO FIX: damage visualisation
     private IEnumerator DamagedRoutine()
     {
-        _spriteRenderer.color = new Color(0.6f, 0.05f, 0.05f);
-        yield return new WaitForSeconds(0.1f);
-        _spriteRenderer.color = Color.white;
+        // _spriteRenderer.color = new Color(0.267f, 0.9f, 0.99f);
+        // yield return new WaitForSeconds(0.1f);
+        // _spriteRenderer.color = Color.white;
+        // Instantiate(_takeDamageVFXPrefab, transform.position, Quaternion.identity);
+        yield break;
     }
 
-    private void Die()
+    public void Die(bool shouldDropReward = true)
     {
         // Inform player
         if (_effectRemainingTimes[(int)EStatusEffect.Ecstasy] > 0) 
@@ -545,7 +574,11 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         InGameEvents.EnemySlayed?.Invoke(this);
             
         StopAllCoroutines();
-        DropGold();
+        if (shouldDropReward)
+        {
+            DropGold();
+            DropSoulShard();
+        }
         Destroy(gameObject);
     }
     #endregion Damage Dealing and Receiving
@@ -555,42 +588,42 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     {
         if (_playerIsDefeated)
         {
-            _movement.Patrol();
+            Pattern.Patrol();
             return;
         }
         
-        if (_movement.IsRooted) return;
+        if (Pattern.IsRooted) return;
         ActionTimeCounter -= Time.deltaTime;
         
-        if (_movement.PlayerIsInAttackRange() || _movement.IsAttackingPlayer)
+        if (Pattern.PlayerIsInAttackRange() || Pattern.IsAttackingPlayer)
         {
-            _movement.Attack();
+            Pattern.Attack();
         }
-        else if (_movement.PlayerIsInDetectRange())
+        else if (Pattern.PlayerIsInDetectRange())
         {
-            _movement.IsChasingPlayer = true;
+            Pattern.IsChasingPlayer = true;
             ActionTimeCounter = EnemyData.ChasePlayerDuration;
-            _movement.Chase();
+            Pattern.Chase();
         }
-        else if (_movement.IsChasingPlayer)
+        else if (Pattern.IsChasingPlayer)
         {
-            _movement.Chase();
+            Pattern.Chase();
         }
         else
         {
-            _movement.Patrol();
+            Pattern.Patrol();
         }
     }
 
     public void ChangeAttackSpeedByPercentage(float percentage)
     {
-        float initial = _animator.GetFloat("AttackSpeed");
-        _animator.SetFloat("AttackSpeed", initial * percentage);
+        float initial = _animator.GetFloat(AttackSpeed);
+        _animator.SetFloat(AttackSpeed, initial * percentage);
     }
 
     public void ResetAttackSpeed()
     {
-        _animator.SetFloat("AttackSpeed", 1f);
+        _animator.SetFloat(AttackSpeed, 1f);
     }
     #endregion Enemy Movement
 
@@ -613,11 +646,36 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         }
         
         // Drop coins
-        for (int i = 0; i < goldToDrop / 10 + 1; i++)
-        {
+        _uiManager.DisplayGoldPopUp(goldToDrop);
+        for (int i = 0; i < goldToDrop / 5 + 1; i++) 
+        {   
             // Instantiate a coin at the enemy's position
             var coin = Instantiate(_enemyManager.GoldPrefab, transform.position, Quaternion.identity).GetComponent<Gold>();
-            coin.value = (i < goldToDrop / 10) ? 10 : goldToDrop % 10;
+            coin.value = (i < goldToDrop / 5) ? 5 : goldToDrop % 5;
+        }
+    }
+
+    private void DropSoulShard()
+    {
+        int amount = EnemyData.SoulShardDropAmount;
+        float chance = EnemyData.SoulShardDropChance;
+        int amountToDrop = 0;
+        for (int i = 0; i < amount; i++)
+        {
+            if (Random.value <= chance) amountToDrop++;
+        }
+        if (amountToDrop == 0) return;
+        
+        float angleStep = 180f / Mathf.Max(1, amountToDrop - 1);
+        float currentAngle = amountToDrop == 1 ? 0 : -90f;
+
+        for (int i = 0; i < amountToDrop; i++)
+        {
+            GameObject soulShard = Instantiate(_enemyManager.SoulShardPrefab, transform.position + new Vector3(0,0.1f, 0), Quaternion.identity);
+            Rigidbody2D rb = soulShard.GetComponent<Rigidbody2D>();
+            Vector2 direction = new Vector2(Mathf.Sin(currentAngle * Mathf.Deg2Rad), Mathf.Abs(Mathf.Sin(currentAngle * Mathf.Deg2Rad)));
+            rb.AddForce(direction * 5f, ForceMode2D.Impulse);
+            currentAngle += angleStep;
         }
     }
 

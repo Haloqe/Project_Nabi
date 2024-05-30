@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class QueenBee_Bomb : MonoBehaviour
 {
-    private static float _baseDamage = 3f;
+    private static float _baseDamage = 10f;
     private static float _poisonStrength = 2f;
     private static float _poisonDuration = 15f;
     private static DamageInfo _bombDamageInfo = new(EDamageType.Base, _baseDamage);

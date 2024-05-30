@@ -8,14 +8,12 @@ public class PlayerController : Singleton<PlayerController>
 {
     // Reference to other player components
     private Animator _animator;
-    public PlayerMovement playerMovement;
-    public PlayerDamageReceiver playerDamageReceiver;
-    public PlayerDamageDealer playerDamageDealer;
-    public PlayerInventory playerInventory;
-    public GameObject nightShadeCollider;
-    public PlayerInput playerInput;
     private InputActionMap _playerIAMap;
-
+    public PlayerInput playerInput;
+    public PlayerMovement playerMovement;
+    public PlayerInventory playerInventory;
+    public PlayerDamageDealer playerDamageDealer;
+    public PlayerDamageReceiver playerDamageReceiver;
     private UIManager _uiManager;
     private GameManager _gameManager;
 
@@ -66,6 +64,7 @@ public class PlayerController : Singleton<PlayerController>
     private List<EnemyBase>[] _ecstasyAffected;
 
     // NightShade
+    public GameObject nightShadeCollider;
     private List<EnemyBase> _shadowHosts;
     private readonly int _shadowHostLimit = 3;
     private readonly float _shadowHostAutoUpdateInterval = 2f;

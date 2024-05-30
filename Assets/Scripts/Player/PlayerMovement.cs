@@ -43,13 +43,13 @@ public class PlayerMovement : MonoBehaviour
     private bool _isAttacking;
     public bool isDashing;
     public bool isAreaAttacking; 
-    
+    public bool isRangedAttacking;
+
     // Others
     private readonly static int Moving = Animator.StringToHash("IsMoving");
     private readonly static int IsDoubleJumping = Animator.StringToHash("IsDoubleJumping");
     private readonly static int IsJumping = Animator.StringToHash("IsJumping");
-
-    public bool isRangedAttacking;
+ 
 
     private void Start()
     {
@@ -116,43 +116,20 @@ public class PlayerMovement : MonoBehaviour
     {
         // Disable extra movement if is rooted, dashing, or area-attacking
         if (IsRooted || isDashing || isAreaAttacking) return;
-        
+
         // Movement-driven velocity
         _rigidbody2D.velocity = new Vector2((_moveDirection.x * MoveSpeed * moveSpeedMultiplier) / Time.timeScale, _rigidbody2D.velocity.y);
 
         // Animation-driven velocity
-        if (animStopMove)
-            _rigidbody2D.velocity = Vector2.zero;
-        else if (_additionalVelocity.magnitude != 0)
+        if (_additionalVelocity.magnitude != 0)
             _rigidbody2D.velocity = _additionalVelocity / Time.timeScale;
-        
-        // Alter gravity scale while jumping
-        // TODO MOVE somewhere else
-        if (!isRangedAttacking)
+ 
+        if (!isRangedAttacking && _isJumping && (!_isRunningFirstJump || _rigidbody2D.velocity.y < 0))
         {
-            if (!_isJumping)
-            {
-                _rigidbody2D.gravityScale = _playerController.DefaultGravityScale;
-            }
-            else
-            {
-                if (_isRunningFirstJump && _jumpCounter <= 1)
-                {
-                    _rigidbody2D.gravityScale = UpwardsGravityScale;
-                }
-                else if (!_isRunningFirstJump || _rigidbody2D.velocity.y < 0)
-                {
-                    _rigidbody2D.gravityScale = DownwardsGravityScale;
-                }
-            }
-            // During time slow, increase gravity scale
-            if (Time.timeScale != 1)
-            {
-                _rigidbody2D.gravityScale /= (Time.timeScale * Time.timeScale);
-            }
+            _rigidbody2D.gravityScale = DownwardsGravityScale;
+            if (Time.timeScale != 1) _rigidbody2D.gravityScale /= (Time.timeScale * Time.timeScale);
         }
-    }
-
+}    
     private void OnTimeRevertNormal()
     {
         if (!_isJumping)
@@ -307,44 +284,20 @@ public class PlayerMovement : MonoBehaviour
         isDashing = true;
         IsMoving = false;
     }
-
-    // public void StartMove(Vector2 value)
-    // {
-    //     _moveDirection = value;
-    //     if (value.x == 0 || _isAttacking || isDashing)
-    //     {
-    //         IsMoving = false;
-    //         return;
-    //     }
-    //     
-    //     // Note: Player sprite default direction is left
-    //     IsMoving = true;
-    //     // transform.localScale = new Vector2(-Mathf.Sign(value.x) * Mathf.Abs(transform.localScale.x), transform.localScale.y);
-    //     
-    //     float targetSpeed = Mathf.Sign(_moveDirection.x) * MoveSpeed;
-    //     float speedDifference = targetSpeed - _rigidbody2D.velocity.x;
-    //     float accelerationRate = Mathf.Abs(targetSpeed) > 0.01f ? 1f : 1.5f;
-    //     float resultantMoveForce =
-    //         Mathf.Pow(Mathf.Abs(speedDifference) * accelerationRate, 2f) * Mathf.Sign(speedDifference);
-    //     _rigidbody2D.AddForce(new Vector2(resultantMoveForce, 0f));
-    //
-    // }
     
     public void StartJump()
     {
         // can the player jump?
-        if (IsRooted || _isAttacking) return;
-        if (_coyoteTimeCounter < 0f && _jumpCounter >= 2 || isDashing)
+        if (IsRooted) return;
+        if (_coyoteTimeCounter < 0f && _jumpCounter >= 2 || isDashing || _isAttacking)
         {
             _jumpBufferTimeCounter = _jumpBufferTime;
-            Debug.Log("jump buffer");
             return;
         }
         
+        // is this a second jump?
         _jumpCounter += 1;
         _jumpBufferTimeCounter = 0;
-        
-        // is this a second jump?
         if (_jumpCounter >= 2)
         {
             _animator.SetBool(IsDoubleJumping, true);
@@ -352,6 +305,11 @@ public class PlayerMovement : MonoBehaviour
             return;
         }
         
+        // Set gravity scale
+        _rigidbody2D.gravityScale = UpwardsGravityScale;
+        if (Time.timeScale != 1) _rigidbody2D.gravityScale /= Time.timeScale * Time.timeScale;
+        
+        // Start jump
         StartCoroutine(nameof(FirstJump));
     }
 
@@ -386,6 +344,7 @@ public class PlayerMovement : MonoBehaviour
         _isJumping = false;
         _jumpCounter = 0;
         _coyoteTimeCounter = _coyoteTime;
+        _rigidbody2D.gravityScale = _playerController.DefaultGravityScale;
         _animator.SetBool(IsJumping, _isJumping);
         _animator.SetBool(IsDoubleJumping, _isJumping);
         if (_jumpBufferTimeCounter > 0f) StartJump();
@@ -424,18 +383,6 @@ public class PlayerMovement : MonoBehaviour
         float dir = -Mathf.Sign(gameObject.transform.localScale.x);
         _additionalVelocity = new Vector2(_additionalVelocity.x + dir * xVelocity, _additionalVelocity.y);
     }
-
-    public void AnimEvent_StopMove()
-    {
-        animStopMove = true;
-    }
-
-    private bool animStopMove;
-    public void AnimEvent_StartMove()
-    {
-        animStopMove = false;
-    }
-    
     public void AnimEvent_StartMoveVertical(float yVelocity)
     {
         _additionalVelocity = new Vector2(_additionalVelocity.x, yVelocity);
