@@ -45,7 +45,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
     //Enemy health attribute
     public AttackInfo DamageInfo;
-    private float Health;
+    public float Health;
     private SpriteRenderer _spriteRenderer;
     private float _armour;
     private float _damageCooltimeCounter;
@@ -404,7 +404,9 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
         if (other.gameObject.layer == LayerMask.NameToLayer("PlayerAbility_IncludeWall"))
         {
-            Instantiate(_takeDamageVFXPrefab, other.transform.position, Quaternion.identity);
+            int direction = 1;
+            if (_player.transform.localScale.x <= 0) direction = -1;
+            Instantiate(_takeDamageVFXPrefab, other.transform.position, Quaternion.Euler(new Vector3(-15f, direction * 90f, 0)));
             return;
         }
         
@@ -509,6 +511,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     private void ChangeHealthByAmount(float amount)
     {
         Debug.Log("[" + gameObject.name + "] Health " + amount);
+        Pattern.OnTakeDamage(amount, EnemyData.MaxHealth);
         if (amount < 0) StartCoroutine(DamagedRoutine());
         Health = Mathf.Clamp(Health + amount, 0, EnemyData.MaxHealth);
         if (Health == 0) Die();

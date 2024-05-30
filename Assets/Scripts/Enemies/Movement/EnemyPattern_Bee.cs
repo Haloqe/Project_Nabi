@@ -142,7 +142,7 @@ public class EnemyPattern_Bee : EnemyPattern
         position += new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), 0);
         yield return MoveToPosition(position, _moveSpeed, true);
         _rigidBody.velocity = new Vector3(0f, 0f, 0f);
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(0.2f);
 
         _animator.SetBool(IsInAttackSequence, true);
         IsAttackingPlayer = true;
@@ -170,7 +170,7 @@ public class EnemyPattern_Bee : EnemyPattern
         Vector3 position = _targetPosition + new Vector3(directionFacing * 2f, 2f, 0);
         yield return MoveToPosition(position, _moveSpeed, true);
 
-        yield return new WaitForSeconds(3f);
+        yield return new WaitForSeconds(1.5f);
         
         _animator.SetBool(IsAttacking, false);
         IsAttackingPlayer = false;

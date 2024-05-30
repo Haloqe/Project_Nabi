@@ -1,10 +1,6 @@
 using System;
 using System.Collections;
-using System.Numerics;
-using System.Runtime.CompilerServices;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
 using Quaternion = UnityEngine.Quaternion;
 using Random = UnityEngine.Random;
@@ -13,10 +9,14 @@ using Vector3 = UnityEngine.Vector3;
 
 public class EnemyPattern_Scorpion : EnemyPattern
 {
+    // colliders
+    public Collider2D[] AttackableColliders;
+    
     // attack loop stuff
     private bool _isInAttackSequence;
     private int _cycleCount = 0;
     private int _tailCycleCount = 0;
+    private BossHealthBar _bossHealthBar;
     
     // bouncing stuff
     private Rigidbody2D[] _bouncingPartRigidBodies;
@@ -39,6 +39,7 @@ public class EnemyPattern_Scorpion : EnemyPattern
     
     // claw stuff
     [SerializeField] private GameObject[] _armObjects = new GameObject[6];
+    [SerializeField] private GameObject[] _dustParticles = new GameObject[2];
     private Vector3[] _defaultClawPositions = new Vector3[2];
     private Vector3[] _electricClawPositions = new Vector3[2];
     private Vector3[] _raisedClawPositions = new Vector3[2];
@@ -55,6 +56,8 @@ public class EnemyPattern_Scorpion : EnemyPattern
         _laserObject = transform.Find("laser collider").transform.gameObject;
         _laserVFXObject = transform.Find("laser VFX").transform.gameObject;
         _VFXobjects = Resources.LoadAll("Prefabs/Effects/ScorpionVFX");
+        _bossHealthBar = Instantiate(Resources.Load<GameObject>("Prefabs/UI/InGame/BossHealthUI"),
+            Vector3.zero, Quaternion.identity).GetComponentInChildren<BossHealthBar>();
         
         Transform bouncingObjectsParent = transform.Find("bouncingObjects");
         _bouncingPartRigidBodies = bouncingObjectsParent.GetComponentsInChildren<Rigidbody2D>();
@@ -217,7 +220,7 @@ public class EnemyPattern_Scorpion : EnemyPattern
             }
             _shooterObject.transform.Rotate(0, 0, direction * rotationSpeed * Time.deltaTime);
             
-            float now = _shooterObject.transform.eulerAngles.z;
+            float now = _shooterObject.transform.localEulerAngles.z;
             if (Mathf.Abs(now - initialAngle) >= 180f)
                 now -= Mathf.Sign(now) * 360f;
             if (Mathf.Abs(now - initialAngle) > rotationDegrees * 2)
@@ -252,7 +255,7 @@ public class EnemyPattern_Scorpion : EnemyPattern
     {
         switch (_tailCycleCount)
         {
-            case >= 5:
+            case >= 0:
                 // StartCoroutine(Random.Range(0, 2) >= 1 ? ShootLaser() : ShootBullet());
                 if (Random.Range(1, 2) >= 1)
                 {
@@ -359,13 +362,49 @@ public class EnemyPattern_Scorpion : EnemyPattern
         
         _animator.SetTrigger("GroundPound");
         yield return new WaitForSeconds(2f);
+        for (int i = -1; i <= 1; i += 2)
+        {
+            _dustParticles[Math.Sign(i + 1)].transform.localScale = new Vector3(-i, 1, 1);
+            _dustParticles[Math.Sign(i + 1)].transform.position =
+                new Vector3(_armObjects[Math.Sign(i + 1) * 3].transform.position.x + i * 3f, -7.5f, 0);
+            _dustParticles[Math.Sign(i + 1)].SetActive(true);
+        }
         yield return MoveClaws(_clawAttackPositions, 5f);
         
-        yield return new WaitForSeconds(2f);
         yield return RotateByAmount(10f, -1, 50f);
+        yield return VibrateClaws();
+        for (int i = -1; i <= 1; i += 2)
+        {
+            _dustParticles[Math.Sign(i + 1)].transform.localScale = new Vector3(i, 1, 1);
+            _dustParticles[Math.Sign(i + 1)].transform.position =
+                new Vector3(_armObjects[Math.Sign(i + 1) * 3].transform.position.x - i * 4f, -7f, 0);
+            _dustParticles[Math.Sign(i + 1)].SetActive(true);
+        }
         yield return MoveClaws(_defaultClawPositions, 2f);
         
         _isInAttackSequence = false;
+    }
+
+    private IEnumerator VibrateClaws()
+    {
+        float timer = 0f;
+        Vector3[] initialPositions = { _armObjects[0].transform.position, _armObjects[3].transform.position };
+        
+        while (timer <= 2f)
+        {
+            for (int i = 0; i <= 3; i += 3)
+            {
+                _armObjects[i].transform.position += 0.1f * timer * new Vector3(
+                    Random.Range(-0.5f, 0.5f),
+                    Random.Range(-0.5f, 0.5f),
+                    0);
+            }
+            yield return null;
+            timer += Time.deltaTime;
+        }
+
+        _armObjects[0].transform.position = initialPositions[0];
+        _armObjects[3].transform.position = initialPositions[1];
     }
 
     private IEnumerator ElectricityAttack()
@@ -397,36 +436,50 @@ public class EnemyPattern_Scorpion : EnemyPattern
         float yLevel = transform.position.y + 3f;
         Vector3[] attackPosition = new Vector3[2];
         
-        yield return RotateByAmount(45f, -1, 90f);
+        yield return RotateByAmount(30f, -1, 90f);
         _animator.SetTrigger("GroundPound");
         yield return new WaitForSeconds(1f);
         
-        if (playerXPosition - xLevel is >= -3f and <= 3f) // if player is at middle
-        {
-            attackPosition = new [] {
-                new Vector3(xLevel - 0.5f, yLevel, 0),
-                new Vector3(xLevel + 0.5f, yLevel, 0)
-            };
-        }
-        else if (playerXPosition < xLevel) // if player is at left
-        {
-            attackPosition = new [] {
-                new Vector3(playerXPosition, yLevel, 0),
-                new Vector3(2 * xLevel - playerXPosition, yLevel, 0)
-            };
-        }
-        else // if player is at right
-        {
-            attackPosition = new [] {
-                new Vector3(2 * xLevel - playerXPosition, yLevel, 0),
-                new Vector3(playerXPosition, yLevel, 0)
-            };
-        }
+        // if (playerXPosition - xLevel is >= -3f and <= 3f) // if player is at middle
+        // {
+        //     attackPosition = new [] {
+        //         new Vector3(xLevel - 0.5f, yLevel, 0),
+        //         new Vector3(xLevel + 0.5f, yLevel, 0)
+        //     };
+        // }
+        // else if (playerXPosition < xLevel) // if player is at left
+        // {
+        //     attackPosition = new [] {
+        //         new Vector3(playerXPosition, yLevel, 0),
+        //         new Vector3(2 * xLevel - playerXPosition, yLevel, 0)
+        //     };
+        // }
+        // else // if player is at right
+        // {
+        //     attackPosition = new [] {
+        //         new Vector3(2 * xLevel - playerXPosition, yLevel, 0),
+        //         new Vector3(playerXPosition, yLevel, 0)
+        //     };
+        // }
+        
+        attackPosition = new [] {
+            new Vector3(playerXPosition - 0.5f, yLevel, 0),
+            new Vector3(playerXPosition + 0.5f, yLevel, 0)
+        };
         
         yield return MoveClaws(attackPosition, 3f);
         yield return new WaitForSeconds(0.5f);
+        
+        yield return VibrateClaws();
+        for (int i = -1; i <= 1; i += 2)
+        {
+            _dustParticles[Math.Sign(i + 1)].transform.localScale = new Vector3(i, 1, 1);
+            _dustParticles[Math.Sign(i + 1)].transform.position =
+                new Vector3(_armObjects[Math.Sign(i + 1) * 3].transform.position.x - i * 4f, -7f, 0);
+            _dustParticles[Math.Sign(i + 1)].SetActive(true);
+        }
         yield return MoveClaws(_defaultClawPositions, 2f);
-        yield return RotateByAmount(45f, 1, 90f);
+        yield return RotateByAmount(30f, 1, 90f);
 
         _isInAttackSequence = false;
     }
@@ -469,6 +522,11 @@ public class EnemyPattern_Scorpion : EnemyPattern
     //     }
     // }
 
+    public override void OnTakeDamage(float damage, float maxHealth)
+    {
+        _bossHealthBar.OnBossHPChanged(damage / maxHealth);
+    }
+
     public override bool PlayerIsInAttackRange()
     {
         return true;
@@ -478,5 +536,4 @@ public class EnemyPattern_Scorpion : EnemyPattern
     {
         return false;
     }
-    
 }

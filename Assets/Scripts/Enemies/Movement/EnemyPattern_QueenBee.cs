@@ -9,6 +9,7 @@ using Random = UnityEngine.Random;
 
 public class EnemyPattern_QueenBee : EnemyPattern
 {
+    private BossHealthBar _bossHealthBar;
     private bool _isBouncing = true;
     private bool _beesAreCommanded;
     private bool _isInAttackSequence;
@@ -32,6 +33,8 @@ public class EnemyPattern_QueenBee : EnemyPattern
         base.Init();
         StartCoroutine(Bounce());
         _enemyManager = EnemyManager.Instance;
+        _bossHealthBar = Instantiate(Resources.Load<GameObject>("Prefabs/UI/InGame/BossHealthUI"),
+            Vector3.zero, Quaternion.identity).GetComponentInChildren<BossHealthBar>();
 
         float gap = 3f;
         for (int i = 0; i < _bombPositions.Length; i++)
@@ -202,7 +205,7 @@ public class EnemyPattern_QueenBee : EnemyPattern
         _animator.SetInteger(AttackIndex, 2);
         yield return new WaitForSeconds(0.8f);
         
-        float dashSpeed = _moveSpeed * 3.5f;
+        float dashSpeed = _moveSpeed * 5f;
         yield return MoveToPosition(finalPosition, dashSpeed, false);
 
         _animator.SetBool(IsAttacking, false);
@@ -291,6 +294,11 @@ public class EnemyPattern_QueenBee : EnemyPattern
             }
             break;
         }
+    }
+    
+    public override void OnTakeDamage(float damage, float maxHealth)
+    {
+        _bossHealthBar.OnBossHPChanged(damage / maxHealth);
     }
     
     public override bool PlayerIsInAttackRange()
