@@ -50,10 +50,10 @@ public class SwingingPlatform : MonoBehaviour
         {
             var movementComp = player.GetComponent<PlayerMovement>();
             // Return if already in moving platform
-            if (!movementComp.IsOnMovingPlatform)
+            if (!movementComp.isOnMovingPlatform)
             {
                 _isPlayerOnPlatform = true;
-                movementComp.IsOnMovingPlatform = true;
+                movementComp.isOnMovingPlatform = true;
                 movementComp.SetFriction(0.7f);
             }
         }
@@ -67,7 +67,7 @@ public class SwingingPlatform : MonoBehaviour
         if (player.CompareTag("Player"))
         {
             _isPlayerOnPlatform = false;
-            player.GetComponent<PlayerMovement>().IsOnMovingPlatform = false;
+            player.GetComponent<PlayerMovement>().isOnMovingPlatform = false;
             player.GetComponent<PlayerMovement>().ResetFriction();
             player.transform.rotation = Quaternion.identity;
         }

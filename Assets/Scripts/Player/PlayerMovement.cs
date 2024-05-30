@@ -15,17 +15,18 @@ public class PlayerMovement : MonoBehaviour
     private float _defaultFriction;
     private float _defaultBounciness;
 
-    // movement    
-    // private readonly float _defaultMoveSpeed = 7f;
+    // movement
     private readonly float _defaultMoveSpeed = 9f;
     public float MoveSpeed { get; private set; } 
     public float moveSpeedMultiplier = 1f;
     private Vector2 _moveDirection;
     public bool IsMoving { get; private set; }
     public bool IsRooted { get; private set; }
-    public bool IsOnMovingPlatform = false;
+    public bool isOnMovingPlatform;
+    private Vector2 _additionalVelocity;
 
     // jumping
+    private int _enteredGroundCount;
     private readonly float _defaultJumpForce = 13f;
     public float jumpForce;
     private bool _isJumping;
@@ -41,10 +42,9 @@ public class PlayerMovement : MonoBehaviour
     // attack
     private bool _isAttacking;
     public bool isDashing;
-    public bool isAreaAttacking; //temp
+    public bool isAreaAttacking; 
     
     // Others
-    private Vector2 _additionalVelocity;
     private readonly static int Moving = Animator.StringToHash("IsMoving");
     private readonly static int IsDoubleJumping = Animator.StringToHash("IsDoubleJumping");
     private readonly static int IsJumping = Animator.StringToHash("IsJumping");
@@ -93,8 +93,9 @@ public class PlayerMovement : MonoBehaviour
         _isAttacking = false;
         isDashing = false; 
         isAreaAttacking = false;
-        _jumpCounter = 0;
         _isJumping = false;
+        _jumpCounter = 0;
+        _enteredGroundCount = 0;
         moveSpeedMultiplier = 1f;
         
         RemoveDebuffs();
@@ -375,28 +376,29 @@ public class PlayerMovement : MonoBehaviour
         
         _isRunningFirstJump = false;
     }
-
+    
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (!other.CompareTag("Ground")) return;
+        if (++_enteredGroundCount > 1) return;
         
-        // Movement component only handles collision with the ground
+        // On the ground
         _isJumping = false;
         _jumpCounter = 0;
         _coyoteTimeCounter = _coyoteTime;
         _animator.SetBool(IsJumping, _isJumping);
         _animator.SetBool(IsDoubleJumping, _isJumping);
-        // if (_jumpBufferTimeCounter > 0f) SetJump(true);
         if (_jumpBufferTimeCounter > 0f) StartJump();
     }
 
     private void OnTriggerExit2D(Collider2D other)
     {
-        if (other.CompareTag("Ground"))
-        {
-            _isJumping = true;
-            _animator.SetBool(IsJumping, _isJumping);
-        }
+        if (!other.CompareTag("Ground")) return;
+        if (--_enteredGroundCount > 0) return;
+        
+        // Not on the ground
+        _isJumping = true;
+        _animator.SetBool(IsJumping, _isJumping);
     }
 
     public void RemoveDebuffs()

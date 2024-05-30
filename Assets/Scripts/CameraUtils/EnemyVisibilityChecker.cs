@@ -13,13 +13,11 @@ public class EnemyVisibilityChecker : MonoBehaviour
     
     public void AddEnemyToVisibleList(GameObject enemyObj)
     {
-        Debug.Log(enemyObj.name + " added to list");
         VisibleEnemies.Add(enemyObj);
     }
 
     public void RemoveEnemyFromVisibleList(GameObject enemyObj)
     {
-        Debug.Log(enemyObj.name + " removed from the list");
         VisibleEnemies.Remove(enemyObj);
     }
 }

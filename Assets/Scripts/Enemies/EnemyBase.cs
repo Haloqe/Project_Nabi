@@ -674,7 +674,6 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
     private void OnBecameVisible()
     {
-        Debug.Log("OnBecVis");
         _enemyManager.VisibilityChecker.AddEnemyToVisibleList(gameObject);
     }
 

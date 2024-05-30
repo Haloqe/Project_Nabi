@@ -29,11 +29,11 @@ public class RotatingPlatform : MonoBehaviour
         {
             var movementComp = player.GetComponent<PlayerMovement>();
             // Return if already in moving platfrom
-            if (movementComp.IsOnMovingPlatform) return;
+            if (movementComp.isOnMovingPlatform) return;
             else
             {
                 _isPlayerOnPlatform = true;
-                movementComp.IsOnMovingPlatform = true;
+                movementComp.isOnMovingPlatform = true;
                 movementComp.SetFriction(0.7f);
             }
         }
@@ -47,7 +47,7 @@ public class RotatingPlatform : MonoBehaviour
         if (player.CompareTag("Player"))
         {
             _isPlayerOnPlatform = false;
-            player.GetComponent<PlayerMovement>().IsOnMovingPlatform = false;
+            player.GetComponent<PlayerMovement>().isOnMovingPlatform = false;
             player.GetComponent<PlayerMovement>().ResetFriction();
             player.transform.rotation = Quaternion.identity;
         }

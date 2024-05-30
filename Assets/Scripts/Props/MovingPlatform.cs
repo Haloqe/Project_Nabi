@@ -38,10 +38,10 @@ public class MovingPlatform : MonoBehaviour
         if (player.CompareTag("Player"))
         {
             var movementComp = player.GetComponent<PlayerMovement>();
-            if (movementComp.IsOnMovingPlatform) return;
+            if (movementComp.isOnMovingPlatform) return;
             
             _isPlayerOnPlatform = true;
-            movementComp.IsOnMovingPlatform = true;
+            movementComp.isOnMovingPlatform = true;
         }
     }
 
@@ -53,7 +53,7 @@ public class MovingPlatform : MonoBehaviour
         if (player.CompareTag("Player"))
         {
             _isPlayerOnPlatform = false;
-            player.GetComponent<PlayerMovement>().IsOnMovingPlatform = false;
+            player.GetComponent<PlayerMovement>().isOnMovingPlatform = false;
             player.transform.rotation = Quaternion.identity;
             player.transform.localScale = new Vector3(player.transform.localScale.x, 1, 1);
         }

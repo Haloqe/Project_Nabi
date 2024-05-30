@@ -130,7 +130,7 @@ public class Butterfly : MonoBehaviour
         {
             var colliders = target.gameObject.GetComponents<Collider2D>().ToList();
             var hitbox = target.transform.Find("AttackHitbox");
-            if (hitbox) colliders.AddRange(hitbox.GetComponents<Collider2D>().ToList());
+            if (hitbox) colliders.AddRange(hitbox.GetComponentsInChildren<Collider2D>().ToList());
             Bounds bounds = colliders[Random.Range(0, colliders.Count)].bounds;
             float x = Random.Range(bounds.min.x + _cloverSize / 2.0f, bounds.max.x - _cloverSize / 2.0f);
             float y = Random.Range(bounds.min.y + _cloverSize / 2.0f, bounds.max.y - _cloverSize / 2.0f);
