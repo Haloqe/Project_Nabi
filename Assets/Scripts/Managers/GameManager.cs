@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -11,8 +12,8 @@ public class GameManager : Singleton<GameManager>
     private PlayerController _player;
     
     // DEBUG Only
-    private int _playerSceneBuildIdx;   // 플레이어가 실행한 씬
-    private int _randMapBuildIdx;       // 테스트용 랜덤 제너레이션 씬
+    private int _ingameMapSceneIdx;   // 플레이어가 실행한 씬
+    private int _releaseMapSceneIdx=1;       // 테스트용 랜덤 제너레이션 씬
     
     public bool HasSaveData { get; private set; }
     // todo temp
@@ -24,7 +25,7 @@ public class GameManager : Singleton<GameManager>
         if (IsToBeDestroyed) return;
         PlayerMetaInfo = new PlayerMetaInfo();
         PlayerMetaInfo.Reset();
-        _randMapBuildIdx = SceneManager.GetSceneByName("Scenes/MapGen_InGame").buildIndex;
+        _ingameMapSceneIdx = _releaseMapSceneIdx;
         SceneManager.sceneLoaded += OnSceneLoaded;
         PlayerEvents.Defeated += OnPlayerDefeated;
     }
@@ -42,10 +43,16 @@ public class GameManager : Singleton<GameManager>
             LevelManager.Instance.SpawnPlayer();
             PostLoadInGame();
         }
-        else if (scene.name.EndsWith("InGame"))
+        else if (scene.name.StartsWith("MapGen"))
         {
             ActiveScene = ESceneType.CombatMap;
-            _playerSceneBuildIdx = scene.buildIndex;
+            _ingameMapSceneIdx = scene.buildIndex;
+            PostLoadInGame();
+        }
+        else if (scene.name.EndsWith("InGame"))
+        {
+            ActiveScene = ESceneType.DebugCombatMap;
+            _ingameMapSceneIdx = scene.buildIndex;
             PostLoadInGame();
         }
     }
@@ -57,7 +64,7 @@ public class GameManager : Singleton<GameManager>
         
         // Load new in-game scene
         // TEMP TODO
-        SceneManager.LoadScene(_playerSceneBuildIdx == _randMapBuildIdx ? _randMapBuildIdx : _playerSceneBuildIdx);
+        SceneManager.LoadScene(_ingameMapSceneIdx);
     }
     
     private void PostLoadInGame()
@@ -66,7 +73,7 @@ public class GameManager : Singleton<GameManager>
         GameEvents.GameLoadStarted.Invoke();
         
         // Generate new map
-        if (_playerSceneBuildIdx == SceneManager.GetSceneByName("Scenes/MapGen_InGame").buildIndex)
+        if (ActiveScene == ESceneType.CombatMap)
         {
             LevelManager.Instance.Generate();
         }

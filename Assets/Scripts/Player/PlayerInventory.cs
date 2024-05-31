@@ -43,8 +43,8 @@ public class PlayerInventory : MonoBehaviour
 
     private void OnCombatSceneChanged()
     {
-        ChangeGoldByAmount(0);
-        ChangeSoulShardByAmount(0);
+        // ChangeGoldByAmount(0);
+        // ChangeSoulShardByAmount(0);
         SelectFlower(1);
     }
 

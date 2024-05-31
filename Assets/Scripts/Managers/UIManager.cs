@@ -5,6 +5,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class UIManager : Singleton<UIManager>
@@ -37,7 +38,7 @@ public class UIManager : Singleton<UIManager>
 
     // UI Instantiated Objects
     private GameObject _mainMenuUI;
-    public GameObject inGameCombatUI;
+    private GameObject _inGameCombatUI;
     private GameObject _defeatedUI;
     private GameObject _warriorUIObject;
     private GameObject _focusedOverlay;
@@ -129,7 +130,7 @@ public class UIManager : Singleton<UIManager>
         
         _focusedOverlay     = Instantiate(_focusedOverlayPrefab, Vector3.zero, Quaternion.identity).GameObject();
         _defeatedUI         = Instantiate(_defeatedUIPrefab, Vector3.zero, Quaternion.identity).GameObject();
-        inGameCombatUI      = Instantiate(_inGameCombatPrefab, Vector3.zero, Quaternion.identity).GameObject();
+        _inGameCombatUI      = Instantiate(_inGameCombatPrefab, Vector3.zero, Quaternion.identity).GameObject();
         _zoomedMap          = Instantiate(_zoomedMapPrefab, Vector3.zero, Quaternion.identity).GameObject();
         _bookUI             = Instantiate(_bookPrefab, Vector3.zero, Quaternion.identity).GameObject();
         _metaUpgradeUI      = Instantiate(_metaUpgradeUIPrefab, Vector3.zero, Quaternion.identity).GameObject();
@@ -137,22 +138,22 @@ public class UIManager : Singleton<UIManager>
         _bookUIController   = _bookUI.GetComponentInChildren<BookUIController>();
         _defeatedUIController = _defeatedUI.GetComponent<DefeatedUIController>();
         _mapController      = _zoomedMap.GetComponent<MapController>();
-        _playerHPSlider     = inGameCombatUI.GetComponentInChildren<Slider>();
-        _playerHPGlobe      = inGameCombatUI.transform.Find("Globe").Find("HealthGlobe").Find("HealthGlobeMask").Find("Fill").GetComponent<Image>();
-        _hpText             = inGameCombatUI.transform.Find("Globe").GetComponentInChildren<TextMeshProUGUI>();
-        _darkGaugeSlider    = inGameCombatUI.transform.Find("DarkSlider").GetComponentInChildren<Slider>();
-        _darkGaugeText      = inGameCombatUI.transform.Find("DarkSlider").GetComponentInChildren<TextMeshProUGUI>();
-        _playerTensionController  = inGameCombatUI.transform.Find("TensionSlider").GetComponent<PlayerTensionController>();
-        _bloodOverlay       = inGameCombatUI.transform.Find("BloodOverlay").GetComponent<Image>();
-        _tensionOverlay     = inGameCombatUI.transform.Find("TensionOverlay").GetComponent<Image>();
-        _minimap            = inGameCombatUI.transform.Find("MinimapContainer").Find("Minimap").gameObject;
+        _playerHPSlider     = _inGameCombatUI.GetComponentInChildren<Slider>();
+        _playerHPGlobe      = _inGameCombatUI.transform.Find("Globe").Find("HealthGlobe").Find("HealthGlobeMask").Find("Fill").GetComponent<Image>();
+        _hpText             = _inGameCombatUI.transform.Find("Globe").GetComponentInChildren<TextMeshProUGUI>();
+        _darkGaugeSlider    = _inGameCombatUI.transform.Find("DarkSlider").GetComponentInChildren<Slider>();
+        _darkGaugeText      = _inGameCombatUI.transform.Find("DarkSlider").GetComponentInChildren<TextMeshProUGUI>();
+        _playerTensionController  = _inGameCombatUI.transform.Find("TensionSlider").GetComponent<PlayerTensionController>();
+        _bloodOverlay       = _inGameCombatUI.transform.Find("BloodOverlay").GetComponent<Image>();
+        _tensionOverlay     = _inGameCombatUI.transform.Find("TensionOverlay").GetComponent<Image>();
+        _minimap            = _inGameCombatUI.transform.Find("MinimapContainer").Find("Minimap").gameObject;
         
-        inGameCombatUI.SetActive(true);
-        inGameCombatUI.GetComponent<Canvas>().worldCamera = _uiCamera;
-        inGameCombatUI.GetComponent<Canvas>().planeDistance = 20;
+        _inGameCombatUI.SetActive(true);
+        _inGameCombatUI.GetComponent<Canvas>().worldCamera = _uiCamera;
+        _inGameCombatUI.GetComponent<Canvas>().planeDistance = 20;
         
         // UI - flower bombs
-        var flowerSlotRoot = inGameCombatUI.transform.Find("ActiveLayoutGroup").Find("Slot_3");
+        var flowerSlotRoot = _inGameCombatUI.transform.Find("ActiveLayoutGroup").Find("Slot_3");
         _flowerIconMid = flowerSlotRoot.Find("AbilityIcon").GetComponent<Image>();
         _flowerOverlay = flowerSlotRoot.Find("Overlay").GetComponent<Image>();
         _flowerCountText = flowerSlotRoot.Find("Count").GetComponent<TextMeshProUGUI>();
@@ -164,15 +165,19 @@ public class UIManager : Singleton<UIManager>
 
     private void OnGameLoadEnded()
     {
-        Debug.Log("Scene Loaded Ended: " + GameManager.Instance.ActiveScene);
         _bloodOverlay.gameObject.SetActive(false);
         _tensionOverlay.gameObject.SetActive(false);
         _zoomedMap.SetActive(false);
         _loadingScreenUI.SetActive(false);
         _flowerUIDisplayRemainingTime = 0;
+        if (GameManager.Instance.ActiveScene == ESceneType.CombatMap)
+        {
+            DisplayRoomGuideUI("임시메타맵", "");
+            DisableMap();
+        }
         OnPlayerHPChanged(0,1,1);
-        UsePlayerControl();
         UpdateDarkGaugeUI(0);
+        UsePlayerControl();
     }
 
     private void OnCombatSceneChanged()
@@ -630,7 +635,7 @@ public class UIManager : Singleton<UIManager>
     }
     
     // Portal UIs
-    public void OnEnterRoom(string roomName, string description)
+    public void DisplayRoomGuideUI(string roomName, string description)
     {
         var ui = Instantiate(_roomGuidePrefab, Vector3.zero, Quaternion.identity).GetComponent<RoomGuideUI>();
         ui.InitRoomGuide(roomName, description);
@@ -649,4 +654,6 @@ public class UIManager : Singleton<UIManager>
         _minimap.transform.parent.gameObject.SetActive(true);
         _playerController.IsMapEnabled = true;
     }
+
+    public GameObject GetInGameCombatUI() => _inGameCombatUI;
 }

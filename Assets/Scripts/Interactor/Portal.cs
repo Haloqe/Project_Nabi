@@ -35,10 +35,8 @@ public class Portal : Interactor
             case EPortalType.SecretToCombat:
                 break;
             
-            case EPortalType.CombatToMeta:
-                break;
-            
             case EPortalType.MetaToCombat:
+                _destination = LevelManager.Instance.CombatSpawnPoint.position;
                 break;
             
             case EPortalType.CombatToBoss:
@@ -118,11 +116,8 @@ public class Portal : Interactor
                 connectedHiddenRoom.OnExit();
                 break;
             
-            case EPortalType.CombatToMeta:
-                break;
-            
             case EPortalType.MetaToCombat:
-                // Do something
+                _uiManager.EnableMap();
                 break;
         }
     }
@@ -136,9 +131,6 @@ public class Portal : Interactor
                 break;
             
             case EPortalType.SecretToCombat:
-                break;
-            
-            case EPortalType.CombatToMeta:
                 break;
             
             case EPortalType.MetaToCombat:

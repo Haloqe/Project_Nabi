@@ -22,23 +22,19 @@ public class HiddenPortal : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (++_playerInteractingPartsCount > 1) return;
-        
         if (_activeHideCoroutine != null)
             StopCoroutine(_activeHideCoroutine);
         
         _activeRevealCoroutine = StartCoroutine(RevealCoroutine());
-        Debug.Log("Start revealing");
     }
 
     private void OnTriggerExit2D(Collider2D other)
     {
         if (--_playerInteractingPartsCount > 0) return;
-        
         if (_activeRevealCoroutine != null)
             StopCoroutine(_activeRevealCoroutine);
 
         _activeHideCoroutine = StartCoroutine(HideCoroutine());
-        Debug.Log("End revealing");
     }
 
     private IEnumerator RevealCoroutine()
@@ -47,7 +43,7 @@ public class HiddenPortal : MonoBehaviour
         float alpha = _portalSpriteRenderer.color.a;
         while (alpha < 0.8f)
         {
-            alpha += Time.unscaledDeltaTime * 0.4f;
+            alpha += Time.unscaledDeltaTime * 0.05f;
             var portalColour = _portalSpriteRenderer.color;
             _portalSpriteRenderer.color = new Color(portalColour.r, portalColour.g, portalColour.b, alpha);
             yield return null;
@@ -59,7 +55,7 @@ public class HiddenPortal : MonoBehaviour
         // Reveal the rest
         while (alpha < 1f)
         {
-            alpha += Time.unscaledDeltaTime * 0.4f;
+            alpha += Time.unscaledDeltaTime * 0.05f;
             var portalColour = _portalSpriteRenderer.color;
             _portalSpriteRenderer.color = new Color(portalColour.r, portalColour.g, portalColour.b, alpha);
             yield return null;

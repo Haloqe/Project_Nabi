@@ -71,6 +71,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         GameEvents.GameLoadEnded += OnRestarted;
         PlayerEvents.Defeated += OnPlayerDefeated;
         PlayerEvents.StartResurrect += OnPlayerDefeated;
+        GameEvents.CombatSceneChanged += OnCombatSceneChanged;
         
         // Input Binding for Attacks
         var playerInput = GetComponent<PlayerInput>();
@@ -79,7 +80,22 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         playerInput.actions["Attack_Dash"].performed += OnDashAttack;
         playerInput.actions["Attack_Area"].performed += OnAreaAttack;
     }
-    
+
+    private void OnDestroy()
+    {
+        if (GetComponent<PlayerController>().IsToBeDestroyed) return;
+        GameEvents.GameLoadEnded -= OnRestarted;
+        PlayerEvents.Defeated -= OnPlayerDefeated;
+        PlayerEvents.StartResurrect -= OnPlayerDefeated;
+        GameEvents.CombatSceneChanged -= OnCombatSceneChanged;
+        
+        var playerInput = GetComponent<PlayerInput>();
+        playerInput.actions["Attack_Melee"].performed -= OnMeleeAttack;
+        playerInput.actions["Attack_Range"].performed -= OnRangedAttack;
+        playerInput.actions["Attack_Dash"].performed -= OnDashAttack;
+        playerInput.actions["Attack_Area"].performed -= OnAreaAttack;
+    }
+
     private void OnPlayerDefeated()
     {
         foreach (var butterfly in _spawnedButterflies) Destroy(butterfly);
@@ -90,20 +106,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         _bufferedAttackIdx = -1;
         ResetNightShadeDarkGauge();
     }
-
-    private void OnDestroy()
-    {
-        if (GetComponent<PlayerController>().IsToBeDestroyed) return;
-        GameEvents.GameLoadEnded -= OnRestarted;
-        PlayerEvents.Defeated -= OnPlayerDefeated;
-        PlayerEvents.StartResurrect -= OnPlayerDefeated;
-        var playerInput = GetComponent<PlayerInput>();
-        playerInput.actions["Attack_Melee"].performed -= OnMeleeAttack;
-        playerInput.actions["Attack_Range"].performed -= OnRangedAttack;
-        playerInput.actions["Attack_Dash"].performed -= OnDashAttack;
-        playerInput.actions["Attack_Area"].performed -= OnAreaAttack;
-    }
-
+    
     private void OnRestarted()
     {
         // Reset attacks
@@ -113,6 +116,14 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         // Initialise damage multipliers
         attackDamageMultipliers = new float[]{ 1, 1, 1, 1, 1 };
         totalDamageMultiplier = 1.0f;
+
+        OnCombatSceneChanged();
+    }
+
+    private void OnCombatSceneChanged()
+    {
+        if (_dashCooldownCoroutine != null) StopCoroutine(_dashCooldownCoroutine);
+        _dashUIOverlay = PlayerAttackManager.Instance.GetAttackOverlay(ELegacyType.Dash);
         
         // Empty the attack buffer
         _currAttackIdx = -1;
@@ -122,6 +133,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         
         // Clear spawned butterflies
         foreach (var butterfly in _spawnedButterflies) Destroy(butterfly);
+        _playerController.evasionRateAdditionAtMax = 0.0f;
         _spawnedButterflies.Clear();
         
         // Reset gauge values
@@ -131,7 +143,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         _dashUIOverlay = PlayerAttackManager.Instance.GetAttackOverlay(ELegacyType.Dash);
         _dashUIOverlay.fillAmount = 0.0f;
     }
-
+    
     private IEnumerator DashCooldownCoroutine()
     {
         float timer = _dashCooldown;
@@ -397,12 +409,6 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
 
         _spawnedButterflies.Remove(butterflyToKill);
         butterflyToKill.StartCoroutine(butterflyToKill.DieCoroutine());
-    }
-
-    public void TurbelaKillButterflies()
-    {
-        _playerController.evasionRateAdditionAtMax = 0.0f;
-        _spawnedButterflies.Clear();
     }
 
     public void TurbelaBuffButterflies(float duration, float attackSpeedMultiplier)

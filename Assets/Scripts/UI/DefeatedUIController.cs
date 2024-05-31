@@ -9,6 +9,8 @@ public class DefeatedUIController : MonoBehaviour
     private Color _unselectedColour;
     private Color _selectedColour;
     private bool _isCurrSelectedRestartBtn;
+    private string _restartText;
+    private string _backToMainText;
     
     private void Awake()
     {
@@ -18,6 +20,8 @@ public class DefeatedUIController : MonoBehaviour
         _backToMainTMP.GetComponentInParent<DefeatedButton>().Init(this, false);
         _unselectedColour = new Color(0.358f, 0.358f, 0.358f, 1f);
         _selectedColour = Color.white;
+        _restartText = _restartTMP.text;
+        _backToMainText = _backToMainTMP.text;
         OnButtonHovered(true);
     }
 
@@ -50,12 +54,12 @@ public class DefeatedUIController : MonoBehaviour
         OnButtonUnhovered(!isRestartBtn);
         if (isRestartBtn)
         {
-            _restartTMP.text = "> 재시작 <";
+            _restartTMP.text = $"> {_restartText} <";
             _restartTMP.color = _selectedColour;
         }
         else
         {
-            _backToMainTMP.text = "> 메인으로 돌아가기 <";
+            _backToMainTMP.text = $"> {_backToMainText} <";
             _backToMainTMP.color = _selectedColour;
         }
         _isCurrSelectedRestartBtn = isRestartBtn;
@@ -67,12 +71,12 @@ public class DefeatedUIController : MonoBehaviour
         StopCoroutine(nameof(ColourChangeCoroutine));
         if (isRestartBtn)
         {
-            _restartTMP.text = "재시작";
+            _restartTMP.text = _restartText;
             _restartTMP.color = _unselectedColour;
         }
         else
         {
-            _backToMainTMP.text = "메인으로 돌아가기";
+            _backToMainTMP.text = _backToMainText;
             _backToMainTMP.color = _unselectedColour;
         }
     }

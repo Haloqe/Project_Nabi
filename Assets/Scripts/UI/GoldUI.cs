@@ -13,7 +13,6 @@ public class GoldUI : MonoBehaviour
     {
         _goldText = GetComponentInChildren<TextMeshProUGUI>();
         _goldIconAnimator = GetComponentInChildren<Animator>();
-        _goldText.text = "0";
         PlayerEvents.GoldChanged += OnPlayerGoldChanged;
     }
 

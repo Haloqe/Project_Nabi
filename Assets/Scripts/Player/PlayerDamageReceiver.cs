@@ -70,6 +70,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         
         PlayerEvents.Defeated += OnPlayerDefeated;
         GameEvents.Restarted += OnRestarted;
+        GameEvents.CombatSceneChanged += OnCombatSceneChanged;
         
         _playerMovement = GetComponent<PlayerMovement>();
         _effectRemainingTimes = new float[(int)EStatusEffect.MAX];
@@ -83,8 +84,14 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     {
         PlayerEvents.Defeated -= OnPlayerDefeated;
         GameEvents.Restarted -= OnRestarted;
+        GameEvents.CombatSceneChanged -= OnCombatSceneChanged;
     }
 
+    private void OnCombatSceneChanged()
+    {
+        RemoveAllDebuffs();
+    }
+    
     private void Update()
     {
         UpdateStatusEffectTimes();
@@ -486,7 +493,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     /// <summary>
     ///  현재는 isSliencedExceptCleanse 포함해서 제거함. Silenced는 유지.
     /// </summary>
-    public void RemoveAllDebuffs()
+    private void RemoveAllDebuffs()
     {
         for (int i = 0; i < (int)EStatusEffect.MAX; i++)
         {

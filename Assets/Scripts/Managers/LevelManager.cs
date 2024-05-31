@@ -13,7 +13,7 @@ public class LevelManager : Singleton<LevelManager>
     private int _maxHeight;
     private int _maxWidth;
 
-    private Transform _roomsContainer;
+    private LevelGraph _levelGraph;
     private List<GameObject> _generatedRooms;
     private Object[] _roomTemplates;
     private List<List<RoomBase>> _roomsByType;
@@ -22,12 +22,9 @@ public class LevelManager : Singleton<LevelManager>
     private List<Vector3Int>[] _corridors;
     private List<List<SDoorInfo>> _openDoorInfos;
 
-    private LevelGraph _levelGraph;
-    // TODO remove TEMP
-    private Vector3 _playerSpawnPos = Vector3.back;
-    
     private Tilemap _mapTilemap;
     private Tilemap _superWallTilemap;
+    private Transform _roomsContainer;
     public TileBase WallRuleTile;
     
     // minimapTiles
@@ -41,6 +38,10 @@ public class LevelManager : Singleton<LevelManager>
     
     // Secret Rooms
     private List<HiddenRoom>[] _hiddenRoomsByLevel;
+    
+    // Spawn points
+    private Vector3 _metaSpawnPoint;
+    public Transform CombatSpawnPoint { get; private set; }
     
     protected override void Awake()
     {
@@ -65,8 +66,6 @@ public class LevelManager : Singleton<LevelManager>
             Vector3Int.left, Vector3Int.right
         };
         _generatedRooms = new List<GameObject>();
-        
-        // HiddenRoomTeleportPositions
 
         InitialiseRooms();
         GenerateLevelGraph();
@@ -79,10 +78,12 @@ public class LevelManager : Singleton<LevelManager>
         _corridors[0].Clear();
         _corridors[1].Clear();
         _generatedRooms.Clear();
-        _clockworkSpawnersByRoom = new List<ClockworkSpawner[]>();
+        Transform root = GameObject.Find("SuperTilemaps").transform;
+        _mapTilemap = root.Find("Map").GetComponent<Tilemap>();
+        _superWallTilemap = root.Find("SuperWall").GetComponent<Tilemap>();
         _roomsContainer = GameObject.Find("Rooms").transform;
-        _mapTilemap = GameObject.Find("Map").GetComponent<Tilemap>();
-        _superWallTilemap = GameObject.Find("Wall").GetComponent<Tilemap>();
+        _clockworkSpawnersByRoom = new List<ClockworkSpawner[]>();
+        _metaSpawnPoint = GameObject.FindWithTag("PlayerStart_Meta").transform.position;
         
         // Level generation
         GenerateLevel();
@@ -149,9 +150,6 @@ public class LevelManager : Singleton<LevelManager>
 
     private void GenerateLevel()
     {
-        // Clear tiles
-        //_superWallTilemap.ClearAllTiles();
-        //MapTilemap.ClearAllTiles();
         // Add starting room
         _openDoorInfos[_levelGraph.GetNumRooms()] = new List<SDoorInfo>{
                  new SDoorInfo(EConnectionType.Vertical, EDoorDirection.Up, new Vector3Int(500, 499, 0)),
@@ -186,6 +184,8 @@ public class LevelManager : Singleton<LevelManager>
                 toVisit.Push(new SRoomInfo(roomInfo.RoomID, nextRoomID));
             }
         }
+        
+        CombatSpawnPoint = _generatedRooms[0].transform.Find("PlayerStart");
     }
 
     private bool PlaceRoom(int prevRoomID, int currRoomID)
@@ -587,26 +587,36 @@ public class LevelManager : Singleton<LevelManager>
 
         // DEBUG TEMP CODE FROM HERE
         Transform playerObject = null;
-        var playerStart = GameObject.FindWithTag("PlayerStart");
+        Vector3 playerSpawnPoint;
+        ESceneType currScene = GameManager.Instance.ActiveScene;
+        
+        // Find player
+        // Player is not spawned
         if (PlayerController.Instance == null)
         {
             playerObject = Instantiate(GameManager.Instance.PlayerPrefab).gameObject.transform;
-            _playerSpawnPos = playerStart.transform.position;
         }
+        // Player exists already
         else
         {
             playerObject = PlayerController.Instance.transform;
-
-            // If player spawn pos undefined (first game run + not random generated map (debug map))
-            if (playerStart == null || _playerSpawnPos == Vector3.back)
-            {
-                _playerSpawnPos = playerObject.position;
-            }
-            else _playerSpawnPos = playerStart.transform.position;
         }
-        playerObject.position = _playerSpawnPos;
-        GameObject.Find("Virtual Camera").GetComponent<CinemachineVirtualCamera>().Follow = playerObject;
         
+        // Find spawn point
+        if (currScene == ESceneType.CombatMap)
+        {
+            // Spawn at meta map
+            playerSpawnPoint = _metaSpawnPoint;
+        }
+        else
+        {
+            // Boss map or debug map
+            playerSpawnPoint = GameObject.FindWithTag("PlayerStart").transform.position;
+        }
+        playerObject.position = playerSpawnPoint;
+        
+        // Set camera follow target
+        GameObject.Find("Virtual Camera").GetComponent<CinemachineVirtualCamera>().Follow = playerObject;
         PlayerEvents.Spawned.Invoke();
     }
 

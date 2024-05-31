@@ -288,7 +288,6 @@ public enum EPortalType
 {
     CombatToSecret,
     SecretToCombat,
-    CombatToMeta,
     MetaToCombat,
     CombatToBoss,
 }
@@ -363,6 +362,7 @@ public enum ESceneType
 {
     MainMenu,
     CombatMap,
+    DebugCombatMap,
     Boss,
 }
 #endregion

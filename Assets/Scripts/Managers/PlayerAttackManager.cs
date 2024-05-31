@@ -76,7 +76,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         _playerDamageDealer = FindObjectOfType<PlayerDamageDealer>();
 
         // UI 
-        var combatCanvas = UIManager.Instance.inGameCombatUI;
+        var combatCanvas = UIManager.Instance.GetInGameCombatUI();
         var activeLegacyGroup = combatCanvas.transform.Find("ActiveLayoutGroup").transform;
         for (int i = 0; i < 4; i++)
         {
@@ -505,7 +505,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         _slotDictionary.Clear();
         
         // Update active legacies
-        var combatCanvas = UIManager.Instance.inGameCombatUI;
+        var combatCanvas = UIManager.Instance.GetInGameCombatUI();
         var activeLegacyGroup = combatCanvas.transform.Find("ActiveLayoutGroup").transform;
         for (int i = 0; i < 3; i++)
         {
