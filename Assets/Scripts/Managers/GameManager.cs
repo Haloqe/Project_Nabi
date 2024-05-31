@@ -3,6 +3,7 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : Singleton<GameManager>
 {
+    public ESceneType ActiveScene { get; private set; }
     public PlayerMetaInfo PlayerMetaInfo { get; private set; }
     public GameObject PlayerPrefab;
     
@@ -32,10 +33,18 @@ public class GameManager : Singleton<GameManager>
     {
         if (scene.name.Contains("MainMenu"))
         {
+            ActiveScene = ESceneType.MainMenu;
             GameEvents.MainMenuLoaded.Invoke();
         }
-        else if (scene.name.Contains("InGame"))
+        else if (scene.name.StartsWith("Boss"))
         {
+            ActiveScene = ESceneType.Boss;
+            LevelManager.Instance.SpawnPlayer();
+            PostLoadInGame();
+        }
+        else if (scene.name.EndsWith("InGame"))
+        {
+            ActiveScene = ESceneType.CombatMap;
             _playerSceneBuildIdx = scene.buildIndex;
             PostLoadInGame();
         }
@@ -64,8 +73,6 @@ public class GameManager : Singleton<GameManager>
         GameEvents.MapLoaded.Invoke();
         
         // If not first run, reset variables
-        // TODo temp
-        //if (PlayerController.Instance != null) GameEvents.restarted.Invoke();
         if (!IsFirstRun) GameEvents.Restarted.Invoke();
 
         // When all set, spawn player 
@@ -75,6 +82,7 @@ public class GameManager : Singleton<GameManager>
         
         // End loading
         GameEvents.GameLoadEnded.Invoke();
+        if (ActiveScene == ESceneType.Boss) GameEvents.CombatSceneChanged.Invoke();
     }
     
     public void LoadMainMenu()
@@ -89,6 +97,12 @@ public class GameManager : Singleton<GameManager>
         IsFirstRun = true;
         PlayerMetaInfo.Reset();
         SceneManager.LoadScene("Scenes/MainMenu");
+    }
+
+    public void LoadBossMap()
+    {
+        UIManager.Instance.DisplayLoadingScreen();
+        SceneManager.LoadScene("Scenes/Boss_InGame");
     }
 
     public void QuitGame()

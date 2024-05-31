@@ -9,6 +9,7 @@ public class PlayerInventory : MonoBehaviour
     // Variables
     public int Gold { get; private set; }
     public int SoulShard { get; private set; }
+    public EArborType Arbor { get; private set; }
     private int[] _numFlowers = new int[5];
     private int _currentSelectedFlower = 0;
     
@@ -22,11 +23,13 @@ public class PlayerInventory : MonoBehaviour
         _currentSelectedFlower = 0;
         _uiManager.ChangeFlowerBomb(false);
         GameEvents.Restarted += OnRestarted;
+        GameEvents.CombatSceneChanged += OnCombatSceneChanged;
     }
 
     private void OnDestroy()
     {
         GameEvents.Restarted -= OnRestarted;
+        GameEvents.CombatSceneChanged -= OnCombatSceneChanged;
     }
 
     private void OnRestarted()
@@ -35,6 +38,14 @@ public class PlayerInventory : MonoBehaviour
         _currentSelectedFlower = 0;
         for (int i = 0; i < _numFlowers.Length; i++) _numFlowers[i] = 0;
         _uiManager.ChangeFlowerBomb(false);
+        Arbor = EArborType.Default;
+    }
+
+    private void OnCombatSceneChanged()
+    {
+        ChangeGoldByAmount(0);
+        ChangeSoulShardByAmount(0);
+        SelectFlower(1);
     }
 
     public void ChangeGoldByAmount(int amount)

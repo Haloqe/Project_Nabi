@@ -26,6 +26,7 @@ public static class GameEvents
     public static UnityAction Restarted;
     public static UnityAction GameLoadStarted;
     public static UnityAction GameLoadEnded;
+    public static UnityAction CombatSceneChanged;
     public static UnityAction MapLoaded;
     public static UnityAction LanguageChanged;
 }

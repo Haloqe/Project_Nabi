@@ -1,18 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using FullscreenEditor;
 using UnityEngine;
-using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
 public class Butterfly : MonoBehaviour
 {
     // Variables
-    private readonly float _lifeTime = 20f;
+    private readonly float _lifeTime = 2000f;
     private readonly float _detectInterval = 1f;    // Time interval to detect if enemy is in range
     private readonly float _attackSpeed = 1f;       // Speed of the butterfly while attacking
-    private readonly float _flySpeed = 0.04f;      // Speed of the butterfly while traveling towards target
+    private readonly float _flySpeed = 0.08f;      // Speed of the butterfly while traveling towards target
     private readonly float _cloverSize = 1.7f;      // Size of the clover leaves
     private float _attackSpeedMultiplier = 1f;
     private int _buffStack = 0;
@@ -117,10 +115,8 @@ public class Butterfly : MonoBehaviour
         return visibleEnemies.Count == 0 ? null : visibleEnemies[Random.Range(0, visibleEnemies.Count)].transform;
     }
 
-    // Fly towards the target from its current position
-    private IEnumerator FlyCoroutine(Transform target)
-    { 
-        // Compute a position to move to
+    private void ComputeTargetOffset(Transform target)
+    {
         if (target == _player)
         {
             // If the target is player, move to a random spawn point
@@ -128,16 +124,34 @@ public class Butterfly : MonoBehaviour
         }
         else
         {
-            var colliders = target.gameObject.GetComponents<Collider2D>().ToList();
-            var hitbox = target.transform.Find("AttackHitbox");
-            if (hitbox) colliders.AddRange(hitbox.GetComponentsInChildren<Collider2D>().ToList());
-            Bounds bounds = colliders[Random.Range(0, colliders.Count)].bounds;
+            // Get a list of hittable colliders
+            List<Collider2D> hittables;
+            if (target.gameObject.CompareTag("Boss"))
+            {
+                hittables = target.gameObject.GetComponent<EnemyPattern_Scorpion>().AttackableColliders;
+            }
+            else
+            {
+                hittables = target.gameObject.GetComponents<Collider2D>().ToList();
+                var hitbox = target.transform.Find("AttackHitbox");
+                if (hitbox) hittables.AddRange(hitbox.GetComponentsInChildren<Collider2D>().ToList());
+            }
+            
+            // Get a random position from one collider
+            Bounds bounds = hittables[Random.Range(0, hittables.Count)].bounds;
             float x = Random.Range(bounds.min.x + _cloverSize / 2.0f, bounds.max.x - _cloverSize / 2.0f);
             float y = Random.Range(bounds.min.y + _cloverSize / 2.0f, bounds.max.y - _cloverSize / 2.0f);
             
             // Calculate the offset from the object's position
             _targetOffset = new Vector3(x, y, 0) - target.transform.position;
         }
+    }
+
+    // Fly towards the target from its current position
+    private IEnumerator FlyCoroutine(Transform target)
+    { 
+        // Compute a position to move to
+        ComputeTargetOffset(target);
         
         // Fly towards the target
         while (target && Vector3.Distance(transform.position, target.position + _targetOffset) > 0.001f)
@@ -145,6 +159,7 @@ public class Butterfly : MonoBehaviour
             // If enemy goes out of the screen, stop travelling
             if (target != _player && !_visibilityChecker.VisibleEnemies.Contains(target.gameObject))
             {
+                Debug.Log("Enemy out of screen");
                 target = null;
                 break;
             }
@@ -166,6 +181,7 @@ public class Butterfly : MonoBehaviour
             // Enemy reached
             if (target != _player)
             {
+                Debug.Log("Enemy reached");
                 _enemy = target;
                 _isAttacking = true;
                 _enemyDamageable = _enemy.GetComponent<IDamageable>();

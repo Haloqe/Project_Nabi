@@ -26,14 +26,7 @@ public class FireChild : MonoBehaviour
     }
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.CompareTag("Enemy")){
-            _parent.OnEnemyEnter(collision);
-
-        }
-        else
-        {
-            return;
-        }
+        _parent.OnEnemyEnter(collision);
         
     }
     private void OnCollisionEnter2D(Collision2D collision)

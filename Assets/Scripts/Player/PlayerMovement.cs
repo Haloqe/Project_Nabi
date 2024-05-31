@@ -1,7 +1,5 @@
-using System;
 using System.Collections;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -16,6 +14,7 @@ public class PlayerMovement : MonoBehaviour
     private float _defaultBounciness;
 
     // movement
+    private bool _isMoveDisabled;
     private readonly float _defaultMoveSpeed = 9f;
     public float MoveSpeed { get; private set; } 
     public float moveSpeedMultiplier = 1f;
@@ -121,7 +120,9 @@ public class PlayerMovement : MonoBehaviour
         _rigidbody2D.velocity = new Vector2((_moveDirection.x * MoveSpeed * moveSpeedMultiplier) / Time.timeScale, _rigidbody2D.velocity.y);
 
         // Animation-driven velocity
-        if (_additionalVelocity.magnitude != 0)
+        if (_isMoveDisabled)
+            _rigidbody2D.velocity = Vector2.zero;
+        else if (_additionalVelocity.magnitude != 0)
             _rigidbody2D.velocity = _additionalVelocity / Time.timeScale;
  
         if (!isRangedAttacking && _isJumping && (!_isRunningFirstJump || _rigidbody2D.velocity.y < 0))
@@ -335,6 +336,8 @@ public class PlayerMovement : MonoBehaviour
         _isRunningFirstJump = false;
     }
     
+    public void ResetEnteredGroundCount() => _enteredGroundCount = 0;
+    
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (!other.CompareTag("Ground")) return;
@@ -368,6 +371,16 @@ public class PlayerMovement : MonoBehaviour
     }
 
     #region Animation Event Handlers
+    public void AnimEvent_StopMove()
+    {
+        _isMoveDisabled = true;
+    }
+    
+    public void AnimEvent_StartMove()
+    {
+        _isMoveDisabled = false;
+    }
+    
     // Move horizontally to the direction the character is facing
     public void AnimEvent_StartMoveHorizontal(float xVelocity)
     {

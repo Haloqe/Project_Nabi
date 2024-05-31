@@ -32,7 +32,7 @@ public class HiddenRoom : MonoBehaviour
         _returnPortal.SetDestination(previousPos);
         _chest.ResetReward(roomLevel);
         string desc = enemyKillTimeLimit > 0 ? $"시간 제한: {enemyKillTimeLimit}초" : string.Empty;
-        UIManager.Instance.OnEnterHiddenRoom(roomName, desc);
+        UIManager.Instance.OnEnterRoom(roomName, desc);
         
         if (roomLevel is 0 or 1)
         {

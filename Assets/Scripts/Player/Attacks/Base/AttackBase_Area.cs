@@ -29,6 +29,11 @@ public class AttackBase_Area : AttackBase
         Reset();
     }
 
+    protected override void OnCombatSceneChanged()
+    {
+        
+    }
+    
     public void UpdateVFX(int flowerIdx)
     {
         _currSelectedFlower = flowerIdx;

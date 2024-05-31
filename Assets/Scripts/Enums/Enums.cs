@@ -290,6 +290,7 @@ public enum EPortalType
     SecretToCombat,
     CombatToMeta,
     MetaToCombat,
+    CombatToBoss,
 }
 
 public enum EFlowerType
@@ -356,5 +357,12 @@ public enum EEnemyType
     Bee,
     Spider,
     QueenBee,
+}
+
+public enum ESceneType
+{
+    MainMenu,
+    CombatMap,
+    Boss,
 }
 #endregion

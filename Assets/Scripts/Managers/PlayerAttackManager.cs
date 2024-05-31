@@ -499,6 +499,41 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     {
         return _legacyIconSpriteSheet[_legacies[legacyID].IconIndex];
     }
+
+    public void UpdateLegacyUI()
+    {
+        _slotDictionary.Clear();
+        
+        // Update active legacies
+        var combatCanvas = UIManager.Instance.inGameCombatUI;
+        var activeLegacyGroup = combatCanvas.transform.Find("ActiveLayoutGroup").transform;
+        for (int i = 0; i < 3; i++)
+        {
+            // No need to update if no legacy is bound
+            int boundLegacyID = _boundActiveLegacyIDs[i]; 
+            if (boundLegacyID == -1) continue;
+            
+            // Update ui with bound legacy
+            var legacyData = _legacies[boundLegacyID];
+            var slot = activeLegacyGroup.Find("Slot_" + i);
+            _activeLegacyIcons[i] = slot.Find("AbilityIcon").GetComponent<Image>();
+            _activeLegacySlots[i] = slot.AddComponent<LegacySlotUI>();
+            _activeLegacyIcons[i].sprite = GetLegacyIcon(boundLegacyID);
+            _activeLegacySlots[i].Init(legacyData.Warrior, legacyData.Names, legacyData.Descs, _collectedLegacyPreservations[boundLegacyID]);
+            _slotDictionary.Add(boundLegacyID, _activeLegacySlots[i]);
+        }
+        
+        // Update passive legacies
+        foreach (int boundPassiveID in _collectedPassiveIDs)
+        {
+            var legacyData = _legacies[boundPassiveID];
+            var slotObj = Instantiate(_passiveLegacySlotPrefab, _passiveLegacyGroup);
+            slotObj.GetComponent<Image>().sprite = GetLegacyIcon(boundPassiveID);
+            var slotUi = slotObj.AddComponent<LegacySlotUI>();
+            slotUi.Init(legacyData.Warrior, legacyData.Names, legacyData.Descs, _collectedLegacyPreservations[boundPassiveID]);
+            _slotDictionary.Add(boundPassiveID, slotUi);
+        }
+    }
 #endregion
     
     public Texture2D GetWarriorVFXTexture(EWarrior warrior, EPlayerAttackType attack)

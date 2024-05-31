@@ -36,15 +36,23 @@ public class Portal : Interactor
                 break;
             
             case EPortalType.CombatToMeta:
-                
                 break;
             
             case EPortalType.MetaToCombat:
-                
                 break;
+            
+            case EPortalType.CombatToBoss:
+                TeleportToBossMap();
+                return;
         }
 
         StartCoroutine(TeleportCoroutine());
+    }
+
+    private void TeleportToBossMap()
+    {
+        _player.playerMovement.ResetEnteredGroundCount();
+        GameManager.Instance.LoadBossMap();
     }
 
     private void SetHiddenRoomTeleportPosition()

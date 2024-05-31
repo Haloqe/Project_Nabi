@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using Object = UnityEngine.Object;
 using Quaternion = UnityEngine.Quaternion;
@@ -10,7 +11,7 @@ using Vector3 = UnityEngine.Vector3;
 public class EnemyPattern_Scorpion : EnemyPattern
 {
     // colliders
-    public Collider2D[] AttackableColliders;
+    public List<Collider2D> AttackableColliders;
     
     // attack loop stuff
     private bool _isInAttackSequence;

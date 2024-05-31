@@ -399,6 +399,12 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         butterflyToKill.StartCoroutine(butterflyToKill.DieCoroutine());
     }
 
+    public void TurbelaKillButterflies()
+    {
+        _playerController.evasionRateAdditionAtMax = 0.0f;
+        _spawnedButterflies.Clear();
+    }
+
     public void TurbelaBuffButterflies(float duration, float attackSpeedMultiplier)
     {
         foreach (var butterfly in _spawnedButterflies)
@@ -447,7 +453,6 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         _playerMovement.isRangedAttacking = false;
         GetComponent<Rigidbody2D>().gravityScale = _playerMovement.DownwardsGravityScale;
     }
-
     
     // Animation event
     public void OnMeleeComboHit()

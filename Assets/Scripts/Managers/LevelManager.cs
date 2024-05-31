@@ -41,7 +41,7 @@ public class LevelManager : Singleton<LevelManager>
     
     // Secret Rooms
     private List<HiddenRoom>[] _hiddenRoomsByLevel;
-
+    
     protected override void Awake()
     {
         base.Awake();
@@ -587,18 +587,22 @@ public class LevelManager : Singleton<LevelManager>
 
         // DEBUG TEMP CODE FROM HERE
         Transform playerObject = null;
+        var playerStart = GameObject.FindWithTag("PlayerStart");
         if (PlayerController.Instance == null)
         {
             playerObject = Instantiate(GameManager.Instance.PlayerPrefab).gameObject.transform;
-            _playerSpawnPos = GameObject.Find("PlayerStart").transform.position;
+            _playerSpawnPos = playerStart.transform.position;
         }
         else
         {
             playerObject = PlayerController.Instance.transform;
-    
+
             // If player spawn pos undefined (first game run + not random generated map (debug map))
-            if (_playerSpawnPos == Vector3.back)
+            if (playerStart == null || _playerSpawnPos == Vector3.back)
+            {
                 _playerSpawnPos = playerObject.position;
+            }
+            else _playerSpawnPos = playerStart.transform.position;
         }
         playerObject.position = _playerSpawnPos;
         GameObject.Find("Virtual Camera").GetComponent<CinemachineVirtualCamera>().Follow = playerObject;

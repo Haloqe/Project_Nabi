@@ -566,6 +566,8 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         // Inform player
         if (_effectRemainingTimes[(int)EStatusEffect.Ecstasy] > 0) 
             _player.RemoveEcstasyBuff(this);
+        if (_effectRemainingTimes[(int)EStatusEffect.Evade] > 0)
+            _player.RemoveShadowHost(this);
         InGameEvents.EnemySlayed?.Invoke(this);
             
         StopAllCoroutines();

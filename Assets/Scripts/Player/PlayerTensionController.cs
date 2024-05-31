@@ -30,7 +30,6 @@ public class PlayerTensionController : MonoBehaviour
     
     private int _tension;
     private int _maxTension;
-    private EArborType _arborType;
     private ETensionState _tensionState;
 
     private float _overloadDuration;
@@ -69,7 +68,6 @@ public class PlayerTensionController : MonoBehaviour
     {
         _incrementStep = 1;
         _maxTension = 4;
-        _arborType = EArborType.Default;
         _overloadDuration = 4.0f;
         _recoveryDuration = 3.0f;
         _critAdditionByStates = new float[]{0.0f, 0.05f, 0.15f, 0.0f};

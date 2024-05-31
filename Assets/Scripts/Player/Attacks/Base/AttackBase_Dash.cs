@@ -36,6 +36,11 @@ public class AttackBase_Dash : AttackBase
     protected override void Reset()
     {
         base.Reset();
+        OnCombatSceneChanged();
+    }
+
+    protected override void OnCombatSceneChanged()
+    {
         StopAllCoroutines();
         _nightShadeDashShadow = null;
         _hasAliveNightShadeShadow = false;
@@ -45,7 +50,7 @@ public class AttackBase_Dash : AttackBase
         _nightShadeDashShadowRigidbody = _nightShadeDashShadow.GetComponent<Rigidbody2D>();
         _nightShadeDashShadow.SetActive(false);
     }
-
+    
     public override void Attack()
     {
         if (ActiveLegacy != null && ActiveLegacy.warrior == EWarrior.NightShade)

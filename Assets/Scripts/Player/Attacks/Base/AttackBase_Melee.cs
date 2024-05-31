@@ -70,6 +70,13 @@ public class AttackBase_Melee : AttackBase
         // VFX
         comboPSRenderer.sharedMaterial = _defaultVFXComboMaterial;
     }
+    
+    protected override void OnCombatSceneChanged()
+    {
+        _comboTimer = 0.0f;
+        _comboStack = 0;
+        _affectedEnemies.Clear();
+    }
 
     private void Update()
     {
@@ -135,7 +142,7 @@ public class AttackBase_Melee : AttackBase
     public void OnTriggerEnter2D(Collider2D collision)
     {
         // Check if the hit target is valid
-        if (collision.gameObject.CompareTag("Enemy") == false) return;
+        //if (collision.gameObject.CompareTag("Enemy") == false) return;
         if (Utility.IsObjectInList(collision.gameObject, _affectedEnemies)) return;
         IDamageable target = collision.gameObject.GetComponentInParent<IDamageable>();
         if (target == null) return;

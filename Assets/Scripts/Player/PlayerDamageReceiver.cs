@@ -38,6 +38,12 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     private readonly static int IsDead = Animator.StringToHash("IsDead");
     private readonly static int ShouldResurrect = Animator.StringToHash("ShouldResurrect");
 
+    private void Awake()
+    {
+        BaseHealth = 100;//000;
+        _currHealth = MaxHealth;
+    }
+    
     private void OnRestarted()
     {
         RemoveAllDebuffs();
@@ -55,8 +61,6 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     {
         _resurrectionVFX = transform.Find("ResurrectionVFX").gameObject;
         _activeDamageCoroutines = new List<Coroutine>();
-        BaseHealth = 100;
-        _currHealth = MaxHealth;
         canResurrect = false;
         _uiManager = UIManager.Instance;
         _gameManager = GameManager.Instance;

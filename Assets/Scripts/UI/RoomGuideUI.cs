@@ -19,7 +19,7 @@ public class RoomGuideUI : MonoBehaviour
         StartCoroutine(FadeInOutCoroutine());
     }
 
-    public void InitHiddenRoomGuide(string roomName, string description)
+    public void InitRoomGuide(string roomName, string description)
     {
         roomNameText.text = roomName;
         descriptionText.text = description;

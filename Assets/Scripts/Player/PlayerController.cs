@@ -218,6 +218,7 @@ public class PlayerController : Singleton<PlayerController>
     void OnTestAction(InputValue value)
     {
         playerInventory.ChangeGoldByAmount(100000);
+        playerInventory.ChangeSoulShardByAmount(1);
         // playerInventory.AddFlower(2);
         // playerInventory.AddFlower(3);
         // playerInventory.AddFlower(4);

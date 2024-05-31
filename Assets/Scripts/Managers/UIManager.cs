@@ -98,6 +98,7 @@ public class UIManager : Singleton<UIManager>
         GameEvents.MainMenuLoaded += OnMainMenuLoaded;
         GameEvents.GameLoadStarted += OnGameLoadStarted;
         GameEvents.GameLoadEnded += OnGameLoadEnded;
+        GameEvents.CombatSceneChanged += OnCombatSceneChanged;
         InGameEvents.TimeSlowDown += () => _tensionOverlay.gameObject.SetActive(true);
         InGameEvents.TimeRevertNormal += () => _tensionOverlay.gameObject.SetActive(false);
 
@@ -163,13 +164,32 @@ public class UIManager : Singleton<UIManager>
 
     private void OnGameLoadEnded()
     {
+        Debug.Log("Scene Loaded Ended: " + GameManager.Instance.ActiveScene);
         _bloodOverlay.gameObject.SetActive(false);
         _tensionOverlay.gameObject.SetActive(false);
         _zoomedMap.SetActive(false);
         _loadingScreenUI.SetActive(false);
         _flowerUIDisplayRemainingTime = 0;
+        OnPlayerHPChanged(0,1,1);
         UsePlayerControl();
         UpdateDarkGaugeUI(0);
+    }
+
+    private void OnCombatSceneChanged()
+    {
+        // Minimap and zoomed map disabled in the boss map
+        DisableMap();
+        
+        // Update combat UI with bound legacy information
+        _playerAttackManager.UpdateLegacyUI();
+        
+        // Flower UI
+        
+        
+        // Update gold and soul shard UI
+        //_playerController.playerInventory.ChangeGoldByAmount(0);
+        
+        
     }
     
     private void UseUIControl()
@@ -315,6 +335,11 @@ public class UIManager : Singleton<UIManager>
     public void DisplayLoadingScreen()
     {
         _loadingScreenUI.SetActive(true);
+    }
+    
+    public void HideLoadingScreen()
+    {
+        _loadingScreenUI.SetActive(false);
     }
 
     private void OnMainMenuLoaded()
@@ -605,10 +630,10 @@ public class UIManager : Singleton<UIManager>
     }
     
     // Portal UIs
-    public void OnEnterHiddenRoom(string roomName, string description)
+    public void OnEnterRoom(string roomName, string description)
     {
         var ui = Instantiate(_roomGuidePrefab, Vector3.zero, Quaternion.identity).GetComponent<RoomGuideUI>();
-        ui.InitHiddenRoomGuide(roomName, description);
+        ui.InitRoomGuide(roomName, description);
     }
     
     public void DisableMap()

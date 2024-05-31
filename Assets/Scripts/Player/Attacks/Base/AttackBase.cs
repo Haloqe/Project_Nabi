@@ -48,12 +48,14 @@ public abstract class AttackBase : MonoBehaviour
         
         PlayerEvents.StrengthChanged += RecalculateDamage;
         GameEvents.Restarted += Reset;
+        GameEvents.CombatSceneChanged += OnCombatSceneChanged;
     }
 
     protected virtual void OnDestroy()
     {
         PlayerEvents.StrengthChanged -= RecalculateDamage;
         GameEvents.Restarted -= Reset;
+        GameEvents.CombatSceneChanged -= OnCombatSceneChanged;
     }
 
     protected virtual void Reset()
@@ -69,6 +71,8 @@ public abstract class AttackBase : MonoBehaviour
         if (_attackType == ELegacyType.Area) return;
         basePSRenderer.sharedMaterial = _defaultVFXMaterial;
     }
+
+    protected abstract void OnCombatSceneChanged();
     
     public abstract void Attack();
 

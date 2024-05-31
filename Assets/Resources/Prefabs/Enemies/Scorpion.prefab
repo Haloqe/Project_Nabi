@@ -709,7 +709,7 @@ GameObject:
   - component: {fileID: 5471358842781351307}
   m_Layer: 8
   m_Name: Scorpion
-  m_TagString: Enemy
+  m_TagString: Boss
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -789,7 +789,6 @@ MonoBehaviour:
     CanBeDarkAttack: 0
     ShouldLeech: 0
     ShouldUpdateTension: 0
-  Health: 0
 --- !u!114 &882909300325527155
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -802,7 +801,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 16179496753ad43818dbd9157cca284c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MoveType: 0
+  MoveType: 7
   _moveSpeed: 0
   IsRooted: 0
   IsMoving: 1
@@ -811,11 +810,7 @@ MonoBehaviour:
   IsFlippable: 1
   influenceRange: 0
   distanceToGravField: 0
-  Colliders:
-  - {fileID: 8735112153467799429}
-  - {fileID: 442835086176447282}
-  - {fileID: 8126401872061584219}
-  - {fileID: 4330825018566637417}
+  AttackableColliders:
   - {fileID: 9037813359418294994}
   _shooterPositionObject: {fileID: 4274524731273743783}
   _basePositionObject: {fileID: 2865545350300273594}
