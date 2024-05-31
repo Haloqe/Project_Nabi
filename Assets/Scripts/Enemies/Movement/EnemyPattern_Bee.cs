@@ -168,6 +168,7 @@ public class EnemyPattern_Bee : EnemyPattern
         int directionFacing = -1;
         if (_targetPosition.x > transform.position.x) directionFacing *= -1;
         Vector3 position = _targetPosition + new Vector3(directionFacing * 2f, 2f, 0);
+        position += new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), 0);
         yield return MoveToPosition(position, _moveSpeed, true);
 
         yield return new WaitForSeconds(1.5f);
