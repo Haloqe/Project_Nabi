@@ -172,7 +172,7 @@ public class UIManager : Singleton<UIManager>
         _flowerUIDisplayRemainingTime = 0;
         if (GameManager.Instance.ActiveScene == ESceneType.CombatMap)
         {
-            DisplayRoomGuideUI("임시메타맵", "");
+            DisplayRoomGuideUI("임시 메타맵", "");
             DisableMap();
         }
         OnPlayerHPChanged(0,1,1);

@@ -142,18 +142,18 @@ public class AttackBase_Melee : AttackBase
     public void OnTriggerEnter2D(Collider2D collision)
     {
         // Check if the hit target is valid
-        //if (collision.gameObject.CompareTag("Enemy") == false) return;
-        if (Utility.IsObjectInList(collision.gameObject, _affectedEnemies)) return;
-        IDamageable target = collision.gameObject.GetComponentInParent<IDamageable>();
+        var rootEnemy = collision.transform.root.gameObject;
+        if (Utility.IsObjectInList(rootEnemy, _affectedEnemies)) return;
+        IDamageable target = rootEnemy.GetComponent<IDamageable>();
         if (target == null) return;
-        if (Utility.IsObjectInList(target.GetGameObject(), _affectedEnemies)) return;
+        if (Utility.IsObjectInList(rootEnemy, _affectedEnemies)) return;
 
         // Recalculate damage based on current player strength
         _attackComboInfo.Damage.TotalAmount = _damageComboInfo.BaseDamage + _playerController.Strength * _damageComboInfo.RelativeDamage;
         _attackInfo.Damage.TotalAmount = _damageInfo.BaseDamage + _playerController.Strength * _damageInfo.RelativeDamage;
         
         // Do damage
-        _affectedEnemies.Add(collision.gameObject.GetInstanceID());
+        _affectedEnemies.Add(rootEnemy.GetInstanceID());
         _damageDealer.DealDamage(target, _comboStack == 0 ? _attackComboInfo : _attackInfo);
     }
 
