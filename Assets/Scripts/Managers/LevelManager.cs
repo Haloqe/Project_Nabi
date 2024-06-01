@@ -288,7 +288,7 @@ public class LevelManager : Singleton<LevelManager>
         BoundsInt localBounds = wallTilemap.cellBounds;
         Vector3Int doorLocalPos = newDoor.GetLocalPosition();
         Vector3Int maxYPos = Vector3Int.back;
-        List<Vector3Int> toFillPositions = new();
+        List<Vector3Int> toFillPositions = new List<Vector3Int>();
         bool canBePlaced = true;
 
         // Check wall tiles
@@ -297,7 +297,6 @@ public class LevelManager : Singleton<LevelManager>
             if (wallTilemap.HasTile(pos))
             {
                 Vector3Int tileLocalPos = new Vector3Int(pos.x, pos.y, 0);
-                //Vector3Int worldPos = Vector3Int.FloorToInt(wallTilemap.LocalToWorld(localPos));
                 Vector3Int newWorldPos = doorWorldPos - doorLocalPos + tileLocalPos;
 
                 if (maxYPos == Vector3Int.back && pos.y == localBounds.yMax - 1)

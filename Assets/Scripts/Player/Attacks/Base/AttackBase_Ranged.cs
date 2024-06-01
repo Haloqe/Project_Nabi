@@ -64,7 +64,8 @@ public class AttackBase_Ranged : AttackBase
     {
         _animator.SetInteger(AttackIndex, (int)ELegacyType.Ranged);
         basePSRenderer.flip = Mathf.Sign(_player.localScale.x) < 0 ? Vector3.right : Vector3.zero;
-        baseEffector.SetActive(true);
+        //baseEffector.SetActive(true);
+        baseEffector.GetComponent<ParticleSystem>().Play();
     }
 
     public void Fire()

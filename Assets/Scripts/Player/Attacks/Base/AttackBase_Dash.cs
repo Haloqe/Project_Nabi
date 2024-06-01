@@ -28,7 +28,7 @@ public class AttackBase_Dash : AttackBase
         base.Start();
         _attackType = ELegacyType.Dash;
         _attackInfoInit = new AttackInfo();
-        _nightShadeDashPrefab = Resources.Load("Prefabs/Player/NightShadeDash").GameObject();
+        _nightShadeDashPrefab = Resources.Load("Prefabs/Effects/Player/NightShadeDash").GameObject();
         _rigidbody2D = _player.GetComponent<Rigidbody2D>();
         Reset();
     }

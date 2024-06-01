@@ -259,10 +259,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeedMultiplier: 1
-  IsOnMovingPlatform: 0
+  isOnMovingPlatform: 0
   jumpForce: 0
   isDashing: 0
   isAreaAttacking: 0
+  isRangedAttacking: 0
+  savedLookDirection: {x: 0, y: 0, z: 0}
 --- !u!114 &39438638665260744
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -275,11 +277,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 80a92563d372d1e47815193a136aa979, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerInput: {fileID: 0}
   playerMovement: {fileID: 0}
-  playerDamageReceiver: {fileID: 0}
-  playerDamageDealer: {fileID: 0}
   playerInventory: {fileID: 0}
-  nightShadeCollider: {fileID: 0}
+  playerDamageDealer: {fileID: 0}
+  playerDamageReceiver: {fileID: 0}
+  IsMapEnabled: 0
   statusEffects:
   - {fileID: 0}
   - {fileID: 0}
@@ -303,6 +306,7 @@ MonoBehaviour:
   - {fileID: 1538532851158953275}
   strengthAddition: 0
   evasionRateAdditionAtMax: 0
+  nightShadeCollider: {fileID: 0}
   nightShadeFastChaseStats: []
   nightShadeShadeBonusStats: []
 --- !u!114 &5603536338378699506
@@ -722,6 +726,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   baseEffector: {fileID: 6151124506431370974}
   comboEffector: {fileID: 5665054400567532444}
+  comboHitEffects:
+  - {fileID: 329638185960574814, guid: 32d7368c66ce09940a3bc935b44e480b, type: 3}
+  - {fileID: 191799443975725193, guid: 4c486627957c0664494dad627cdd4554, type: 3}
+  - {fileID: 3182776571734057864, guid: e72a99e81ae078e4ba4b8cf5c0068379, type: 3}
+  - {fileID: 1708003821759799633, guid: ec002dbd94312e94ab73c5aeefb1ca18, type: 3}
+  - {fileID: 6619945188492694215, guid: 42cb34c0e1a4f2a438176da14471c37f, type: 3}
 --- !u!114 &6265892190179805405
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1603,8 +1613,16 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6068153743655837865, guid: 08614ad0f443b4047bf0c4156d465d7d, type: 3}
+      propertyPath: stopAction
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6068153743655837865, guid: 08614ad0f443b4047bf0c4156d465d7d, type: 3}
       propertyPath: lengthInSec
       value: 1.1113
+      objectReference: {fileID: 0}
+    - target: {fileID: 6068153743655837865, guid: 08614ad0f443b4047bf0c4156d465d7d, type: 3}
+      propertyPath: playOnAwake
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6068153743655837865, guid: 08614ad0f443b4047bf0c4156d465d7d, type: 3}
       propertyPath: useUnscaledTime

@@ -7,6 +7,8 @@ public class AttackBase_Melee : AttackBase
     public GameObject comboEffector;
     public ParticleSystemRenderer comboPSRenderer { get; private set; }
     private Material _defaultVFXComboMaterial;
+    [SerializeField] [NamedArray(typeof(EWarrior))] private GameObject[] comboHitEffects;
+    private GameObject currComboHitEffect;
 
     // Collider
     private List<int> _affectedEnemies;
@@ -69,6 +71,7 @@ public class AttackBase_Melee : AttackBase
 
         // VFX
         comboPSRenderer.sharedMaterial = _defaultVFXComboMaterial;
+        currComboHitEffect = comboHitEffects[(int)EWarrior.MAX];
     }
     
     protected override void OnCombatSceneChanged()
@@ -130,6 +133,8 @@ public class AttackBase_Melee : AttackBase
     public void OnComboHit()
     {
         FindObjectOfType<TestCameraShake>().OnComboAttack();
+        Vector3 vfxPosition = new Vector3(_player.position.x - Mathf.Sign(_player.localScale.x), _player.position.y, 0);
+        Instantiate(currComboHitEffect, vfxPosition, Quaternion.identity);
         if (ActiveLegacy) ((Legacy_Melee)ActiveLegacy).OnAttack_Combo();
     }
 
@@ -193,5 +198,10 @@ public class AttackBase_Melee : AttackBase
             ActiveLegacy.StatusEffects[legacyPreservation].Chance);
         newStatusEffectsCombo.Add(newEffect);
         _attackComboInfo.StatusEffects = newStatusEffectsCombo;
+    }
+
+    public void UpdateHitVFX()
+    {
+        currComboHitEffect = comboHitEffects[(int)ActiveLegacy.warrior];
     }
 }

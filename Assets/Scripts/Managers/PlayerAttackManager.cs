@@ -560,6 +560,8 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                     
                     // Combo VFX
                     attackBase.comboPSRenderer.material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Melee_Combo);
+
+                    attackBase.UpdateHitVFX();
                 }
                 break;
             case ELegacyType.Ranged:
