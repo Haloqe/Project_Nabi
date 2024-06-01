@@ -7,10 +7,10 @@ using Random = UnityEngine.Random;
 public class Butterfly : MonoBehaviour
 {
     // Variables
-    private readonly float _lifeTime = 2000f;
+    private readonly float _lifeTime = 30f;
     private readonly float _detectInterval = 1f;    // Time interval to detect if enemy is in range
     private readonly float _attackSpeed = 1f;       // Speed of the butterfly while attacking
-    private readonly float _flySpeed = 0.08f;      // Speed of the butterfly while traveling towards target
+    private readonly float _flySpeed = 0.08f;       // Speed of the butterfly while traveling towards target
     private readonly float _cloverSize = 1.7f;      // Size of the clover leaves
     private float _attackSpeedMultiplier = 1f;
     private int _buffStack = 0;
@@ -56,8 +56,8 @@ public class Butterfly : MonoBehaviour
         transform.position = _player.position + GetRandomOffsetNearPlayer();
         
         // Damage
-        baseDamage = 3;
-        relativeDamage = 2; 
+        baseDamage = 2.5f;
+        relativeDamage = 1; 
         _attackInfo = new AttackInfo();
         _attackInfo.Damage.TotalAmount = baseDamage + _playerController.Strength * (relativeDamage + extraRelativeDamage);
     }

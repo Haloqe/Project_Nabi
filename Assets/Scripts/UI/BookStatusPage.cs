@@ -70,10 +70,10 @@ public class BookStatusPage : BookPage
         var damageMultipliers = _playerController.playerDamageDealer.attackDamageMultipliers;
         for (int i = 0; i < 4; i++)
         {
-            if (damageMultipliers[i] != 1) attackTMPs[i].text += $"<color=#00A7B7> (X{Utility.FormatFloat(damageMultipliers[i])})</00A7B7>";
+            if (damageMultipliers[i] != 1) attackTMPs[i].text += $"<color=#00A7B7> (X{Utility.FormatFloat(damageMultipliers[i])})</color>";
         }
         if (_playerController.playerDamageDealer.totalDamageMultiplier != 1)
-            totalTMP.text += $"<color=#00A7B7> (X{Utility.FormatFloat(_playerController.playerDamageDealer.totalDamageMultiplier)})</00A7B7>";
+            totalTMP.text += $"<color=#00A7B7> (X{Utility.FormatFloat(_playerController.playerDamageDealer.totalDamageMultiplier)})</color>";
     }
 
     public override void OnPageOpen()

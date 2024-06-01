@@ -80,7 +80,7 @@ public class GameManager : Singleton<GameManager>
         GameEvents.MapLoaded.Invoke();
         
         // If not first run, reset variables
-        if (!IsFirstRun) GameEvents.Restarted.Invoke();
+        if (ActiveScene != ESceneType.Boss && !IsFirstRun) GameEvents.Restarted.Invoke();
 
         // When all set, spawn player 
         LevelManager.Instance.SpawnPlayer();

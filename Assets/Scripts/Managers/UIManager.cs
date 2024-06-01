@@ -5,7 +5,6 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class UIManager : Singleton<UIManager>
@@ -170,14 +169,23 @@ public class UIManager : Singleton<UIManager>
         _zoomedMap.SetActive(false);
         _loadingScreenUI.SetActive(false);
         _flowerUIDisplayRemainingTime = 0;
-        if (GameManager.Instance.ActiveScene == ESceneType.CombatMap)
+
+        ESceneType currSceneType = GameManager.Instance.ActiveScene;
+        switch (currSceneType)
         {
-            DisplayRoomGuideUI("임시 메타맵", "");
-            DisableMap();
+            case ESceneType.CombatMap:
+                DisplayRoomGuideUI("임시 메타맵", "");
+                DisableMap();
+                break;
+            
+            case ESceneType.Boss:
+                var hpRatio = _playerController.playerDamageReceiver.GetHPRatio();
+                OnPlayerHPChanged(0,hpRatio,hpRatio);
+                return;
         }
+        
         OnPlayerHPChanged(0,1,1);
         UpdateDarkGaugeUI(0);
-        UsePlayerControl();
     }
 
     private void OnCombatSceneChanged()
@@ -188,12 +196,10 @@ public class UIManager : Singleton<UIManager>
         // Update combat UI with bound legacy information
         _playerAttackManager.UpdateLegacyUI();
         
-        // Flower UI
-        
-        
         // Update gold and soul shard UI
         //_playerController.playerInventory.ChangeGoldByAmount(0);
         
+        // U
         
     }
     
@@ -535,6 +541,7 @@ public class UIManager : Singleton<UIManager>
         ui.GetComponent<TextPopUpUI>().Init(parent, text);
     }
     private Vector3 playerUpOffset = new Vector3(0, 2.3f, 0);
+    
     // InGame popup - crit
     public void DisplayCritPopUp(Vector3 position)
     {

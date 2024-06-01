@@ -130,7 +130,8 @@ public class PlayerMovement : MonoBehaviour
             _rigidbody2D.gravityScale = DownwardsGravityScale;
             if (Time.timeScale != 1) _rigidbody2D.gravityScale /= (Time.timeScale * Time.timeScale);
         }
-}    
+    }
+    
     private void OnTimeRevertNormal()
     {
         if (!_isJumping)

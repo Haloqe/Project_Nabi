@@ -33,7 +33,8 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     private GameObject[] _bulletsByWarrior;
     
     // UI related
-    private Sprite[] _legacyIconSpriteSheet;
+    private Sprite[] _passiveIconSpriteSheet;
+    private Sprite[] _activeIconSpriteSheet;
     private Image[] _activeLegacyIcons = new Image[4];
     private Image[] _activeLegacyOverlays = new Image[4];
     private Transform _passiveLegacyGroup;
@@ -48,19 +49,20 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     {
         base.Awake();
         if (IsToBeDestroyed) return;
-        _legacyIconSpriteSheet = Resources.LoadAll<Sprite>("Sprites/Icons/Abilities/PlayerAbilitySpritesheet");
+        _passiveIconSpriteSheet = Resources.LoadAll<Sprite>("Sprites/Icons/Abilities/PlayerPassiveSpritesheet");
+        _activeIconSpriteSheet = Resources.LoadAll<Sprite>("Sprites/Icons/Abilities/PlayerActiveSpriteSheet");
         _collectedLegacyIDs = new HashSet<int>();
         _collectedPassiveIDs = new List<int>();
         _collectedLegacyPreservations = new Dictionary<int, ELegacyPreservation>();
         _boundActiveLegacyIDs = new int[] {-1,-1,-1};
         _passiveLegacySlotPrefab = Utility.LoadGameObjectFromPath("Prefabs/UI/InGame/PassiveLegacySlot");
         ClockworkPrefab = Resources.Load("Prefabs/Interact/Clockwork").GameObject();
-        GameEvents.Restarted += OnRestarted;
+        GameEvents.GameLoadEnded += OnGameLoadEnded;
 
         Init();
     }
-    
-    private void OnRestarted()
+
+    private void OnGameLoadEnded()
     {
         _collectedLegacyIDs.Clear();
         _collectedPassiveIDs.Clear();
@@ -497,7 +499,8 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
 
     public Sprite GetLegacyIcon(int legacyID)
     {
-        return _legacyIconSpriteSheet[_legacies[legacyID].IconIndex];
+        var spritesheet = _legacies[legacyID].Type == ELegacyType.Passive ? _passiveIconSpriteSheet : _activeIconSpriteSheet;
+        return spritesheet[_legacies[legacyID].IconIndex];
     }
 
     public void UpdateLegacyUI()

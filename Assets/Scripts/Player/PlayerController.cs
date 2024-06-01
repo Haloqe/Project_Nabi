@@ -118,6 +118,8 @@ public class PlayerController : Singleton<PlayerController>
         PlayerEvents.ValueChanged -= OnValueChanged;
         PlayerEvents.StartResurrect -= OnPlayerStartResurrect;
         InGameEvents.EnemySlayed -= OnEnemySlayed;
+        playerInput.actions["Jump"].started -= OnStartJump;
+        playerInput.actions["Jump"].canceled -= OnReleaseJump;
     }
 
     private void Start()

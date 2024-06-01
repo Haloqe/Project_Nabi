@@ -13,7 +13,7 @@ public class Flower : Interactor
         //NectarFlower heals immediately on collection
         if (flowerIndex == (int)EFlowerType.NectarFlower)
         {
-            playerController.Heal(10);  
+            playerController.Heal(25);  
             Destroy(gameObject);
         }
         //add to inventory if the number of flower does not exceed 2
