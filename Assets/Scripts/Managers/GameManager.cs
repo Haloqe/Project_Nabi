@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 public class GameManager : Singleton<GameManager>
 {
     public ESceneType ActiveScene { get; private set; }
-    public PlayerMetaInfo PlayerMetaInfo { get; private set; }
+    public PlayerMetaData PlayerMetaData { get; private set; }
     public GameObject PlayerPrefab;
     
     // References
@@ -15,7 +15,6 @@ public class GameManager : Singleton<GameManager>
     private int _ingameMapSceneIdx;   // 플레이어가 실행한 씬
     private int _releaseMapSceneIdx=1;       // 테스트용 랜덤 제너레이션 씬
     
-    public bool HasSaveData { get; private set; }
     // todo temp
     public bool IsFirstRun = true;
 
@@ -23,8 +22,7 @@ public class GameManager : Singleton<GameManager>
     {
         base.Awake();
         if (IsToBeDestroyed) return;
-        PlayerMetaInfo = new PlayerMetaInfo();
-        PlayerMetaInfo.Reset();
+        PlayerMetaData = SaveSystem.LoadMetaData();
         _ingameMapSceneIdx = _releaseMapSceneIdx;
         SceneManager.sceneLoaded += OnSceneLoaded;
         PlayerEvents.Defeated += OnPlayerDefeated;
@@ -57,7 +55,7 @@ public class GameManager : Singleton<GameManager>
         }
     }
 
-    public void LoadInGame()
+    private void LoadInGame()
     {
         // Loading screen
         UIManager.Instance.DisplayLoadingScreen();
@@ -94,15 +92,6 @@ public class GameManager : Singleton<GameManager>
     
     public void LoadMainMenu()
     {
-        // If player exists (ingame->mainmenu), destroy the player
-        if (_player)
-        {
-            Destroy(_player.gameObject);
-        }
-        
-        // TEMP TODO
-        IsFirstRun = true;
-        PlayerMetaInfo.Reset();
         SceneManager.LoadScene("Scenes/MainMenu");
     }
 
@@ -112,7 +101,16 @@ public class GameManager : Singleton<GameManager>
         SceneManager.LoadScene("Scenes/Boss_InGame");
     }
 
-    public void QuitGame()
+    private void OnPlayerDefeated()
+    {
+        IsFirstRun = false;
+        PlayerMetaData.isDirty = true;
+        PlayerMetaData.numDeaths++;
+        PlayerMetaData.numSouls = _player.playerInventory.SoulShard;
+        SaveSystem.SaveMetaData();
+    }
+    
+   public void QuitGame()
     {
         // TODO Confirm panel
 #if UNITY_EDITOR
@@ -121,11 +119,18 @@ public class GameManager : Singleton<GameManager>
         Application.Quit();
 #endif
     }
-
-    private void OnPlayerDefeated()
+    
+    public void StartNewGame()
     {
-        IsFirstRun = false;
-        PlayerMetaInfo.NumDeaths++;
-        PlayerMetaInfo.NumSouls = _player.playerInventory.SoulShard;
+        if (_player) Destroy(_player.gameObject);
+        IsFirstRun = true;
+        PlayerMetaData = new PlayerMetaData();
+        SaveSystem.RemoveSaveData();
+        LoadInGame();
+    }
+
+    public void ContinueGame()
+    {
+        LoadInGame();
     }
 }

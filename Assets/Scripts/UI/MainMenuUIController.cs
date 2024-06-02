@@ -15,6 +15,7 @@ public class MainMenuUIController : MonoBehaviour
     private Color _selectedColour;
     private Color _unselectedColour;
     private Color _unavailableColour;
+    private Coroutine _colourChangeCoroutine;
     
     private void Awake()
     {
@@ -28,32 +29,35 @@ public class MainMenuUIController : MonoBehaviour
         for (int i = 0; i < _options.Length; i++)
         {
             _options[i].GetComponent<MainMenuButton>().Init(this, i);
+            _options[i].color = _unselectedColour;
         }
+        _selectedOptionIdx = 0;
     }
 
     private void Start()
     {
-        _hasSaveData = GameManager.Instance.HasSaveData;
-        _options[1].color = _hasSaveData? _unselectedColour : _unavailableColour;
-        SelectOption(0);
+        _hasSaveData = GameManager.Instance.PlayerMetaData.isDirty;
+        _options[1].color = _hasSaveData ? _unselectedColour : _unavailableColour;
+        SelectOption(_hasSaveData ? 1 : 0);
     }
 
-    private void SelectOption(int selectedIdx)
+    private void SelectOption(int newOptionIdx)
     {
         if (_underTransition) return;
-        if (selectedIdx == 1 && !_hasSaveData) return;
+        if (newOptionIdx == 1 && !_hasSaveData) return;
+        
         UnselectCurrentOption();
-        _selectedOptionIdx = selectedIdx;
-        _options[_selectedOptionIdx].color = _selectedColour;
-        _options[_selectedOptionIdx].text = "> " + _options[_selectedOptionIdx].text;
-        StartCoroutine(nameof(ColourChangeCoroutine));
+        _options[newOptionIdx].color = _selectedColour;
+        _options[newOptionIdx].text = "> " + _options[newOptionIdx].text;
+        _selectedOptionIdx = newOptionIdx;
+        _colourChangeCoroutine = StartCoroutine(ColourChangeCoroutine());
     }
 
     private void UnselectCurrentOption()
     {
-        StopCoroutine(nameof(ColourChangeCoroutine));
-        _options[_selectedOptionIdx].color = _unselectedColour;
+        if (_colourChangeCoroutine != null) StopCoroutine(_colourChangeCoroutine);
         _options[_selectedOptionIdx].text = _options[_selectedOptionIdx].text.Substring(2);
+        _options[_selectedOptionIdx].color = _unselectedColour;
     }
     
     private IEnumerator ColourChangeCoroutine()
@@ -113,7 +117,6 @@ public class MainMenuUIController : MonoBehaviour
                 break;
             
             case 1: // Continue
-                // TODO
                 break;
             
             case 2: // Settings
@@ -131,7 +134,7 @@ public class MainMenuUIController : MonoBehaviour
 
     private void StartTransition()
     {
-        GetComponent<Animator>().SetTrigger("Transition");
+        GetComponent<Animator>().enabled = true;
         _underTransition = true;
     }
 
@@ -140,16 +143,12 @@ public class MainMenuUIController : MonoBehaviour
         switch (_selectedOptionIdx)
         {
             case 0: // New Game
-                // TODO Opening animation
-                GameManager.Instance.LoadInGame();
+                // TODO Opening cutscene
+                GameManager.Instance.StartNewGame();
                 break;
             
             case 1: // Continue
-                // TODO
-                break;
-            
-            case 2: // Settings
-                // TODO
+                GameManager.Instance.ContinueGame();
                 break;
         }
     }

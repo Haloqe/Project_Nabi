@@ -250,7 +250,7 @@ public class PlayerController : Singleton<PlayerController>
     private void OnEnemySlayed(EnemyBase slayedEnemy)
     {
         //PlayerEvents.ValueChanged.Invoke(ECondition.SlayedEnemiesCount, +1);
-        _gameManager.PlayerMetaInfo.NumKills++;
+        _gameManager.PlayerMetaData.numKills++;
     }
 
     private void OnOpenMap(InputValue value)

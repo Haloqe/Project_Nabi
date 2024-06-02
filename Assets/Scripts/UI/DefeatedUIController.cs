@@ -83,7 +83,7 @@ public class DefeatedUIController : MonoBehaviour
 
     public void OnSubmit()
     {
-        if (_isCurrSelectedRestartBtn) GameManager.Instance.LoadInGame();
+        if (_isCurrSelectedRestartBtn) GameManager.Instance.ContinueGame();
         else GameManager.Instance.LoadMainMenu();
     }
 

@@ -34,8 +34,8 @@ public class BookStatusPage : BookPage
     public override void OnBookOpen()
     {
         // Left Page
-        deathTMP.text = "DEATHS: " + _gameManager.PlayerMetaInfo.NumDeaths;
-        killTMP.text = "KILLS: " + _gameManager.PlayerMetaInfo.NumKills;
+        deathTMP.text = "DEATHS: " + _gameManager.PlayerMetaData.numDeaths;
+        killTMP.text = "KILLS: " + _gameManager.PlayerMetaData.numKills;
         goldTMP.text = "GOLD: " + _playerController.playerInventory.Gold;
         soulTMP.text = "SOULS: " + _playerController.playerInventory.SoulShard;
         

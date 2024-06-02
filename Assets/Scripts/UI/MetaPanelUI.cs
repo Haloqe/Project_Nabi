@@ -14,13 +14,13 @@ public class MetaPanelUI : MonoBehaviour
     [SerializeField] private string[] levelDescriptions;
     [SerializeField] private int[] levelUnlockCosts;
     public int metaIndex;
-    public PlayerMetaInfo MetaInfo;
+    public PlayerMetaData MetaData;
     private int _unlockedLevel;
     private int _selectedLevel;
     
     public void Awake()
     {
-        _unlockedLevel = MetaInfo.MetaUpgradeLevels[metaIndex];
+        _unlockedLevel = MetaData.metaUpgradeLevels[metaIndex];
         _selectedLevel = 0;
         
         unselectedOutline.SetActive(true);
@@ -107,7 +107,7 @@ public class MetaPanelUI : MonoBehaviour
     private void UnlockUpgrade()
     {
         levelSlots[_selectedLevel].color = Color.white;
-        MetaInfo.MetaUpgradeLevels[metaIndex] = ++_unlockedLevel;
+        MetaData.metaUpgradeLevels[metaIndex] = ++_unlockedLevel;
         baseUI.ApplyMetaUpgrade(metaIndex, _unlockedLevel);
     }
     

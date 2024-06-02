@@ -195,12 +195,6 @@ public class UIManager : Singleton<UIManager>
         
         // Update combat UI with bound legacy information
         _playerAttackManager.UpdateLegacyUI();
-        
-        // Update gold and soul shard UI
-        //_playerController.playerInventory.ChangeGoldByAmount(0);
-        
-        // U
-        
     }
     
     private void UseUIControl()
@@ -320,7 +314,7 @@ public class UIManager : Singleton<UIManager>
         string path = "Prefabs/UI/";
         _loadingScreenPrefab    = Utility.LoadGameObjectFromPath(path + "LoadingCanvas");
         _focusedOverlayPrefab   = Utility.LoadGameObjectFromPath(path + "InGame/FocusedCanvas");
-        _defeatedUIPrefab       = Utility.LoadGameObjectFromPath(path + "InGame/GameOverCanvas");
+        _defeatedUIPrefab       = Utility.LoadGameObjectFromPath(path + "InGame/DefeatedCanvas");
         _inGameCombatPrefab     = Utility.LoadGameObjectFromPath(path + "InGame/CombatCanvas");
         _zoomedMapPrefab        = Utility.LoadGameObjectFromPath(path + "InGame/ZoomedMap");
         _evadePopupPrefab       = Utility.LoadGameObjectFromPath(path + "InGame/TextPopUp/EvadeUI");

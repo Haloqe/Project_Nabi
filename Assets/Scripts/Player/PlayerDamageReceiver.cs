@@ -52,7 +52,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         _shouldNotTakeDamage = false;
         additionalHealth = 0;
         _currHealth = MaxHealth;
-        canResurrect = _gameManager.PlayerMetaInfo.MetaUpgradeLevels[(int)EMetaUpgrade.Resurrection] != -1;
+        canResurrect = _gameManager.PlayerMetaData.metaUpgradeLevels[(int)EMetaUpgrade.Resurrection] != -1;
         _slowRemainingTimes.Clear();
         _activeDamageCoroutines.Clear();
     }
@@ -348,7 +348,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         // End resurrect
         PlayerEvents.EndResurrect.Invoke();
         ChangeHealthByAmount(MaxHealth 
-            * Define.MetaResurrectionHealthRatio[_gameManager.PlayerMetaInfo.MetaUpgradeLevels[(int)EMetaUpgrade.Resurrection]]);
+            * Define.MetaResurrectionHealthRatio[_gameManager.PlayerMetaData.metaUpgradeLevels[(int)EMetaUpgrade.Resurrection]]);
         
         _animator.Rebind();
         _animator.Update(0f);

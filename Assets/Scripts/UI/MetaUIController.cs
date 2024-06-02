@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class MetaUIController : MonoBehaviour
 {
-    private PlayerMetaInfo _metaInfo;
+    private PlayerMetaData _metaData;
     private PlayerController _playerController;
     public PlayerInventory PlayerInventory { get; private set; } 
     public Sprite selectedLevelSlotSprite;
@@ -19,14 +19,14 @@ public class MetaUIController : MonoBehaviour
     private void Awake()
     {
         _readyToNavigate = false;
-        _metaInfo = GameManager.Instance.PlayerMetaInfo;
+        _metaData = GameManager.Instance.PlayerMetaData;
         _playerController = PlayerController.Instance;
         PlayerInventory = _playerController.playerInventory;
         _animator = GetComponentInChildren<Animator>();
         _metaPanels = GetComponentsInChildren<MetaPanelUI>();
         for (int i = 0; i < 5; i++)
         {
-            _metaPanels[i].MetaInfo = _metaInfo;
+            _metaPanels[i].MetaData = _metaData;
             _metaPanels[i].metaIndex = i;
         }
     }
