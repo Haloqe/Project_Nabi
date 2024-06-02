@@ -1,27 +1,26 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
-using Unity.Mathematics;
+using Pathfinding;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Interactions;
-using UnityEngine.Rendering;
 
 public class PlayerController : Singleton<PlayerController>
 {
     // Reference to other player components
     private Animator _animator;
-    private PlayerInput _playerInput;
+    private InputActionMap _playerIAMap;
+    public PlayerInput playerInput;
     public PlayerMovement playerMovement;
-    public PlayerDamageReceiver playerDamageReceiver;
-    public PlayerDamageDealer playerDamageDealer;
     public PlayerInventory playerInventory;
-    public GameObject nightShadeCollider;
-
+    public PlayerDamageDealer playerDamageDealer;
+    public PlayerDamageReceiver playerDamageReceiver;
     private UIManager _uiManager;
     private GameManager _gameManager;
 
     // Centrally controlled variables
+    public bool IsMapEnabled;
     public float DefaultGravityScale { get; private set; }
     public float HpCriticalThreshold { get; private set; }
     [NamedArray(typeof(EStatusEffect))] public GameObject[] statusEffects;
@@ -67,6 +66,7 @@ public class PlayerController : Singleton<PlayerController>
     private List<EnemyBase>[] _ecstasyAffected;
 
     // NightShade
+    public GameObject nightShadeCollider;
     private List<EnemyBase> _shadowHosts;
     private readonly int _shadowHostLimit = 3;
     private readonly float _shadowHostAutoUpdateInterval = 2f;
@@ -78,30 +78,27 @@ public class PlayerController : Singleton<PlayerController>
     {
         base.Awake();
         if (IsToBeDestroyed) return;
-        
-        // Initialise values
-        HpCriticalThreshold = 0.33f;
-        nightShadeShadeBonusStats = new float[]
-        {
-            0, 0, 0, 0, 0
-        };
-        DefaultGravityScale = 3.0f;
 
+        // Initialise values
         BaseStrength = 3.0f;
         BaseArmour = 3.0f;
         BaseArmourPenetration = 0.0f;
         BaseEvasionRate = 0.0f;
         BaseCriticalRate = 0.0f;
         BaseHealEfficiency = 1.0f;
+        HpCriticalThreshold = 0.33f;
+        DefaultGravityScale = 3.0f;
+        nightShadeShadeBonusStats = new float[] { 0, 0, 0, 0, 0 };
 
         // Get components
         _uiManager = UIManager.Instance;
         _gameManager = GameManager.Instance;
-        _playerInput = GetComponent<PlayerInput>();
         playerMovement = GetComponent<PlayerMovement>();
         playerDamageReceiver = GetComponent<PlayerDamageReceiver>();
         playerDamageDealer = GetComponent<PlayerDamageDealer>();
         playerInventory = GetComponent<PlayerInventory>();
+        playerInput = GetComponent<PlayerInput>();
+        _playerIAMap = playerInput.actions.FindActionMap("Player");
         _animator = GetComponent<Animator>();
         _appliedStatUpgrades = new Dictionary<EStat, List<(int legacyID, SLegacyStatUpgradeData data)>>();
         _shadowHosts = new List<EnemyBase>();
@@ -112,8 +109,8 @@ public class PlayerController : Singleton<PlayerController>
         PlayerEvents.ValueChanged += OnValueChanged;
         PlayerEvents.StartResurrect += OnPlayerStartResurrect;
         InGameEvents.EnemySlayed += OnEnemySlayed;
-        _playerInput.actions["Jump"].started += OnStartJump;
-        _playerInput.actions["Jump"].canceled += OnReleaseJump;
+        playerInput.actions["Jump"].started += OnStartJump;
+        playerInput.actions["Jump"].canceled += OnReleaseJump;
         OnRestarted();
     }
 
@@ -130,6 +127,7 @@ public class PlayerController : Singleton<PlayerController>
         _ecstasyAffected = new List<EnemyBase>[EnemyManager.Instance.NumEnemyTypes];
         for (int i = 0; i < EnemyManager.Instance.NumEnemyTypes; i++)
             _ecstasyAffected[i] = new List<EnemyBase>();
+        IsMapEnabled = true;
     }
 
     private void OnRestarted()
@@ -172,6 +170,7 @@ public class PlayerController : Singleton<PlayerController>
         // Initialise NightShade data
         _shadowHosts.Clear();
         nightShadeCollider.SetActive(false);
+        IsMapEnabled = true;
     }
 
     private void OnPlayerStartResurrect()
@@ -220,12 +219,8 @@ public class PlayerController : Singleton<PlayerController>
     int count = 0;
     void OnTestAction(InputValue value)
     {
-        // if (count == 0)
-        // {
-        //     var room = Resources.Load("Prefabs/LevelGeneration/Rooms/Room 12");
-        //     Instantiate(room, new Vector3(-4f, -2f, 0), quaternion.identity);
-        //     count++;
-        // }
+        playerInventory.ChangeGoldByAmount(100000);
+        playerInventory.ChangeSoulShardByAmount(1);
         // playerInventory.AddFlower(2);
         // playerInventory.AddFlower(3);
         // playerInventory.AddFlower(4);
@@ -239,6 +234,20 @@ public class PlayerController : Singleton<PlayerController>
         //     playerDamageReceiver.ChangeHealthByAmount(-1000);
         // }
         // count++;
+    }
+
+    private void MakeAStarGraph(int width, int depth, Vector3 center)
+    {
+        AstarData data = AstarPath.active.data;
+        GridGraph gg = data.AddGraph(typeof(GridGraph)) as GridGraph;
+        
+        float nodeSize = 0.5f;
+        gg.is2D = true;
+        gg.collision.use2D = true;
+        gg.collision.mask = LayerMask.GetMask("Platform");
+        gg.SetDimensions(width, depth, nodeSize);
+        
+        AstarPath.active.Scan();
     }
 
     private void OnValueChanged(ECondition condition, float changeAmount)
@@ -260,7 +269,7 @@ public class PlayerController : Singleton<PlayerController>
 
     private void OnOpenMap(InputValue value)
     {
-        _uiManager.OpenMap();
+        if (IsMapEnabled) _uiManager.OpenMap();
     }
 
     private void OnOpenBook(InputValue value)
@@ -464,4 +473,7 @@ public class PlayerController : Singleton<PlayerController>
     {
         _criticalRateAddition = Mathf.Max(0, _criticalRateAddition + value);
     }
+
+    public void DisablePlayerInput() => _playerIAMap.Disable();
+    public void EnablePlayerInput() => _playerIAMap.Enable();
 }

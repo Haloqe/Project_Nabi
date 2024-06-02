@@ -26,8 +26,8 @@ public class EnemyPattern_Mantis : EnemyPattern
         if (IsAtEdge()) FlipEnemy();
 
         _rigidBody.velocity = transform.localScale.x > Mathf.Epsilon ?
-            new Vector2(_moveSpeed, 0f) :
-            new Vector2(-_moveSpeed, 0f); //if it's facing right
+            new Vector2(MoveSpeed, 0f) :
+            new Vector2(-MoveSpeed, 0f); //if it's facing right
     }
 
     private void GenerateRandomState()

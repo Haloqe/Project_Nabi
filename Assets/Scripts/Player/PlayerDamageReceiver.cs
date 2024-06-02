@@ -13,6 +13,8 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     private UIManager _uiManager;
     private GameManager _gameManager;
     private GameObject _resurrectionVFX;
+    private Material _flashMaterial;
+    private Material _originalMaterial;
     
     // Health attributes
     private float _currHealth;
@@ -67,6 +69,8 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         _playerController = PlayerController.Instance;
         _animator = GetComponent<Animator>();
         _spriteRenderer = GetComponent<SpriteRenderer>();
+        _flashMaterial = Resources.Load("Materials/FlashMaterial") as Material;
+        _originalMaterial = _spriteRenderer.material;
         
         PlayerEvents.Defeated += OnPlayerDefeated;
         GameEvents.Restarted += OnRestarted;
@@ -298,6 +302,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
 
     private void Die()
     {
+        _spriteRenderer.material = _originalMaterial;
         // Can resurrect?
         if (canResurrect) StartCoroutine(ResurrectCoroutine());
         // Die
@@ -361,9 +366,12 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     // TODO FIX: damage visualisation
     private IEnumerator DamagedRoutine()
     {
-        _spriteRenderer.color = new Color(0.267f, 0.9f, 0.99f);
-        yield return new WaitForSeconds(0.1f);
-        _spriteRenderer.color = Color.white;
+        // _spriteRenderer.color = new Color(0.267f, 0.9f, 0.99f);
+        // yield return new WaitForSeconds(0.1f);
+        // _spriteRenderer.color = Color.white;
+        _spriteRenderer.material = _flashMaterial;
+        yield return new WaitForSecondsRealtime(0.1f);
+        _spriteRenderer.material = _originalMaterial;
     }
 
     public float GetHPRatio()

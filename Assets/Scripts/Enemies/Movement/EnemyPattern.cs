@@ -1,12 +1,13 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public abstract class EnemyPattern : MonoBehaviour
 {
     protected EnemyBase _enemyBase;
     protected GameObject _player;
     public EEnemyMoveType MoveType;
-    public float _moveSpeed;
+    public float MoveSpeed;
     public bool IsRooted = false;
     public bool IsMoving = true;
     public bool IsChasingPlayer = false;
@@ -14,6 +15,7 @@ public abstract class EnemyPattern : MonoBehaviour
     public bool IsFlippable = true;
     protected Rigidbody2D _rigidBody;
     protected Animator _animator;
+    public float AttackSpeed;
     private readonly static int Rooted = Animator.StringToHash("IsRooted");
 
     //used for pull
@@ -29,7 +31,7 @@ public abstract class EnemyPattern : MonoBehaviour
         _rigidBody = GetComponent<Rigidbody2D>();
         _enemyBase = GetComponent<EnemyBase>();
         _player = GameObject.FindWithTag("Player");
-        _moveSpeed = _enemyBase.EnemyData.DefaultMoveSpeed;
+        MoveSpeed = _enemyBase.EnemyData.DefaultMoveSpeed;
         EnableMovement();
     }
 
@@ -40,12 +42,12 @@ public abstract class EnemyPattern : MonoBehaviour
 
     public void ResetMoveSpeed()
     {
-        _moveSpeed = _enemyBase.EnemyData.DefaultMoveSpeed;
+        MoveSpeed = _enemyBase.EnemyData.DefaultMoveSpeed;
     }
 
     public void ChangeSpeedByPercentage(float percentage)
     {
-        _moveSpeed = _enemyBase.EnemyData.DefaultMoveSpeed * percentage;
+        MoveSpeed = _enemyBase.EnemyData.DefaultMoveSpeed * percentage;
     }
 
     protected void FlipEnemy()

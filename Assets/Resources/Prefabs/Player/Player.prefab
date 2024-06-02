@@ -259,10 +259,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeedMultiplier: 1
-  IsOnMovingPlatform: 0
+  isOnMovingPlatform: 0
   jumpForce: 0
   isDashing: 0
   isAreaAttacking: 0
+  isRangedAttacking: 0
+  savedLookDirection: {x: 0, y: 0, z: 0}
 --- !u!114 &39438638665260744
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -275,11 +277,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 80a92563d372d1e47815193a136aa979, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerInput: {fileID: 0}
   playerMovement: {fileID: 0}
-  playerDamageReceiver: {fileID: 0}
-  playerDamageDealer: {fileID: 0}
   playerInventory: {fileID: 0}
-  nightShadeCollider: {fileID: 0}
+  playerDamageDealer: {fileID: 0}
+  playerDamageReceiver: {fileID: 0}
+  IsMapEnabled: 0
   statusEffects:
   - {fileID: 0}
   - {fileID: 0}
@@ -303,6 +306,7 @@ MonoBehaviour:
   - {fileID: 1538532851158953275}
   strengthAddition: 0
   evasionRateAdditionAtMax: 0
+  nightShadeCollider: {fileID: 0}
   nightShadeFastChaseStats: []
   nightShadeShadeBonusStats: []
 --- !u!114 &5603536338378699506
@@ -512,9 +516,9 @@ MonoBehaviour:
   m_ComponentVersion: 1
   m_LightType: 3
   m_BlendStyleIndex: 0
-  m_FalloffIntensity: 0.5
+  m_FalloffIntensity: 0.39
   m_Color: {r: 0.3915094, g: 0.86608315, b: 1, a: 1}
-  m_Intensity: 1
+  m_Intensity: 0.4
   m_LightVolumeIntensity: 1
   m_LightVolumeIntensityEnabled: 0
   m_ApplyToSortingLayers: 00000000cfba4fccffe6f65065a7fcee2fde191ba181b2023f9e14abc55b85e2ef3e530cb5795dd98b814e6a776e1cfaa1be626193ff6e33

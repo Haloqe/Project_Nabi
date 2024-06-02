@@ -184,9 +184,10 @@ public class EnemyPattern_Scorpion : EnemyPattern
     {
         _isShootingBullets = false;
         
-        float rotationSpeed = 8f;
-        float rotationDegrees = 20f;
-        int direction = Random.Range(0f, 1f) > 0.5f ? -1 : 1;
+        float rotationSpeed = 10.8f;
+        float rotationDegrees = 10f;
+        // int direction = Random.Range(0f, 1f) > 0.5f ? -1 : 1;
+        int direction = -(int)Mathf.Sign(_player.transform.localScale.x);
 
         _shooterDirection = _shooterPositionObject.transform.position - _basePositionObject.transform.position;
         _playerDirection = _player.transform.position - _basePositionObject.transform.position;
@@ -197,7 +198,7 @@ public class EnemyPattern_Scorpion : EnemyPattern
         float initialAngle = _shooterObject.transform.eulerAngles.z;
         yield return new WaitForSeconds(0.5f);
         // _shooterPositionObject.SetActive(true);
-        yield return new WaitForSeconds(0.8f);
+        // yield return new WaitForSeconds(0.8f);
         _lineRenderer.enabled = true;
         _laserObject.SetActive(true);
         _laserVFXObject.SetActive(true);
@@ -256,7 +257,7 @@ public class EnemyPattern_Scorpion : EnemyPattern
     {
         switch (_tailCycleCount)
         {
-            case >= 0:
+            case >= 0: // need to change later
                 // StartCoroutine(Random.Range(0, 2) >= 1 ? ShootLaser() : ShootBullet());
                 if (Random.Range(1, 2) >= 1)
                 {

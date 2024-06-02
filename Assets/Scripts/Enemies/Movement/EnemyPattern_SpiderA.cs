@@ -46,7 +46,7 @@ public class EnemyPattern_SpiderA : EnemyPattern
         if (!IsGrounded()) return;
         if (IsAtEdge()) FlipEnemy();
 
-        _rigidBody.velocity = transform.localScale.x > Mathf.Epsilon ? new Vector2(_moveSpeed, 0f) : new Vector2(-_moveSpeed, 0f);
+        _rigidBody.velocity = transform.localScale.x > Mathf.Epsilon ? new Vector2(MoveSpeed, 0f) : new Vector2(-MoveSpeed, 0f);
     }
 
     private void RunTowardsPlayer()
@@ -162,7 +162,7 @@ public class EnemyPattern_SpiderA : EnemyPattern
         FlipEnemyTowardsTarget();
         _animator.SetBool(IsWalking, false);
         yield return new WaitForSeconds(0.3f);
-        Instantiate(_webObject, transform.position, Quaternion.identity);
+        // Instantiate(_webObject, transform.position, Quaternion.identity);
 
         yield return new WaitForSeconds(2f);
         
