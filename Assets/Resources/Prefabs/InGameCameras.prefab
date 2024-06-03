@@ -18,7 +18,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &6880845714318624865
 Transform:
   m_ObjectHideFlags: 0
@@ -73,7 +73,7 @@ Camera:
   m_Depth: 5
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 32
+    m_Bits: 0
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -105,7 +105,7 @@ MonoBehaviour:
   m_RendererIndex: 0
   m_VolumeLayerMask:
     serializedVersion: 2
-    m_Bits: 1
+    m_Bits: 32
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
   m_RenderPostProcessing: 0
@@ -113,7 +113,7 @@ MonoBehaviour:
   m_AntialiasingQuality: 2
   m_StopNaN: 0
   m_Dithering: 0
-  m_ClearDepth: 1
+  m_ClearDepth: 0
   m_AllowXRRendering: 1
   m_AllowHDROutput: 1
   m_UseScreenCoordOverride: 0
@@ -356,7 +356,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ad980451443d70438faac0bc6c235a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_TrackedObjectOffset: {x: 0, y: 2.58, z: 0}
+  m_TrackedObjectOffset: {x: 0, y: 1, z: 0}
   m_LookaheadTime: 0.1
   m_LookaheadSmoothing: 1
   m_LookaheadIgnoreY: 0
@@ -364,15 +364,15 @@ MonoBehaviour:
   m_YDamping: 2
   m_ZDamping: 0
   m_TargetMovementOnly: 1
-  m_ScreenX: 0.5
-  m_ScreenY: 0.5
+  m_ScreenX: 0.5027345
+  m_ScreenY: 0.50972223
   m_CameraDistance: 10
-  m_DeadZoneWidth: 0
-  m_DeadZoneHeight: 0
+  m_DeadZoneWidth: 0.134375
+  m_DeadZoneHeight: 0.34611106
   m_DeadZoneDepth: 0
   m_UnlimitedSoftZone: 0
   m_SoftZoneWidth: 0.2
-  m_SoftZoneHeight: 0.35
+  m_SoftZoneHeight: 0.46805558
   m_BiasX: 0
   m_BiasY: 0
   m_CenterOnActivate: 1
@@ -418,7 +418,7 @@ Transform:
   m_GameObject: {fileID: 5428625458006880150}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 10.03, y: -4.87, z: -10}
+  m_LocalPosition: {x: 10.03, y: -4.869999, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -460,8 +460,8 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 8.4375
-  m_Depth: 1
+  orthographic size: 7.5
+  m_Depth: 3
   m_CullingMask:
     serializedVersion: 2
     m_Bits: 57311
@@ -551,10 +551,10 @@ MonoBehaviour:
   m_RendererIndex: 0
   m_VolumeLayerMask:
     serializedVersion: 2
-    m_Bits: 1
+    m_Bits: 262144
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
-  m_RenderPostProcessing: 0
+  m_RenderPostProcessing: 1
   m_Antialiasing: 0
   m_AntialiasingQuality: 2
   m_StopNaN: 0

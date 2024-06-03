@@ -1,7 +1,7 @@
 using TMPro;
 using UnityEngine;
 
-public class MetaUIController : MonoBehaviour
+public class MetaUIController : UIControllerBase
 {
     private PlayerMetaData _metaData;
     private PlayerController _playerController;
@@ -52,19 +52,24 @@ public class MetaUIController : MonoBehaviour
         _metaPanels[_selectedPanelIdx].OnUnselectMetaPanel();
     }
 
-    public void OnNavigate(Vector2 value)
+    public override void OnNavigate(Vector2 value)
     {
         if (!_readyToNavigate) return;
         _metaPanels[_selectedPanelIdx].OnNavigate(value);
     }
 
-    public void OnTab()
+    public override void OnClose()
+    {
+        return;
+    }
+    
+    public override void OnTab()
     {
         if (!_readyToNavigate) return;
         SelectPanel(_selectedPanelIdx == 4 ? 0 : _selectedPanelIdx + 1);
     }
 
-    public void OnSubmit()
+    public override void OnSubmit()
     {
         if (!_readyToNavigate) return;
         _metaPanels[_selectedPanelIdx].OnSubmit();

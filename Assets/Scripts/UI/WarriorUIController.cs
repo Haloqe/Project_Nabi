@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
-public class WarriorUIController : MonoBehaviour
+public class WarriorUIController : UIControllerBase
 {
     // Base
     private PlayerAttackManager _playerAttackManager;
@@ -144,7 +144,7 @@ public class WarriorUIController : MonoBehaviour
             new [] {0.90f, 0.35f, 0.15f},
             new [] {1.00f, 0.50f, 0.30f},
         };
-        _legacyUpgradeController.Init();
+        _legacyUpgradeController.Init(null);
         _legacyUpgradeController.OnBookOpen();
         _legacyUpgradeCanvas.transform.Find("Content").Find("Page_1").Find("Desc").GetComponentInChildren<TextMeshProUGUI>().text
             = $"{Utility.GetColouredPreservationText(_highestAppearedPreserv)} 태엽을 제물로 바쳐 이미 보유한 유산의 보존도를 한 단계 높입니다." +
@@ -243,7 +243,7 @@ public class WarriorUIController : MonoBehaviour
         UIManager.Instance.CloseFocusedUI();   
     }
     
-    public void OnSubmit()
+    public override void OnSubmit()
     {
         if (_upgradeFailCanvas.activeSelf || _upgradeSucceedCanvas.activeSelf)
         {
@@ -274,6 +274,15 @@ public class WarriorUIController : MonoBehaviour
         {
             OnPointerClickPanel(_selectedPanelIdx);
         }
+    }
+    public override void OnClose()
+    {
+        OnCancel();
+    }
+    
+    public override void OnTab()
+    {
+        return;
     }
 
     private void TryUpgradeLegacy()
@@ -349,7 +358,7 @@ public class WarriorUIController : MonoBehaviour
         }
     }
     
-    public void OnNavigate(Vector2 value)
+    public override void OnNavigate(Vector2 value)
     {
         if (_upgradeFailCanvas.activeSelf || _upgradeSucceedCanvas.activeSelf)
         {

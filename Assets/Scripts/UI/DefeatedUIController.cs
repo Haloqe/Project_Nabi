@@ -2,7 +2,7 @@ using System.Collections;
 using TMPro;
 using UnityEngine;
 
-public class DefeatedUIController : MonoBehaviour
+public class DefeatedUIController : UIControllerBase
 {
     private TextMeshProUGUI _restartTMP;
     private TextMeshProUGUI _backToMainTMP;
@@ -45,7 +45,7 @@ public class DefeatedUIController : MonoBehaviour
         }
     }
 
-    public void OnNavigate(Vector2 value)
+    public override void OnNavigate(Vector2 value)
     {
         if (value.y == 0) return;
         OnButtonHovered(!_isCurrSelectedRestartBtn);
@@ -84,10 +84,20 @@ public class DefeatedUIController : MonoBehaviour
         }
     }
 
-    public void OnSubmit()
+    public override void OnSubmit()
     {
         if (_isCurrSelectedRestartBtn) GameManager.Instance.ContinueGame();
         else GameManager.Instance.LoadMainMenu();
+    }
+    
+    public override void OnClose()
+    {
+        return;
+    }
+    
+    public override void OnTab()
+    {
+        return;
     }
 
     public void OnPointerEnter(bool isRestartBtn) => OnButtonHovered(isRestartBtn);

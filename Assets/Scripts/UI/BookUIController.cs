@@ -1,25 +1,34 @@
 using System.Collections;
+using TMPro;
 using UnityEngine;
-
-public class BookUIController : MonoBehaviour
+public class BookUIController : UIControllerBase
 {
-    private bool _isClosing;
-    
     // Pages
     public int numPages = 2;
     private int _currPageIdx; // Page 0: Status, Page 1: Legacy
     private GameObject[] _pageObjects;
     private BookPage[] _pages;
     private GameObject[] _tabs;
-    private bool _isFlipOver;
+    //private bool _isFlipOver;
+    
+    // Options
+    private int curSelectedOption;
+    private TextMeshProUGUI[] _optionTexts;
+    private string[] _optionTextDefaults;
     
     // Animation
+    private bool _isClosing;
+    private bool _canNavigate;
     private Animator _animator;
     private readonly static int FlipLeft = Animator.StringToHash("FlipLeft");
     private readonly static int FlipRight = Animator.StringToHash("FlipRight");
     private readonly static int Close = Animator.StringToHash("Close");
     private readonly static int Open = Animator.StringToHash("Open");
 
+    // Audio
+    private AudioSource _audioSource;
+    [SerializeField] private AudioClip pageTurnClip;
+    
     private void Awake()
     {
         _pageObjects = new GameObject[numPages];
@@ -29,17 +38,28 @@ public class BookUIController : MonoBehaviour
         {
             _pageObjects[pageIdx] = transform.Find("Page_" + pageIdx).gameObject;
             _pages[pageIdx] = _pageObjects[pageIdx].GetComponent<BookPage>();
-            _pages[pageIdx].Init();
+            _pages[pageIdx].Init(this);
             _tabs[pageIdx] = transform.Find("Tab_" + pageIdx).gameObject;
             _tabs[pageIdx].GetComponent<BookTab>().Init(this, pageIdx);
         }
         _tabs[2] = transform.Find("Tab_2").gameObject;
         _animator = GetComponent<Animator>();
+        _audioSource = GetComponent<AudioSource>();
+        
+        // Options
+        _optionTexts = transform.Find("Options").GetComponentsInChildren<TextMeshProUGUI>();
+        _optionTextDefaults = new string[_optionTexts.Length];
+        for (int i = 0; i < _optionTexts.Length; i++)
+        {
+            _optionTextDefaults[i] = _optionTexts[i].text;
+        }
     }
 
     private void OnEnable()
     {
-        _isFlipOver = false;
+        curSelectedOption = -1;
+        _canNavigate = false;
+        //_isFlipOver = false;
         _isClosing = false;
         _currPageIdx = 0;
         foreach (var tab in _tabs)
@@ -64,29 +84,31 @@ public class BookUIController : MonoBehaviour
         // Flip animation?
         if (_currPageIdx != pageIdx)
         {
-            _isFlipOver = false;
+            _canNavigate = false;
             _animator.SetTrigger(_currPageIdx < pageIdx ? FlipLeft : FlipRight);
+            _audioSource.PlayOneShot(pageTurnClip);
         
             // Wait until _isFlipOver becomes true
-            yield return new WaitUntil(() => _isFlipOver);
+            yield return new WaitUntil(() => _canNavigate);
         }
         
         // Display page
         _currPageIdx = pageIdx;
         _pages[pageIdx].OnPageOpen();
         _pageObjects[pageIdx].SetActive(true);
-        _isFlipOver = true;
+        _canNavigate = true;
     }
 
     public void OnPointerClickTab(int tabIdx)
     {
-        if (!_isFlipOver) return;
+        if (!_canNavigate) return;
+        //if (!_isFlipOver) return;
         StartCoroutine(DisplayPage(tabIdx));
     }
 
     public void OnEndFlip()
     {
-        _isFlipOver = true;
+        _canNavigate = true;
     }
 
     public void OnTabOpenClose()
@@ -109,9 +131,8 @@ public class BookUIController : MonoBehaviour
         }
     }
 
-    public void StartCloseBookAnimation()
+    private void StartCloseBookAnimation()
     {
-        if (_isClosing) return;
         _isClosing = true;
         _animator.SetTrigger(Close);
     }
@@ -121,16 +142,94 @@ public class BookUIController : MonoBehaviour
         UIManager.Instance.CloseFocusedUI();
     }
     
-    public void OnNavigate(Vector2 value)
+    public override void OnNavigate(Vector2 value)
     {
+        if (!_canNavigate) return;
         _pages[_currPageIdx].OnNavigate(value);
     }
 
-    public void OnTab()
+    public override void OnClose()
     {
-        if (!_isFlipOver) return;
-        _isFlipOver = false;
+        if (_isClosing) return;
+        _canNavigate = false;
+        StartCloseBookAnimation();
+    }
+    
+    public override void OnTab()
+    {
+        if (!_canNavigate) return;
+        //if (!_isFlipOver) return;
+        _canNavigate = false;
         int nextPage = _currPageIdx + 1 == numPages ? 0 : _currPageIdx + 1;
+        UnselectSelectedOption();
         StartCoroutine(DisplayPage(nextPage));
+    }
+
+    public override void OnSubmit()
+    {
+        if (!_canNavigate) return;
+        switch (curSelectedOption)
+        {
+            case 0: // Back
+                OnClose();
+                break;
+            
+            case 1: // Main menu
+                // Todo confirm
+                GameManager.Instance.LoadMainMenu();
+                break;
+            
+            case 2: // Settings
+                //Todo
+                break;
+            
+            case 3: // Quit
+                // Todo confirm
+                GameManager.Instance.QuitGame();
+                break;
+        }
+    }
+
+    public void OnSubmitOption()
+    {
+        switch (curSelectedOption)
+        {
+            
+        }
+    }
+    
+    // Options
+    public void UnselectSelectedOption()
+    {
+        if (curSelectedOption == -1) return;
+        _optionTexts[curSelectedOption].text = _optionTextDefaults[curSelectedOption];
+        _optionTexts[curSelectedOption].color = Color.white;
+        curSelectedOption = -1;
+    }
+
+    public void NavigateOptions(float x)
+    {
+        int prevSelected = curSelectedOption;
+        UnselectSelectedOption();
+        
+        // Left
+        if (x < 0)
+        {
+            if (prevSelected == 0) SelectOption(3);
+            else SelectOption(prevSelected - 1);
+        }
+        // Right
+        else if (x > 0)
+        {
+            if (prevSelected == 3) SelectOption(0);
+            else SelectOption(prevSelected + 1);
+        }
+    }
+
+    public void SelectOption(int idx)
+    {
+        _optionTexts[idx].text = $"> {_optionTextDefaults[idx]} <";
+        _optionTexts[idx].color = new Color(1f, 0.7f, 0f, 1);
+        curSelectedOption = idx;
     }
 }

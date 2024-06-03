@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class MapController : MonoBehaviour
+public class MapController : UIControllerBase
 {
     // Map cameras
     private Transform _mapCamera;
@@ -75,12 +75,26 @@ public class MapController : MonoBehaviour
         _isLerping = false;
     }
     
-    public void OnNavigate(Vector2 value)
+    public override void OnNavigate(Vector2 value)
     {
         _isNavigating = value != Vector2.zero;
         _navigationValue = value;
     }
     
+    public override void OnSubmit()
+    {
+        return;
+    }
+    public override void OnClose()
+    {
+        return;
+    }
+    
+    public override void OnTab()
+    {
+        return;
+    }
+
     public void OnZoom(float value)
     {
         _isZooming = value != 0;

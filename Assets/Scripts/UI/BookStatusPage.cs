@@ -6,6 +6,7 @@ public class BookStatusPage : BookPage
     // References
     private GameManager _gameManager;
     private PlayerController _playerController;
+    private AudioSource _audioSource;
     
     // Left Page
     [SerializeField] private TextMeshProUGUI deathTMP;
@@ -25,10 +26,12 @@ public class BookStatusPage : BookPage
     [SerializeField] private TextMeshProUGUI[] attackTMPs;
     [SerializeField] private TextMeshProUGUI totalTMP;
 
-    public override void Init()
+    public override void Init(BookUIController baseUI)
     {
+        BaseUI = baseUI;
         _gameManager = GameManager.Instance;
         _playerController = PlayerController.Instance;
+        _audioSource = GetComponent<AudioSource>();
     }
     
     public override void OnBookOpen()
@@ -78,11 +81,19 @@ public class BookStatusPage : BookPage
 
     public override void OnPageOpen()
     {
-        
+        BaseUI.SelectOption(0);
     }
     
     public override void OnNavigate(Vector2 value)
     {
-        
+        if (value.x == 0) return;
+        BaseUI.NavigateOptions(value.x);
+        _audioSource.Play();
+    }
+    
+    public override void OnSubmit()
+    {
+        if (BaseUI == null) return;
+        BaseUI.OnSubmitOption();        
     }
 }

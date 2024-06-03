@@ -67,6 +67,7 @@ public class UIManager : Singleton<UIManager>
     
     // UI Navigation
     private GameObject _activeFocusedUI;
+    private UIControllerBase _activeFocusedUIController;
     private Camera _uiCamera;
     
     // References
@@ -107,7 +108,6 @@ public class UIManager : Singleton<UIManager>
         _UIIAMap = IAAsset.FindActionMap("UI");
         _UIIAMap.FindAction("Close").performed += OnClose;
         _UIIAMap.FindAction("CloseMap").performed += OnCloseMap;
-        _UIIAMap.FindAction("CloseBook").performed += OnCloseBook;
         _UIIAMap.FindAction("Tab").performed += OnTab;
         _UIIAMap.FindAction("Navigate").performed += OnNavigate;
         _UIIAMap.FindAction("Navigate").canceled += OnNavigate;
@@ -124,7 +124,8 @@ public class UIManager : Singleton<UIManager>
 
     private void OnGameLoadStarted()
     {
-        _uiCamera = GameObject.Find("UI Camera").GetComponent<Camera>();
+        //_uiCamera = GameObject.Find("UI Camera").GetComponent<Camera>();
+        _uiCamera = GameObject.Find("Main Camera").GetComponent<Camera>();
         _activeFocusedUI = null;
         
         _focusedOverlay     = Instantiate(_focusedOverlayPrefab, Vector3.zero, Quaternion.identity).GameObject();
@@ -372,6 +373,7 @@ public class UIManager : Singleton<UIManager>
         if (shouldShowOverlay && _focusedOverlay) _focusedOverlay.SetActive(true);
         UseUIControl();
         _activeFocusedUI = uiObject;
+        _activeFocusedUIController = uiObject.GetComponentInChildren<UIControllerBase>();
         _uiInputModule.point = _uiPointIARef;
         _uiInputModule.leftClick = _uiClickIARef;
         uiObject.SetActive(true);
@@ -387,6 +389,7 @@ public class UIManager : Singleton<UIManager>
         _focusedOverlay.SetActive(false);
         _activeFocusedUI.SetActive(false);
         _activeFocusedUI = null;
+        _activeFocusedUIController = null;
         _uiInputModule.point = _playerPointIARef;
         _uiInputModule.leftClick = _playerClickIARef;
     }
@@ -413,25 +416,10 @@ public class UIManager : Singleton<UIManager>
     {
         OpenFocusedUI(_bookUI, true);
     }
-
-    private void OnCloseBook(InputAction.CallbackContext obj)
-    {
-        if (_activeFocusedUI == _bookUI)
-        {
-            _bookUIController.StartCloseBookAnimation();
-        }
-    }
     
     private void OnTab(InputAction.CallbackContext obj)
     {
-        if (_activeFocusedUI == _bookUI)
-        {
-            _bookUIController.OnTab();
-        }
-        else if (_activeFocusedUI == _metaUpgradeUI)
-        {
-            _metaUIController.OnTab();
-        }
+        if (_activeFocusedUIController) _activeFocusedUIController.OnTab();
     }
 
     public void OpenMap()
@@ -450,13 +438,9 @@ public class UIManager : Singleton<UIManager>
     
     private void OnClose(InputAction.CallbackContext obj)
     {
-        if (_activeFocusedUI == _warriorUIObject)
+        if (_activeFocusedUI == _warriorUIObject || _activeFocusedUI == _bookUI)
         {
-            _warriorUIController.OnCancel();
-        }
-        else if (_activeFocusedUI == _bookUI)
-        {
-            _bookUIController.StartCloseBookAnimation();
+            _activeFocusedUIController.OnClose();
         }
         else if (_activeFocusedUI)
         {
@@ -468,30 +452,7 @@ public class UIManager : Singleton<UIManager>
     private void OnNavigate(InputAction.CallbackContext obj)
     {
         var value = obj.ReadValue<Vector2>();
-        if (_activeFocusedUI == _zoomedMap)
-        {
-            _mapController.OnNavigate(value);
-        }
-        else if (_activeFocusedUI == _bookUI)
-        {
-            _bookUIController.OnNavigate(value);
-        }
-        else if (_activeFocusedUI == _warriorUIObject)
-        {
-            _warriorUIController.OnNavigate(value);
-        } 
-        else if (_activeFocusedUI == _metaUpgradeUI)
-        {
-            _metaUIController.OnNavigate(value);
-        }
-        else if (_activeFocusedUI == _defeatedUI)
-        {
-            _defeatedUIController.OnNavigate(value);
-        }
-        else if (_activeFocusedUI == _mainMenuUI)
-        {
-            _mainMenuUIController.OnNavigate(value);
-        }
+        if (_activeFocusedUIController) _activeFocusedUIController.OnNavigate(value);
     }
     
     private void OnZoom(InputAction.CallbackContext obj)
@@ -510,22 +471,7 @@ public class UIManager : Singleton<UIManager>
 
     private void OnSubmit(InputAction.CallbackContext obj)
     {
-        if (_activeFocusedUI == _warriorUIObject)
-        {
-            _warriorUIController.OnSubmit();
-        }
-        else if (_activeFocusedUI == _metaUpgradeUI)
-        {
-            _metaUIController.OnSubmit();
-        }
-        else if (_activeFocusedUI == _defeatedUI)
-        {
-            _defeatedUIController.OnSubmit();
-        }
-        else if (_activeFocusedUI == _mainMenuUI)
-        {
-            _mainMenuUIController.OnSubmit();
-        }
+        if (_activeFocusedUIController) _activeFocusedUIController.OnSubmit();
     }
     
     // InGame popup

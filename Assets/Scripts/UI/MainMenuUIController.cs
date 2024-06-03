@@ -3,8 +3,17 @@ using System.Collections;
 using TMPro;
 using UnityEngine;
 
-public class MainMenuUIController : MonoBehaviour
+public class MainMenuUIController : UIControllerBase
 {
+    // References
+    private GameObject _newGameConfirmPanel;
+    
+    // Confirm
+    private TextMeshProUGUI[] _newGameConfirmTMPs; // 0: No, 1: Yes
+    private string[] _newGameConfirmTexts;
+    private int _selectedConfirmOption;
+    private Color _confirmSelectedColour;
+    
     // 0: New game, 1: Continue, 2: Settings, 3: Quit
     private TextMeshProUGUI[] _options;
     private int _selectedOptionIdx;
@@ -25,7 +34,8 @@ public class MainMenuUIController : MonoBehaviour
         // Colours
         _selectedColour = new Color(0.391f, 0.696f, 0.707f, 1f);
         _unselectedColour = Color.white;
-        _unavailableColour = new Color(0.330f, 0.330f, 0.330f, 1f); 
+        _unavailableColour = new Color(0.330f, 0.330f, 0.330f, 1f);
+        _confirmSelectedColour = new Color(0.9f, 0.7f, 0, 1);
         
         // Initialise
         _options = transform.Find("Options").GetComponentsInChildren<TextMeshProUGUI>();
@@ -36,6 +46,14 @@ public class MainMenuUIController : MonoBehaviour
         }
         _selectedOptionIdx = 0;
         _audioSource = GetComponent<AudioSource>();
+
+        // Confirm panels
+        _newGameConfirmPanel = gameObject.transform.Find("NewGameConfirmPanel").gameObject;
+        _newGameConfirmTMPs = _newGameConfirmPanel.transform.Find("Options").GetComponentsInChildren<TextMeshProUGUI>();
+        _newGameConfirmTexts = new string[2]
+        {
+            _newGameConfirmTMPs[0].text, _newGameConfirmTMPs[1].text
+        };
     }
 
     private void Start()
@@ -84,8 +102,14 @@ public class MainMenuUIController : MonoBehaviour
         }
     }
 
-    public void OnNavigate(Vector2 value)
+    public override void OnNavigate(Vector2 value)
     {
+        if (_newGameConfirmPanel.activeSelf)
+        {
+            OnNavigateConfirmPanel(value.x);
+            return;
+        }
+        
         switch (value.y)
         {
             // Left or Right
@@ -110,24 +134,39 @@ public class MainMenuUIController : MonoBehaviour
         }
     }
     
-    public void OnSubmit()
+    public override void OnSubmit()
     {
         if (_underTransition) return;
-        if (_selectedOptionIdx != 3) StartTransition();
+
+        if (_newGameConfirmPanel.activeSelf)
+        {
+            _newGameConfirmPanel.SetActive(false);
+            if (_selectedConfirmOption == 1) // Restart
+            {
+                StartTransition();
+            }
+            return;
+        }
         
         switch (_selectedOptionIdx)
         {
             case 0: // New Game
-                // TODO: 세이브파일 있으면 덮어쓸지 경고창 띄우기
-                SoundManager.Instance.StopBgm();
+                if (_hasSaveData)
+                {
+                    _newGameConfirmPanel.SetActive(true);
+                    SelectConfirmOption(0);
+                    return;
+                }
+                StartTransition();
                 break;
             
             case 1: // Continue
-                SoundManager.Instance.StopBgm();
+                StartTransition();
                 break;
             
             case 2: // Settings
                 // TODO
+                
                 break;
             
             case 3: // Quit
@@ -135,12 +174,23 @@ public class MainMenuUIController : MonoBehaviour
                 break;
         }
     }
+    
+    public override void OnClose()
+    {
+        if (_newGameConfirmPanel.activeSelf) _newGameConfirmPanel.SetActive(false);
+    }
+    
+    public override void OnTab()
+    {
+        return;
+    }
 
     public void OnPointerEnter(int optionIdx) => SelectOption(optionIdx);
     public void OnPointerClick() => OnSubmit();
 
     private void StartTransition()
     {
+        SoundManager.Instance.StopBgm();
         GetComponent<Animator>().enabled = true;
         _underTransition = true;
     }
@@ -158,5 +208,36 @@ public class MainMenuUIController : MonoBehaviour
                 GameManager.Instance.ContinueGame();
                 break;
         }
+    }
+
+    
+    // Confirm panel
+    private void OnNavigateConfirmPanel(float x)
+    {
+        if (x == 0) return;
+        
+        _audioSource.Play();
+        UnselectPreviousConfirmOption();
+        if (x < 0) // left
+        {
+            SelectConfirmOption(_selectedConfirmOption == 1 ? 0 : 1);
+        }
+        else // right
+        {
+            SelectConfirmOption(_selectedConfirmOption == 0 ? 1 : 0);
+        }
+    }
+
+    private void SelectConfirmOption(int idx)
+    {
+        _newGameConfirmTMPs[idx].color = _confirmSelectedColour;
+        _newGameConfirmTMPs[idx].text = $"> {_newGameConfirmTexts[idx]} <";
+        _selectedConfirmOption = idx;
+    }
+    
+    private void UnselectPreviousConfirmOption()
+    {
+        _newGameConfirmTMPs[_selectedConfirmOption].color = Color.white;
+        _newGameConfirmTMPs[_selectedConfirmOption].text = _newGameConfirmTexts[_selectedConfirmOption];
     }
 }
