@@ -7,6 +7,7 @@ public class BookLegacyPage : BookPage
     // References
     private PlayerController _playerController;
     private PlayerAttackManager _playerAttackManager;
+    private AudioSource _audioSource;
     
     // Left Page
     private int _newestSelectedIdx;
@@ -43,8 +44,10 @@ public class BookLegacyPage : BookPage
     [SerializeField] private TextMeshProUGUI passiveBoundDescText;
     [SerializeField] private TextMeshProUGUI passiveBoundExtraText;
 
-    public override void Init()
+    public override void Init(BookUIController baseUI)
     {
+        BaseUI = baseUI;
+        _audioSource = GetComponent<AudioSource>();
         _playerController = PlayerController.Instance;
         _playerAttackManager = PlayerAttackManager.Instance;
         _unselectedColour = new Color(1, 1, 1, 0.15f);
@@ -75,6 +78,12 @@ public class BookLegacyPage : BookPage
 
     public override void OnPageOpen()
     {
+        if (BaseUI)
+        {
+            _isNavigatingOptions = false;
+            BaseUI.UnselectSelectedOption();
+        }
+        
         // Deselect old
         if (_newestSelectedIdx > 3) _passiveHighlights[ToPassiveIndex(_newestSelectedIdx)].SetActive(false);
         for (int i = 1; i < 4; i++) activeIcons[i].color = _unselectedColour;
@@ -186,6 +195,9 @@ public class BookLegacyPage : BookPage
         // Update selected index
         _newestSelectedIdx = FromPassiveIndex(passiveSlotIdx);
     }
+
+    private bool _isNavigatingOptions;
+    private int _prevNavigatingIdx;
     
     public override void OnNavigate(Vector2 value)
     {
@@ -197,6 +209,13 @@ public class BookLegacyPage : BookPage
 
     private void NavigateLeft()
     {
+        if (_isNavigatingOptions)
+        {
+            BaseUI.NavigateOptions(-1);
+            _audioSource.Play();
+            return;
+        }
+        
         switch (_newestSelectedIdx)
         {
             // first active
@@ -209,6 +228,7 @@ public class BookLegacyPage : BookPage
             case > 0 and < 4:
                 {
                     SelectActiveIcon(_newestSelectedIdx - 1);
+                    _audioSource.Play();
                     break;
                 }
             default:
@@ -223,6 +243,7 @@ public class BookLegacyPage : BookPage
                     {
                         SelectPassiveIcon(ToPassiveIndex(_newestSelectedIdx - 1));
                     }
+                    _audioSource.Play();
                     break;
                 }
         }
@@ -230,18 +251,27 @@ public class BookLegacyPage : BookPage
 
     private void NavigateRight()
     {
+        if (_isNavigatingOptions)
+        {
+            BaseUI.NavigateOptions(1);
+            _audioSource.Play();
+            return;
+        }
+        
         switch (_newestSelectedIdx)
         {
             // actives except the last (0,1,2)
             case < 3:
                 {
                     SelectActiveIcon(_newestSelectedIdx + 1);
+                    _audioSource.Play();
                     break;
                 }
             // last active
             case 3:
                 {
                     if (_numBoundPassives > 0) SelectPassiveIcon(0);
+                    _audioSource.Play();
                     break;
                 }
             default:
@@ -256,6 +286,7 @@ public class BookLegacyPage : BookPage
                     else 
                     {
                         SelectPassiveIcon(currSelectedPassiveIdx + 1);
+                        _audioSource.Play();
                     }
                     break;
                 }
@@ -264,6 +295,17 @@ public class BookLegacyPage : BookPage
 
     private void NavigateUp()
     {
+        // Options -> legacy
+        if (_isNavigatingOptions)
+        {
+            _isNavigatingOptions = false;
+            BaseUI.UnselectSelectedOption();
+            if (_prevNavigatingIdx < 4) SelectActiveIcon(_prevNavigatingIdx);
+            else SelectPassiveIcon(ToPassiveIndex(_prevNavigatingIdx));
+            _audioSource.Play();
+            return;
+        }
+        
         // Actives
         if (_newestSelectedIdx < 4) return;
         
@@ -272,19 +314,48 @@ public class BookLegacyPage : BookPage
         
         // Other passives
         SelectPassiveIcon(ToPassiveIndex(_newestSelectedIdx - _numCols));
+        _audioSource.Play();
     }
 
     private void NavigateDown()
     {
+        if (_isNavigatingOptions) return;
+        
         // Actives
-        if (_newestSelectedIdx < 4) return;
+        if (_newestSelectedIdx < 4 && BaseUI != null)
+        {
+            StartNavigatingOptions();
+            _audioSource.Play();
+            return;
+        }
         
         // The last passive row
         int currSelectedPassiveIdx = ToPassiveIndex(_newestSelectedIdx);
-        if (currSelectedPassiveIdx / _numCols == (_numBoundPassives - 1) / _numCols) return;
+        if (currSelectedPassiveIdx / _numCols == (_numBoundPassives - 1) / _numCols)
+        {
+            StartNavigatingOptions();
+            _audioSource.Play();
+            return;
+        }
         
         // Other passives
         SelectPassiveIcon(currSelectedPassiveIdx + _numCols);
+        _audioSource.Play();
+    }
+
+    private void StartNavigatingOptions()
+    {
+        if (BaseUI == null) return;
+        _prevNavigatingIdx = _newestSelectedIdx;
+        _isNavigatingOptions = true;
+        BaseUI.SelectOption(0);
+    }
+
+    public override void OnSubmit()
+    {
+        if (BaseUI == null) return;
+        if (!_isNavigatingOptions) return;
+        BaseUI.OnSubmitOption();        
     }
 
     private static int ToPassiveIndex(int totalIndex) => totalIndex - 4;

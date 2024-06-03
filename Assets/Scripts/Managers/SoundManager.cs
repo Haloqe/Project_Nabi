@@ -86,7 +86,6 @@ public class SoundManager : Singleton<SoundManager>
         while (currentTime < duration)
         {
             currentTime += Time.unscaledDeltaTime;
-            Debug.Log(currentTime);
             _introAudioSource.volume = Mathf.Lerp(start, 0, currentTime / duration);
             _loopAudioSource.volume = Mathf.Lerp(start, 0, currentTime / duration);
             yield return null;
