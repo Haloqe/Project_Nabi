@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 993175973461698046}
   - component: {fileID: 1152217624153404905}
   - component: {fileID: 135498183842000251}
+  - component: {fileID: 1024742130193798094}
   m_Layer: 0
   m_Name: Manager
   m_TagString: Untagged
@@ -74,13 +75,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a65cdcc228e218541947df78b79aec7c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inGameCombatUI: {fileID: 0}
   flowerIcons:
-  - {fileID: 0}
-  - {fileID: 21300000, guid: c46c12aadee8a004b864a3b880cc41e0, type: 3}
-  - {fileID: 21300000, guid: 0a8fb5ad0d9f0204c9042a19805bd437, type: 3}
-  - {fileID: 21300000, guid: 25a99511f84dac7459d326718d9bd87b, type: 3}
-  - {fileID: 21300000, guid: 04d8c6bc76eaad54f875d095ae332715, type: 3}
+  - {fileID: 1486085023, guid: dbaf7cc0715830f46a37f636adac960b, type: 3}
+  - {fileID: -195972613, guid: 63db7128cf50b4c408576e26b1e08338, type: 3}
+  - {fileID: -735244765, guid: 46d431645a5fdd84f9823c5e0e80d8c8, type: 3}
+  - {fileID: -814575498, guid: 09052777be40e8f41b49fb05648ff864, type: 3}
+  - {fileID: 933489069, guid: 2ac7bf7d75487234394bc62f246a6f41, type: 3}
 --- !u!114 &7962455665489443107
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -107,16 +107,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 50ed129d2a22b384bbe707fa155bd886, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mapTilemap: {fileID: 0}
-  superWallTilemap: {fileID: 0}
-  roomsContainer: {fileID: 0}
   WallRuleTile: {fileID: 11400000, guid: fc14fb5716bf6ab40ab92f83122cc2e2, type: 2}
   MinimapTiles:
   - {fileID: 11400000, guid: 15267fbd5d732d840be5ade21c38eb7f, type: 2}
   - {fileID: 11400000, guid: 88ff637b212c51a4b862b949af68c542, type: 2}
   - {fileID: 11400000, guid: 09c85ec34e5eaea45b7152685f312563, type: 2}
   clockworkLimit: 5
-  metaSpawnPoint: {fileID: 0}
 --- !u!114 &1152217624153404905
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -162,3 +158,17 @@ MonoBehaviour:
   m_DeselectOnBackgroundClick: 1
   m_PointerBehavior: 0
   m_CursorLockBehavior: 0
+--- !u!114 &1024742130193798094
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6988485656588162118}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19a7f0fd7c7d4bfe81ced6a5f23ad6ac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bossBgmIntro: {fileID: 8300000, guid: 752cfecd63b545546a080e58d09f0b3a, type: 3}
+  bossBgmLoop: {fileID: 8300000, guid: a889e7adf36e28241ad1781df9964671, type: 3}

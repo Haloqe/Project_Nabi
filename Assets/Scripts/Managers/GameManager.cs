@@ -12,8 +12,8 @@ public class GameManager : Singleton<GameManager>
     private PlayerController _player;
     
     // DEBUG Only
-    private int _ingameMapSceneIdx;   // 플레이어가 실행한 씬
-    private int _releaseMapSceneIdx=1;       // 테스트용 랜덤 제너레이션 씬
+    private int _ingameMapSceneIdx;          // 플레이어가 실행한 씬
+    private int _releaseMapSceneIdx=1;       // 랜덤 제너레이션 씬
     
     // todo temp
     public bool IsFirstRun = true;

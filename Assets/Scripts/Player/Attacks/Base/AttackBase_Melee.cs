@@ -42,6 +42,7 @@ public class AttackBase_Melee : AttackBase
         _colliderBase = baseEffector.GetComponent<BoxCollider2D>();
         _colliderCombo = comboEffector.GetComponent<BoxCollider2D>();
         _affectedEnemies = new List<int>();
+        AudioSourceBase = baseEffector.GetComponent<AudioSource>();
 
         // Damage
         _damageInfoInit = new SDamageInfo { BaseDamage = 3.0f, RelativeDamage = 1.0f, };
@@ -123,6 +124,7 @@ public class AttackBase_Melee : AttackBase
             _animator.SetBool(IsMeleeCombo, false);
             _attackPostDelay = _baseDelay;
             basePSRenderer.flip = dir < 0 ? Vector3.right : Vector3.zero;
+            AudioSourceBase.pitch = Random.Range(0.85f, 1.08f);
             baseEffector.SetActive(true);
             if (ActiveLegacy) ((Legacy_Melee)ActiveLegacy).OnAttack_Base();
         }      

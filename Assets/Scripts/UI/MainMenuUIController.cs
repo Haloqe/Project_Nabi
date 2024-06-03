@@ -17,6 +17,9 @@ public class MainMenuUIController : MonoBehaviour
     private Color _unavailableColour;
     private Coroutine _colourChangeCoroutine;
     
+    // SFX
+    private AudioSource _audioSource;
+    
     private void Awake()
     {
         // Colours
@@ -32,6 +35,7 @@ public class MainMenuUIController : MonoBehaviour
             _options[i].color = _unselectedColour;
         }
         _selectedOptionIdx = 0;
+        _audioSource = GetComponent<AudioSource>();
     }
 
     private void Start()
@@ -46,6 +50,7 @@ public class MainMenuUIController : MonoBehaviour
         if (_underTransition) return;
         if (newOptionIdx == 1 && !_hasSaveData) return;
         
+        if (_selectedOptionIdx != newOptionIdx) _audioSource.Play();
         UnselectCurrentOption();
         _options[newOptionIdx].color = _selectedColour;
         _options[newOptionIdx].text = "> " + _options[newOptionIdx].text;

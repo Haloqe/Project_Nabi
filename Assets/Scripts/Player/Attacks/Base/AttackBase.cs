@@ -30,10 +30,14 @@ public abstract class AttackBase : MonoBehaviour
     
     // Legacy
     public ActiveLegacySO ActiveLegacy { get; protected set; }
+    
+    // Sound
+    protected AudioSource AudioSourceBase;
 
     // Others
     protected readonly static int AttackIndex = Animator.StringToHash("AttackIndex");
     private Material _defaultVFXMaterial;
+    
     
     public virtual void Start()
     {

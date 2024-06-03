@@ -43,7 +43,7 @@ public class HiddenPortal : MonoBehaviour
         float alpha = _portalSpriteRenderer.color.a;
         while (alpha < 0.8f)
         {
-            alpha += Time.unscaledDeltaTime * 0.05f;
+            alpha += Time.unscaledDeltaTime * 0.2f;
             var portalColour = _portalSpriteRenderer.color;
             _portalSpriteRenderer.color = new Color(portalColour.r, portalColour.g, portalColour.b, alpha);
             yield return null;
@@ -55,7 +55,7 @@ public class HiddenPortal : MonoBehaviour
         // Reveal the rest
         while (alpha < 1f)
         {
-            alpha += Time.unscaledDeltaTime * 0.05f;
+            alpha += Time.unscaledDeltaTime * 0.2f;
             var portalColour = _portalSpriteRenderer.color;
             _portalSpriteRenderer.color = new Color(portalColour.r, portalColour.g, portalColour.b, alpha);
             yield return null;

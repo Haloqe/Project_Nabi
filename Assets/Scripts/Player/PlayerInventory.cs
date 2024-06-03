@@ -15,9 +15,14 @@ public class PlayerInventory : MonoBehaviour
     
     // VFXs
     public GameObject noFlowerVFX;
+    
+    // SFXs
+    private AudioSource _audioSource;
+    [SerializeField] private AudioClip _soulShardPickupSFX;
 
     private void Start()
     {
+        _audioSource = GetComponent<AudioSource>();
         _uiManager = UIManager.Instance;
         _areaAttack = FindObjectOfType<AttackBase_Area>();
         _currentSelectedFlower = 0;
@@ -58,6 +63,7 @@ public class PlayerInventory : MonoBehaviour
     {
         SoulShard += amount;
         _uiManager.DisplaySoulPopUp(amount);
+        _audioSource.PlayOneShot(_soulShardPickupSFX, 0.5f);
         PlayerEvents.SoulShardChanged.Invoke();
     }
 

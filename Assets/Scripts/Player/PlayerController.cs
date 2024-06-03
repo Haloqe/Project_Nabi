@@ -196,16 +196,6 @@ public class PlayerController : Singleton<PlayerController>
         
     }
     
-    // void OnStopMove(InputAction.CallbackContext obj)
-    // {
-    //     
-    // }
-
-    // void OnJump(InputValue value)
-    // {
-    //     playerMovement.SetJump(value.isPressed);
-    // }
-
     void OnStartJump(InputAction.CallbackContext obj)
     {
         playerMovement.StartJump();
@@ -219,8 +209,8 @@ public class PlayerController : Singleton<PlayerController>
     int count = 0;
     void OnTestAction(InputValue value)
     {
-        playerInventory.ChangeGoldByAmount(100000);
-        playerInventory.ChangeSoulShardByAmount(1);
+        playerInventory.ChangeGoldByAmount(100);
+        playerInventory.ChangeSoulShardByAmount(100);
         // playerInventory.AddFlower(2);
         // playerInventory.AddFlower(3);
         // playerInventory.AddFlower(4);

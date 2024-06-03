@@ -7,6 +7,7 @@ public class Gold : MonoBehaviour
     public int value;
     private Rigidbody2D _rb;
     private Collider2D _collider;
+    private AudioSource _audioSource;
     private PlayerController _playerController;
     private bool _isMovingTowardsPlayer;
     private bool _isInteracting;
@@ -20,6 +21,7 @@ public class Gold : MonoBehaviour
     {
         _collider = GetComponent<Collider2D>();
         _rb = GetComponent<Rigidbody2D>();
+        _audioSource = GetComponent<AudioSource>();
         _playerController = PlayerController.Instance;
         _collider.enabled = false;
     }
@@ -68,14 +70,16 @@ public class Gold : MonoBehaviour
         if (_isInteracting) return;
         _isInteracting = true;
         
-        StopAllCoroutines();
+        _audioSource.Play();
         _playerController.playerInventory.ChangeGoldByAmount(value);
+        StopAllCoroutines();
         Destroy(gameObject);
     }
 
     private void AutoCollectGold()
     {
         _playerController.playerInventory.ChangeGoldByAmount(value);
+        _audioSource.Play();
         Destroy(gameObject);
     }
 }
