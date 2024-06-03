@@ -33,6 +33,7 @@ public class PlayerInventory : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (GetComponent<PlayerController>().IsToBeDestroyed) return;
         GameEvents.Restarted -= OnRestarted;
         GameEvents.CombatSceneChanged -= OnCombatSceneChanged;
     }

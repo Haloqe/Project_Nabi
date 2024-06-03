@@ -46,14 +46,12 @@ public class Bomb : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        var enemyRoot = collision.transform.root.gameObject;
-        if (Utility.IsObjectInList(enemyRoot, _affectedEnemies)) return;
-
-        IDamageable target = enemyRoot.GetComponent<IDamageable>();
-        if (target != null)
-        {
-            Owner.DealDamage(target, false);
-            _affectedEnemies.Add(enemyRoot.GetInstanceID());
-        }
+        // Check if the hit target is valid
+        var rootEnemyDamageable = collision.GetComponentInParent<IDamageable>();
+        if (rootEnemyDamageable == null || Utility.IsObjectInList(rootEnemyDamageable.GetGameObject(), _affectedEnemies)) return;
+        
+        // Do damage
+        Owner.DealDamage(rootEnemyDamageable, false);
+        _affectedEnemies.Add(rootEnemyDamageable.GetGameObject().GetInstanceID());
     }
 }

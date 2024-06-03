@@ -4,6 +4,7 @@ using UnityEngine;
 public class SoundManager : Singleton<SoundManager>
 {
     // Audio sources
+    private GameObject _bgmPlayer;
     private AudioSource _introAudioSource;
     private AudioSource _loopAudioSource;
     
@@ -19,45 +20,49 @@ public class SoundManager : Singleton<SoundManager>
     // Boss map
     [SerializeField] private AudioClip bossBgmIntro;
     [SerializeField] private AudioClip bossBgmLoop;
-    
-    private void Start()
+
+    protected override void Awake()
     {
+        base.Awake();
+        if (IsToBeDestroyed) return;
+        
         GameEvents.MainMenuLoaded += OnMainMenuLoaded;
         GameEvents.GameLoadEnded += OnGameLoadEnded;
         PlayerEvents.Defeated += StopBgm;
-    }
-
-    private void AddBgmPlayer()
-    {
-        var BGMPlayer = new GameObject("BGMPlayer");
-        _introAudioSource = BGMPlayer.AddComponent<AudioSource>();
-        _loopAudioSource = BGMPlayer.AddComponent<AudioSource>();
+        
+        _bgmPlayer = new GameObject("BGMPlayer");
+        _introAudioSource = _bgmPlayer.AddComponent<AudioSource>();
+        _loopAudioSource = _bgmPlayer.AddComponent<AudioSource>();
         _introAudioSource.playOnAwake = false;
         _loopAudioSource.playOnAwake = false;
         _introAudioSource.loop = false;
         _loopAudioSource.loop = true;
+        DontDestroyOnLoad(_bgmPlayer);
     }
     
     private void OnMainMenuLoaded()
     {
-        AddBgmPlayer();
-        
-
-
+        _introAudioSource.clip = mainMenuIntro;
+        _loopAudioSource.clip = mainMenuLoop;
+        _introAudioSource.volume = 1f;
+        _loopAudioSource.volume = 1f;
+        StartBgmLoop();
     }
-    
+
     private void OnGameLoadEnded()
     {
-        AddBgmPlayer();
         if (GameManager.Instance.ActiveScene == ESceneType.Boss)
         {
             _introAudioSource.clip = bossBgmIntro;
             _loopAudioSource.clip = bossBgmLoop;
-            _introAudioSource.volume = 0.7f;
-            _loopAudioSource.volume = 0.7f;
+            _introAudioSource.volume = 0.6f;
+            _loopAudioSource.volume = 0.6f;
+            StartBgmLoop();
         }
-        else return; //temp
-        
+    }
+
+    private void StartBgmLoop()
+    {
         // Calculate a clip’s exact duration
         double introDuration = (double)_introAudioSource.clip.samples / _introAudioSource.clip.frequency;
         
@@ -68,17 +73,20 @@ public class SoundManager : Singleton<SoundManager>
 
     public void StopBgm()
     {
+        if (_introAudioSource == null) return;
+        if (!_introAudioSource.isPlaying && !_loopAudioSource.isPlaying) return;
         StartCoroutine(FadeOutCoroutine());
     }
 
     private IEnumerator FadeOutCoroutine()
     {
-        float currentTime = 0;
         float start = _introAudioSource.volume;
-        float duration = 2.7f;
+        float currentTime = 0;
+        float duration = 1f;
         while (currentTime < duration)
         {
             currentTime += Time.unscaledDeltaTime;
+            Debug.Log(currentTime);
             _introAudioSource.volume = Mathf.Lerp(start, 0, currentTime / duration);
             _loopAudioSource.volume = Mathf.Lerp(start, 0, currentTime / duration);
             yield return null;

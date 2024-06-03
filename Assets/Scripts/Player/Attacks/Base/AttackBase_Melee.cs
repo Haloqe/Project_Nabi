@@ -149,19 +149,16 @@ public class AttackBase_Melee : AttackBase
     public void OnTriggerEnter2D(Collider2D collision)
     {
         // Check if the hit target is valid
-        var rootEnemy = collision.transform.root.gameObject;
-        if (Utility.IsObjectInList(rootEnemy, _affectedEnemies)) return;
-        IDamageable target = rootEnemy.GetComponent<IDamageable>();
-        if (target == null) return;
-        if (Utility.IsObjectInList(rootEnemy, _affectedEnemies)) return;
+        var rootEnemyDamageable = collision.GetComponentInParent<IDamageable>();
+        if (rootEnemyDamageable == null || Utility.IsObjectInList(rootEnemyDamageable.GetGameObject(), _affectedEnemies)) return;
 
         // Recalculate damage based on current player strength
         _attackComboInfo.Damage.TotalAmount = _damageComboInfo.BaseDamage + _playerController.Strength * _damageComboInfo.RelativeDamage;
         _attackInfo.Damage.TotalAmount = _damageInfo.BaseDamage + _playerController.Strength * _damageInfo.RelativeDamage;
         
         // Do damage
-        _affectedEnemies.Add(rootEnemy.GetInstanceID());
-        _damageDealer.DealDamage(target, _comboStack == 0 ? _attackComboInfo : _attackInfo);
+        _affectedEnemies.Add(rootEnemyDamageable.GetGameObject().GetInstanceID());
+        _damageDealer.DealDamage(rootEnemyDamageable, _comboStack == 0 ? _attackComboInfo : _attackInfo);
     }
 
     protected override void OnAttackEnd_PreDelay()

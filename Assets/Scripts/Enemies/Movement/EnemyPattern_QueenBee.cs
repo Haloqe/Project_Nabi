@@ -9,7 +9,9 @@ using Random = UnityEngine.Random;
 
 public class EnemyPattern_QueenBee : EnemyPattern
 {
+    [SerializeField] private GameObject _dustParticle;
     private BossHealthBar _bossHealthBar;
+    private float _maxHealth;
     private bool _isBouncing = true;
     private bool _beesAreCommanded;
     private bool _isInAttackSequence;
@@ -35,6 +37,7 @@ public class EnemyPattern_QueenBee : EnemyPattern
         _enemyManager = EnemyManager.Instance;
         _bossHealthBar = Instantiate(Resources.Load<GameObject>("Prefabs/UI/InGame/BossHealthUI"),
             Vector3.zero, Quaternion.identity).GetComponentInChildren<BossHealthBar>();
+        _maxHealth = _enemyBase.EnemyData.MaxHealth;
 
         float gap = 3f;
         for (int i = 0; i < _bombPositions.Length; i++)
@@ -61,7 +64,7 @@ public class EnemyPattern_QueenBee : EnemyPattern
             return;
         }
         
-        if (!_beesAreCommanded)
+        if (_enemyBase.Health <= _maxHealth * 0.5f && !_beesAreCommanded)
         {
             StartCoroutine(BattleCry());
             return;
@@ -114,7 +117,7 @@ public class EnemyPattern_QueenBee : EnemyPattern
         int directionFacing = 1;
         if (_player.transform.position.x > transform.position.x) directionFacing *= -1;
         Vector3 position = _player.transform.position + new Vector3(directionFacing * 10f, 2f, 0);
-        yield return MoveToPosition(position, _moveSpeed);
+        yield return MoveToPosition(position, MoveSpeed);
     }
 
     private bool IsCloseEnough(GameObject obj, Vector3 pos)
@@ -132,7 +135,7 @@ public class EnemyPattern_QueenBee : EnemyPattern
         int directionFacing = 1;
         if (_player.transform.position.x > transform.position.x) directionFacing *= -1;
         Vector3 idlePosition = _player.transform.position + new Vector3(directionFacing * 7f, 2f, 0);
-        yield return MoveToPosition(idlePosition, _moveSpeed);
+        yield return MoveToPosition(idlePosition, MoveSpeed);
         yield return new WaitForSeconds(3f);
         
         _justFinishedAttack = false;
@@ -199,13 +202,15 @@ public class EnemyPattern_QueenBee : EnemyPattern
         Vector3 startPosition = _player.transform.position + new Vector3(directionFacing * 7f, 0, 0);
         Vector3 finalPosition = startPosition - new Vector3(directionFacing * 5f, 0, 0);
         
-        yield return MoveToPosition(startPosition, _moveSpeed * 1.3f);
+        yield return MoveToPosition(startPosition, MoveSpeed * 1.3f);
         _rigidBody.velocity = new Vector2(0f, 0f);
         _animator.SetBool(IsAttacking, true);
         _animator.SetInteger(AttackIndex, 2);
         yield return new WaitForSeconds(0.8f);
         
-        float dashSpeed = _moveSpeed * 5f;
+        float dashSpeed = MoveSpeed * 5f;
+        _dustParticle.SetActive(true);
+        _dustParticle.transform.localScale = new Vector3(-directionFacing, 1, 1);
         yield return MoveToPosition(finalPosition, dashSpeed, false);
 
         _animator.SetBool(IsAttacking, false);

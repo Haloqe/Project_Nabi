@@ -12,6 +12,8 @@ public class EnemyManager : Singleton<EnemyManager>
     private GameObject[] _enemyPrefabs;
     public GameObject GoldPrefab { private set; get; }
     public GameObject SoulShardPrefab { private set; get; }
+    public GameObject TakeDamageVFXPrefab { private set; get; }
+    public Material FlashMaterial { private set; get; }
     public EnemyVisibilityChecker VisibilityChecker { private set; get; }
     private List<EnemyBase> _spawnedEnemies;
     private Transform _enemiesContainer;
@@ -24,6 +26,8 @@ public class EnemyManager : Singleton<EnemyManager>
         _spawnedEnemies = new List<EnemyBase>();
         GoldPrefab = Resources.Load("Prefabs/Items/Gold").GameObject();
         SoulShardPrefab = Resources.Load("Prefabs/Items/SoulShard").GameObject();
+        TakeDamageVFXPrefab = Resources.Load("Prefabs/Effects/TakeDamageVFX").GameObject();
+        FlashMaterial = Resources.Load("Materials/FlashMaterial") as Material;
         GameEvents.MapLoaded += OnMapLoaded;
         GameEvents.GameLoadEnded += OnGameLoadEnded;
         InGameEvents.EnemySlayed += (enemy => _spawnedEnemies.Remove(enemy));

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -62,7 +63,18 @@ public class GameManager : Singleton<GameManager>
         
         // Load new in-game scene
         // TEMP TODO
-        SceneManager.LoadScene(_ingameMapSceneIdx);
+        StartCoroutine(LoadSceneAsync());
+    }
+    
+    private IEnumerator LoadSceneAsync()
+    {
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(_ingameMapSceneIdx);
+
+        // Wait until the asynchronous scene fully loads
+        while (!asyncLoad.isDone)
+        {
+            yield return null;
+        }
     }
     
     private void PostLoadInGame()

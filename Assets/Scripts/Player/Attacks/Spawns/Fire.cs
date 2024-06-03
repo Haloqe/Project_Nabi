@@ -44,14 +44,13 @@ public class Fire : MonoBehaviour
 
     public void OnEnemyEnter(Collider2D collision)
     {
-        var rootEnemy = collision.transform.root.gameObject;
-        if (Utility.IsObjectInList(rootEnemy, _affectedEnemies)) return;
-        IDamageable target = rootEnemy.GetComponent<IDamageable>();
-        if (target != null)
-        {
-            Owner.DealDamage(target, true);
-            _affectedEnemies.Add(rootEnemy.GetInstanceID());
-        }   
+        // Check if the hit target is valid
+        var rootEnemyDamageable = collision.GetComponentInParent<IDamageable>();
+        if (rootEnemyDamageable == null || Utility.IsObjectInList(rootEnemyDamageable.GetGameObject(), _affectedEnemies)) return;
+
+        // Do damage
+        Owner.DealDamage(rootEnemyDamageable, true);
+        _affectedEnemies.Add(rootEnemyDamageable.GetGameObject().GetInstanceID()); 
     }
     
 }

@@ -42,15 +42,15 @@ public class MainMenuUIController : MonoBehaviour
     {
         _hasSaveData = GameManager.Instance.PlayerMetaData.isDirty;
         _options[1].color = _hasSaveData ? _unselectedColour : _unavailableColour;
-        SelectOption(_hasSaveData ? 1 : 0);
+        SelectOption(_hasSaveData ? 1 : 0, false);
     }
 
-    private void SelectOption(int newOptionIdx)
+    private void SelectOption(int newOptionIdx, bool shouldPlaySound = true)
     {
         if (_underTransition) return;
         if (newOptionIdx == 1 && !_hasSaveData) return;
         
-        if (_selectedOptionIdx != newOptionIdx) _audioSource.Play();
+        if (_selectedOptionIdx != newOptionIdx && shouldPlaySound) _audioSource.Play();
         UnselectCurrentOption();
         _options[newOptionIdx].color = _selectedColour;
         _options[newOptionIdx].text = "> " + _options[newOptionIdx].text;
@@ -119,9 +119,11 @@ public class MainMenuUIController : MonoBehaviour
         {
             case 0: // New Game
                 // TODO: 세이브파일 있으면 덮어쓸지 경고창 띄우기
+                SoundManager.Instance.StopBgm();
                 break;
             
             case 1: // Continue
+                SoundManager.Instance.StopBgm();
                 break;
             
             case 2: // Settings

@@ -19,15 +19,13 @@ public class GravityField : MonoBehaviour
 
     public void OnTriggerEnter2D(Collider2D collision)
     {
-        var enemyRoot = collision.transform.root.gameObject;
-        IDamageable target = enemyRoot.GetComponent<IDamageable>();
-        if (Utility.IsObjectInList(enemyRoot, _affectedEnemies)) return;
+        // Check if the hit target is valid
+        var rootEnemyDamageable = collision.GetComponentInParent<IDamageable>();
+        if (rootEnemyDamageable == null || Utility.IsObjectInList(rootEnemyDamageable.GetGameObject(), _affectedEnemies)) return;
 
-        if (target != null)
-        {
-            Owner.DealDamage(target, true);
-            _affectedEnemies.Add(enemyRoot.GetInstanceID());
-        }
+        // Do damage
+        Owner.DealDamage(rootEnemyDamageable, false);
+        _affectedEnemies.Add(rootEnemyDamageable.GetGameObject().GetInstanceID());
     }
 
 }

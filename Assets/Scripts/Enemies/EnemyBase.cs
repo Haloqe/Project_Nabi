@@ -17,8 +17,9 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     private EnemyManager _enemyManager;
     public SEnemyData EnemyData;
     private PlayerController _player;
-    private UnityEngine.Object _takeDamageVFXPrefab;
+    private SpriteRenderer[] _spriteRenderers;
     private UIManager _uiManager;
+    private Material _originalMaterial;
     
     // Pattern
     protected EnemyPattern Pattern;
@@ -46,19 +47,14 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
     //Enemy health attribute
     public AttackInfo DamageInfo;
-    protected float health;
-    private SpriteRenderer _spriteRenderer;
+    public float Health { get; private set; }
     private float _armour;
     private float _damageCooltimeCounter;
     private float _damageCooltime = 0.3f;
-    private readonly static int IsAttacking = Animator.StringToHash("IsAttacking");
-    private readonly static int AttackSpeed = Animator.StringToHash("AttackSpeed");
-
-    private void Awake()
-    {
-        _spriteRenderer = GetComponent<SpriteRenderer>(); 
-    }
-
+    private static readonly int IsAttacking = Animator.StringToHash("IsAttacking");
+    private static readonly int AttackSpeed = Animator.StringToHash("AttackSpeed");
+    
+    
     protected virtual void Start()
     {
         _uiManager = UIManager.Instance;
@@ -67,7 +63,8 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         _animator = GetComponent<Animator>();
         _enemyManager = EnemyManager.Instance;
         EnemyData = _enemyManager.GetEnemyData(typeID);
-        _takeDamageVFXPrefab = Resources.Load("Prefabs/Effects/TakeDamageVFX");
+        _spriteRenderers = GetComponentsInChildren<SpriteRenderer>();
+        _originalMaterial = _spriteRenderers[0].material;
         
         _effectRemainingTimes = new float[(int)EStatusEffect.MAX];
         _slowRemainingTimes = new SortedDictionary<float, float> (
@@ -83,12 +80,15 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         _targetDamageable = Target.gameObject.GetComponent<IDamageable>();
         Pattern.Init();
 
-        health = EnemyData.MaxHealth;
+        Health = EnemyData.MaxHealth;
         _armour = EnemyData.DefaultArmour;
     }
     
     private void OnPlayerDefeated()
     {
+        foreach (SpriteRenderer spriteRenderer in _spriteRenderers)
+            spriteRenderer.material = _originalMaterial;
+
         StopAllCoroutines();
         Pattern.StopMovementCoroutines();
         _playerIsDefeated = true;
@@ -102,7 +102,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     protected virtual void Update() 
     {
         UpdateRemainingStatusEffectTimes();
-        UpdateMovementState();
+        UpdateEnemyPatternState();
         _damageCooltimeCounter += Time.unscaledDeltaTime;
     }
 
@@ -137,11 +137,13 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
                     {
                         Pattern.ChangeSpeedByPercentage(statusEffect.Strength);
                         ChangeAttackSpeedByPercentage(statusEffect.Strength);
-                        // Debug.Log("This is the first stack of sommer. Change in move speed and attack speed is applied. now its move speed is " + _movement._moveSpeed + " and attack speed " + _animator.GetFloat("AttackSpeed"));
+                        Debug.Log("This is the first stack of sommer." +
+                                  "Change in move speed and attack speed is applied. now its move speed is " +
+                                  Pattern.MoveSpeed + " and attack speed " + _animator.GetFloat("AttackSpeed"));
                     }
                     _sommerStackCount++;
                     _sommerTimeSinceStacked = 0f;
-                    // Debug.Log("Sommer was stacked. There are now " + _sommerStackCount + " stacks.");
+                    Debug.Log("Sommer was stacked. There are now " + _sommerStackCount + " stacks.");
                     break;
 
                 case EStatusEffect.Ecstasy:
@@ -298,8 +300,9 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
             ResetAttackSpeed();
             _sommerTimeSinceStacked = 0;
             _sommerStackCount = 0;
-            // Debug.Log("final stack. now its move speed is " + _movement._moveSpeed + " and attack speed " + _animator.GetFloat("AttackSpeed"));
-            // HandleNewStatusEffects(new List<StatusEffectInfo> { new StatusEffectInfo(EStatusEffect.Sleep, 1, Define.SleepDuration) }, 0);
+            Debug.Log("final stack. now its move speed is " + Pattern.MoveSpeed +
+                      " and attack speed " + _animator.GetFloat("AttackSpeed"));
+            HandleNewStatusEffects(new List<StatusEffectInfo> { new StatusEffectInfo(EStatusEffect.Sleep, 1, Define.SleepDuration) }, Vector3.zero);
             AttackInfo sleepDamage = new AttackInfo();
             sleepDamage.StatusEffects = new List<StatusEffectInfo> { new StatusEffectInfo(EStatusEffect.Sleep, 1, Define.SleepDuration) };
             TakeDamage(sleepDamage);
@@ -398,7 +401,8 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         {
             int direction = 1;
             if (_player.transform.localScale.x >= 0) direction = -1;
-            Instantiate(_takeDamageVFXPrefab, other.ClosestPoint(transform.position), Quaternion.Euler(new Vector3(-15f, direction * 90f, 0)));
+            Instantiate(_enemyManager.TakeDamageVFXPrefab, other.ClosestPoint(transform.position), 
+                Quaternion.Euler(new Vector3(-15f, direction * 90f, 0)));
             return;
         }
 
@@ -406,7 +410,8 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         {
             int direction = 1;
             if (_player.transform.localScale.x <= 0) direction = -1;
-            Instantiate(_takeDamageVFXPrefab, other.transform.position, Quaternion.Euler(new Vector3(-15f, direction * 90f, 0)));
+            Instantiate(_enemyManager.TakeDamageVFXPrefab, other.transform.position, 
+                Quaternion.Euler(new Vector3(-15f, direction * 90f, 0)));
             return;
         }
         
@@ -418,7 +423,9 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
             if (Random.Range(0.0f, 1.0f) <= 0.5f)
             {
                 Debug.Log(gameObject.name + " missed!");
-                Collider2D[] foesToDamage = Physics2D.OverlapBoxAll(transform.position + new Vector3 (0, _neighboringEnemyColliderHeight, 0), _neighboringEnemyColliderSize, 0, LayerMask.GetMask("Enemy"));
+                Collider2D[] foesToDamage =
+                    Physics2D.OverlapBoxAll(transform.position +new Vector3 (0, _neighboringEnemyColliderHeight, 0),
+                        _neighboringEnemyColliderSize, 0, LayerMask.GetMask("Enemy"));
                 AttackInfo damageToFoes = DamageInfo.Clone(cloneDamage:true, cloneStatusEffect:false);
                 damageToFoes.Damage.TotalAmount *= 0.25f;
                 foreach (Collider2D col in foesToDamage)
@@ -511,10 +518,9 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     private void ChangeHealthByAmount(float amount)
     {
         Debug.Log("[" + gameObject.name + "] Health " + amount);
-        Pattern.OnTakeDamage(amount, EnemyData.MaxHealth);
-        if (amount < 0) StartCoroutine(DamagedRoutine());
-        health = Mathf.Clamp(health + amount, 0, EnemyData.MaxHealth);
-        if (health == 0) Die();
+        if (amount < 0) StartCoroutine(DamagedRoutine(amount));
+        Health = Mathf.Clamp(Health + amount, 0, EnemyData.MaxHealth);
+        if (Health == 0) Die();
     }
 
     private IEnumerator DamageCoroutine(DamageInfo damage)
@@ -551,14 +557,15 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         }
     }
     
-    // TODO FIX: damage visualisation
-    private IEnumerator DamagedRoutine()
+    private IEnumerator DamagedRoutine(float amount)
     {
-        // _spriteRenderer.color = new Color(0.267f, 0.9f, 0.99f);
-        // yield return new WaitForSeconds(0.1f);
-        // _spriteRenderer.color = Color.white;
-        // Instantiate(_takeDamageVFXPrefab, transform.position, Quaternion.identity);
-        yield break;
+        Pattern.OnTakeDamage(amount, EnemyData.MaxHealth);
+        
+        foreach (SpriteRenderer spriteRenderer in _spriteRenderers)
+            spriteRenderer.material = _enemyManager.FlashMaterial;
+        yield return new WaitForSeconds(0.05f);
+        foreach (SpriteRenderer spriteRenderer in _spriteRenderers)
+            spriteRenderer.material = _originalMaterial;
     }
 
     public void Die(bool shouldDropReward = true)
@@ -580,8 +587,8 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     }
     #endregion Damage Dealing and Receiving
 
-    #region Enemy Movement
-    private void UpdateMovementState()
+    #region Enemy Pattern
+    private void UpdateEnemyPatternState()
     {
         if (_playerIsDefeated)
         {
@@ -616,11 +623,13 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     {
         float initial = _animator.GetFloat(AttackSpeed);
         _animator.SetFloat(AttackSpeed, initial * percentage);
+        Pattern.AttackSpeed *= percentage;
     }
 
     public void ResetAttackSpeed()
     {
         _animator.SetFloat(AttackSpeed, 1f);
+        Pattern.AttackSpeed = 1f;
     }
     #endregion Enemy Movement
 

@@ -33,7 +33,7 @@ public class PlayerMovement : MonoBehaviour
     private int _jumpCounter;
     private readonly float _coyoteTime = 0.2f;
     private float _coyoteTimeCounter;
-    private readonly float _jumpBufferTime = 0.2f;
+    private readonly float _jumpBufferTime = 0.3f;
     private float _jumpBufferTimeCounter;
     public float UpwardsGravityScale { get; private set; }
     public float DownwardsGravityScale { get; private set; }

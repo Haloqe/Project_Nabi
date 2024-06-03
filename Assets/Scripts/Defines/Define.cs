@@ -6,7 +6,7 @@ public static class  Define
     // TODO 외부 파일로 뺄 것
     public static ELocalisation Localisation = ELocalisation.KOR;
     
-    public static float GameOverDelayTime = 3.7f;
+    public static float GameOverDelayTime = 2.5f;
     public static float HoldInteractionTime = 2.0f;
     public static float DefaultDamageTick = 0.5f;
     // Cumulative

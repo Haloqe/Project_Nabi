@@ -11,6 +11,7 @@ public class DefeatedUIController : MonoBehaviour
     private bool _isCurrSelectedRestartBtn;
     private string _restartText;
     private string _backToMainText;
+    private AudioSource _audioSource;
     
     private void Awake()
     {
@@ -22,7 +23,8 @@ public class DefeatedUIController : MonoBehaviour
         _selectedColour = Color.white;
         _restartText = _restartTMP.text;
         _backToMainText = _backToMainTMP.text;
-        OnButtonHovered(true);
+        _audioSource = GetComponents<AudioSource>()[1];
+        OnButtonHovered(true, false);
     }
 
     private IEnumerator ColourChangeCoroutine()
@@ -49,8 +51,9 @@ public class DefeatedUIController : MonoBehaviour
         OnButtonHovered(!_isCurrSelectedRestartBtn);
     }
 
-    private void OnButtonHovered(bool isRestartBtn)
+    private void OnButtonHovered(bool isRestartBtn, bool shouldPlaySound = true)
     {
+        if (shouldPlaySound) _audioSource.Play();
         OnButtonUnhovered(!isRestartBtn);
         if (isRestartBtn)
         {

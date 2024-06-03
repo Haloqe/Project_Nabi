@@ -103,7 +103,7 @@ public class EnemyPattern_Bee : EnemyPattern
 
         Vector2 direction = ((Vector2)_path.vectorPath[_currentWaypoint] - _rigidBody.position).normalized;
         direction += new Vector2(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f));
-        Vector2 force = direction * (_moveSpeed * Time.deltaTime * 160f);
+        Vector2 force = direction * (MoveSpeed * Time.deltaTime * 160f);
         _rigidBody.AddForce(force);
 
         float distance = Vector2.Distance(_rigidBody.position, _path.vectorPath[_currentWaypoint]);
@@ -140,7 +140,7 @@ public class EnemyPattern_Bee : EnemyPattern
         if (_targetPosition.x > transform.position.x) directionFacing *= -1;
         Vector3 position = _targetPosition + new Vector3(directionFacing * 3f, 3f, 0);
         position += new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), 0);
-        yield return MoveToPosition(position, _moveSpeed, true);
+        yield return MoveToPosition(position, MoveSpeed, true);
         _rigidBody.velocity = new Vector3(0f, 0f, 0f);
         yield return new WaitForSeconds(0.2f);
 
@@ -155,7 +155,7 @@ public class EnemyPattern_Bee : EnemyPattern
         
         _rigidBody.velocity = new Vector3(0f, 0f, 0f);
         Vector3 position = _targetPosition + new Vector3(0f, 0.5f, 0);
-        yield return MoveToPosition(position, _moveSpeed * 3f, false);
+        yield return MoveToPosition(position, MoveSpeed * 3f, false);
         
         _animator.SetBool(IsInAttackSequence, false);
         _isInAttackState = false;
@@ -168,7 +168,8 @@ public class EnemyPattern_Bee : EnemyPattern
         int directionFacing = -1;
         if (_targetPosition.x > transform.position.x) directionFacing *= -1;
         Vector3 position = _targetPosition + new Vector3(directionFacing * 2f, 2f, 0);
-        yield return MoveToPosition(position, _moveSpeed, true);
+        position += new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), 0);
+        yield return MoveToPosition(position, MoveSpeed, true);
 
         yield return new WaitForSeconds(1.5f);
         

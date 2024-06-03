@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using Pathfinding;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -114,6 +116,7 @@ public class PlayerController : Singleton<PlayerController>
 
     private void OnDestroy()
     {
+        if (IsToBeDestroyed) return;
         GameEvents.Restarted -= OnRestarted;
         PlayerEvents.ValueChanged -= OnValueChanged;
         PlayerEvents.StartResurrect -= OnPlayerStartResurrect;
@@ -224,6 +227,20 @@ public class PlayerController : Singleton<PlayerController>
         //     playerDamageReceiver.ChangeHealthByAmount(-1000);
         // }
         // count++;
+    }
+
+    private void MakeAStarGraph(int width, int depth, Vector3 center)
+    {
+        AstarData data = AstarPath.active.data;
+        GridGraph gg = data.AddGraph(typeof(GridGraph)) as GridGraph;
+        
+        float nodeSize = 0.5f;
+        gg.is2D = true;
+        gg.collision.use2D = true;
+        gg.collision.mask = LayerMask.GetMask("Platform");
+        gg.SetDimensions(width, depth, nodeSize);
+        
+        AstarPath.active.Scan();
     }
 
     private void OnValueChanged(ECondition condition, float changeAmount)

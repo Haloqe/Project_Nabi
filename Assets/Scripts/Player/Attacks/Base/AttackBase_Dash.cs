@@ -12,7 +12,7 @@ public class AttackBase_Dash : AttackBase
     
     // Nightshade Dash
     private readonly float _nightShadeDashTimeLimit = 4.5f;
-    private readonly float _nightShadeDashSpeedMultiplier = 1.5f;
+    private readonly float _nightShadeDashSpeedMultiplier = 1.3f;
     private bool _hasAliveNightShadeShadow;
     private bool _isTeleporting;
     private GameObject _nightShadeDashPrefab;
