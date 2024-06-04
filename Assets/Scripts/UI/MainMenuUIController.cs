@@ -6,6 +6,10 @@ using UnityEngine;
 public class MainMenuUIController : UIControllerBase
 {
     // References
+    private Animator _animator;
+    private GameManager _gameManager;
+    private UIManager _uiManager;
+    private AudioManager _audioManager;
     private GameObject _newGameConfirmPanel;
     
     // Confirm
@@ -14,8 +18,13 @@ public class MainMenuUIController : UIControllerBase
     private int _selectedConfirmOption;
     private Color _confirmSelectedColour;
     
+    // Settings
+    private SettingsUIController _settingsUIController;
+    private bool _isSettingsActive;
+    
     // 0: New game, 1: Continue, 2: Settings, 3: Quit
     private TextMeshProUGUI[] _options;
+    private string[] _optionTexts;
     private int _selectedOptionIdx;
     private bool _hasSaveData;
     private bool _underTransition;
@@ -28,7 +37,9 @@ public class MainMenuUIController : UIControllerBase
     
     // SFX
     private AudioSource _audioSource;
-    
+    private readonly static int Revert = Animator.StringToHash("Revert");
+    private readonly static int Transition = Animator.StringToHash("Transition");
+
     private void Awake()
     {
         // Colours
@@ -39,13 +50,16 @@ public class MainMenuUIController : UIControllerBase
         
         // Initialise
         _options = transform.Find("Options").GetComponentsInChildren<TextMeshProUGUI>();
+        _optionTexts = new string[_options.Length];
         for (int i = 0; i < _options.Length; i++)
         {
             _options[i].GetComponent<MainMenuButton>().Init(this, i);
             _options[i].color = _unselectedColour;
+            _optionTexts[i] = _options[i].text;
         }
         _selectedOptionIdx = 0;
         _audioSource = GetComponent<AudioSource>();
+        _animator = GetComponent<Animator>();
 
         // Confirm panels
         _newGameConfirmPanel = gameObject.transform.Find("NewGameConfirmPanel").gameObject;
@@ -58,7 +72,13 @@ public class MainMenuUIController : UIControllerBase
 
     private void Start()
     {
-        _hasSaveData = GameManager.Instance.PlayerMetaData.isDirty;
+        // References
+        _gameManager = GameManager.Instance;
+        _uiManager = UIManager.Instance;
+        _audioManager = AudioManager.Instance;
+        
+        // Initialise ui
+        _hasSaveData = _gameManager.PlayerMetaData.isDirty;
         _options[1].color = _hasSaveData ? _unselectedColour : _unavailableColour;
         SelectOption(_hasSaveData ? 1 : 0, false);
     }
@@ -71,7 +91,7 @@ public class MainMenuUIController : UIControllerBase
         if (_selectedOptionIdx != newOptionIdx && shouldPlaySound) _audioSource.Play();
         UnselectCurrentOption();
         _options[newOptionIdx].color = _selectedColour;
-        _options[newOptionIdx].text = "> " + _options[newOptionIdx].text;
+        _options[newOptionIdx].text = "> " + _optionTexts[newOptionIdx];
         _selectedOptionIdx = newOptionIdx;
         _colourChangeCoroutine = StartCoroutine(ColourChangeCoroutine());
     }
@@ -79,7 +99,7 @@ public class MainMenuUIController : UIControllerBase
     private void UnselectCurrentOption()
     {
         if (_colourChangeCoroutine != null) StopCoroutine(_colourChangeCoroutine);
-        _options[_selectedOptionIdx].text = _options[_selectedOptionIdx].text.Substring(2);
+        _options[_selectedOptionIdx].text = _optionTexts[_selectedOptionIdx];
         _options[_selectedOptionIdx].color = _unselectedColour;
     }
     
@@ -104,12 +124,23 @@ public class MainMenuUIController : UIControllerBase
 
     public override void OnNavigate(Vector2 value)
     {
+        if (_underTransition) return;
+        
+        // Confirm panel
         if (_newGameConfirmPanel.activeSelf)
         {
             OnNavigateConfirmPanel(value.x);
             return;
         }
         
+        // Settings
+        if (_isSettingsActive)
+        {
+            _settingsUIController.OnNavigate(value);
+            return;
+        }
+        
+        // Base
         switch (value.y)
         {
             // Left or Right
@@ -138,16 +169,25 @@ public class MainMenuUIController : UIControllerBase
     {
         if (_underTransition) return;
 
+        // Confirm Panel
         if (_newGameConfirmPanel.activeSelf)
         {
             _newGameConfirmPanel.SetActive(false);
             if (_selectedConfirmOption == 1) // Restart
             {
-                StartTransition();
+                StartHideTransition();
             }
             return;
         }
         
+        // Settings
+        if (_isSettingsActive)
+        {
+            _settingsUIController.OnSubmit();
+            return;
+        }
+        
+        // Basic main menu
         switch (_selectedOptionIdx)
         {
             case 0: // New Game
@@ -157,59 +197,87 @@ public class MainMenuUIController : UIControllerBase
                     SelectConfirmOption(0);
                     return;
                 }
-                StartTransition();
+                StartHideTransition();
                 break;
             
             case 1: // Continue
-                StartTransition();
+                StartHideTransition();
                 break;
             
             case 2: // Settings
                 // TODO
-                
+                StartHideTransition(stopBgm:false);
                 break;
             
             case 3: // Quit
-                GameManager.Instance.QuitGame();
+                _gameManager.QuitGame();
                 break;
         }
     }
     
     public override void OnClose()
     {
+        if (_isSettingsActive)
+        {
+            _settingsUIController.OnClose();
+            return;
+        }
         if (_newGameConfirmPanel.activeSelf) _newGameConfirmPanel.SetActive(false);
     }
     
     public override void OnTab()
     {
-        return;
+        if (_isSettingsActive) _settingsUIController.OnTab();
     }
 
     public void OnPointerEnter(int optionIdx) => SelectOption(optionIdx);
     public void OnPointerClick() => OnSubmit();
 
-    private void StartTransition()
+    private void StartHideTransition(bool stopBgm = true)
     {
-        SoundManager.Instance.StopBgm();
-        GetComponent<Animator>().enabled = true;
+        if (stopBgm) _audioManager.StopBgm();
+        
+        _animator.enabled = true;
+        _animator.SetTrigger(Transition);
         _underTransition = true;
     }
 
-    public void OnEndTransition()
+    public void OnEndHideTransition()
     {
+        _animator.ResetTrigger(Transition);
         switch (_selectedOptionIdx)
         {
             case 0: // New Game
                 // TODO Opening cutscene
-                GameManager.Instance.StartNewGame();
+                _gameManager.StartNewGame();
                 break;
             
             case 1: // Continue
-                GameManager.Instance.ContinueGame();
+                _gameManager.ContinueGame();
+                break;
+            
+            case 2: // Settings
+                _settingsUIController = _uiManager.OpenSettings();
+                _settingsUIController.parentMainMenu = this;
+                _isSettingsActive = true;
+                _underTransition = false;
                 break;
         }
     }
 
+    public void OnEndShowTransition()
+    {
+        _underTransition = false;
+        _animator.ResetTrigger(Revert);
+        _animator.enabled = false;
+    }
+
+    public void OnSettingsClosed()
+    {
+        _isSettingsActive = false;
+        _underTransition = true;
+        _animator.SetTrigger(Revert);
+    }
     
     // Confirm panel
     private void OnNavigateConfirmPanel(float x)
