@@ -34,6 +34,7 @@ public class UIManager : Singleton<UIManager>
     private GameObject _bookPrefab;
     private GameObject _metaUpgradeUIPrefab;
     private GameObject _roomGuidePrefab;
+    private GameObject _settingsPrefab;
 
     // UI Instantiated Objects
     private GameObject _mainMenuUI;
@@ -46,6 +47,7 @@ public class UIManager : Singleton<UIManager>
     private GameObject _loadingScreenUI;
     private GameObject _bookUI;
     private GameObject _metaUpgradeUI;
+    private GameObject _settingsUI;
     
     // UI Mechanism Script
     private MainMenuUIController _mainMenuUIController;
@@ -54,6 +56,7 @@ public class UIManager : Singleton<UIManager>
     private DefeatedUIController _defeatedUIController;
     private BookUIController _bookUIController;
     private MetaUIController _metaUIController;
+    private SettingsUIController _settingsUIController;
     
     // Minor Controllable Objects
     private Slider _playerHPSlider;
@@ -314,6 +317,7 @@ public class UIManager : Singleton<UIManager>
     {
         string path = "Prefabs/UI/";
         _loadingScreenPrefab    = Utility.LoadGameObjectFromPath(path + "LoadingCanvas");
+        _settingsPrefab         = Utility.LoadGameObjectFromPath(path + "SettingsCanvas");
         _focusedOverlayPrefab   = Utility.LoadGameObjectFromPath(path + "InGame/FocusedCanvas");
         _defeatedUIPrefab       = Utility.LoadGameObjectFromPath(path + "InGame/DefeatedCanvas");
         _inGameCombatPrefab     = Utility.LoadGameObjectFromPath(path + "InGame/CombatCanvas");
@@ -333,9 +337,13 @@ public class UIManager : Singleton<UIManager>
         {
             _warriorUIPrefabs[i] = Utility.LoadGameObjectFromPath(path + "InGame/Warrior/" + (EWarrior)i);
         }
-        _loadingScreenUI = Instantiate(_loadingScreenPrefab, Vector3.zero, Quaternion.identity).GameObject();
+        _loadingScreenUI = Instantiate(_loadingScreenPrefab, Vector3.zero, Quaternion.identity).gameObject;
         _loadingScreenUI.SetActive(false);
+        _settingsUI = Instantiate(_settingsPrefab, Vector3.zero, Quaternion.identity).gameObject;
+        _settingsUI.SetActive(false);
+        _settingsUIController = _settingsUI.GetComponent<SettingsUIController>();
         DontDestroyOnLoad(_loadingScreenUI);
+        DontDestroyOnLoad(_settingsUI);
     }
 
     public void DisplayLoadingScreen()
@@ -406,6 +414,12 @@ public class UIManager : Singleton<UIManager>
         Destroy(interactor.gameObject);
         return true;
     }
+
+    public SettingsUIController OpenSettings()
+    {
+        _settingsUI.SetActive(true);
+        return _settingsUIController;
+    }
     
     public void OpenMetaUpgradeUI()
     {
@@ -438,7 +452,7 @@ public class UIManager : Singleton<UIManager>
     
     private void OnClose(InputAction.CallbackContext obj)
     {
-        if (_activeFocusedUI == _warriorUIObject || _activeFocusedUI == _bookUI)
+        if (_activeFocusedUI == _warriorUIObject || _activeFocusedUI == _bookUI || _activeFocusedUI == _mainMenuUI)
         {
             _activeFocusedUIController.OnClose();
         }

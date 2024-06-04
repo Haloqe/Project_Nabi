@@ -137,7 +137,7 @@ public class GameManager : Singleton<GameManager>
         if (_player) Destroy(_player.gameObject);
         IsFirstRun = true;
         PlayerMetaData = new PlayerMetaData();
-        SaveSystem.RemoveSaveData();
+        SaveSystem.RemoveMetaData();
         LoadInGame();
     }
 
