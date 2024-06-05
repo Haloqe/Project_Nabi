@@ -78,7 +78,7 @@ public class AudioManager : Singleton<AudioManager>
         if (SoundSettingsData == null)
         {
             // If no save data exists, use default settings
-            SoundSettingsData = _defaultSoundSettingsData.Clone();
+            ResetAudioSettingsToDefault();
         }
         else
         {
@@ -89,6 +89,11 @@ public class AudioManager : Singleton<AudioManager>
             audioMixer.SetFloat("SFXVolume", SoundSettingsData.sfxVolume);
             audioMixer.SetFloat("UIVolume", SoundSettingsData.uiVolume);
         }
+    }
+
+    public void ResetAudioSettingsToDefault()
+    {
+        SoundSettingsData = _defaultSoundSettingsData.Clone();
     }
     
     private void OnMainMenuLoaded()
@@ -106,8 +111,8 @@ public class AudioManager : Singleton<AudioManager>
         {
             _introAudioSource.clip = bossBgmIntro;
             _loopAudioSource.clip = bossBgmLoop;
-            _introAudioSource.volume = 0.6f;
-            _loopAudioSource.volume = 0.6f;
+            _introAudioSource.volume = 0.65f;
+            _loopAudioSource.volume = 0.65f;
             StartBgmLoop();
         }
     }

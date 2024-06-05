@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using Pathfinding;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -20,6 +19,7 @@ public class PlayerController : Singleton<PlayerController>
     private GameManager _gameManager;
 
     // Centrally controlled variables
+    private float _cumulativeMoveDirection = 0;
     public bool IsMapEnabled;
     public float DefaultGravityScale { get; private set; }
     public float HpCriticalThreshold { get; private set; }
@@ -174,6 +174,7 @@ public class PlayerController : Singleton<PlayerController>
         _shadowHosts.Clear();
         nightShadeCollider.SetActive(false);
         IsMapEnabled = true;
+        _cumulativeMoveDirection = 0;
     }
 
     private void OnPlayerStartResurrect()
@@ -188,10 +189,21 @@ public class PlayerController : Singleton<PlayerController>
         }
         _shadowHosts.Clear();
     }
-
-    void OnMove(InputValue value)
+    
+    void OnMove_Left(InputValue value)
     {
-        playerMovement.SetMoveDirection(value.Get<Vector2>());
+        var dir = value.Get<float>();
+        if (dir == 0) _cumulativeMoveDirection += 1;
+        else _cumulativeMoveDirection -= 1;
+        playerMovement.SetMoveDirection(_cumulativeMoveDirection);
+    }
+    
+    void OnMove_Right(InputValue value)
+    {
+        var dir = value.Get<float>();
+        if (dir == 0) _cumulativeMoveDirection -= 1;
+        else _cumulativeMoveDirection += 1;
+        playerMovement.SetMoveDirection(_cumulativeMoveDirection);
     }
 
     void OnStartMove(InputValue value)

@@ -11,8 +11,9 @@ public class UIManager : Singleton<UIManager>
 {
     // Input Actions
     private InputSystemUIInputModule _uiInputModule;
-    private InputActionMap _playerIAMap;
-    private InputActionMap _UIIAMap;
+    public InputActionAsset InputActionAsset;
+    public InputActionMap PlayerIAMap { get; private set; }
+    public InputActionMap UIIAMap { get; private set; }
     private InputActionReference _uiPointIARef;
     private InputActionReference _playerPointIARef;
     private InputActionReference _uiClickIARef;
@@ -107,22 +108,23 @@ public class UIManager : Singleton<UIManager>
         InGameEvents.TimeRevertNormal += () => _tensionOverlay.gameObject.SetActive(false);
 
         _uiInputModule = FindObjectOfType<InputSystemUIInputModule>();
-        InputActionAsset IAAsset = _uiInputModule.actionsAsset;
-        _UIIAMap = IAAsset.FindActionMap("UI");
-        _UIIAMap.FindAction("Close").performed += OnClose;
-        _UIIAMap.FindAction("CloseMap").performed += OnCloseMap;
-        _UIIAMap.FindAction("Tab").performed += OnTab;
-        _UIIAMap.FindAction("Navigate").performed += OnNavigate;
-        _UIIAMap.FindAction("Navigate").canceled += OnNavigate;
-        _UIIAMap.FindAction("Reset").performed += OnReset;
-        _UIIAMap.FindAction("Zoom").performed += OnZoom;
-        _UIIAMap.FindAction("Zoom").canceled += OnZoom;
-        _UIIAMap.FindAction("Submit").performed += OnSubmit;
+        PlayerIAMap = InputActionAsset.FindActionMap("Player");
+        UIIAMap = InputActionAsset.FindActionMap("UI");
+        UIIAMap.FindAction("Close").performed += OnClose;
+        UIIAMap.FindAction("CloseMap").performed += OnCloseMap;
+        UIIAMap.FindAction("Tab").performed += OnTab;
+        UIIAMap.FindAction("Navigate").performed += OnNavigate;
+        UIIAMap.FindAction("Navigate").canceled += OnNavigate;
+        UIIAMap.FindAction("Reset").performed += OnReset;
+        UIIAMap.FindAction("Zoom").performed += OnZoom;
+        UIIAMap.FindAction("Zoom").canceled += OnZoom;
+        UIIAMap.FindAction("Submit").performed += OnSubmit;
 
-        _uiPointIARef = InputActionReference.Create(_UIIAMap.FindAction("Point"));
+        _uiPointIARef = InputActionReference.Create(UIIAMap.FindAction("Point"));
         _playerPointIARef = InputActionReference.Create(_uiInputModule.point);
-        _uiClickIARef = InputActionReference.Create(_UIIAMap.FindAction("Click"));
+        _uiClickIARef = InputActionReference.Create(UIIAMap.FindAction("Click"));
         _playerClickIARef = InputActionReference.Create(_uiInputModule.leftClick);
+        LoadActionRebinds();
     }
 
     private void OnGameLoadStarted()
@@ -203,17 +205,14 @@ public class UIManager : Singleton<UIManager>
     
     private void UseUIControl()
     {
-        if (_playerIAMap != null) _playerIAMap.Disable();
-        _UIIAMap.Enable();
+        PlayerIAMap.Disable();
+        UIIAMap.Enable();
     }
 
     private void UsePlayerControl()
     {
-        if (_playerIAMap != null)
-        {
-            _playerIAMap.Enable();
-        }
-        _UIIAMap.Disable();
+        PlayerIAMap.Enable();
+        UIIAMap.Disable();
         _uiInputModule.point = _playerPointIARef;
         _uiInputModule.leftClick = _playerClickIARef;
     }
@@ -297,7 +296,7 @@ public class UIManager : Singleton<UIManager>
     {
         StopCoroutine(nameof(BloodOverlayCoroutine));
         CloseFocusedUI();
-        _playerIAMap.Disable();
+        PlayerIAMap.Disable();
         StartCoroutine(GameOverCoroutine());
     }
     
@@ -305,7 +304,7 @@ public class UIManager : Singleton<UIManager>
     {
         StopCoroutine(nameof(BloodOverlayCoroutine));
         CloseFocusedUI();
-        _playerIAMap.Disable();
+        PlayerIAMap.Disable();
     }
     
     private void OnPlayerEndResurrect()
@@ -368,12 +367,10 @@ public class UIManager : Singleton<UIManager>
         _playerAttackManager = PlayerAttackManager.Instance;
         _playerController = PlayerController.Instance;
         _playerHPSlider.value = 1;
-        _playerIAMap = _playerController.GetComponent<PlayerInput>().actions.FindActionMap("Player");
-        _playerIAMap.Enable();
-        _UIIAMap.Disable();
+        UsePlayerControl();
         
-        _playerIAMap.FindAction("Bomb_Left").performed += OnBombSelect_Left;
-        _playerIAMap.FindAction("Bomb_Right").performed += OnBombSelect_Right;
+        PlayerIAMap.FindAction("Bomb_Left").performed += OnBombSelect_Left;
+        PlayerIAMap.FindAction("Bomb_Right").performed += OnBombSelect_Right;
     }
 
     private void OpenFocusedUI(GameObject uiObject, bool shouldShowOverlay = false)
@@ -390,10 +387,10 @@ public class UIManager : Singleton<UIManager>
     public void CloseFocusedUI()
     {
         if (!_activeFocusedUI) return;
-        if (_playerIAMap != null) _playerIAMap.Enable();
+        PlayerIAMap.Enable();
         if (_activeFocusedUI == _warriorUIObject) Destroy(_warriorUIObject);
         
-        _UIIAMap.Disable();
+        UIIAMap.Disable();
         _focusedOverlay.SetActive(false);
         _activeFocusedUI.SetActive(false);
         _activeFocusedUI = null;
@@ -480,6 +477,10 @@ public class UIManager : Singleton<UIManager>
         if (_activeFocusedUI == _zoomedMap)
         {
             _mapController.ResetMapCamera(true);
+        }
+        else if (_activeFocusedUI == _mainMenuUI)
+        {
+            _mainMenuUIController.OnReset();
         }
     }
 
@@ -617,4 +618,22 @@ public class UIManager : Singleton<UIManager>
     }
 
     public GameObject GetInGameCombatUI() => _inGameCombatUI;
+    
+    public void SaveActionRebinds()
+    {
+        var uiRebinds = UIIAMap.SaveBindingOverridesAsJson();
+        var playerRebinds = PlayerIAMap.SaveBindingOverridesAsJson();
+        PlayerPrefs.SetString("uiRebinds", uiRebinds);
+        PlayerPrefs.SetString("playerRebinds", playerRebinds);
+    }
+
+    public void LoadActionRebinds()
+    {
+        var uiRebinds = PlayerPrefs.GetString("uiRebinds");
+        var playerRebinds = PlayerPrefs.GetString("playerRebinds");
+        if (!string.IsNullOrEmpty(uiRebinds))
+            UIIAMap.LoadBindingOverridesFromJson(uiRebinds);
+        if (!string.IsNullOrEmpty(playerRebinds))
+            PlayerIAMap.LoadBindingOverridesFromJson(playerRebinds);
+    }
 }
