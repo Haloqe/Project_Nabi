@@ -308,4 +308,9 @@ public class MainMenuUIController : UIControllerBase
         _newGameConfirmTMPs[_selectedConfirmOption].color = Color.white;
         _newGameConfirmTMPs[_selectedConfirmOption].text = _newGameConfirmTexts[_selectedConfirmOption];
     }
+    
+    public void OnReset()
+    {
+        if (_isSettingsActive) _settingsUIController.OnReset();
+    }
 }

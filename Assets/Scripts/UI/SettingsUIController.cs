@@ -1,13 +1,16 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public class SettingsUIController : UIControllerBase
 {
+    // Ref
     private AudioManager _audioManager;
+    private UIManager _uiManager;
     
     // Parent
     public MainMenuUIController parentMainMenu;
@@ -24,6 +27,15 @@ public class SettingsUIController : UIControllerBase
     [SerializeField] private Image[] settingImagesControl;
     [SerializeField] private Image[] settingImagesSound;
     private Image[][] _settingDetailImages;
+    
+    // 1 - Control
+    private Color _dupRebindColour;
+    private bool _isPointingLabel;
+    private bool[] _isUniqueBindings;
+    private RebindActionUI[] _rebindActionUis;
+    private TextMeshProUGUI[] _rebindTexts;
+    private GameObject _dupWarningText;
+    //private AutoScrollRect _autoScrollRect;
     
     // 2 - Sound
     private Toggle _muteToggle;
@@ -48,6 +60,21 @@ public class SettingsUIController : UIControllerBase
         {
             settingImagesGeneral, settingImagesControl, settingImagesSound,
         };
+        
+        // 1 - Control
+        //_autoScrollRect = settingDetails[1].GetComponentInChildren<AutoScrollRect>();
+        _dupWarningText = settingDetails[1].transform.Find("DupWarningText").gameObject;
+        _dupRebindColour = new Color(0.65f, 0f, 0f, 1f);
+        _rebindActionUis = settingDetails[1].GetComponentsInChildren<RebindActionUI>();
+        _isUniqueBindings = new bool[_rebindActionUis.Length];
+        _rebindTexts = new TextMeshProUGUI[_rebindActionUis.Length];
+        for (int i = 0; i < _rebindActionUis.Length; i++)
+        {
+            _isUniqueBindings[i] = true;
+            _rebindTexts[i] = _rebindActionUis[i].bindingText;
+        }
+        
+        // 2 - Sound
         _muteToggle = settingImagesSound[0].transform.GetComponentInChildren<Toggle>();
         _soundSliders = new Slider[settingImagesSound.Length];
         for (int i = 0; i < settingImagesSound.Length; i++)
@@ -59,10 +86,16 @@ public class SettingsUIController : UIControllerBase
     private void Start()
     {
         _audioManager = AudioManager.Instance;
+        _uiManager = UIManager.Instance;
         
         // TODO
         // get data from savefile
         LoadSoundSaveData();
+        
+        foreach (var rebindUI in _rebindActionUis)
+        {
+            rebindUI.UpdateBindingDisplay();
+        }
     }
 
     private void LoadSoundSaveData()
@@ -82,8 +115,6 @@ public class SettingsUIController : UIControllerBase
 
     public override void OnNavigate(Vector2 value)
     {
-        if (_curSettingsGroup != 2) return;
-        
         if (value.x == 0)
         {
             if (_curSettingsGroup == 2 && _isNavigatingSound)
@@ -122,6 +153,66 @@ public class SettingsUIController : UIControllerBase
         }
     }
 
+    public void OnRebindStop(RebindActionUI ui, InputActionRebindingExtensions.RebindingOperation op)
+    {
+        _isPointingLabel = true;
+        
+        // Check if the binding is unique
+        IsBindingUniqueAll();
+        
+        // Extra actions for OpenMap and Interact
+        if (_curDetailSettingIdx != 8 && _curDetailSettingIdx != 9) return;
+        InputAction targetRelatedAction = null;
+        if (_curDetailSettingIdx == 8) // Interact
+        {
+            targetRelatedAction = _uiManager.PlayerIAMap.FindAction("Interact_Hold");
+        }
+        else if (_curDetailSettingIdx == 9) // Map
+        {
+            targetRelatedAction = _uiManager.UIIAMap.FindAction("CloseMap");
+        }
+        var newBinding = targetRelatedAction.bindings[0];
+        newBinding.overridePath = op.action.bindings[0].overridePath;
+        targetRelatedAction.ApplyBindingOverride(0, newBinding);
+    }
+
+    private void IsBindingUniqueAll()
+    {
+        bool allUnique = true;
+        for (int i = 0; i < _rebindActionUis.Length; i++)
+        {
+            if (IsBindingUnique(_rebindActionUis[i].actionReference))
+            {
+                _rebindTexts[i].color = Color.black;
+            }
+            else
+            {
+                // Duplicate binding exists
+                _rebindTexts[i].color = _dupRebindColour;
+                allUnique = false;
+            }
+        }
+        _dupWarningText.SetActive(!allUnique);
+    }
+    
+    private bool IsBindingUnique(InputAction actionToRebind)
+    {
+        var newBinding = actionToRebind.bindings[0];
+ 
+        var bindings = actionToRebind.actionMap.bindings;
+        foreach (var binding in bindings)
+        {
+            if (binding.action == newBinding.action)
+                continue;
+            if (binding.effectivePath == newBinding.effectivePath)
+            {
+                if (newBinding.action == "Interact" && binding.action == "Interact_Hold") continue;
+                return false;
+            }
+        }
+        return true;
+    }
+
     private bool _isNavigatingSound = false;
     private IEnumerator NavigateSoundCoroutine(int idx, float x)
     {
@@ -146,14 +237,17 @@ public class SettingsUIController : UIControllerBase
     
     public override void OnSubmit()
     {
-        if (_curSettingsGroup != 2) return;
-        
         switch (_curSettingsGroup)
         {
             case 0:
                 break;
             
             case 1:
+                if (_curSettingsGroup == 1 && _isPointingLabel)
+                {
+                    _isPointingLabel = false;
+                    _rebindActionUis[_curDetailSettingIdx].StartInteractiveRebind();
+                }
                 break;
             
             case 2:
@@ -167,12 +261,17 @@ public class SettingsUIController : UIControllerBase
     
     public override void OnClose()
     {
+        if (!CanSaveRebinds()) return; // Todo warning
+        
+        // Cleanup
         if (_isNavigatingSound) StopAllCoroutines();
         _isNavigatingSound = false;
         
-        // Todo save settings
+        // Save settings
+        _uiManager.SaveActionRebinds();
         _audioManager.SaveAudioSettings();
         
+        // Return to parent
         if (parentMainMenu != null)
         {
             parentMainMenu.OnSettingsClosed();
@@ -180,13 +279,32 @@ public class SettingsUIController : UIControllerBase
         }
         gameObject.SetActive(false);
     }
-    
+
     public override void OnTab()
     {
+        if (_curSettingsGroup == 1 && !CanSaveRebinds()) return; // Todo warning
         UnselectSettingsGroup();
         SelectSettingsGroup(_curSettingsGroup == 2 ? 0 : _curSettingsGroup + 1); 
     }
 
+    public void OnReset()
+    {
+        switch (_curSettingsGroup)
+        {
+            case 0:
+                break;
+            
+            case 1:
+                ResetAllRebinds();
+                break;
+            
+            case 2:
+                _audioManager.ResetAudioSettingsToDefault();
+                LoadSoundSaveData();
+                break;
+        }
+    }
+    
     private void UnselectSettingsGroup()
     {
         settingGroupBackgrounds[_curSettingsGroup].color = _unselectedBgColour;
@@ -201,20 +319,54 @@ public class SettingsUIController : UIControllerBase
         settingGroupTMPs[idx].color = _selectedTextColour;
         settingDetails[idx].SetActive(true);
         _curSettingsGroup = idx;
+        if (_curSettingsGroup == 1)
+        {
+            _isPointingLabel = true;
+            _curFocusedBottom = false;
+            settingDetails[1].transform.Find("ScrollRect").GetComponent<ScrollRect>().verticalNormalizedPosition = 1f;
+        }
         SelectSettingDetail(0);
     }
 
     private void UnselectSettingDetail()
     {
-        if (_curSettingsGroup != 2) return;
+        if (_curSettingsGroup == 0) return;
         _settingDetailImages[_curSettingsGroup][_curDetailSettingIdx].enabled = false;
     }
 
+    private bool _curFocusedBottom = false;
     private void SelectSettingDetail(int idx)
     {
-        if (_curSettingsGroup != 2) return;
+        if (_curSettingsGroup == 0) return;
 
         _curDetailSettingIdx = idx;
         _settingDetailImages[_curSettingsGroup][_curDetailSettingIdx].enabled = true;
+
+        if (_curSettingsGroup == 1)
+        {
+            if (_curDetailSettingIdx > 7 && !_curFocusedBottom)
+            {
+                _curFocusedBottom = true;
+                settingDetails[1].transform.Find("ScrollRect").GetComponent<ScrollRect>().verticalNormalizedPosition = 0f;
+            }
+            else if (_curDetailSettingIdx < 3 && _curFocusedBottom)
+            {
+                _curFocusedBottom = false;
+                settingDetails[1].transform.Find("ScrollRect").GetComponent<ScrollRect>().verticalNormalizedPosition = 1f;
+            }
+            // _autoScrollRect.SetSelectedGameObject(settingDetails[1].transform
+            //     .Find("ScrollRect").Find("Container").Find("Interact").gameObject);
+        }
+    }
+
+    private bool CanSaveRebinds()
+    {
+        return _isUniqueBindings.All(isUnique => isUnique);
+    }
+
+    private void ResetAllRebinds()
+    {
+        _uiManager.UIIAMap.RemoveAllBindingOverrides();
+        _uiManager.PlayerIAMap.RemoveAllBindingOverrides();
     }
 }

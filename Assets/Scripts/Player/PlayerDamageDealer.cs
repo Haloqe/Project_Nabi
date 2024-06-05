@@ -226,7 +226,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
                 if (!canAreaAttack) return;
             }
 
-            _playerMovement.savedLookDirection = new Vector2(-Mathf.Sign(transform.localScale.x), 0);
+            _playerMovement.savedLookDirection = -Mathf.Sign(transform.localScale.x);
             _playerMovement.DisableMovement(false);
         }
 

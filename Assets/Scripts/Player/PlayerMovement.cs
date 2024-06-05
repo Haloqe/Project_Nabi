@@ -18,7 +18,7 @@ public class PlayerMovement : MonoBehaviour
     private readonly float _defaultMoveSpeed = 9f;
     public float MoveSpeed { get; private set; } 
     public float moveSpeedMultiplier = 1f;
-    private Vector2 _moveDirection;
+    private float _moveDirection;
     public bool IsMoving { get; private set; }
     public bool IsRooted { get; private set; }
     public bool isOnMovingPlatform;
@@ -83,7 +83,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void OnDefeated()
     {
-        _moveDirection = Vector2.zero;
+        _moveDirection = 0;
         _additionalVelocity = Vector2.zero;
     }
     
@@ -117,7 +117,7 @@ public class PlayerMovement : MonoBehaviour
         if (IsRooted || isDashing || isAreaAttacking) return;
 
         // Movement-driven velocity
-        _rigidbody2D.velocity = new Vector2((_moveDirection.x * MoveSpeed * moveSpeedMultiplier) / Time.timeScale, _rigidbody2D.velocity.y);
+        _rigidbody2D.velocity = new Vector2((_moveDirection * MoveSpeed * moveSpeedMultiplier) / Time.timeScale, _rigidbody2D.velocity.y);
 
         // Animation-driven velocity
         if (_isMoveDisabled)
@@ -219,17 +219,17 @@ public class PlayerMovement : MonoBehaviour
         MoveSpeed = _defaultMoveSpeed;
         jumpForce = _defaultJumpForce;
     }
-
-    public void SetMoveDirection(Vector2 value)
+    
+    public void SetMoveDirection(float value)
     {
         _moveDirection = value;
-        if (value.x == 0 || isDashing)
+        if (value == 0 || isDashing)
         {
             IsMoving = false;
         }
         else if (_isAttacking)
         {
-            if (value.x != 0 && _playerController.playerDamageDealer.IsAttackBufferAvailable)
+            if (value != 0 && _playerController.playerDamageDealer.IsAttackBufferAvailable)
             {
                 savedLookDirection = value;
             }
@@ -238,14 +238,14 @@ public class PlayerMovement : MonoBehaviour
         {
             // Note: Player sprite default direction is left
             IsMoving = true;
-            transform.localScale = new Vector2(-Mathf.Sign(value.x) * Mathf.Abs(transform.localScale.x), transform.localScale.y);
+            transform.localScale = new Vector2(-Mathf.Sign(value) * Mathf.Abs(transform.localScale.x), transform.localScale.y);
         }
     }
 
-    public Vector3 savedLookDirection = Vector3.zero;
+    public float savedLookDirection = 0;
     public void UpdateLookDirectionOnAttackEnd()
     {
-        transform.localScale = new Vector2(-Mathf.Sign(savedLookDirection.x) 
+        transform.localScale = new Vector2(-Mathf.Sign(savedLookDirection) 
             * Mathf.Abs(transform.localScale.x), transform.localScale.y);
     }
 
@@ -258,11 +258,11 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             _isAttacking = false;
-            if (_moveDirection.x != 0)
+            if (_moveDirection != 0)
             {
                 // Note: Player sprite default direction is left
                 IsMoving = true;
-                transform.localScale = new Vector2(-Mathf.Sign(_moveDirection.x) * Mathf.Abs(transform.localScale.x), transform.localScale.y);
+                transform.localScale = new Vector2(-Mathf.Sign(_moveDirection) * Mathf.Abs(transform.localScale.x), transform.localScale.y);
             }
         }
     }

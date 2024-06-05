@@ -166,7 +166,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
 
     private void UpdateSlowTimes()
     {
-        if (_slowRemainingTimes.Count == 0 || _slowRemainingTimes == null) return;
+        if (_slowRemainingTimes == null || _slowRemainingTimes.Count == 0) return;
 
         bool removed = false;
         foreach (float strength in _slowRemainingTimes.Keys.ToList())
