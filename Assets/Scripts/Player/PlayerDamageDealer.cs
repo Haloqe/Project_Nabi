@@ -98,7 +98,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
 
     private void OnPlayerDefeated()
     {
-        foreach (var butterfly in _spawnedButterflies) Destroy(butterfly);
+        foreach (var butterfly in _spawnedButterflies) Destroy(butterfly.gameObject);
         _spawnedButterflies.Clear();
         _dashUIOverlay.fillAmount = 0.0f;
         IsAttackBufferAvailable = true;
@@ -132,7 +132,6 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         _isUnderAttackDelay = false;
         
         // Clear spawned butterflies
-        foreach (var butterfly in _spawnedButterflies) Destroy(butterfly);
         _playerController.evasionRateAdditionAtMax = 0.0f;
         _spawnedButterflies.Clear();
         
