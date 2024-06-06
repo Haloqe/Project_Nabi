@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.ProBuilder.Shapes;
 using UnityEngine.Tilemaps;
@@ -25,13 +26,19 @@ public class RoomBase : MonoBehaviour
         var doors = GetComponentsInChildren<Door>();
         foreach (var door in doors)
         {
+            door.Init();
             _doors[(int)door.ConnectionType].Add(door);
         }
     }
 
-    public List<Door>[] GetAllDoors()
+    public List<Door>[] GetAllDoorsByType()
     {
         return _doors;
+    }
+
+    public List<Door> GetAllDoorsCombined()
+    {
+        return _doors[0].Concat(_doors[1]).ToList();
     }
 
     public List<Door> GetDoors(EConnectionType connectionType)

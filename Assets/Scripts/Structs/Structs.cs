@@ -91,22 +91,23 @@ public struct SEnemyData
 #endregion Enemy
 
 #region LevelGeneration
-public struct SDoorInfo
-{
-    public EConnectionType ConnectionType;
-    /// <summary>
-    /// The bottom left world position of the door
-    /// </summary>
-    public Vector3Int Position;
-    public EDoorDirection Direction;
-
-    public SDoorInfo(EConnectionType type, EDoorDirection dir, Vector3Int pos)
-    {
-        ConnectionType = type;
-        Direction = dir;
-        Position = pos;
-    }
-}
+// public struct SDoorInfo
+// {
+//     public EConnectionType ConnectionType;
+//     public Vector3Int BLPosition_World; // The bottom left world position of the door
+//     public EDoorDirection Direction;
+//     public int MinSize;
+//     public int MaxSize;
+//
+//     public SDoorInfo(EConnectionType type, EDoorDirection dir, Vector3Int pos, int minSize, int maxSize)
+//     {
+//         ConnectionType = type;
+//         Direction = dir;
+//         BLPosition_World = pos;
+//         MinSize = minSize;
+//         MaxSize = maxSize;
+//     }
+// }
 
 public struct SRoomInfo
 {

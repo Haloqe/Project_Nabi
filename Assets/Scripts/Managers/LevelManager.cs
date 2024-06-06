@@ -6,7 +6,6 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using Object = UnityEngine.Object;
-using Random = UnityEngine.Random;
 
 public class LevelManager : Singleton<LevelManager>
 { 
@@ -20,7 +19,7 @@ public class LevelManager : Singleton<LevelManager>
 
     private ECellType[,] _superGrid;
     private List<Vector3Int>[] _corridors;
-    private List<List<SDoorInfo>> _openDoorInfos;
+    private List<List<Door>> _availableDoors;
 
     private Tilemap _mapTilemap;
     private Tilemap _superWallTilemap;
@@ -29,8 +28,11 @@ public class LevelManager : Singleton<LevelManager>
     
     // minimapTiles
     [SerializeField] private TileBase[] MinimapTiles;
+    
+    // helpers
     private EDoorDirection[] _matchDirections;
-    Vector3Int[] _newDoorOffsets;
+    private Vector3Int[] _connectedDoorOffsets;
+    private Vector3Int[] _traverseDirections;
     
     // Clockwork spawners
     [SerializeField] private int clockworkLimit = 10;
@@ -53,17 +55,19 @@ public class LevelManager : Singleton<LevelManager>
         _superGrid = new ECellType[_maxHeight, _maxWidth];
         _corridors = new[]
         {
-            new List<Vector3Int>(), new List<Vector3Int>()
+            new List<Vector3Int>(), new List<Vector3Int>(),
         };
-        _matchDirections = new[]
+        _matchDirections = new[] 
         {
-            EDoorDirection.Down, EDoorDirection.Up, 
-            EDoorDirection.Right, EDoorDirection.Left 
+            EDoorDirection.Down, EDoorDirection.Up, EDoorDirection.Right, EDoorDirection.Left,
         };
-        _newDoorOffsets = new[]
+        _connectedDoorOffsets = new[]
         {
-            Vector3Int.up, Vector3Int.down,
-            Vector3Int.left, Vector3Int.right
+            Vector3Int.up, Vector3Int.down, Vector3Int.left, Vector3Int.right,
+        };
+        _traverseDirections = new[]
+        {
+            Vector3Int.right, Vector3Int.right, Vector3Int.up, Vector3Int.up,
         };
         _generatedRooms = new List<GameObject>();
 
@@ -78,6 +82,8 @@ public class LevelManager : Singleton<LevelManager>
         _corridors[0].Clear();
         _corridors[1].Clear();
         _generatedRooms.Clear();
+        
+        // Find game objects
         Transform root = GameObject.Find("SuperTilemaps").transform;
         _mapTilemap = root.Find("Map").GetComponent<Tilemap>();
         _superWallTilemap = root.Find("SuperWall").GetComponent<Tilemap>();
@@ -95,38 +101,11 @@ public class LevelManager : Singleton<LevelManager>
     {
         // Populate Level Graph
         _levelGraph = new LevelGraph();
-        int prevRoomID = _levelGraph.AddRoom(ERoomType.Entrance);
-        _levelGraph.SetStartRoom(prevRoomID);
-        // _levelGraph.ConnectNewRoomToPrev(ERoomType.Normal);
-        // _levelGraph.ConnectNewRoomToPrev(ERoomType.Teleport);
-        // _levelGraph.ConnectNewRoomToPrev(ERoomType.Normal);
-        // _levelGraph.ConnectNewRoomToPrev(ERoomType.Normal);
-        // prevRoomID = _levelGraph.ConnectNewRoomToPrev(ERoomType.Teleport);
-        // int roomID = _levelGraph.ConnectNewRoomToPrev(ERoomType.Normal);
-        // _levelGraph.ConnectNewRoomToPrev(ERoomType.Teleport);
-        // _levelGraph.ConnectNewRoomToPrev(ERoomType.Treasure);
-        // roomID = _levelGraph.ConnectNewRoomToAnother(ERoomType.Normal, roomID);
-        // _levelGraph.ConnectNewRoomToAnother(ERoomType.Shop, prevRoomID);
-        // _levelGraph.ConnectNewRoomToPrev(ERoomType.Teleport);
-        // _levelGraph.ConnectNewRoomToPrev(ERoomType.MidBoss);
-        // _levelGraph.ConnectNewRoomToPrev(ERoomType.Normal);
-        // _levelGraph.ConnectNewRoomToPrev(ERoomType.Normal);
-        // _levelGraph.ConnectNewRoomToPrev(ERoomType.Teleport);
-        // _levelGraph.ConnectNewRoomToPrev(ERoomType.Normal);
-        // _levelGraph.ConnectNewRoomToPrev(ERoomType.Normal);
-        // _levelGraph.ConnectNewRoomToPrev(ERoomType.Teleport);
-        // roomID = _levelGraph.ConnectNewRoomToAnother(ERoomType.Teleport, roomID);
-        // _levelGraph.ConnectNewRoomToPrev(ERoomType.Normal);
-        // _levelGraph.ConnectNewRoomToPrev(ERoomType.Normal);
-        // _levelGraph.ConnectNewRoomToPrev(ERoomType.Teleport);
-        // _levelGraph.ConnectNewRoomToAnother(ERoomType.Normal, roomID);
-        // _levelGraph.ConnectNewRoomToPrev(ERoomType.Normal);
-        // _levelGraph.ConnectNewRoomToPrev(ERoomType.Teleport);
-        // _levelGraph.ConnectNewRoomToPrev(ERoomType.Normal);
+        _levelGraph.SetDefaultType();
 
         // +1 for the virtual first room
-        _openDoorInfos = new List<List<SDoorInfo>>(_levelGraph.GetNumRooms() + 1);
-        for (int i = 0; i < _openDoorInfos.Capacity; i++) _openDoorInfos.Add(new List<SDoorInfo>());
+        _availableDoors = new List<List<Door>>(_levelGraph.GetNumRooms() + 1);
+        for (int i = 0; i < _availableDoors.Capacity; i++) _availableDoors.Add(new List<Door>());
     }
 
     private void InitialiseRooms()
@@ -144,19 +123,25 @@ public class LevelManager : Singleton<LevelManager>
             RoomBase roomBase = room.GetComponent<RoomBase>();
             roomBase.Initialise();
             roomBase.Tilemaps[(int)ETilemapType.Wall].CompressBounds();
-            _roomsByType[(int)roomBase.RoomType].Add(roomBase);            
+            _roomsByType[(int)roomBase.RoomType].Add(roomBase);
         }
     }
 
     private void GenerateLevel()
     {
         // Add starting room
-        _openDoorInfos[_levelGraph.GetNumRooms()] = new List<SDoorInfo>{
-                 new SDoorInfo(EConnectionType.Vertical, EDoorDirection.Up, new Vector3Int(500, 499, 0)),
-                 new SDoorInfo(EConnectionType.Vertical, EDoorDirection.Down, new Vector3Int(500, 501, 0)),
-                 new SDoorInfo(EConnectionType.Horizontal, EDoorDirection.Left, new Vector3Int(501, 500, 0)),
-                 new SDoorInfo(EConnectionType.Horizontal, EDoorDirection.Right, new Vector3Int(499, 500, 0)) };
+        var startingVirtualRoom = new GameObject("StartingRoom");
+        var door1 = startingVirtualRoom.AddComponent<Door>();
+        var door2 = startingVirtualRoom.AddComponent<Door>();
+        var door3 = startingVirtualRoom.AddComponent<Door>();
+        var door4 = startingVirtualRoom.AddComponent<Door>();
+        door1.SetValues(EConnectionType.Vertical, EDoorDirection.Up, new Vector3Int(500, 499, 0), 3,4,6);
+        door2.SetValues(EConnectionType.Vertical, EDoorDirection.Down, new Vector3Int(500, 501, 0), 3,4,6);
+        door3.SetValues(EConnectionType.Horizontal, EDoorDirection.Left, new Vector3Int(501, 500, 0), 3,4,6);
+        door4.SetValues(EConnectionType.Horizontal, EDoorDirection.Right, new Vector3Int(499, 500, 0), 3,4,6);
+        _availableDoors[_levelGraph.GetNumRooms()] = new List<Door>{ door1, door2, door3, door4 };
         
+        // Initialise
         SRoomInfo roomInfo = new SRoomInfo(_levelGraph.GetNumRooms(), _levelGraph.GetStartRoom());
         List<bool> visited = new List<bool>(new bool[_levelGraph.GetNumRooms()]);
         Stack<SRoomInfo> toVisit = new Stack<SRoomInfo>();
@@ -190,132 +175,238 @@ public class LevelManager : Singleton<LevelManager>
 
     private bool PlaceRoom(int prevRoomID, int currRoomID)
     {
+        // If the previous room has no door to connect to, return
         ERoomType roomType = _levelGraph.GetRoomType(currRoomID);
-        var rnd = new System.Random();
-        RoomBase roomToPlace = null;
-        Door newDoorToPlace = null;
-        Vector3Int newDoorPos = Vector3Int.zero;
-
-        // Pick a room from templates
-        var templates = _roomsByType[(int)roomType];
-        if (templates.Count == 0)
-        {
-            Debug.LogError("No templates for [" + roomType + "]. Generate templates.");
-            return false;
-        }
-
-        if (_openDoorInfos[prevRoomID].Count == 0)
+        if (_availableDoors[prevRoomID].Count == 0)
         {
             Debug.LogError("Failed to connect room [" + roomType + "][" + currRoomID + "] to type ["
                 + _levelGraph.GetRoomType(prevRoomID) + "][" + prevRoomID + "]\nThere is no door in the previous room.");
             return false;
         }
+        
+        // Start searching for the next room
+        RoomBase newRoom = null;
+        Door newDoorChosen = null;
 
-        // Select a random room that can be placed
-        HashSet<int> triedRoomIdxs = new HashSet<int>();
-        while (roomToPlace == null)
+        // Select the room templates of the desired room type
+        var templates = _roomsByType[(int)roomType];
+        
+        // No template of the desired room type?
+        if (templates.Count == 0)
         {
-            if (triedRoomIdxs.Count == templates.Count)
+            Debug.LogError("No templates for the type [" + roomType + "]. Generate templates.");
+            return false;
+        }
+        
+        // Shuffle the rooms for randomness
+        List<int> shuffledRoomIdxs = Utility.ShuffleList(Enumerable.Range(0, templates.Count).ToList());
+        int tryIdx = 0;
+        
+        // Select a random room that can be placed
+        while (newRoom == null)
+        {
+            if (tryIdx == templates.Count)
             {
                 Debug.LogError("Failed to connect room [" + roomType + "][" + currRoomID + "] to type ["
                     + _levelGraph.GetRoomType(prevRoomID) + "][" + prevRoomID + "]\nNot enough space or not enough door in the new room");
+                // TryAddCorridor()
                 return false;
             }
             
             // Randomly choose a room from the templates
-            int roomIdx;
-            do { roomIdx = Random.Range(0, templates.Count); }
-            while (triedRoomIdxs.Contains(roomIdx));
-            triedRoomIdxs.Add(roomIdx);
-            roomToPlace = templates[roomIdx];
+            newRoom = templates[shuffledRoomIdxs[tryIdx++]];
+            
+            // Shuffle the door indices order for randomness
+            var shuffledNewDoorIdxs = Utility.ShuffleList(newRoom.GetAllDoorsCombined());
 
-            // Check if the room can be placed
             // Iterate over all previous doors and all new doors
+            // Check if the room can be placed
             bool canBePlaced = false;
-            var newDoors = roomToPlace.GetAllDoors();
-
-            // Shuffle the door indices order for randomness            
-            IEnumerable<int>[] shuffledNewDoorsIdxs = {
-                Enumerable.Range(0, newDoors[0].Count).OrderBy(x => rnd.NextDouble()).ToArray(),
-                Enumerable.Range(0, newDoors[1].Count).OrderBy(x => rnd.NextDouble()).ToArray(),
-            };
-
-            foreach (var prevDoor in _openDoorInfos[prevRoomID])
+            foreach (var prevDoor in _availableDoors[prevRoomID])
             {
-                var newDoorsSameType = newDoors[(int)prevDoor.ConnectionType];
-
-                // Filter different door connection type
-                if (newDoorsSameType.Count == 0) continue;
-
-                // Try every door of the same connection type
-                newDoorPos = prevDoor.Position + _newDoorOffsets[(int)prevDoor.Direction];
-                EDoorDirection matchDirection = _matchDirections[(int)prevDoor.Direction];
-
-                foreach (var doorIdx in shuffledNewDoorsIdxs[(int)prevDoor.ConnectionType])
+                // Try every door in the new room
+                foreach (Door newDoorCandidate in shuffledNewDoorIdxs)
                 {
-                    newDoorToPlace = newDoorsSameType[doorIdx];
-
-                    // TEMP FLIP
-                    if (newDoorToPlace.Direction != matchDirection) continue;
-
-                    // Check if the door can be placed
-                    if (CanRoomBePlaced(roomToPlace, newDoorToPlace, newDoorPos))
-                    {
-                        canBePlaced = true;
-                        _openDoorInfos[prevRoomID].Remove(prevDoor);
-                        break;
-                    }
+                    // If doors do not match at all, no need to check for the room placement
+                    if (!DoDoorsMatch(prevDoor, newDoorCandidate)) continue;
+                    
+                    // If the room cannot be placed (space already occupied), skip
+                    if (!CanRoomBePlaced(newRoom, prevDoor, newDoorCandidate)) continue;
+                    
+                    // The room can be connected by this door
+                    _availableDoors[prevRoomID].Remove(prevDoor);
+                    newDoorChosen = newDoorCandidate;
+                    canBePlaced = true;
+                    break;
                 }
                 if (canBePlaced) break;
             }
 
             // Stop searching if a room can be placed
             // If not, keep searching
-            if (!canBePlaced) roomToPlace = null;
+            if (!canBePlaced) newRoom = null;
         }
 
         // Place the found room
-        AddRoomToWorld(roomToPlace, newDoorToPlace, newDoorPos);
-        AddRoomToMinimap(roomToPlace, newDoorToPlace, newDoorPos);
-        _openDoorInfos[currRoomID] = GetDoorWorldPositionsExceptNew(roomToPlace, newDoorToPlace, newDoorPos);
+        var instantiatedRoom = AddRoomToWorld(newRoom, newDoorChosen);
+        AddRoomToMinimap(newRoom, newDoorChosen);
+        _availableDoors[currRoomID] = GetAvailableDoorWorldPositions(instantiatedRoom.GetComponent<RoomBase>(), newDoorChosen);
 
         return true;
     }
 
-    private bool CanRoomBePlaced(RoomBase room, Door newDoor, Vector3Int doorWorldPos)
+    private bool DoDoorsMatch(Door prevDoor, Door newDoor)
     {
-        var wallTilemap = room.Tilemaps[(int)ETilemapType.Wall];
-        BoundsInt localBounds = wallTilemap.cellBounds;
-        Vector3Int doorLocalPos = newDoor.GetLocalPosition();
-        Vector3Int maxYPos = Vector3Int.back;
-        List<Vector3Int> toFillPositions = new List<Vector3Int>();
-        bool canBePlaced = true;
-
-        // Check wall tiles
-        foreach (var pos in localBounds.allPositionsWithin)
+        // If the directions do not match, the two doors cannot be connected
+        EDoorDirection matchingDoorDirection = _matchDirections[(int)prevDoor.Direction];
+        if (newDoor.Direction != matchingDoorDirection) return false;
+        
+        // Do the door sizes match?
+        if (newDoor.minSize > prevDoor.maxSize) return false;
+        
+        // Otherwise, worth matching rooms
+        return true;
+    }
+    
+    // Naive approach (to be optimised later.. hopefully)
+    //  1. We have one previous door and one new door candidate, each with min and max door size, and total size (width/height)
+    //  2. Match the bottom leftmost positions of the two doors
+    //  3. For each door size (from smaller max -> larger min) x, => Prefer larger door size
+    //       a) For each possible door position (start from the leftmost bottom +- x, depending on the connection type)
+    //           b) Try connect the two rooms
+    //           c) If succeed, stop. Remove tiles at the door positions.
+    //           d) If fail, move to the next possible door position
+    //              -> Optimisation: Is there a need to try different door position?
+    //                  * In the horizontal connection type, we traverse bottom to up.
+    //                    If the blocking tile is above the smaller door, no need to traverse.
+    //                    If the blocking tile is ... more pre-checks
+    //                  * In the vertical connection type, we traverse left to right.
+    //                    If the blocking tile is on the right of the smaller door, no need to traverse.
+    //       e) If all possible door positions are tried and still no success, decrement door size by 1. Go back to step (a).
+    //  4. If all possible door sizes are tried and yielded no success, move on to the next new door candidate. Go back to step (1).
+    
+    private bool CanRoomBePlaced(RoomBase newRoom, Door prevDoor, Door newDoor)
+    {
+        // Match the bottom left position of the two doors first. This is our starting position
+        Vector3Int newDoorBlPosWorld = prevDoor.RangeWorldBLPosition + _connectedDoorOffsets[(int)prevDoor.Direction];
+        
+        // The range of door sizes that are possible from the pair
+        int smallestPossibleSize = Math.Max(prevDoor.minSize, newDoor.minSize);
+        int largestPossibleSize = Math.Min(prevDoor.maxSize, newDoor.maxSize);
+        //int newDoorSize = Math.Min(prevDoor.doorSize, newDoor.doorSize);
+        
+        // Iterate from the largest door size (startDoorSize) to the smallest door size (endDoorSize)
+        for (int doorSize = /*newDoorSize*/largestPossibleSize; doorSize >= /*newDoorSize*/smallestPossibleSize; doorSize--)
         {
-            if (wallTilemap.HasTile(pos))
+            // From the starting position, iterate until the end position, which is prevDoor's opposite end - doorSize
+            // Fix the new door position from the new door possible range
+            int maxRange = prevDoor.CandidateRange - doorSize + 1;
+            for (int offset = 0; offset < maxRange; offset++)
             {
-                Vector3Int tileLocalPos = new Vector3Int(pos.x, pos.y, 0);
-                Vector3Int newWorldPos = doorWorldPos - doorLocalPos + tileLocalPos;
-
-                if (maxYPos == Vector3Int.back && pos.y == localBounds.yMax - 1)
+                Vector3Int matchBlPosWorld = newDoorBlPosWorld + offset * _traverseDirections[(int)prevDoor.ConnectionType];
+                Vector3Int matchBlPosLocal = newDoor.RangeLocalBLPosition + offset * _traverseDirections[(int)prevDoor.ConnectionType];
+                var blockedWorldPos = GetOverlappingTile(newRoom, matchBlPosLocal, matchBlPosWorld);
+                
+                // Can this room be placed?
+                if (blockedWorldPos == Vector3Int.back)
                 {
-                    maxYPos = newWorldPos;
+                    newDoor.DoorLocalBLPosition = matchBlPosLocal;
+                    newDoor.DoorWorldBLPosition = matchBlPosWorld;
+                    newDoor.DoorSizeReal = doorSize;//newDoorSize;
+                    return true;
                 }
-                if (_superGrid[newWorldPos.y, newWorldPos.x] == ECellType.Filled)
+                
+                // Optimisation if cannot be placed
+                if (prevDoor.ConnectionType == EConnectionType.Horizontal)
                 {
-                    canBePlaced = false;
-                    break;
+                    // If the blocking tile is above the newDoorBLPos, no need to traverse.
+                    // Different prev door pos nor larger new door size will work 
+                    // Should go downwards instead, by trying different new door pos
+                    if (blockedWorldPos.y > matchBlPosWorld.y) break;
                 }
                 else
                 {
-                    _superGrid[newWorldPos.y, newWorldPos.x] = ECellType.ToBeFilled;
-                    toFillPositions.Add(newWorldPos);
+                    if (blockedWorldPos.x > matchBlPosWorld.x) break;
+                }
+            }
+            
+            // Fix the prev door position from the prev door possible range
+            // Change the new door position instead
+            maxRange = newDoor.CandidateRange - doorSize + 1;
+            for (int offset = 0; offset < maxRange; offset++)
+            {
+                Vector3Int matchBlPosWorld = newDoorBlPosWorld - offset * _traverseDirections[(int)prevDoor.ConnectionType];
+                Vector3Int matchBlPosLocal = newDoor.RangeLocalBLPosition - offset * _traverseDirections[(int)prevDoor.ConnectionType];
+                var blockedWorldPos = GetOverlappingTile(newRoom, matchBlPosLocal, matchBlPosWorld);
+                
+                // Can room be placed?
+                if (blockedWorldPos == Vector3Int.back)
+                {
+                    newDoor.DoorLocalBLPosition = matchBlPosLocal;
+                    newDoor.DoorWorldBLPosition = matchBlPosWorld;
+                    newDoor.DoorSizeReal = doorSize;//newDoorSize;
+                    return true;
+                }
+                
+                // Optimisation if cannot be placed
+                if (prevDoor.ConnectionType == EConnectionType.Horizontal)
+                {
+                    // If the blocking tile is below the newDoorBLPos, no need to traverse.
+                    // Different prev door pos nor larger new door size will work 
+                    // Should go upwards instead, by trying different prev door pos
+                    if (blockedWorldPos.y < matchBlPosWorld.y) break;
+                }
+                else
+                {
+                    if (blockedWorldPos.x < matchBlPosWorld.x) break;
                 }
             }
         }
-        
+        return false;
+    }
+    
+    
+    // If the room can be placed, return Vector3Int.back. Otherwise return the world position Vector3Int of the blocked tile.
+    private Vector3Int GetOverlappingTile(RoomBase newRoom, Vector3Int BLNewDoorPosLocal, Vector3Int BLNewDoorPosWorld)
+    {
+        var newRoomWallTilemap = newRoom.Tilemaps[(int)ETilemapType.Wall];
+        BoundsInt newRoomLocalBounds = newRoomWallTilemap.cellBounds;
+        List<Vector3Int> toFillPositions = new List<Vector3Int>();
+        Vector3Int maxYPos = Vector3Int.back; // Initialise
+        Vector3Int blockedTileWorldPos = Vector3Int.back;
+        bool canBePlaced = true;
+
+        // Check wall tiles
+        foreach (var localPos in newRoomLocalBounds.allPositionsWithin)
+        {
+            // Only handle wall tiles
+            if (!newRoomWallTilemap.HasTile(localPos)) continue;
+            
+            // Compute the world position of the tile
+            Vector3Int tileLocalPos = new Vector3Int(localPos.x, localPos.y, 0);
+            Vector3Int newWorldPos = BLNewDoorPosWorld - BLNewDoorPosLocal + tileLocalPos;
+
+            // Update the wall position with the largest Y
+            if (maxYPos == Vector3Int.back && localPos.y == newRoomLocalBounds.yMax - 1)
+            {
+                maxYPos = newWorldPos;
+            }
+                
+            // If the space is already occupied, the room cannot be placed
+            if (_superGrid[newWorldPos.y, newWorldPos.x] == ECellType.Filled)
+            {
+                canBePlaced = false;
+                blockedTileWorldPos = newWorldPos;
+                break;
+            }
+            // Otherwise continue
+            else
+            {
+                _superGrid[newWorldPos.y, newWorldPos.x] = ECellType.ToBeFilled;
+                toFillPositions.Add(newWorldPos);
+            }
+        }
+
         // Check inner tiles
         if (canBePlaced)
         {
@@ -325,7 +416,10 @@ public class LevelManager : Singleton<LevelManager>
             toVisits.Enqueue(maxYPos + Vector3Int.right + Vector3Int.down);
 
             // Four directions to search from each cell
-            Vector3Int[] offsets = { Vector3Int.left, Vector3Int.right, Vector3Int.up, Vector3Int.down };
+            Vector3Int[] offsets =
+            {
+                Vector3Int.left, Vector3Int.right, Vector3Int.up, Vector3Int.down
+            };
 
             while (toVisits.Count > 0)
             {
@@ -337,6 +431,7 @@ public class LevelManager : Singleton<LevelManager>
                     case ECellType.Filled:
                         {
                             canBePlaced = false;
+                            blockedTileWorldPos = curr;
                             break;
                         }
 
@@ -356,85 +451,92 @@ public class LevelManager : Singleton<LevelManager>
                             }
                             break;
                         }
-                }            
+                }
             }
         }
 
         // Update the super grid
         ECellType updateType = canBePlaced ? ECellType.Filled : ECellType.Empty;
-        foreach (var pos in toFillPositions)
+        if (canBePlaced)
         {
-            _superGrid[pos.y, pos.x] = updateType;
-        }
-
-        return canBePlaced;
-    }
-
-    private List<SDoorInfo> GetDoorWorldPositionsExceptNew(RoomBase room, Door newDoor, Vector3Int doorWorldPos)
-    {
-        List<Door>[] doors = room.GetAllDoors();
-        List<SDoorInfo> doorInfos = new();
-        SDoorInfo doorInfo = new SDoorInfo();
-        Vector3Int doorLocalPos = newDoor.GetLocalPosition();
-
-        for (int i = 0; i < doors.Length; i++)
-        {
-            foreach (Door door in doors[i])
+            foreach (var pos in toFillPositions)
             {
-                if (door == newDoor && room.RoomType != ERoomType.Entrance)
-                {
-                    continue;
-                }
-                doorInfo.ConnectionType = door.ConnectionType;
-                doorInfo.Direction = door.Direction;
-                doorInfo.Position = doorWorldPos - doorLocalPos + door.GetLocalPosition();
-                doorInfos.Add(doorInfo);
+                _superGrid[pos.y, pos.x] = updateType;
             }
         }
 
-        return doorInfos;
+        return blockedTileWorldPos;
     }
 
-    private void AddRoomToWorld(RoomBase room, Door door, Vector3Int doorWorldPos)
+    private List<Door> GetAvailableDoorWorldPositions(RoomBase newRoom, Door newDoorClosed)
+    {
+        // Get all available doors of the newly placed room
+        newRoom.Initialise();
+        List<Door>[] allDoorsNewRoom = newRoom.GetAllDoorsByType();
+        List<Door> newAvailableDoors = new List<Door>();
+        
+        // Update the world position of the possible range of door position
+        foreach (var doors in allDoorsNewRoom)
+        {
+            foreach (Door door in doors)
+            {
+                if (door == newDoorClosed && newRoom.RoomType != ERoomType.Entrance)
+                {
+                    continue;
+                }
+                door.RangeWorldBLPosition = door.RangeLocalBLPosition;
+                newAvailableDoors.Add(door);
+            }
+        }
+        
+        // Shuffle the doors
+        var shuffledDoors = Utility.ShuffleList(newAvailableDoors);
+        
+        // When done, hide all doors
+        newRoom.HideAllDoors();
+
+        // Return the available doors
+        return shuffledDoors;
+    }
+
+    private GameObject AddRoomToWorld(RoomBase newRoom, Door newDoor)
     {
         // Instantiate room
-        Vector3Int genPosition = doorWorldPos - door.GetLocalPosition();
-        var roomObj = Instantiate(room.gameObject, genPosition, Quaternion.identity);
+        Vector3Int genPosition = newDoor.DoorWorldBLPosition - newDoor.DoorLocalBLPosition;
+        var roomObj = Instantiate(newRoom.gameObject, genPosition, Quaternion.identity);
         roomObj.transform.parent = _roomsContainer;
         _generatedRooms.Add(roomObj);
-
-        // Hide doors
-        roomObj.GetComponent<RoomBase>().HideAllDoors();
 
         // Draw the wall layer in the main tilemap layer
         var roomWallTilemap = roomObj.GetComponent<RoomBase>().Tilemaps[(int)ETilemapType.Wall];
         roomWallTilemap.GetComponent<TilemapRenderer>().enabled = false;
 
-        Vector3Int doorLocalPos = door.GetLocalPosition();
+        Vector3Int doorLocalPos = newDoor.RangeLocalBLPosition;
         BoundsInt localBounds = roomWallTilemap.cellBounds;
         BoundsInt worldBounds = localBounds;
-        worldBounds.SetMinMax(doorWorldPos - doorLocalPos + localBounds.min,
-            doorWorldPos - doorLocalPos + localBounds.max);
+        worldBounds.SetMinMax(newDoor.DoorWorldBLPosition - doorLocalPos + localBounds.min, newDoor.DoorWorldBLPosition - doorLocalPos + localBounds.max);
         _superWallTilemap.SetTilesBlock(worldBounds, roomWallTilemap.GetTilesBlock(localBounds));
 
         // Add corridor to the list except for the first room (entrance)
-        if (room.RoomType != ERoomType.Entrance)
+        if (newRoom.RoomType != ERoomType.Entrance)
         {
-            _corridors[(int)door.ConnectionType].Add(doorWorldPos);
+            //_corridors[(int)door.ConnectionType].Add(doorWorldPos);
             
-            // Remove wall tile at the corridor position -> New door
-            var otherDoorPos = door.ConnectionType == EConnectionType.Vertical ?
-            new Vector3Int(doorWorldPos.x + 1, doorWorldPos.y) : new Vector3Int(doorWorldPos.x, doorWorldPos.y + 1);
-            _superWallTilemap.SetTile(doorWorldPos, null);
-            _superWallTilemap.SetTile(otherDoorPos, null);
-
-            // Remove wall tile at the corridor position -> Previous door
-            _superWallTilemap.SetTile(doorWorldPos + _newDoorOffsets[(int)door.Direction], null);
-            _superWallTilemap.SetTile(otherDoorPos + _newDoorOffsets[(int)door.Direction], null);
+            // Remove wall tiles located at the door position
+            for (int offset = 0; offset < newDoor.DoorSizeReal; offset++)
+            {
+                Vector3Int newDoorPos = newDoor.DoorWorldBLPosition + offset * _traverseDirections[(int)newDoor.Direction];
+                Vector3Int prevDoorPos = newDoorPos + _connectedDoorOffsets[(int)newDoor.Direction];
+                _superWallTilemap.SetTile(newDoorPos, null);
+                _superWallTilemap.SetTile(prevDoorPos, null);
+            }
         }
         
-        // Save spawners
+        // TODO: Save spawners
         _clockworkSpawnersByRoom.Add(roomObj.transform.GetComponentsInChildren<ClockworkSpawner>());
+
+        // Return instantiated room game object
+        return roomObj;
     }
 
     private void PostProcessLevel()
@@ -483,8 +585,11 @@ public class LevelManager : Singleton<LevelManager>
         }
         
         // Compute the number of clockwork spawners to activate in each section
-        int totalSpawnCount = Mathf.Min(clockworkLimit - fixedSpawnerCounts.Sum(), availableSpawners[0].Count + availableSpawners[1].Count);
-        double[] spawnDistributions = {0.6, 0.4};
+        int totalSpawnCount = Math.Max(0, Math.Min(clockworkLimit - fixedSpawnerCounts.Sum(), availableSpawners[0].Count + availableSpawners[1].Count));
+        if (totalSpawnCount == 0) return;
+        
+        // If there are spawners to be spawned, distribute the spawners
+        double[] spawnDistributions = {0.6, 0.4}; // 60% spawners in the first half, 40% spawners in the second half
         int[] spawnCounts = new int[spawnDistributions.Length];
         int sumOfPreviousGroups = 0;
 
@@ -501,13 +606,10 @@ public class LevelManager : Singleton<LevelManager>
             }
         }
         
-        // Randomly select clockwork spawners to activate
-        var rand = new System.Random();
+        // Randomly select clockwork spawners to activate and destroy the unselected ones
         for (int section = 0; section < 2; section++)
         {
-            var shuffledSpawners = availableSpawners[section].OrderBy(x => rand.Next()).ToList();
-            
-            // Destroy spawners that are not selected
+            var shuffledSpawners = Utility.ShuffleList(availableSpawners[section]);
             for (int i = spawnCounts[section]; i < availableSpawners[section].Count; i++)
             {
                 Destroy(shuffledSpawners[i].gameObject);
@@ -515,6 +617,7 @@ public class LevelManager : Singleton<LevelManager>
         }
     }
 
+    //  Find all hidden rooms and classify by levels
     private void SetHiddenRooms()
     {
         _hiddenRoomsByLevel = new [] { new List<HiddenRoom>(), new List<HiddenRoom>(), new List<HiddenRoom>() };
@@ -632,14 +735,12 @@ public class LevelManager : Singleton<LevelManager>
         }
     }
 
-    private void AddRoomToMinimap(RoomBase room, Door door, Vector3Int doorWorldPos)
+    private void AddRoomToMinimap(RoomBase newRoom, Door newDoor)
     {
-        Vector3Int doorLocalPos = door.GetLocalPosition();
-
         // In the order of background -> collideable
         for (int layerIdx = 2; layerIdx > 0; layerIdx--)
         {
-            var tilemap = room.Tilemaps[layerIdx];
+            var tilemap = newRoom.Tilemaps[layerIdx];
             tilemap.CompressBounds();
 
             List<Vector3Int> tileWorldPositions = new List<Vector3Int>();
@@ -647,7 +748,7 @@ public class LevelManager : Singleton<LevelManager>
             foreach (var localPos in tilemap.cellBounds.allPositionsWithin)
             {   
                 if (tilemap.HasTile(localPos))
-                    tileWorldPositions.Add(doorWorldPos - doorLocalPos + localPos);
+                    tileWorldPositions.Add(newDoor.DoorWorldBLPosition - newDoor.DoorLocalBLPosition + localPos);
             }
             for (int i = 0; i < tileWorldPositions.Count; i++)
                 tileBases.Add(MinimapTiles[layerIdx]);

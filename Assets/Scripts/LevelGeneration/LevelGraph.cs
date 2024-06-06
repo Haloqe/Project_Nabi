@@ -83,4 +83,62 @@ public class LevelGraph
         ConnectRoom(prevRoomID, newID);
         return newID;
     }
+
+    public void SetDefaultType()
+    {
+        int prevRoomID = AddRoom(ERoomType.Entrance);
+        SetStartRoom(prevRoomID);
+        ConnectNewRoomToPrev(ERoomType.Normal);
+        ConnectNewRoomToPrev(ERoomType.Normal);
+        ConnectNewRoomToPrev(ERoomType.Normal);
+        ConnectNewRoomToPrev(ERoomType.Normal);
+        ConnectNewRoomToPrev(ERoomType.Normal);
+        ConnectNewRoomToPrev(ERoomType.Normal);
+        ConnectNewRoomToPrev(ERoomType.Normal);
+        ConnectNewRoomToPrev(ERoomType.Normal);
+        ConnectNewRoomToPrev(ERoomType.Normal);
+        ConnectNewRoomToPrev(ERoomType.Normal);
+        ConnectNewRoomToPrev(ERoomType.Normal);
+        ConnectNewRoomToPrev(ERoomType.Normal);
+        ConnectNewRoomToPrev(ERoomType.Normal);
+        ConnectNewRoomToPrev(ERoomType.Normal);
+        ConnectNewRoomToPrev(ERoomType.Normal);
+        ConnectNewRoomToPrev(ERoomType.Normal);
+        ConnectNewRoomToPrev(ERoomType.Normal);
+        ConnectNewRoomToPrev(ERoomType.Normal);
+        ConnectNewRoomToPrev(ERoomType.Normal);
+        ConnectNewRoomToPrev(ERoomType.Normal);
+        ConnectNewRoomToPrev(ERoomType.Normal);
+        ConnectNewRoomToPrev(ERoomType.Normal);
+        ConnectNewRoomToPrev(ERoomType.Normal);
+        ConnectNewRoomToPrev(ERoomType.Normal);
+        ConnectNewRoomToPrev(ERoomType.Normal);
+        
+        
+        //ConnectNewRoomToPrev(ERoomType.Teleport);
+        // ConnectNewRoomToPrev(ERoomType.Normal);
+        // ConnectNewRoomToPrev(ERoomType.Normal);
+        // prevRoomID = ConnectNewRoomToPrev(ERoomType.Teleport);
+        // int roomID = ConnectNewRoomToPrev(ERoomType.Normal);
+        // ConnectNewRoomToPrev(ERoomType.Teleport);
+        // ConnectNewRoomToPrev(ERoomType.Treasure);
+        // roomID = ConnectNewRoomToAnother(ERoomType.Normal, roomID);
+        // ConnectNewRoomToAnother(ERoomType.Shop, prevRoomID);
+        // ConnectNewRoomToPrev(ERoomType.Teleport);
+        // ConnectNewRoomToPrev(ERoomType.MidBoss);
+        // ConnectNewRoomToPrev(ERoomType.Normal);
+        // ConnectNewRoomToPrev(ERoomType.Normal);
+        // ConnectNewRoomToPrev(ERoomType.Teleport);
+        // ConnectNewRoomToPrev(ERoomType.Normal);
+        // ConnectNewRoomToPrev(ERoomType.Normal);
+        // ConnectNewRoomToPrev(ERoomType.Teleport);
+        // roomID = ConnectNewRoomToAnother(ERoomType.Teleport, roomID);
+        // ConnectNewRoomToPrev(ERoomType.Normal);
+        // ConnectNewRoomToPrev(ERoomType.Normal);
+        // ConnectNewRoomToPrev(ERoomType.Teleport);
+        // ConnectNewRoomToAnother(ERoomType.Normal, roomID);
+        // ConnectNewRoomToPrev(ERoomType.Normal);
+        // ConnectNewRoomToPrev(ERoomType.Teleport);
+        // ConnectNewRoomToPrev(ERoomType.Normal);
+    }
 }
