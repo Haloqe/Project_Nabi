@@ -576,13 +576,15 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         if (_effectRemainingTimes[(int)EStatusEffect.Evade] > 0)
             _player.RemoveShadowHost(this);
         InGameEvents.EnemySlayed?.Invoke(this);
-            
+
         StopAllCoroutines();
         if (shouldDropReward)
         {
             DropGold();
             DropSoulShard();
         }
+
+        Instantiate(_enemyManager.DeathVFXPrefab, transform.position, Quaternion.identity);
         Destroy(gameObject);
     }
     #endregion Damage Dealing and Receiving

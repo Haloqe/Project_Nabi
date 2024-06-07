@@ -2,11 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Object = UnityEngine.Object;
-using Quaternion = UnityEngine.Quaternion;
+using UnityEngine.Rendering.Universal;
+using Object = UnityEngine.Object; 
 using Random = UnityEngine.Random;
-using Vector2 = UnityEngine.Vector2;
-using Vector3 = UnityEngine.Vector3;
 
 public class EnemyPattern_Scorpion : EnemyPattern
 {
@@ -102,6 +100,7 @@ public class EnemyPattern_Scorpion : EnemyPattern
     private void Update()
     {
         if (_isShootingBullets) TrackPlayer();
+        Debug.Log("the angle is now: " + _shooterObject.transform.eulerAngles.z);
     }
     
     public override void EnableMovement()
@@ -140,24 +139,25 @@ public class EnemyPattern_Scorpion : EnemyPattern
         _shooterPositionObject.transform.localEulerAngles = negativeOrPositive == -1
             ? new Vector3(0, 0, 10f)
             : new Vector3(0, 0, 70f);
-        // _shooterPositionObject.transform.localScale =
-        //     new Vector3(_shooterPositionObject.transform.localScale.x * -1, 1f, 1f);
-        // _shooterPositionObject.transform.localEulerAngles =
-        //     new Vector3(0, 0, -1f * _shooterPositionObject.transform.localEulerAngles.z);
     }
 
     private void TrackPlayer()
     {
         if (transform.position.x - _player.transform.position.x >= 0)
         {
-            if (_shooterObject.transform.localScale.x > Mathf.Epsilon) FlipTail(1);
+            if (_shooterObject.transform.localScale.x > Mathf.Epsilon) 
+                FlipTail(1);
         } else {
-            if (_shooterObject.transform.localScale.x < Mathf.Epsilon) FlipTail(-1);
+            if (_shooterObject.transform.localScale.x < Mathf.Epsilon) 
+                FlipTail(-1);
         }
 
-        _shooterDirection = _shooterPositionObject.transform.position - _basePositionObject.transform.position;
-        _playerDirection = _player.transform.position - _basePositionObject.transform.position;
-        _shooterObject.transform.rotation *= Quaternion.FromToRotation(_shooterDirection, _playerDirection).normalized;
+        _shooterDirection = _shooterPositionObject.transform.position - 
+                            _basePositionObject.transform.position;
+        _playerDirection = _player.transform.position - 
+                           _basePositionObject.transform.position;
+        _shooterObject.transform.rotation *= 
+            Quaternion.FromToRotation(_shooterDirection, _playerDirection).normalized;
     }
 
     private IEnumerator ShootBullet()
@@ -165,15 +165,11 @@ public class EnemyPattern_Scorpion : EnemyPattern
         while (_isShootingBullets)
         {
             yield return new WaitForSeconds(3f);
-            // var bulletVFX = Instantiate(_VFXobjects[0].GameObject(), _shooterPositionObject.transform.position, Quaternion.identity)
-            //     .GetComponent<ParticleSystem>().main;
-            // float angle = Vector3.Angle(_shooterDirection, new Vector3(0f, 1f, 0f));
-            // bulletVFX.startRotation = angle;
-            // Debug.Log(angle + " and " + bulletVFX.startRotation);
-            // -angle * Math.Sign((endPos - startPos).x)
             _shooterPositionObject.SetActive(true);
             yield return new WaitForSeconds(0.4f);
-            var bullet = Instantiate(_bulletObject, _shooterPositionObject.transform.position, Quaternion.identity).GetComponent<Scorpion_Bullet>();
+            var bullet = Instantiate(_bulletObject, 
+                _shooterPositionObject.transform.position, 
+                Quaternion.identity).GetComponent<Scorpion_Bullet>();
             bullet.Shoot(_shooterDirection);
             _shooterPositionObject.SetActive(false);
             GenerateRandomTailState();
@@ -185,31 +181,45 @@ public class EnemyPattern_Scorpion : EnemyPattern
         _isShootingBullets = false;
         
         float rotationSpeed = 10.8f;
-        float rotationDegrees = 10f;
+        float rotationDegrees = 15f;
         // int direction = Random.Range(0f, 1f) > 0.5f ? -1 : 1;
-        int direction = -(int)Mathf.Sign(_player.transform.localScale.x);
-
-        _shooterDirection = _shooterPositionObject.transform.position - _basePositionObject.transform.position;
-        _playerDirection = _player.transform.position - _basePositionObject.transform.position;
+        float rotatedAmountCounter = 0f;
+        int direction = (int)Mathf.Sign(_player.transform.localScale.x);
+        
+        _shooterDirection = _shooterPositionObject.transform.position -
+                            _basePositionObject.transform.position;
+        _playerDirection = _player.transform.position -
+                           _basePositionObject.transform.position;
         _shooterObject.transform.rotation *=
             Quaternion.FromToRotation(_shooterDirection, _playerDirection).normalized;
-
         _shooterObject.transform.Rotate(0, 0, -direction * rotationDegrees);
-        float initialAngle = _shooterObject.transform.eulerAngles.z;
+
+        float z = _shooterObject.transform.localEulerAngles.z;
+        if (_shooterObject.transform.localScale.x > 0)
+        {
+            if (z is > 11f and < 325f)
+                z = z < 179f ? 11f : 325f;
+        }
+        else
+        {
+            if (z is > 30f and < 350f)
+                z = z < 220f ? 30f : 350f;
+        }
+        _shooterObject.transform.eulerAngles = new Vector3(0, 0, z);
+        
         yield return new WaitForSeconds(0.5f);
-        // _shooterPositionObject.SetActive(true);
-        // yield return new WaitForSeconds(0.8f);
         _lineRenderer.enabled = true;
         _laserObject.SetActive(true);
         _laserVFXObject.SetActive(true);
         
-        while (true)
+        while (rotatedAmountCounter <= rotationDegrees * 2)
         {
             Vector3 position = _shooterPositionObject.transform.position;
             _shooterDirection = position - _basePositionObject.transform.position;
             if (Physics2D.Raycast(position, _shooterDirection, 100f, _raycastLayerMask))
             {
-                RaycastHit2D hit = Physics2D.Raycast(position, _shooterDirection, 100f, _raycastLayerMask);
+                RaycastHit2D hit = Physics2D.Raycast(position, 
+                    _shooterDirection, 100f, _raycastLayerMask);
                 Draw2DRay(position, hit.point);
                 _laserVFXObject.transform.eulerAngles = hit.point.y > -6.5f
                     ? new Vector3(0, 0, Mathf.Sign(hit.point.x - transform.position.x) * 90f)
@@ -221,12 +231,13 @@ public class EnemyPattern_Scorpion : EnemyPattern
                 Draw2DRay(_shooterPositionObject.transform.position, _shooterDirection * 100f);
             }
             _shooterObject.transform.Rotate(0, 0, direction * rotationSpeed * Time.deltaTime);
+            rotatedAmountCounter += rotationSpeed * Time.deltaTime;
             
-            float now = _shooterObject.transform.localEulerAngles.z;
-            if (Mathf.Abs(now - initialAngle) >= 180f)
-                now -= Mathf.Sign(now) * 360f;
-            if (Mathf.Abs(now - initialAngle) > rotationDegrees * 2)
-                break;
+            if ((_shooterObject.transform.localScale.x > 0
+                 && _shooterObject.transform.localEulerAngles.z is > 11f and < 325f)
+                || (_shooterObject.transform.localScale.x < 0
+                    && _shooterObject.transform.localEulerAngles.z is > 30f and < 350f))
+                direction *= -1;
             
             yield return null;
         }
@@ -234,7 +245,6 @@ public class EnemyPattern_Scorpion : EnemyPattern
         _lineRenderer.enabled = false;
         _laserObject.SetActive(false);
         _laserVFXObject.SetActive(false);
-        // _shooterPositionObject.SetActive(false);
         _isShootingBullets = true;
         
         StartCoroutine(ShootBullet());
@@ -247,9 +257,11 @@ public class EnemyPattern_Scorpion : EnemyPattern
 
         float laserWidth = 0.4f;
 
-        _laserObject.transform.localScale = new Vector3(laserWidth, Vector2.Distance(startPos, endPos) + 3f, 0f);
+        _laserObject.transform.localScale = 
+            new Vector3(laserWidth, Vector2.Distance(startPos, endPos) + 3f, 0f);
         float angle = Vector3.Angle(endPos - startPos, new Vector3(0f, 1f, 0f));
-        _laserObject.transform.eulerAngles = new Vector3(0f, 0f, -angle * Math.Sign((endPos - startPos).x));
+        _laserObject.transform.eulerAngles = 
+            new Vector3(0f, 0f, -angle * Math.Sign((endPos - startPos).x));
         _laserObject.transform.position = Vector2.Lerp(startPos, endPos, 0.5f);
     }
 
@@ -257,7 +269,7 @@ public class EnemyPattern_Scorpion : EnemyPattern
     {
         switch (_tailCycleCount)
         {
-            case >= 0: // need to change later
+            case >= 5:
                 // StartCoroutine(Random.Range(0, 2) >= 1 ? ShootLaser() : ShootBullet());
                 if (Random.Range(1, 2) >= 1)
                 {
@@ -308,7 +320,8 @@ public class EnemyPattern_Scorpion : EnemyPattern
         {
             for (int i = 1; i <= 2; i++)
             {
-                Vector3 a = _armObjects[0 + rightClaw].transform.position - _armObjects[i + rightClaw].transform.position;
+                Vector3 a = _armObjects[0 + rightClaw].transform.position -
+                            _armObjects[i + rightClaw].transform.position;
                 Vector3 b = finalPosition - _armObjects[i + rightClaw].transform.position;
                 Vector3 cross = Vector3.Cross(b, a).normalized;
                 float rotationAngle = Vector3.Angle(b, a);
@@ -319,9 +332,13 @@ public class EnemyPattern_Scorpion : EnemyPattern
             }
         }
         
-        Vector3 c = _armObjects[0 + rightClaw].transform.position - _armObjects[1 + rightClaw].transform.position;
-        Vector3 d = _armObjects[1 + rightClaw].transform.position - _armObjects[2 + rightClaw].transform.position;
+        Vector3 c = _armObjects[0 + rightClaw].transform.position -
+                    _armObjects[1 + rightClaw].transform.position;
+        Vector3 d = _armObjects[1 + rightClaw].transform.position -
+                    _armObjects[2 + rightClaw].transform.position;
         Vector3 crossP = Vector3.Cross(c, d).normalized;
+
+        Vector3 clawAngle = _armObjects[0 + rightClaw].transform.eulerAngles;
         
         int isWrongDirection = (int)Mathf.Round(crossP.z) * (int)Mathf.Pow(-1, rightClaw);
         if (isWrongDirection != -1) return;
@@ -332,6 +349,8 @@ public class EnemyPattern_Scorpion : EnemyPattern
         float flipAngle = Vector3.Angle(c, d);
         _armObjects[2 + rightClaw].transform.Rotate(0f, 0f, 
             Mathf.Pow(-1, rightClaw + 1) * (360f - 2 * flipAngle));
+        
+        _armObjects[0 + rightClaw].transform.eulerAngles = clawAngle;
     }
     
     private IEnumerator RotateByAmount(float angle, int direction, float speed)
@@ -340,9 +359,11 @@ public class EnemyPattern_Scorpion : EnemyPattern
         while (true)
         {
             _armObjects[0].transform.eulerAngles =
-                new Vector3(0, 0, _armObjects[0].transform.eulerAngles.z + direction * speed * Time.deltaTime);
+                new Vector3(0, 0, _armObjects[0].transform.eulerAngles.z +
+                                  direction * speed * Time.deltaTime);
             _armObjects[3].transform.eulerAngles =
-                new Vector3(0, 0, _armObjects[3].transform.eulerAngles.z - direction * speed * Time.deltaTime);
+                new Vector3(0, 0, _armObjects[3].transform.eulerAngles.z -
+                                  direction * speed * Time.deltaTime);
             yield return null;
 
             float now = _armObjects[0].transform.eulerAngles.z;
@@ -366,7 +387,8 @@ public class EnemyPattern_Scorpion : EnemyPattern
         yield return new WaitForSeconds(2f);
         for (int i = -1; i <= 1; i += 2)
         {
-            _dustParticles[Math.Sign(i + 1)].transform.localScale = new Vector3(-i, 1, 1);
+            _dustParticles[Math.Sign(i + 1)].transform.localScale = 
+                new Vector3(-i, 1, 1);
             _dustParticles[Math.Sign(i + 1)].transform.position =
                 new Vector3(_armObjects[Math.Sign(i + 1) * 3].transform.position.x + i * 3f, -7.5f, 0);
             _dustParticles[Math.Sign(i + 1)].SetActive(true);
@@ -377,7 +399,8 @@ public class EnemyPattern_Scorpion : EnemyPattern
         yield return VibrateClaws();
         for (int i = -1; i <= 1; i += 2)
         {
-            _dustParticles[Math.Sign(i + 1)].transform.localScale = new Vector3(i, 1, 1);
+            _dustParticles[Math.Sign(i + 1)].transform.localScale = 
+                new Vector3(i, 1, 1);
             _dustParticles[Math.Sign(i + 1)].transform.position =
                 new Vector3(_armObjects[Math.Sign(i + 1) * 3].transform.position.x - i * 4f, -7f, 0);
             _dustParticles[Math.Sign(i + 1)].SetActive(true);
@@ -390,7 +413,8 @@ public class EnemyPattern_Scorpion : EnemyPattern
     private IEnumerator VibrateClaws()
     {
         float timer = 0f;
-        Vector3[] initialPositions = { _armObjects[0].transform.position, _armObjects[3].transform.position };
+        Vector3[] initialPositions = 
+            { _armObjects[0].transform.position, _armObjects[3].transform.position };
         
         while (timer <= 2f)
         {
@@ -432,37 +456,17 @@ public class EnemyPattern_Scorpion : EnemyPattern
         yield return MoveClaws(_raisedClawPositions, 2f);
         // rotate claws
         yield return new WaitForSeconds(2f);
-
-        float playerXPosition = _player.transform.position.x;
-        float xLevel = transform.position.x;
-        float yLevel = transform.position.y + 3f;
-        Vector3[] attackPosition = new Vector3[2];
         
         yield return RotateByAmount(30f, -1, 90f);
         _animator.SetTrigger("GroundPound");
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(0.5f);
         
-        // if (playerXPosition - xLevel is >= -3f and <= 3f) // if player is at middle
-        // {
-        //     attackPosition = new [] {
-        //         new Vector3(xLevel - 0.5f, yLevel, 0),
-        //         new Vector3(xLevel + 0.5f, yLevel, 0)
-        //     };
-        // }
-        // else if (playerXPosition < xLevel) // if player is at left
-        // {
-        //     attackPosition = new [] {
-        //         new Vector3(playerXPosition, yLevel, 0),
-        //         new Vector3(2 * xLevel - playerXPosition, yLevel, 0)
-        //     };
-        // }
-        // else // if player is at right
-        // {
-        //     attackPosition = new [] {
-        //         new Vector3(2 * xLevel - playerXPosition, yLevel, 0),
-        //         new Vector3(playerXPosition, yLevel, 0)
-        //     };
-        // }
+        float playerXPosition = _player.transform.position.x;
+        float xLevel = transform.position.x;
+        float yLevel = transform.position.y + 3f;
+        
+        yield return new WaitForSeconds(0.5f);
+        Vector3[] attackPosition = new Vector3[2];
         
         attackPosition = new [] {
             new Vector3(playerXPosition - 0.5f, yLevel, 0),
@@ -475,7 +479,8 @@ public class EnemyPattern_Scorpion : EnemyPattern
         yield return VibrateClaws();
         for (int i = -1; i <= 1; i += 2)
         {
-            _dustParticles[Math.Sign(i + 1)].transform.localScale = new Vector3(i, 1, 1);
+            _dustParticles[Math.Sign(i + 1)].transform.localScale = 
+                new Vector3(i, 1, 1);
             _dustParticles[Math.Sign(i + 1)].transform.position =
                 new Vector3(_armObjects[Math.Sign(i + 1) * 3].transform.position.x - i * 4f, -7f, 0);
             _dustParticles[Math.Sign(i + 1)].SetActive(true);

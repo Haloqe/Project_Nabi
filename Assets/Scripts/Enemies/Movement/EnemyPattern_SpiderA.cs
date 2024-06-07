@@ -19,7 +19,8 @@ public class EnemyPattern_SpiderA : EnemyPattern
     private bool _isInChaseState = false;
     private float _jumpForce = 10f;
     private float _teethAttackRange = 4f;
-    private float _webAttackRange = 6f;
+    private float _webAttackRange = 5f;
+    private List<StatusEffectInfo> _poisonStatusEffect;
 
     // animation stuff
     private static readonly int IsAttacking = Animator.StringToHash("IsAttacking");
@@ -38,6 +39,7 @@ public class EnemyPattern_SpiderA : EnemyPattern
     {
         base.Init();
         _playerDamageReceiver = PlayerController.Instance.playerDamageReceiver;
+        _poisonStatusEffect = new List<StatusEffectInfo> { new(EStatusEffect.Poison, 1f, 5f) };
     }
 
     private void WalkForward()
@@ -46,7 +48,9 @@ public class EnemyPattern_SpiderA : EnemyPattern
         if (!IsGrounded()) return;
         if (IsAtEdge()) FlipEnemy();
 
-        _rigidBody.velocity = transform.localScale.x > Mathf.Epsilon ? new Vector2(MoveSpeed, 0f) : new Vector2(-MoveSpeed, 0f);
+        _rigidBody.velocity = transform.localScale.x > Mathf.Epsilon
+            ? new Vector2(MoveSpeed, 0f)
+            : new Vector2(-MoveSpeed, 0f);
     }
 
     private void RunTowardsPlayer()
@@ -64,11 +68,15 @@ public class EnemyPattern_SpiderA : EnemyPattern
         if (Random.Range(0.0f, 1.0f) <= _enemyBase.EnemyData.IdleProbability)
         {
             IsMoving = false;
-            _enemyBase.ActionTimeCounter = Random.Range(_enemyBase.EnemyData.IdleAverageDuration * 0.5f, _enemyBase.EnemyData.IdleAverageDuration * 1.5f);
+            _enemyBase.ActionTimeCounter =
+                Random.Range(_enemyBase.EnemyData.IdleAverageDuration * 0.5f,
+                    _enemyBase.EnemyData.IdleAverageDuration * 1.5f);
         } else
         {
             IsMoving = true;
-            _enemyBase.ActionTimeCounter = Random.Range(_enemyBase.EnemyData.WalkAverageDuration * 0.5f, _enemyBase.EnemyData.WalkAverageDuration * 1.5f);
+            _enemyBase.ActionTimeCounter =
+                Random.Range(_enemyBase.EnemyData.WalkAverageDuration * 0.5f,
+                    _enemyBase.EnemyData.WalkAverageDuration * 1.5f);
 
             if (Random.Range(0.0f, 1.0f) <= 0.3f) FlipEnemy();
         }
@@ -118,9 +126,9 @@ public class EnemyPattern_SpiderA : EnemyPattern
     public override void Attack()
     {
         if (_isInAttackState) return;
-
-        if (_playerDamageReceiver.GetEffectRemainingTimes()[(int)EStatusEffect.Poison] <= 0 &&
-            _playerDamageReceiver.GetEffectRemainingTimes()[(int)EStatusEffect.Stun] <= 0)
+        
+        if (_playerDamageReceiver.GetEffectRemainingTimes()[(int)EStatusEffect.Poison] > 0 &&
+            _playerDamageReceiver.GetEffectRemainingTimes()[(int)EStatusEffect.Root] <= 0)
         {
             if (!PlayerIsInWebAttackRange())
             {
@@ -131,13 +139,13 @@ public class EnemyPattern_SpiderA : EnemyPattern
             StartCoroutine(WebAttack());
             return;
         }
-
+        
         if (!PlayerIsInTeethAttackRange())
         {
             RunTowardsPlayer();
             return;
         }
-
+        
         StartCoroutine(TeethAttack());
     }
 
@@ -162,9 +170,10 @@ public class EnemyPattern_SpiderA : EnemyPattern
         FlipEnemyTowardsTarget();
         _animator.SetBool(IsWalking, false);
         yield return new WaitForSeconds(0.3f);
-        // Instantiate(_webObject, transform.position, Quaternion.identity);
-
-        yield return new WaitForSeconds(2f);
+        Instantiate(_webObject, transform.position, Quaternion.identity);
+        
+        while (_animator.GetBool(IsJumping)) yield return null;
+        yield return new WaitForSeconds(1.5f);
         
         _isInAttackState = false;
     }
@@ -176,13 +185,14 @@ public class EnemyPattern_SpiderA : EnemyPattern
         FlipEnemyTowardsTarget();
         _animator.SetBool(IsWalking, false);
         _animator.SetBool(IsTeethAttacking, true);
-        _enemyBase.DamageInfo.Damage = new DamageInfo(EDamageType.Poison, _enemyBase.EnemyData.DefaultDamage);
-
+        _enemyBase.DamageInfo.StatusEffects = _poisonStatusEffect;
+        
         yield return new WaitForSeconds(1f);
         
         _animator.SetBool(IsTeethAttacking, false);
-        _enemyBase.DamageInfo.Damage = new DamageInfo((EDamageType)Enum.Parse(typeof(EDamageType),
-            _enemyBase.EnemyData.DamageType), _enemyBase.EnemyData.DefaultDamage);
+        _enemyBase.DamageInfo.StatusEffects = new List<StatusEffectInfo> { };
+        // _enemyBase.DamageInfo.Damage = new DamageInfo((EDamageType)Enum.Parse(typeof(EDamageType),
+        //     _enemyBase.EnemyData.DamageType), _enemyBase.EnemyData.DefaultDamage);
         
         _isInAttackState = false;
     }
@@ -196,8 +206,10 @@ public class EnemyPattern_SpiderA : EnemyPattern
 
     public override bool PlayerIsInDetectRange() // range where it jumps towards player
     {
-        return Mathf.Abs(transform.position.x - _enemyBase.Target.transform.position.x) <= _enemyBase.EnemyData.DetectRangeX 
-            && _enemyBase.Target.transform.position.y - transform.position.y <= _enemyBase.EnemyData.DetectRangeY;
+        return Mathf.Abs(transform.position.x - _enemyBase.Target.transform.position.x)
+               <= _enemyBase.EnemyData.DetectRangeX 
+            && _enemyBase.Target.transform.position.y - transform.position.y
+               <= _enemyBase.EnemyData.DetectRangeY;
         
         // is it over 30 pixels?
     }
@@ -224,12 +236,13 @@ public class EnemyPattern_SpiderA : EnemyPattern
 
     private bool IsAtEdge()
     {
-        return _ceilingInFrontCollider.IsTouchingLayers(_groundLayer) || !_groundInFrontCollider.IsTouchingLayers(_groundLayer);
+        return _ceilingInFrontCollider.IsTouchingLayers(_groundLayer) ||
+               !_groundInFrontCollider.IsTouchingLayers(_groundLayer);
     }
     
     private void OnDrawGizmos()
     {
-        Gizmos.DrawWireCube(transform.position, _groundColliderSize);
+        // Gizmos.DrawWireCube(transform.position, _groundColliderSize);
         Gizmos.DrawWireCube(transform.position, new Vector3(_webAttackRange, _webAttackRange, 0));
         Gizmos.DrawWireCube(transform.position, new Vector3(_teethAttackRange, _teethAttackRange, 0));
     }
