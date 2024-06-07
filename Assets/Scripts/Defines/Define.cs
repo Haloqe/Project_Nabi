@@ -84,15 +84,13 @@ public static class  Define
     public static float[] NightShadeLeechStats = new float[5];
     public static float[][] EcstasyBuffStats =
     {
-        new[] {0.5f, 0.75f, 1.0f, 1.25f}, // 사마귀 - 방어력 % 
-        new[] {0.05f, 0.1f, 0.15f, 0.25f}, // 식충 - 원거리 공격의 공격력
+        new[] {0.5f, 0.75f, 1.0f, 1.25f},   // 사마귀 - 방어력 % 
+        new[] {0.05f, 0.1f, 0.15f, 0.25f},  // 식충 - 원거리 공격력
+        new[] {0.2f, 0.3f, 0.4f, 0.5f},     // 벌 - 근거리 공격력
+        new[] {0.25f, 0.5f, 0.75f, 1.0f},   // 거미 - 디버프 시간 감소
+        new[] {0.5f, 1.0f, 1.75f, 2.5f},    // 여왕벌 - 근거리 공격력 
+        new[] {0.05f, 0.07f, 0.09f, 0.15f}, // 전갈 - 피해 감소
     };
-    public static float[][] EcstasyUpgradedBuffStats =
-    {
-        new[] {0.5f, 0.75f, 1.0f, 1.25f},  // 사마귀 - 방어력 % 
-        new[] {0.05f, 0.1f, 0.15f, 0.25f}, // 식충 - 원거리 공격의 공격력
-    };
-    
     // META Upgrades
     public static float[][] MetaLegacyAppearanceByPreservation = new float[][]
     {

@@ -219,8 +219,8 @@ public class UIManager : Singleton<UIManager>
 
     public void UpdateDarkGaugeUI(float value)
     {
-        _darkGaugeSlider.value = value / 100.0f;
-        _darkGaugeText.text = $"{value}/100";
+        _darkGaugeSlider.value = value / _playerController.playerDamageDealer.DarkGaugeMax;
+        _darkGaugeText.text = $"{value}/{_playerController.playerDamageDealer.DarkGaugeMax}";
     }
 
     public void IncrementTensionGaugeUI() => _playerTensionController.IncrementTension();

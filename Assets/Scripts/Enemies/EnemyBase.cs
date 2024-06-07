@@ -97,6 +97,10 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     private void OnDestroy()
     {
         PlayerEvents.Defeated -= OnPlayerDefeated;
+        if (_effectRemainingTimes[(int)EStatusEffect.Ecstasy] > 0)
+            _player.RemoveEcstasyBuff(this);
+        if (_effectRemainingTimes[(int)EStatusEffect.Evade] > 0)
+            _player.RemoveShadowHost(this);
     }
 
     protected virtual void Update() 
@@ -483,8 +487,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         // 흡혈 여부
         if (shouldLeech)
         {
-            _player.Heal(realDamage * -1 * 
-                Define.NightShadeLeechStats[(int)_player.playerDamageDealer.BindingSkillPreservations[(int)EWarrior.NightShade]]);
+            _player.playerDamageDealer.Leech(realDamage);
         }
         // 장력 게이지
         if (shouldUpdateTension) _uiManager.IncrementTensionGaugeUI();
@@ -571,10 +574,6 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     public void Die(bool shouldDropReward = true)
     {
         // Inform player
-        if (_effectRemainingTimes[(int)EStatusEffect.Ecstasy] > 0) 
-            _player.RemoveEcstasyBuff(this);
-        if (_effectRemainingTimes[(int)EStatusEffect.Evade] > 0)
-            _player.RemoveShadowHost(this);
         InGameEvents.EnemySlayed?.Invoke(this);
             
         StopAllCoroutines();

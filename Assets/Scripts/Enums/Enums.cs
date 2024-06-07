@@ -208,8 +208,10 @@ public enum EStat
 public enum EArborType
 {
     Default,
+    Despair,
+    Serenity,
     Regret,
-    Joy,
+    Paranoia,
 }
 
 public enum ETensionState

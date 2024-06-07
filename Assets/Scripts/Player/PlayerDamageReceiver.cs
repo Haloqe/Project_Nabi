@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
 public class PlayerDamageReceiver : MonoBehaviour, IDamageable
@@ -34,6 +35,10 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     private float[] _effectRemainingTimes;
     private SortedDictionary<float, float> _slowRemainingTimes; // str,time
     private List<Coroutine> _activeDamageCoroutines;
+    
+    // Extra
+    public float debuffTimeReductionRatio;
+    [FormerlySerializedAs("damageReduction")] public float damageReductionRatio;
 
     private Animator _animator;
     private SpriteRenderer _spriteRenderer;
@@ -53,6 +58,8 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         IsSilencedExceptCleanse = false;
         _shouldNotTakeDamage = false;
         additionalHealth = 0;
+        debuffTimeReductionRatio = 0;
+        damageReductionRatio = 0;
         _currHealth = MaxHealth;
         canResurrect = _gameManager.PlayerMetaData.metaUpgradeLevels[(int)EMetaUpgrade.Resurrection] != -1;
         _slowRemainingTimes.Clear();
@@ -224,6 +231,10 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     {
         // 플레이어 방어력 처리
         damage.TotalAmount = Mathf.Max(damage.TotalAmount - (_playerController.Armour - attackerArmourPenetration), 0);
+        
+        // 피해 감소
+        damage.TotalAmount -= damage.TotalAmount * damageReductionRatio;
+        
         Debug.Log("Player damaged: " + damage.TotalAmount);
         StartCoroutine(DamageCoroutine(damage));
     }

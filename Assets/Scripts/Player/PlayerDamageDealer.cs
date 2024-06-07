@@ -35,7 +35,8 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
 
     // NightShade
     private float _darkGauge;
-    private bool IsDarkGaugeFull => _darkGauge == 100;
+    public int DarkGaugeMax { get; } = 30;
+    private bool IsDarkGaugeFull => _darkGauge == DarkGaugeMax;
 
     // Legacy
     public ELegacyPreservation[] BindingSkillPreservations { private set; get; }
@@ -266,7 +267,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
     public void DealDamage(IDamageable target, AttackInfo attackInfo)
     {
         // 임시 데미지 정보 생성
-        AttackInfo infoToSend = attackInfo.Clone(cloneDamage:true, cloneStatusEffect:false);
+        AttackInfo infoToSend = attackInfo.Clone(cloneDamage:true, cloneStatusEffect:true);
 
         // 방어 관통력 처리
         infoToSend.AttackerArmourPenetration = _playerController.ArmourPenetration;
@@ -421,11 +422,11 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
     // NightShade
     public void UpdateNightShadeDarkGauge(float change)
     {
-        _darkGauge = Mathf.Clamp(_darkGauge + change, 0, 100);
+        _darkGauge = Mathf.Clamp(_darkGauge + change, 0, DarkGaugeMax);
         _uiManager.UpdateDarkGaugeUI(_darkGauge);
     }
 
-    private void ResetNightShadeDarkGauge() => UpdateNightShadeDarkGauge(-100);
+    private void ResetNightShadeDarkGauge() => UpdateNightShadeDarkGauge(-DarkGaugeMax);
 
     // Animation event
     public void ActivateMeleeCollider()
@@ -469,5 +470,13 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
     public void EnableSaveNextAttack()
     {
         IsAttackBufferAvailable = true;
+    }
+
+    public void Leech(float absoluteDamage)
+    {
+        float leechRatio = Define.NightShadeLeechStats[(int)BindingSkillPreservations[(int)EWarrior.NightShade]]; 
+        _playerController.Heal(absoluteDamage * leechRatio, showVFX:false);
+        Debug.Log(absoluteDamage * leechRatio);
+        _playerController.SetVFXActive(EStatusEffect.Leech, true);
     }
 }

@@ -3,10 +3,11 @@ using UnityEngine.InputSystem;
 
 public abstract class Interactor : MonoBehaviour
 {
-    private InputAction _interactAction;
+    protected InputAction InteractAction;
     protected bool IsInteracting;
     private bool _isInteractionBound;
     private int _playerInteractingPartsCount;
+    [SerializeField] protected GameObject descriptionUI;
 
     protected virtual void Start()
     {
@@ -23,7 +24,7 @@ public abstract class Interactor : MonoBehaviour
     private void BindInteraction()
     {
         if (_isInteractionBound) return;
-        _interactAction = PlayerController.Instance.playerInput.actions["Player/Interact"];
+        InteractAction = PlayerController.Instance.playerInput.actions["Player/Interact"];
         _isInteractionBound = true;
     }
 
@@ -33,7 +34,8 @@ public abstract class Interactor : MonoBehaviour
         {
             if (_playerInteractingPartsCount == 0)
             {
-                _interactAction.performed += OnInteract;
+                InteractAction.performed += OnInteract;
+                ShowDescriptionUI();
             }
             _playerInteractingPartsCount++;
         }
@@ -46,10 +48,23 @@ public abstract class Interactor : MonoBehaviour
             _playerInteractingPartsCount--;
             if (_playerInteractingPartsCount == 0)
             {
-                _interactAction.performed -= OnInteract;
+                InteractAction.performed -= OnInteract;
                 IsInteracting = false;
+                HideDescriptionUI();
             }
         }
+    }
+
+    private void ShowDescriptionUI()
+    {
+        if (descriptionUI == null) return;
+        descriptionUI.SetActive(true);
+    }
+
+    private void HideDescriptionUI()
+    {
+        if (descriptionUI == null) return;
+        descriptionUI.SetActive(false);
     }
 
     protected abstract void OnInteract(InputAction.CallbackContext obj);

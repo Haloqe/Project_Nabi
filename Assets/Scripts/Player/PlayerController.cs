@@ -283,9 +283,9 @@ public class PlayerController : Singleton<PlayerController>
     }
 
     // Heal is exclusively used for increase of health from food items
-    public void Heal(float amount)
+    public void Heal(float amount, bool showVFX = true)
     {
-        buffEffects[(int)EBuffs.Heal].SetActive(true);
+        if (showVFX) buffEffects[(int)EBuffs.Heal].SetActive(true);
         playerDamageReceiver.ChangeHealthByAmount(amount * HealEfficiency, false);
     }
 
@@ -396,8 +396,7 @@ public class PlayerController : Singleton<PlayerController>
         if (_ecstasyAffected[id].Count > 1) return;
 
         // Apply buff
-        var buffValue = EuphoriaEcstasyUpgradePreserv == ELegacyPreservation.MAX ?
-            Define.EcstasyBuffStats[id][preserv] : Define.EcstasyUpgradedBuffStats[id][preserv];
+        var buffValue = Define.EcstasyBuffStats[id][preserv];
         switch (appliedEnemy.EnemyData.ID)
         {
             case 0: // VoidMantis: 방어력 버프
@@ -406,6 +405,24 @@ public class PlayerController : Singleton<PlayerController>
 
             case 1: // Insectivore: 원거리 공격 버프
                 playerDamageDealer.attackDamageMultipliers[(int)EPlayerAttackType.Ranged] += buffValue;
+                break;
+            
+            case 2: // Bee: 근거리 공격 버프
+                playerDamageDealer.attackDamageMultipliers[(int)EPlayerAttackType.Melee_Base] += buffValue;
+                playerDamageDealer.attackDamageMultipliers[(int)EPlayerAttackType.Melee_Combo] += buffValue;
+                break;
+            
+            case 3: // Spider: 디버프 시간 감소
+                playerDamageReceiver.debuffTimeReductionRatio += buffValue; 
+                break;
+            
+            case 4: // Queen Bee: 근거리 공격 버프
+                playerDamageDealer.attackDamageMultipliers[(int)EPlayerAttackType.Melee_Base] += buffValue;
+                playerDamageDealer.attackDamageMultipliers[(int)EPlayerAttackType.Melee_Combo] += buffValue;
+                break;
+            
+            case 5: // Scorpion: 피해 감소 
+                playerDamageReceiver.damageReductionRatio += buffValue;
                 break;
         }
     }
@@ -421,16 +438,35 @@ public class PlayerController : Singleton<PlayerController>
         if (!_ecstasyAffected[id].Contains(appliedEnemy)) return;
         _ecstasyAffected[id].Remove(appliedEnemy);
         if (_ecstasyAffected[id].Count > 0) return;
-
+        
+        var buffValue = Define.EcstasyBuffStats[id][preserv];
         // Remove the applied effect
         switch (appliedEnemy.EnemyData.ID)
         {
             case 0: // VoidMantis
-                _armourMultiplier = 1.0f;
+                _armourMultiplier -= buffValue;
                 break;
 
             case 1: // Insectivore
-                playerDamageDealer.attackDamageMultipliers[(int)EPlayerAttackType.Ranged] = 1.0f;
+                playerDamageDealer.attackDamageMultipliers[(int)EPlayerAttackType.Ranged] -= buffValue;
+                break;
+            
+            case 2: // Bee: 근거리 공격 버프
+                playerDamageDealer.attackDamageMultipliers[(int)EPlayerAttackType.Melee_Base] -= buffValue;
+                playerDamageDealer.attackDamageMultipliers[(int)EPlayerAttackType.Melee_Combo] -= buffValue;
+                break;
+            
+            case 3: // Spider: 디버프 시간 감소
+                playerDamageReceiver.debuffTimeReductionRatio -= buffValue; 
+                break;
+            
+            case 4: // Queen Bee: 근거리 공격 버프
+                playerDamageDealer.attackDamageMultipliers[(int)EPlayerAttackType.Melee_Base] -= buffValue;
+                playerDamageDealer.attackDamageMultipliers[(int)EPlayerAttackType.Melee_Combo] -= buffValue;
+                break;
+            
+            case 5: // Scorpion: 피해 감소 
+                playerDamageReceiver.damageReductionRatio -= buffValue;
                 break;
         }
     }
@@ -438,12 +474,15 @@ public class PlayerController : Singleton<PlayerController>
     public bool AddShadowHost(EnemyBase enemy)
     {
         // Max number of shadow hosts reached?
+        Debug.Log("Shadow host max??");
         if (_shadowHosts.Count >= _shadowHostLimit) return false;
 
         // Already a shadow host?
+        Debug.Log("Shadow host already?");
         if (_shadowHosts.Contains(enemy)) return false;
 
         // Add enemy to the list
+        Debug.Log("Shadow host Added");
         _shadowHosts.Add(enemy);
         StartCoroutine(nameof(ShadowHostAutoUpdateCoroutine));
         return true;
@@ -451,6 +490,7 @@ public class PlayerController : Singleton<PlayerController>
 
     public void RemoveShadowHost(EnemyBase enemy)
     {
+        Debug.Log("Shadow host Removed");
         _shadowHosts.Remove(enemy);
         StopCoroutine(nameof(ShadowHostAutoUpdateCoroutine));
     }

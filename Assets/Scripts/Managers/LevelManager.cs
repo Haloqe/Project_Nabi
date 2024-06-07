@@ -296,6 +296,7 @@ public class LevelManager : Singleton<LevelManager>
         //int newDoorSize = Math.Min(prevDoor.doorSize, newDoor.doorSize);
         
         // Iterate from the largest door size (startDoorSize) to the smallest door size (endDoorSize)
+        HashSet<Vector3Int> triedBLPositions = new HashSet<Vector3Int>();
         for (int doorSize = /*newDoorSize*/largestPossibleSize; doorSize >= /*newDoorSize*/smallestPossibleSize; doorSize--)
         {
             // From the starting position, iterate until the end position, which is prevDoor's opposite end - doorSize
@@ -305,6 +306,8 @@ public class LevelManager : Singleton<LevelManager>
             {
                 Vector3Int matchBlPosWorld = newDoorBlPosWorld + offset * _traverseDirections[(int)prevDoor.ConnectionType];
                 Vector3Int matchBlPosLocal = newDoor.RangeLocalBLPosition + offset * _traverseDirections[(int)prevDoor.ConnectionType];
+                if (triedBLPositions.Contains(matchBlPosWorld)) continue;
+                triedBLPositions.Add(matchBlPosWorld);
                 var blockedWorldPos = GetOverlappingTile(newRoom, matchBlPosLocal, matchBlPosWorld);
                 
                 // Can this room be placed?
