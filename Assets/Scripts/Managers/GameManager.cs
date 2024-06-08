@@ -86,7 +86,7 @@ public class GameManager : Singleton<GameManager>
     
     private void PostLoadInGame()
     {
-        if (ActiveScene == ESceneType.CombatMap)
+        if (ActiveScene == ESceneType.CombatMap || ActiveScene == ESceneType.DebugCombatMap)
         {
             GameEvents.InGameFirstLoadStarted.Invoke();
             if (!IsFirstRun) GameEvents.CombatSceneChanged.Invoke();

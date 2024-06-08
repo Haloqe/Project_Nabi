@@ -50,8 +50,8 @@ public class LevelManager : Singleton<LevelManager>
         base.Awake();
         if (IsToBeDestroyed) return;
         
-        _maxHeight = 1000;
-        _maxWidth = 1000;
+        _maxHeight = 2000;
+        _maxWidth = 2000;
         _superGrid = new ECellType[_maxHeight, _maxWidth];
         _corridors = new[]
         {
@@ -135,10 +135,10 @@ public class LevelManager : Singleton<LevelManager>
         var door2 = startingVirtualRoom.AddComponent<Door>();
         var door3 = startingVirtualRoom.AddComponent<Door>();
         var door4 = startingVirtualRoom.AddComponent<Door>();
-        door1.SetValues(EConnectionType.Vertical, EDoorDirection.Up, new Vector3Int(500, 499, 0), 3,4,6);
-        door2.SetValues(EConnectionType.Vertical, EDoorDirection.Down, new Vector3Int(500, 501, 0), 3,4,6);
-        door3.SetValues(EConnectionType.Horizontal, EDoorDirection.Left, new Vector3Int(501, 500, 0), 3,4,6);
-        door4.SetValues(EConnectionType.Horizontal, EDoorDirection.Right, new Vector3Int(499, 500, 0), 3,4,6);
+        door1.SetValues(EConnectionType.Vertical, EDoorDirection.Up, new Vector3Int(1000, 999, 0), 3,4,6);
+        door2.SetValues(EConnectionType.Vertical, EDoorDirection.Down, new Vector3Int(1000, 1001, 0), 3,4,6);
+        door3.SetValues(EConnectionType.Horizontal, EDoorDirection.Left, new Vector3Int(501, 1000, 0), 3,4,6);
+        door4.SetValues(EConnectionType.Horizontal, EDoorDirection.Right, new Vector3Int(999, 1000, 0), 3,4,6);
         _availableDoors[_levelGraph.GetNumRooms()] = new List<Door>{ door1, door2, door3, door4 };
         
         // Initialise

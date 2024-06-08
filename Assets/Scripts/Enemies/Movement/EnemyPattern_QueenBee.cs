@@ -1,8 +1,4 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -99,7 +95,9 @@ public class EnemyPattern_QueenBee : EnemyPattern
     {
         transform.position = new Vector3(Mathf.Clamp(transform.position.x, -19.69f, 14.99f),
             Mathf.Clamp(transform.position.y, -6.79f, 7.99f), 0f);
-        Vector3 clampedDestination = new Vector3(Mathf.Clamp(destination.x, -19.7f, 15f), Mathf.Clamp(destination.y, -6.8f, 8f), 0);
+        Vector3 clampedDestination = 
+            new Vector3(Mathf.Clamp(destination.x, -19.7f, 15f), 
+                Mathf.Clamp(destination.y, -6.8f, 8f), 0);
         Vector3 moveDirection = (clampedDestination - transform.position).normalized;
         while (!IsCloseEnough(gameObject, clampedDestination)
                && transform.position.x is >= -19.7f and <= 15f
@@ -115,14 +113,17 @@ public class EnemyPattern_QueenBee : EnemyPattern
     private IEnumerator MoveToAttackPosition()
     {
         int directionFacing = 1;
-        if (_player.transform.position.x > transform.position.x) directionFacing *= -1;
-        Vector3 position = _player.transform.position + new Vector3(directionFacing * 10f, 2f, 0);
+        if (_player.transform.position.x > transform.position.x) 
+            directionFacing *= -1;
+        Vector3 position = _player.transform.position + 
+                           new Vector3(directionFacing * 10f, 2f, 0);
         yield return MoveToPosition(position, MoveSpeed);
     }
 
     private bool IsCloseEnough(GameObject obj, Vector3 pos)
     {
-        if (!(Vector3.Distance(obj.transform.position, pos) < 0.3f)) return false;
+        if (!(Vector3.Distance(obj.transform.position, pos) < 0.3f))
+            return false;
         obj.transform.position = pos;
         return true;
     }
@@ -133,8 +134,10 @@ public class EnemyPattern_QueenBee : EnemyPattern
         _animator.SetBool(IsAttacking, false);
         
         int directionFacing = 1;
-        if (_player.transform.position.x > transform.position.x) directionFacing *= -1;
-        Vector3 idlePosition = _player.transform.position + new Vector3(directionFacing * 7f, 2f, 0);
+        if (_player.transform.position.x > transform.position.x)
+            directionFacing *= -1;
+        Vector3 idlePosition = _player.transform.position + 
+                               new Vector3(directionFacing * 7f, 2f, 0);
         yield return MoveToPosition(idlePosition, MoveSpeed);
         yield return new WaitForSeconds(3f);
         
@@ -170,7 +173,8 @@ public class EnemyPattern_QueenBee : EnemyPattern
         for (int i = 0; i < spawnAmount; i++)
         {
             spawnLocation += new Vector3(Random.Range(0, 3f), Random.Range(0, 3f), 0);
-            _enemyManager.SpawnEnemy(2, spawnLocation, true).GetComponent<EnemyPattern_Bee>().SendQueenSpawnedInfo();
+            _enemyManager.SpawnEnemy(2, spawnLocation, true)
+                .GetComponent<EnemyPattern_Bee>().SendQueenSpawnedInfo();
             Instantiate(_spawnVFXPrefab, spawnLocation, Quaternion.identity);
         }
 

@@ -262,6 +262,10 @@ public enum EEnemyName
 {
     VoidMantis,
     Insectivore,
+    Bee,
+    SpiderA,
+    QueenBee,
+    Scorpion,
 }
 public enum EEnemyMoveType
 {

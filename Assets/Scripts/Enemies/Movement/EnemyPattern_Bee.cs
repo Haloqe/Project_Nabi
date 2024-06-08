@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Pathfinding;
 using Random = UnityEngine.Random;
@@ -39,7 +38,8 @@ public class EnemyPattern_Bee : EnemyPattern
     {
         if (!isActiveAndEnabled) return;
         if (_seeker.IsDone())
-            _seeker.StartPath(_rigidBody.position, _enemyBase.Target.transform.position + new Vector3(0f, 4f, 0f), OnPathComplete);
+            _seeker.StartPath(_rigidBody.position, 
+                _enemyBase.Target.transform.position + new Vector3(0f, 4f, 0f), OnPathComplete);
     }
 
     public override void Patrol()
@@ -185,7 +185,8 @@ public class EnemyPattern_Bee : EnemyPattern
 
     public override bool PlayerIsInAttackRange()
     {
-        Vector2 playerAttackColliderSize = new Vector2(_enemyBase.EnemyData.AttackRangeX, _enemyBase.EnemyData.AttackRangeY);
+        Vector2 playerAttackColliderSize =
+            new Vector2(_enemyBase.EnemyData.AttackRangeX, _enemyBase.EnemyData.AttackRangeY);
 
         return Physics2D.OverlapBox(transform.position, playerAttackColliderSize, 0, _playerLayer);
     }
@@ -200,6 +201,7 @@ public class EnemyPattern_Bee : EnemyPattern
     // {
         // Gizmos.DrawWireSphere(transform.position, _enemyBase.EnemyData.DetectRangeX);
         // Gizmos.DrawWireSphere(transform.position, 0.8f);
-        // Gizmos.DrawWireCube(transform.position - transform.up, new Vector2 (_enemyBase.EnemyData.AttackRangeX, _enemyBase.EnemyData.AttackRangeY));
+        // Gizmos.DrawWireCube(transform.position - transform.up,
+        // new Vector2 (_enemyBase.EnemyData.AttackRangeX, _enemyBase.EnemyData.AttackRangeY));
     // }
 }

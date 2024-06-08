@@ -21,6 +21,7 @@ public class Door : MonoBehaviour
         // doorSize = 3;
         _width = (int)transform.localScale.x;
         _height = (int)transform.localScale.y;
+        maxSize = Mathf.Min(maxSize, Mathf.Max(_width, _height));
         ConnectionType = _width == 1 ? EConnectionType.Horizontal : EConnectionType.Vertical;
         RangeLocalBLPosition = Vector3Int.FloorToInt(transform.position - new Vector3Int(_width / 2, _height / 2, 0));
         CandidateRange = ConnectionType == EConnectionType.Horizontal ? _height : _width;

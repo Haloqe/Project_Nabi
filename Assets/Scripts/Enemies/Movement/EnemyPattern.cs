@@ -15,6 +15,7 @@ public abstract class EnemyPattern : MonoBehaviour
     public bool IsFlippable = true;
     protected Rigidbody2D _rigidBody;
     protected Animator _animator;
+    protected AudioSource _audioSource;
     public float AttackSpeed;
     private readonly static int Rooted = Animator.StringToHash("IsRooted");
 
@@ -30,6 +31,7 @@ public abstract class EnemyPattern : MonoBehaviour
         _animator = GetComponent<Animator>();
         _rigidBody = GetComponent<Rigidbody2D>();
         _enemyBase = GetComponent<EnemyBase>();
+        _audioSource = GetComponent<AudioSource>();
         _player = GameObject.FindWithTag("Player");
         MoveSpeed = _enemyBase.EnemyData.DefaultMoveSpeed;
         EnableMovement();

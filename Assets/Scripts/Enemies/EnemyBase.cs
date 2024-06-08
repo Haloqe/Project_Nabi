@@ -2,15 +2,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.UIElements;
 using Random = UnityEngine.Random;
 
 public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 {
-    [SerializeField] private int typeID;
-    
+    public int typeID;
+
     // reference to other components
     protected Rigidbody2D _rigidbody2D;
     private Animator _animator;
@@ -104,7 +102,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
             if (_effectRemainingTimes[(int)EStatusEffect.Evade] > 0)
                 _player.RemoveShadowHost(this);
         }
-        _enemyManager.RemoveEnemyFromSpawnedList(this);
+        if (_enemyManager != null) _enemyManager.RemoveEnemyFromSpawnedList(this);
     }
 
     protected virtual void Update() 
@@ -579,7 +577,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     {
         // Inform player
         InGameEvents.EnemySlayed?.Invoke(this);
-            
+
         StopAllCoroutines();
         if (shouldDropReward)
         {
@@ -587,6 +585,8 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
             DropSoulShard();
             DropArbor();
         }
+
+        Instantiate(_enemyManager.DeathVFXPrefab, transform.position, Quaternion.identity);
         Destroy(gameObject);
     }
     #endregion Damage Dealing and Receiving
