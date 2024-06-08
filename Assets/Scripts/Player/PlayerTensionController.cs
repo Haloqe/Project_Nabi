@@ -1,7 +1,7 @@
-using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class PlayerTensionController : MonoBehaviour
@@ -18,12 +18,13 @@ public class PlayerTensionController : MonoBehaviour
     private Color _overloadedColour;
     
     // References
+    private EnemyManager _enemyManager;
     private PlayerController _player;
     private GameObject _overloadedVFX;
     private GameObject _overheatedVFX;
     
     // Features
-    private float _slowDownAmount;
+    private float _slowedTimeScale;
     private int _incrementStep;
     private float[] _critAdditionByStates;
     private float[] _damageMultiplierByStates;
@@ -35,6 +36,12 @@ public class PlayerTensionController : MonoBehaviour
     private float _overloadDuration;
     private float _recoveryDuration;
     
+    // Arbor
+    private EArborType _arborType;
+    private GameObject _curArborDescriptionUI;
+    [SerializeField] private Image curArborIcon;
+    [FormerlySerializedAs("arborIcons")] [SerializeField] [NamedArray(typeof(EArborType))] private Sprite[] arborIconSprites; 
+    [SerializeField] [NamedArray(typeof(EArborType))] private GameObject[] arborDescriptionUIs;
     
     private void Awake()
     {
@@ -45,7 +52,7 @@ public class PlayerTensionController : MonoBehaviour
         _fillNormalColour = new Color(0.886f, 0.6f, 0.06f, 1f);
         _fillRecoveryColour = new Color(0.3301887f, 0.3301887f, 0.3301887f, 1f);
         _overloadedColour = new Color(0.83f, 0, 0, 1);
-        _slowDownAmount = 0.4f;
+        _slowedTimeScale = 0.5f;
         PlayerEvents.StartResurrect += OnPlayerDefeated;
         PlayerEvents.Defeated += OnPlayerDefeated;
     }
@@ -58,6 +65,7 @@ public class PlayerTensionController : MonoBehaviour
 
     private void Start()
     {
+        _enemyManager = EnemyManager.Instance;
         _player = PlayerController.Instance;
         _overheatedVFX = _player.transform.Find("OverheatedVFX").gameObject;
         _overloadedVFX = _player.transform.Find("OverloadedVFX").gameObject;
@@ -67,15 +75,23 @@ public class PlayerTensionController : MonoBehaviour
     private void OnRestarted()
     {
         _incrementStep = 1;
-        _maxTension = 4;
-        _overloadDuration = 4.0f;
+        _maxTension = 50;
         _recoveryDuration = 3.0f;
-        _critAdditionByStates = new float[]{0.0f, 0.05f, 0.15f, 0.0f};
-        _damageMultiplierByStates = new float[]{1.0f, 1.1f, 1.2f, 1.0f};
         _tensionGaugeOutline.effectColor = _fillNormalColour;
         _tensionGaugeText.color = Color.white;
+        _curArborDescriptionUI = arborDescriptionUIs[(int)EArborType.Default];
+        ChangeArbor(EArborType.Default);
         ResetTension();
         SetTensionState(ETensionState.Innate);
+    }
+
+    private void ResetArborUpgrades()
+    {
+        _overloadDuration = 4.0f;
+        _slowedTimeScale = 0.5f;
+        _critAdditionByStates = new float[]{0.0f, 0.05f, 0.15f, 0.0f};
+        _damageMultiplierByStates = new float[]{1.0f, 1.1f, 1.2f, 1.0f};
+        _player.updateTensionUponHit = false;
     }
     
     private void OnPlayerDefeated()
@@ -93,13 +109,41 @@ public class PlayerTensionController : MonoBehaviour
     public void ChangeArbor(EArborType newArborType)
     {
         // Remove old arbor
-        // TODO: 축 바닥에 버리고, 영구히 사라지는 효과
+        if (_arborType != EArborType.Default)
+        {
+            var oldArbor = Instantiate(_enemyManager.GetArborOfType(_arborType), _player.transform.position, Quaternion.identity);
+            oldArbor.GetComponent<Arbor>().tensionController = this;
+        }
+        ResetArborUpgrades();
         
-        // TODO: Get new arbor
-        // switch (_arborType)
-        // {
-        //     
-        // }
+        // Update UI
+        HideArborDescriptionUI();
+        _arborType = newArborType;
+        _curArborDescriptionUI = arborDescriptionUIs[(int)_arborType];
+        curArborIcon.sprite = arborIconSprites[(int)_arborType];
+        
+        // Get new arbor
+        switch (_arborType)
+        {
+            case EArborType.Default:
+                break;
+            
+            case EArborType.Curiosity:
+                _slowedTimeScale = 0.3f;
+                break;
+            
+            case EArborType.Serenity:
+                _critAdditionByStates = new float[]{0.0f, 0.1f, 0.2f, 0.0f};
+                break;
+            
+            case EArborType.Regret:
+                _damageMultiplierByStates = new float[]{1.0f, 1.15f, 1.25f, 1.0f};
+                break;
+            
+            case EArborType.Paranoia:
+                _player.updateTensionUponHit = true;
+                break;
+        }
     }
 
     private void ResetTension() => SetTensionValue(0);
@@ -160,7 +204,7 @@ public class PlayerTensionController : MonoBehaviour
                 _tensionGaugeOutline.effectColor = _overloadedColour;
                 
                 // Start slowdown
-                Time.timeScale = _slowDownAmount;
+                Time.timeScale = _slowedTimeScale;
                 InGameEvents.TimeSlowDown.Invoke();
                 
                 // Wait for overload duration
@@ -201,5 +245,15 @@ public class PlayerTensionController : MonoBehaviour
         // End recovery
         ResetTension();
         SetTensionState(ETensionState.Innate);
+    }
+
+    public void DisplayArborDescriptionUI()
+    {
+        _curArborDescriptionUI.SetActive(true);
+    }
+    
+    public void HideArborDescriptionUI()
+    {
+        _curArborDescriptionUI.SetActive(false);
     }
 }

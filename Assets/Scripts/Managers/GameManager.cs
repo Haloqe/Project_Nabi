@@ -11,6 +11,7 @@ public class GameManager : Singleton<GameManager>
     
     // References
     private PlayerController _player;
+    private UIManager _uiManager;
     
     // DEBUG Only
     private int _ingameMapSceneIdx;          // 플레이어가 실행한 씬
@@ -27,6 +28,11 @@ public class GameManager : Singleton<GameManager>
         _ingameMapSceneIdx = _releaseMapSceneIdx;
         SceneManager.sceneLoaded += OnSceneLoaded;
         PlayerEvents.Defeated += OnPlayerDefeated;
+    }
+
+    private void Start()
+    {
+        _uiManager = UIManager.Instance;
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode loadMode)
@@ -59,7 +65,8 @@ public class GameManager : Singleton<GameManager>
     private void LoadInGame()
     {
         // Loading screen
-        UIManager.Instance.DisplayLoadingScreen();
+        _uiManager.HideAllInGameUI();
+        _uiManager.DisplayLoadingScreen();
         
         // Load new in-game scene
         // TEMP TODO
@@ -79,8 +86,11 @@ public class GameManager : Singleton<GameManager>
     
     private void PostLoadInGame()
     {
-        // Display loading screen UI
-        GameEvents.GameLoadStarted.Invoke();
+        if (ActiveScene == ESceneType.CombatMap)
+        {
+            GameEvents.InGameFirstLoadStarted.Invoke();
+            if (!IsFirstRun) GameEvents.CombatSceneChanged.Invoke();
+        }
         
         // Generate new map
         if (ActiveScene == ESceneType.CombatMap)
@@ -104,12 +114,13 @@ public class GameManager : Singleton<GameManager>
     
     public void LoadMainMenu()
     {
+        _uiManager.HideAllInGameUI();
         SceneManager.LoadScene("Scenes/MainMenu");
     }
 
     public void LoadBossMap()
     {
-        UIManager.Instance.DisplayLoadingScreen();
+        _uiManager.DisplayLoadingScreen();
         SceneManager.LoadScene("Scenes/Boss_InGame");
     }
 
@@ -134,7 +145,8 @@ public class GameManager : Singleton<GameManager>
     
     public void StartNewGame()
     {
-        if (_player) Destroy(_player.gameObject);
+        if (_player) {Destroy(_player.gameObject);}
+        _uiManager.DestroyAllInGameUI();
         IsFirstRun = true;
         PlayerMetaData = new PlayerMetaData();
         SaveSystem.RemoveMetaData();

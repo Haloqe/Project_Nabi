@@ -266,6 +266,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         if (damage.Duration == 0)
         {
             ChangeHealthByAmount(-damage.TotalAmount);
+            if (_playerController.updateTensionUponHit) _uiManager.IncrementTensionGaugeUI();
             yield return null;
         }
         // Damage Over Time (DOT) damage
@@ -305,6 +306,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         {
             // Wait for a tick time and take damage repeatedly
             ChangeHealthByAmount(-damagePerTick);
+            if (_playerController.updateTensionUponHit) _uiManager.IncrementTensionGaugeUI();
             yield return new WaitForSeconds(tick);
         }
     }

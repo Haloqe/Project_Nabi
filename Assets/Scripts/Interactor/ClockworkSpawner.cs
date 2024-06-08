@@ -49,6 +49,7 @@ public class ClockworkSpawner : Interactor
         // Spawn a clockwork
         var clockwork = Instantiate(PlayerAttackManager.Instance.ClockworkPrefab, 
             new Vector3(transform.position.x, transform.position.y + 0.5f, transform.position.z), quaternion.identity);
+        clockwork.transform.SetParent(null);
         clockwork.GetComponent<Clockwork>().warrior = _warrior;
         var spriteRenderer = clockwork.GetComponent<SpriteRenderer>();
         var startColour = spriteRenderer.color;
@@ -60,7 +61,7 @@ public class ClockworkSpawner : Interactor
         }
         
         // Destroy this spawner
-        Destroy(this);
+        Destroy(gameObject);
     }
 
     protected override void OnDestroy()

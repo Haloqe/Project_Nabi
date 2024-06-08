@@ -87,6 +87,7 @@ public struct SEnemyData
     public int MaxGoldRange;
     public int SoulShardDropAmount;
     public float SoulShardDropChance;
+    public float ArborDropChance;
 }
 #endregion Enemy
 

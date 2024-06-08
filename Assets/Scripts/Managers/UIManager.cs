@@ -67,7 +67,7 @@ public class UIManager : Singleton<UIManager>
     private TextMeshProUGUI _darkGaugeText;
     private Image _bloodOverlay;
     private Image _tensionOverlay;
-    private PlayerTensionController _playerTensionController;
+    public PlayerTensionController TensionController { get; private set; }
     
     // UI Navigation
     private GameObject _activeFocusedUI;
@@ -101,7 +101,7 @@ public class UIManager : Singleton<UIManager>
         PlayerEvents.HpChanged += OnPlayerHPChanged;
         PlayerEvents.Spawned += OnPlayerSpawned;
         GameEvents.MainMenuLoaded += OnMainMenuLoaded;
-        GameEvents.GameLoadStarted += OnGameLoadStarted;
+        GameEvents.InGameFirstLoadStarted += OnInGameFirstLoad;
         GameEvents.GameLoadEnded += OnGameLoadEnded;
         GameEvents.CombatSceneChanged += OnCombatSceneChanged;
         InGameEvents.TimeSlowDown += () => _tensionOverlay.gameObject.SetActive(true);
@@ -127,7 +127,7 @@ public class UIManager : Singleton<UIManager>
         LoadActionRebinds();
     }
 
-    private void OnGameLoadStarted()
+    private void OnInGameFirstLoad()
     {
         //_uiCamera = GameObject.Find("UI Camera").GetComponent<Camera>();
         _uiCamera = GameObject.Find("Main Camera").GetComponent<Camera>();
@@ -135,7 +135,7 @@ public class UIManager : Singleton<UIManager>
         
         _focusedOverlay     = Instantiate(_focusedOverlayPrefab, Vector3.zero, Quaternion.identity).GameObject();
         _defeatedUI         = Instantiate(_defeatedUIPrefab, Vector3.zero, Quaternion.identity).GameObject();
-        _inGameCombatUI      = Instantiate(_inGameCombatPrefab, Vector3.zero, Quaternion.identity).GameObject();
+        _inGameCombatUI     = Instantiate(_inGameCombatPrefab, Vector3.zero, Quaternion.identity).GameObject();
         _zoomedMap          = Instantiate(_zoomedMapPrefab, Vector3.zero, Quaternion.identity).GameObject();
         _bookUI             = Instantiate(_bookPrefab, Vector3.zero, Quaternion.identity).GameObject();
         _metaUpgradeUI      = Instantiate(_metaUpgradeUIPrefab, Vector3.zero, Quaternion.identity).GameObject();
@@ -148,7 +148,7 @@ public class UIManager : Singleton<UIManager>
         _hpText             = _inGameCombatUI.transform.Find("Globe").GetComponentInChildren<TextMeshProUGUI>();
         _darkGaugeSlider    = _inGameCombatUI.transform.Find("DarkSlider").GetComponentInChildren<Slider>();
         _darkGaugeText      = _inGameCombatUI.transform.Find("DarkSlider").GetComponentInChildren<TextMeshProUGUI>();
-        _playerTensionController  = _inGameCombatUI.transform.Find("TensionSlider").GetComponent<PlayerTensionController>();
+        TensionController  = _inGameCombatUI.transform.Find("TensionSlider").GetComponent<PlayerTensionController>();
         _bloodOverlay       = _inGameCombatUI.transform.Find("BloodOverlay").GetComponent<Image>();
         _tensionOverlay     = _inGameCombatUI.transform.Find("TensionOverlay").GetComponent<Image>();
         _minimap            = _inGameCombatUI.transform.Find("MinimapContainer").Find("Minimap").gameObject;
@@ -156,6 +156,13 @@ public class UIManager : Singleton<UIManager>
         _inGameCombatUI.SetActive(true);
         _inGameCombatUI.GetComponent<Canvas>().worldCamera = _uiCamera;
         _inGameCombatUI.GetComponent<Canvas>().planeDistance = 20;
+        
+        DontDestroyOnLoad(_focusedOverlay);
+        DontDestroyOnLoad(_defeatedUI);
+        DontDestroyOnLoad(_inGameCombatUI);
+        DontDestroyOnLoad(_zoomedMap);
+        DontDestroyOnLoad(_bookUI);
+        DontDestroyOnLoad(_metaUpgradeUI);
         
         // UI - flower bombs
         var flowerSlotRoot = _inGameCombatUI.transform.Find("ActiveLayoutGroup").Find("Slot_3");
@@ -168,6 +175,28 @@ public class UIManager : Singleton<UIManager>
         _flowerIconRight = _flowerUIRight.transform.Find("Icon").GetComponent<Image>();
     }
 
+    public void HideAllInGameUI()
+    {
+        if (_inGameCombatUI == null) return;
+        _focusedOverlay.SetActive(false);
+        _defeatedUI.SetActive(false);
+        _inGameCombatUI.SetActive(false);
+        _zoomedMap.SetActive(false);
+        _bookUI.SetActive(false);
+        _metaUpgradeUI.SetActive(false);
+    }
+
+    public void DestroyAllInGameUI()
+    {
+        if (_inGameCombatUI == null) return;
+        Destroy(_focusedOverlay);
+        Destroy(_defeatedUI);
+        Destroy(_inGameCombatUI);
+        Destroy(_zoomedMap);
+        Destroy(_bookUI);
+        Destroy(_metaUpgradeUI);
+    }
+    
     private void OnGameLoadEnded()
     {
         _bloodOverlay.gameObject.SetActive(false);
@@ -197,10 +226,14 @@ public class UIManager : Singleton<UIManager>
     private void OnCombatSceneChanged()
     {
         // Minimap and zoomed map disabled in the boss map
-        DisableMap();
+        if (GameManager.Instance.ActiveScene == ESceneType.Boss) DisableMap();
         
         // Update combat UI with bound legacy information
-        _playerAttackManager.UpdateLegacyUI();
+        //_playerAttackManager.UpdateLegacyUI();
+        
+        _uiCamera = GameObject.Find("Main Camera").GetComponent<Camera>();
+        _activeFocusedUI = null;
+        _inGameCombatUI.GetComponent<Canvas>().worldCamera = _uiCamera;
     }
     
     private void UseUIControl()
@@ -223,7 +256,7 @@ public class UIManager : Singleton<UIManager>
         _darkGaugeText.text = $"{value}/{_playerController.playerDamageDealer.DarkGaugeMax}";
     }
 
-    public void IncrementTensionGaugeUI() => _playerTensionController.IncrementTension();
+    public void IncrementTensionGaugeUI() => TensionController.IncrementTension();
     
     private void OnPlayerHPChanged(float changeAmount, float oldHpRatio, float newHpRatio)
     {

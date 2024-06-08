@@ -61,8 +61,8 @@ public class Chest : Interactor
                     // Random drop
                     float r = Random.value;
                     DropSuperfood();
-                    //if (r <= 0.5f) DropArbor();                             // 50% Arbor
-                    if (r <= 0.8f) DropSuperfood();                    // 30% Superfood
+                    if (r <= 0.5f) DropArbor();                           // 50% Arbor
+                    else if (r <= 0.8f) DropSuperfood();                         // 30% Superfood
                     else if (r <= 0.95f) DropClockwork(isPristine:false);   // 15% Clockwork
                     else DropClockwork(isPristine:true);                    // 5% Pristine clockwork
                 }
@@ -113,7 +113,11 @@ public class Chest : Interactor
 
     private void DropArbor()
     {
-        
+        GameObject arbor = Instantiate(EnemyManager.Instance.GetRandomArbor(), transform.position, Quaternion.identity);
+        var randDir = Random.onUnitSphere;
+        randDir = new Vector3(randDir.x, Mathf.Abs(randDir.y), 0);
+        arbor.GetComponent<Rigidbody2D>().AddForce(randDir * Random.Range(7,10), ForceMode2D.Impulse);
+        arbor.GetComponent<Arbor>().tensionController = UIManager.Instance.TensionController;
     }
 
     private void DropClockwork(bool isPristine)
@@ -130,6 +134,6 @@ public class Chest : Interactor
         Rigidbody2D rb = superfood.GetComponent<Rigidbody2D>();
         var randDir = Random.onUnitSphere;
         randDir = new Vector3(randDir.x, Mathf.Abs(randDir.y), 0);
-        rb.AddForce(randDir * Random.Range(3, 5.5f), ForceMode2D.Impulse);
+        rb.AddForce(randDir * Random.Range(5, 10), ForceMode2D.Impulse);
     }
 }

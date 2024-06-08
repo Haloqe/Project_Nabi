@@ -24,7 +24,7 @@ public static class GameEvents
 {
     public static UnityAction MainMenuLoaded;
     public static UnityAction Restarted;
-    public static UnityAction GameLoadStarted;
+    public static UnityAction InGameFirstLoadStarted;
     public static UnityAction GameLoadEnded;
     public static UnityAction CombatSceneChanged;
     public static UnityAction MapLoaded;

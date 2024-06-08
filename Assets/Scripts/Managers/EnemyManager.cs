@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class EnemyManager : Singleton<EnemyManager>
 {
@@ -12,6 +13,7 @@ public class EnemyManager : Singleton<EnemyManager>
     private GameObject[] _enemyPrefabs;
     public GameObject GoldPrefab { private set; get; }
     public GameObject SoulShardPrefab { private set; get; }
+    [NamedArray(typeof(EArborType))] public GameObject[] arborPrefabs;
     public GameObject TakeDamageVFXPrefab { private set; get; }
     public Material FlashMaterial { private set; get; }
     public EnemyVisibilityChecker VisibilityChecker { private set; get; }
@@ -30,7 +32,6 @@ public class EnemyManager : Singleton<EnemyManager>
         FlashMaterial = Resources.Load("Materials/FlashMaterial") as Material;
         GameEvents.MapLoaded += OnMapLoaded;
         GameEvents.GameLoadEnded += OnGameLoadEnded;
-        InGameEvents.EnemySlayed += (enemy => _spawnedEnemies.Remove(enemy));
         PlayerEvents.Defeated += () =>
         {
             StopAllCoroutines();
@@ -92,6 +93,7 @@ public class EnemyManager : Singleton<EnemyManager>
                     MaxGoldRange = int.Parse(csv.GetField("MaxGoldRange")),
                     SoulShardDropAmount = int.Parse(csv.GetField("SoulShardDropAmount")),
                     SoulShardDropChance = float.Parse(csv.GetField("SoulShardDropChance")),
+                    ArborDropChance = float.Parse(csv.GetField("ArborDropChance")),
                 };
 
                 _enemies.Add(data.ID, data);
@@ -148,5 +150,20 @@ public class EnemyManager : Singleton<EnemyManager>
         
             yield return wait;
         }
+    }
+
+    public GameObject GetRandomArbor()
+    {
+        return arborPrefabs[Random.Range(1, arborPrefabs.Length)];
+    }
+
+    public GameObject GetArborOfType(EArborType arborType)
+    {
+        return arborPrefabs[(int)arborType];
+    }
+
+    public void RemoveEnemyFromSpawnedList(EnemyBase enemy)
+    {
+        _spawnedEnemies.Remove(enemy);
     }
 }

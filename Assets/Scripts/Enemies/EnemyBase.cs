@@ -97,10 +97,14 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     private void OnDestroy()
     {
         PlayerEvents.Defeated -= OnPlayerDefeated;
-        if (_effectRemainingTimes[(int)EStatusEffect.Ecstasy] > 0)
-            _player.RemoveEcstasyBuff(this);
-        if (_effectRemainingTimes[(int)EStatusEffect.Evade] > 0)
-            _player.RemoveShadowHost(this);
+        if (_effectRemainingTimes != null)
+        {
+            if (_effectRemainingTimes[(int)EStatusEffect.Ecstasy] > 0)
+                _player.RemoveEcstasyBuff(this);
+            if (_effectRemainingTimes[(int)EStatusEffect.Evade] > 0)
+                _player.RemoveShadowHost(this);
+        }
+        _enemyManager.RemoveEnemyFromSpawnedList(this);
     }
 
     protected virtual void Update() 
@@ -581,6 +585,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         {
             DropGold();
             DropSoulShard();
+            DropArbor();
         }
         Destroy(gameObject);
     }
@@ -682,6 +687,17 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
             rb.AddForce(direction * 5f, ForceMode2D.Impulse);
             currentAngle += angleStep;
         }
+    }
+    
+    private void DropArbor()
+    {
+        float chance = EnemyData.ArborDropChance;
+        if (Random.value > chance) return;
+        GameObject arbor = Instantiate(_enemyManager.GetRandomArbor(), transform.position, Quaternion.identity);
+        var randDir = Random.onUnitSphere;
+        randDir = new Vector3(randDir.x, Mathf.Abs(randDir.y), 0);
+        arbor.GetComponent<Rigidbody2D>().AddForce(randDir * Random.Range(7,10), ForceMode2D.Impulse);
+        arbor.GetComponent<Arbor>().tensionController = _uiManager.TensionController;
     }
 
     private void OnBecameVisible()

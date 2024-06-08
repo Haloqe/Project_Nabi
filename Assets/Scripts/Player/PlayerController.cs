@@ -4,6 +4,7 @@ using System.Reflection;
 using Pathfinding;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 public class PlayerController : Singleton<PlayerController>
 {
@@ -19,6 +20,7 @@ public class PlayerController : Singleton<PlayerController>
     private GameManager _gameManager;
 
     // Centrally controlled variables
+    public bool updateTensionUponHit;
     private float _cumulativeMoveDirection = 0;
     public bool IsMapEnabled;
     public float DefaultGravityScale { get; private set; }
