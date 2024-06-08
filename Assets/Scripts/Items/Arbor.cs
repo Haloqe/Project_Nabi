@@ -2,7 +2,7 @@ using UnityEngine.InputSystem;
 
 public class Arbor : Interactor
 {
-    public EArborType ArborType;
+    public EArborType arborType;
     
     protected override void OnInteract(InputAction.CallbackContext obj)
     {
