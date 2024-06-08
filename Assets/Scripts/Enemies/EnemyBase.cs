@@ -9,8 +9,8 @@ using Random = UnityEngine.Random;
 
 public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 {
-    [SerializeField] private int typeID;
-    
+    public int typeID;
+
     // reference to other components
     protected Rigidbody2D _rigidbody2D;
     private Animator _animator;

@@ -48,6 +48,14 @@ public class EnemyPattern_Scorpion : EnemyPattern
     private float _raisedClawGap = 12f;
     private float _clawAttackGap = 3f;
     
+    // sfx
+    [SerializeField] private AudioClip _laserAudio;
+    [SerializeField] private AudioClip _bulletAudio;
+    [SerializeField] private AudioClip _clawSnapAudio;
+    [SerializeField] private AudioClip _electricFieldAudio;
+    [SerializeField] private AudioClip[] _groundPoundAudio;
+    [SerializeField] private AudioClip _clawDragAudio;
+    
     private void Awake()
     {
         MoveType = EEnemyMoveType.Scorpion;

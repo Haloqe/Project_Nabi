@@ -15,6 +15,8 @@ public class EnemyManager : Singleton<EnemyManager>
     public GameObject TakeDamageVFXPrefab { private set; get; }
     public GameObject DeathVFXPrefab { private set; get; }
     public Material FlashMaterial { private set; get; }
+    public AudioClip[] DeathAudioClips;
+    private AudioSource _audioSource;
     public EnemyVisibilityChecker VisibilityChecker { private set; get; }
     private List<EnemyBase> _spawnedEnemies;
     private Transform _enemiesContainer;
@@ -30,9 +32,10 @@ public class EnemyManager : Singleton<EnemyManager>
         TakeDamageVFXPrefab = Resources.Load("Prefabs/Effects/TakeDamageVFX").GameObject();
         DeathVFXPrefab = Resources.Load("Prefabs/Effects/EnemyDeathVFX").GameObject();
         FlashMaterial = Resources.Load("Materials/FlashMaterial") as Material;
+        _audioSource = GetComponent<AudioSource>();
         GameEvents.MapLoaded += OnMapLoaded;
         GameEvents.GameLoadEnded += OnGameLoadEnded;
-        InGameEvents.EnemySlayed += (enemy => _spawnedEnemies.Remove(enemy));
+        InGameEvents.EnemySlayed += OnEnemySlayed;
         PlayerEvents.Defeated += () =>
         {
             StopAllCoroutines();
@@ -58,6 +61,13 @@ public class EnemyManager : Singleton<EnemyManager>
     {
         VisibilityChecker = Camera.main.GetComponent<EnemyVisibilityChecker>();
         StartCoroutine(ActiveCheckCoroutine());
+    }
+
+    private void OnEnemySlayed(EnemyBase slayedEnemyBase)
+    {
+        _audioSource.pitch = Random.Range(0.5f, 1.5f);
+        _audioSource.PlayOneShot(DeathAudioClips[slayedEnemyBase.typeID]);
+        _spawnedEnemies.Remove(slayedEnemyBase);
     }
 
     public void Init(string dataPath)

@@ -21,7 +21,13 @@ public class EnemyPattern_SpiderA : EnemyPattern
     private float _teethAttackRange = 4f;
     private float _webAttackRange = 5f;
     private List<StatusEffectInfo> _poisonStatusEffect;
-
+    
+    // sfx
+    [SerializeField] private AudioClip _jumpAudio;
+    [SerializeField] private AudioClip _walkAudio;
+    [SerializeField] private AudioClip _poisonAudio;
+    [SerializeField] private AudioClip _webAudio;
+    
     // animation stuff
     private static readonly int IsAttacking = Animator.StringToHash("IsAttacking");
     private static readonly int IsTeethAttacking = Animator.StringToHash("IsTeethAttacking");
@@ -46,7 +52,11 @@ public class EnemyPattern_SpiderA : EnemyPattern
     {
         if (IsRooted) return;
         if (!IsGrounded()) return;
-        if (IsAtEdge()) FlipEnemy();
+        if (IsAtEdge())
+        {
+            _animator.SetBool(IsWalking, false);
+            return;
+        }
 
         _rigidBody.velocity = transform.localScale.x > Mathf.Epsilon
             ? new Vector2(MoveSpeed, 0f)
@@ -84,17 +94,21 @@ public class EnemyPattern_SpiderA : EnemyPattern
     
     public override void Patrol()
     {
-        if (IsAtEdge() && IsChasingPlayer)
-        {
-            Jump(2f);
-            return;
-        }
-        
+        // if (IsAtEdge() && IsChasingPlayer)
+        // {
+        //     Jump(2f);
+        //     return;
+        // }
+        //
         _animator.SetBool(IsAttacking, false);
         _animator.SetFloat(RunMultiplier, 1f);
         IsChasingPlayer = false;
         if (_enemyBase.ActionTimeCounter <= 0) GenerateRandomState();
-        if (IsMoving) WalkForward();
+        if (IsMoving)
+        {
+            if (IsAtEdge()) FlipEnemy();
+            WalkForward();
+        }
         else _rigidBody.velocity = Vector2.zero;
         _animator.SetBool(IsWalking, IsMoving);
     }
@@ -113,9 +127,14 @@ public class EnemyPattern_SpiderA : EnemyPattern
     private IEnumerator JumpTowardsPlayer()
     {
         _isInChaseState = true;
+        if (IsAtEdge()) yield break;
         
         int toLeft = -1;
         if (_player.transform.position.x > transform.position.x) toLeft = 1;
+
+        _audioSource.pitch = Random.Range(0.5f, 1.5f);
+        _audioSource.PlayOneShot(_jumpAudio);
+        
         Jump(5f * toLeft);
         FlipEnemyTowardsTarget();
         yield return new WaitForSeconds(1f);
@@ -165,6 +184,9 @@ public class EnemyPattern_SpiderA : EnemyPattern
     private IEnumerator WebAttack()
     {
         _isInAttackState = true;
+
+        _audioSource.pitch = Random.Range(0.5f, 1.5f);
+        _audioSource.PlayOneShot(_webAudio);
         
         Jump(0f);
         FlipEnemyTowardsTarget();
@@ -186,6 +208,9 @@ public class EnemyPattern_SpiderA : EnemyPattern
         _animator.SetBool(IsWalking, false);
         _animator.SetBool(IsTeethAttacking, true);
         _enemyBase.DamageInfo.StatusEffects = _poisonStatusEffect;
+
+        _audioSource.pitch = Random.Range(0.5f, 1.5f);
+        _audioSource.PlayOneShot(_poisonAudio);
         
         yield return new WaitForSeconds(1f);
         
