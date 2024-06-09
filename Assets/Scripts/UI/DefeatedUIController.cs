@@ -26,7 +26,7 @@ public class DefeatedUIController : UIControllerBase
         _audioSource = GetComponents<AudioSource>()[1];
         OnButtonHovered(true, false);
     }
-
+    
     private IEnumerator ColourChangeCoroutine()
     {
         var grey = new Color(_unselectedColour.r/2, _unselectedColour.g/2, _unselectedColour.b/2, 1);

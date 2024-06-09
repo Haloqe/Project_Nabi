@@ -83,20 +83,32 @@ public class GameManager : Singleton<GameManager>
             yield return null;
         }
     }
-    
+
+    public bool hasGameLoadEnded;
     private void PostLoadInGame()
     {
         if (ActiveScene == ESceneType.CombatMap || ActiveScene == ESceneType.DebugCombatMap)
         {
-            GameEvents.InGameFirstLoadStarted.Invoke();
-            if (!IsFirstRun) GameEvents.CombatSceneChanged.Invoke();
+            if (IsFirstRun) GameEvents.InGameFirstLoadStarted.Invoke();
+            else GameEvents.CombatSceneChanged.Invoke();
         }
         
         // Generate new map
         if (ActiveScene == ESceneType.CombatMap)
         {
+            hasGameLoadEnded = false;
             LevelManager.Instance.Generate();
         }
+        else
+        {
+            hasGameLoadEnded = true;
+        }
+        StartCoroutine(PostLoadInGameCoroutine());
+    }
+
+    private IEnumerator PostLoadInGameCoroutine()
+    {
+        yield return new WaitUntil(() => hasGameLoadEnded);
         GameEvents.MapLoaded.Invoke();
         
         // If not first run, reset variables
@@ -104,17 +116,27 @@ public class GameManager : Singleton<GameManager>
 
         // When all set, spawn player 
         LevelManager.Instance.SpawnPlayer();
-        PlayerAttackManager.Instance.InitInGameVariables();
-        _player = PlayerController.Instance;
+        //StartCoroutine(PlayerSpawnCoroutine());
         
-        // End loading
+        _player = PlayerController.Instance;
         GameEvents.GameLoadEnded.Invoke();
         if (ActiveScene == ESceneType.Boss) GameEvents.CombatSceneChanged.Invoke();
     }
+
+    // private IEnumerator PlayerSpawnCoroutine()
+    // {
+    //     yield return new WaitUntil(() => _playerInitialised);
+    //     
+    //     // End loading
+    //     _player = PlayerController.Instance;
+    //     GameEvents.GameLoadEnded.Invoke();
+    //     if (ActiveScene == ESceneType.Boss) GameEvents.CombatSceneChanged.Invoke();
+    // }
     
     public void LoadMainMenu()
     {
         _uiManager.HideAllInGameUI();
+        if (_player != null) _player.gameObject.SetActive(false);
         SceneManager.LoadScene("Scenes/MainMenu");
     }
 

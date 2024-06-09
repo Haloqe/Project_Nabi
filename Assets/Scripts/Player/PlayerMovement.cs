@@ -37,10 +37,6 @@ public class PlayerMovement : MonoBehaviour
     private float _jumpBufferTimeCounter;
     public float UpwardsGravityScale { get; private set; }
     public float DownwardsGravityScale { get; private set; }
-
-    // climbing
-    public bool IsClimbing { get; private set; }
-    private bool _isTouchingClimbable;
     
     // attack
     private bool _isAttacking;
@@ -118,7 +114,7 @@ public class PlayerMovement : MonoBehaviour
     private void FixedUpdate()
     {
         // Disable extra movement if is rooted, dashing, or area-attacking
-        if (IsRooted || isDashing || isAreaAttacking || IsClimbing) return;
+        if (IsRooted || isDashing || isAreaAttacking) return;
 
         // Movement-driven velocity
         _rigidbody2D.velocity = new Vector2((_moveDirection * MoveSpeed * moveSpeedMultiplier) / Time.timeScale, _rigidbody2D.velocity.y);
@@ -344,9 +340,7 @@ public class PlayerMovement : MonoBehaviour
     }
     
     public void ResetEnteredGroundCount() => _enteredGroundCount = 0;
-
-
-    private int climbableEnterCount = 0;
+    
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (!other.CompareTag("Ground")) return;

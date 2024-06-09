@@ -1,7 +1,9 @@
 using System;
+using System.Collections;
 using Cinemachine;
 using System.Collections.Generic;
 using System.Linq;
+using Pathfinding;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -40,6 +42,11 @@ public class LevelManager : Singleton<LevelManager>
     private List<ClockworkSpawner[]> _clockworkSpawnersByRoom;
     [SerializeField] [NamedArray(typeof(EFlowerType))] private GameObject[] flowerPrefabs;
     private List<Vector3> _flowerSpawners;
+    private List<HiddenPortal> _hiddenPortalSpawners;
+    
+    // A Star
+    private bool _aStarScanEnded;
+    private bool _levelGenerationEnded;
     
     // Secret Rooms
     private List<HiddenRoom>[] _hiddenRoomsByLevel;
@@ -56,7 +63,6 @@ public class LevelManager : Singleton<LevelManager>
         _maxHeight = 2000;
         _maxWidth = 2000;
         _superGrid = new ECellType[_maxHeight, _maxWidth];
-        _flowerSpawners = new List<Vector3>();
         _corridors = new[]
         {
             new List<Vector3Int>(), new List<Vector3Int>(),
@@ -75,6 +81,10 @@ public class LevelManager : Singleton<LevelManager>
         };
         _generatedRooms = new List<GameObject>();
 
+        // Spawners
+        _flowerSpawners = new List<Vector3>();
+        _hiddenPortalSpawners = new List<HiddenPortal>();
+        
         InitialiseRooms();
         GenerateLevelGraph();
     }
@@ -87,6 +97,7 @@ public class LevelManager : Singleton<LevelManager>
         _corridors[1].Clear();
         _generatedRooms.Clear();
         _flowerSpawners.Clear();
+        _hiddenPortalSpawners.Clear();
         
         // Find game objects
         Transform root = GameObject.Find("SuperTilemaps").transform;
@@ -97,8 +108,9 @@ public class LevelManager : Singleton<LevelManager>
         _metaSpawnPoint = GameObject.FindWithTag("PlayerStart_Meta").transform.position;
         
         // Level generation
+        _levelGenerationEnded = false;
+        _aStarScanEnded = false;
         GenerateLevel();
-        PostProcessLevel();
     }
 
     // TEMP
@@ -174,8 +186,11 @@ public class LevelManager : Singleton<LevelManager>
                 toVisit.Push(new SRoomInfo(roomInfo.RoomID, nextRoomID));
             }
         }
-        
         CombatSpawnPoint = _generatedRooms[0].transform.Find("PlayerStart");
+        Debug.AssertFormat(CombatSpawnPoint != null, "Player spawn point is not set in the entrance room. Please add the prefab '/Prefabs/Player/PlayerStart' to the room prefab.");
+        
+        _levelGenerationEnded = true;
+        StartCoroutine(LevelGenerationCoroutine());
     }
 
     private bool PlaceRoom(int prevRoomID, int currRoomID)
@@ -518,18 +533,14 @@ public class LevelManager : Singleton<LevelManager>
         // Draw the wall layer in the main tilemap layer
         var roomWallTilemap = roomObj.GetComponent<RoomBase>().Tilemaps[(int)ETilemapType.Wall];
         roomWallTilemap.GetComponent<TilemapRenderer>().enabled = false;
-
         Vector3Int doorLocalPos = newDoor.RangeLocalBLPosition;
         BoundsInt localBounds = roomWallTilemap.cellBounds;
         BoundsInt worldBounds = localBounds;
         worldBounds.SetMinMax(newDoor.DoorWorldBLPosition - doorLocalPos + localBounds.min, newDoor.DoorWorldBLPosition - doorLocalPos + localBounds.max);
         _superWallTilemap.SetTilesBlock(worldBounds, roomWallTilemap.GetTilesBlock(localBounds));
 
-        // Add corridor to the list except for the first room (entrance)
         if (newRoom.RoomType != ERoomType.Entrance)
         {
-            //_corridors[(int)door.ConnectionType].Add(doorWorldPos);
-            
             // Remove wall tiles located at the door position
             for (int offset = 0; offset < newDoor.DoorSizeReal; offset++)
             {
@@ -543,6 +554,7 @@ public class LevelManager : Singleton<LevelManager>
         // Save spawners
         _clockworkSpawnersByRoom.Add(roomObj.transform.GetComponentsInChildren<ClockworkSpawner>());
         _flowerSpawners.Add(roomObj.transform.Find("FlowerSpawner").transform.position);
+        _hiddenPortalSpawners.AddRange(roomObj.transform.GetComponentsInChildren<HiddenPortal>());
 
         // Return instantiated room game object
         return roomObj;
@@ -554,7 +566,9 @@ public class LevelManager : Singleton<LevelManager>
         GenerateMinimap();
         SetClockworkSpawners();
         SetFlowerSpawners();
+        SetHiddenPortalSpawners();
         SetHiddenRooms();
+        SetAStarGrid();
     }
     
     private void SetClockworkSpawners()
@@ -630,8 +644,6 @@ public class LevelManager : Singleton<LevelManager>
     // Determine where to spawn flowers
     private void SetFlowerSpawners()
     {
-        if (_flowerSpawners.Count == 0) return;
-        
         // Randomly select spawn positions
         List<Vector3> flowerSpawnPointsUsed = new List<Vector3>();
         List<Vector3> flowerSpawnPointsNotUsed = new List<Vector3>();
@@ -652,6 +664,7 @@ public class LevelManager : Singleton<LevelManager>
         int numRooms = _generatedRooms.Count;
         int minFlowersCount = numRooms / 3 - 2;
         int maxFlowersCount = numRooms / 3 + 2;
+        Debug.AssertFormat(_flowerSpawners.Count >= minFlowersCount, "Not enough flower spawners added to the templates.");
         
         // Exceeded the upper limit?
         while (flowerSpawnPointsUsed.Count > maxFlowersCount)
@@ -675,6 +688,121 @@ public class LevelManager : Singleton<LevelManager>
         }
     }
 
+    private void SetHiddenPortalSpawners()
+    {
+        if (_hiddenPortalSpawners.Count == 0) return;
+        
+        // Randomly select spawn positions
+        List<HiddenPortal> portalSpawnersUsed = new List<HiddenPortal>();
+        List<HiddenPortal> portalSpawnersNotUsed = new List<HiddenPortal>();
+        foreach (var hiddenPortal in _hiddenPortalSpawners)
+        {
+            if (hiddenPortal.ShouldSpawn())
+            {
+                portalSpawnersUsed.Add(hiddenPortal);
+            }
+            else
+            {
+                portalSpawnersNotUsed.Add(hiddenPortal);
+            }
+        }
+        
+        // Check count limit
+        int minPortalsCount = 3;
+        int maxPortalsCount = 4;
+        Debug.AssertFormat(_hiddenPortalSpawners.Count >= minPortalsCount, "Not enough portal spawners added to the templates.");
+        
+        // Exceeded the upper limit?
+        while (portalSpawnersUsed.Count > maxPortalsCount)
+        {
+            // Remove a random portal based on spawn chance
+            HiddenPortal portalToRemove = WeightedRandomPortalSelection(portalSpawnersUsed);
+            portalSpawnersUsed.Remove(portalToRemove);
+            portalSpawnersNotUsed.Add(portalToRemove);
+        }
+
+        // Below the lower limit?
+        while (portalSpawnersUsed.Count < minPortalsCount)
+        {
+            // Add a random portal based on spawn chance
+            HiddenPortal portalToAdd = WeightedRandomPortalSelection(portalSpawnersNotUsed);
+            portalSpawnersNotUsed.Remove(portalToAdd);
+            portalSpawnersUsed.Add(portalToAdd);
+        }
+        
+        // Deactivate unused portals
+        foreach (var unusedPortal in portalSpawnersNotUsed)
+        {
+            unusedPortal.gameObject.SetActive(false);
+        }
+    }
+
+    // Weighted random selection function
+    private HiddenPortal WeightedRandomPortalSelection(List<HiddenPortal> portals)
+    {
+        // Calculate total spawn chance
+        float totalSpawnChance = portals.Sum(portal => portal.SpawnChance);
+
+        // Generate a random number between 0 and total spawn chance
+        float randomNumber = Random.Range(0, totalSpawnChance);
+
+        // Determine which portal to select
+        float cumulative = 0;
+        foreach (var portal in portals)
+        {
+            cumulative += portal.SpawnChance;
+            if (randomNumber <= cumulative)
+            {
+                // Return the selected portal
+                return portal;
+            }
+        }
+
+        return null; // This should never happen if the spawn chances are set up correctly
+    }
+
+    private void TempFunction(AstarPath script)
+    {
+        _aStarScanEnded = true;
+    }
+    
+    private void SetAStarGrid()
+    {
+        AstarData data = AstarPath.active.data;
+        GridGraph gridGraph = data.AddGraph(typeof(GridGraph)) as GridGraph;
+        
+        // Set properties
+        gridGraph.is2D = true;
+        gridGraph.collision.use2D = true;
+        gridGraph.collision.mask = LayerMask.GetMask("Platform");
+        
+        // Set bounds
+        _superWallTilemap.CompressBounds();
+        var wallBounds = _superWallTilemap.cellBounds;
+        gridGraph.center = wallBounds.center;
+        gridGraph.SetDimensions(wallBounds.size.x * 2, wallBounds.size.y * 2, nodeSize:0.5f);
+        
+        // Wait for the scan to end
+        _aStarScanEnded = false;
+        AstarPath.OnLatePostScan += TempFunction;
+        AstarPath.active.Scan();
+        StartCoroutine(PostProcessCoroutine());
+    }
+
+    private IEnumerator LevelGenerationCoroutine()
+    {
+        yield return new WaitUntil(() => _levelGenerationEnded);
+        PostProcessLevel();
+    }
+    
+    private IEnumerator PostProcessCoroutine()
+    {
+        Debug.Log("Waiting for astar to be scanned");
+        yield return new WaitUntil(() => _aStarScanEnded);
+        Debug.Log("Astar scanned");
+        GameManager.Instance.hasGameLoadEnded = true;
+    }
+    
     //  Find all hidden rooms and classify by levels
     private void SetHiddenRooms()
     {
@@ -780,6 +908,7 @@ public class LevelManager : Singleton<LevelManager>
         // Set camera follow target
         GameObject.Find("Virtual Camera").GetComponent<CinemachineVirtualCamera>().Follow = playerObject;
         PlayerEvents.Spawned.Invoke();
+        Debug.Log("Spawn Player End");
     }
 
     private void GenerateMinimap()

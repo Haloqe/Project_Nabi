@@ -53,17 +53,19 @@ public class PlayerTensionController : MonoBehaviour
         _fillRecoveryColour = new Color(0.3301887f, 0.3301887f, 0.3301887f, 1f);
         _overloadedColour = new Color(0.83f, 0, 0, 1);
         _slowedTimeScale = 0.5f;
+        PlayerEvents.Spawned += Initialise;
         PlayerEvents.StartResurrect += OnPlayerDefeated;
         PlayerEvents.Defeated += OnPlayerDefeated;
     }
 
     private void OnDestroy()
     {
+        PlayerEvents.Spawned -= Initialise;
         PlayerEvents.StartResurrect -= OnPlayerDefeated;
         PlayerEvents.Defeated -= OnPlayerDefeated;
     }
 
-    private void Start()
+    private void Initialise()
     {
         _enemyManager = EnemyManager.Instance;
         _player = PlayerController.Instance;
@@ -80,8 +82,8 @@ public class PlayerTensionController : MonoBehaviour
         _tensionGaugeOutline.effectColor = _fillNormalColour;
         _tensionGaugeText.color = Color.white;
         _curArborDescriptionUI = arborDescriptionUIs[(int)EArborType.Default];
-        ChangeArbor(EArborType.Default);
         ResetTension();
+        ChangeArbor(EArborType.Default);
         SetTensionState(ETensionState.Innate);
     }
 
@@ -109,7 +111,7 @@ public class PlayerTensionController : MonoBehaviour
     public void ChangeArbor(EArborType newArborType)
     {
         // Remove old arbor
-        if (_arborType != EArborType.Default)
+        if (_arborType != EArborType.Default && newArborType != EArborType.Default)
         {
             var oldArbor = Instantiate(_enemyManager.GetArborOfType(_arborType), _player.transform.position, Quaternion.identity);
             oldArbor.GetComponent<Arbor>().tensionController = this;

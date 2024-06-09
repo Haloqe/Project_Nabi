@@ -13,15 +13,17 @@ public class GoldUI : MonoBehaviour
     {
         _goldText = GetComponentInChildren<TextMeshProUGUI>();
         _goldIconAnimator = GetComponentInChildren<Animator>();
+        PlayerEvents.Spawned += Initialise;
         PlayerEvents.GoldChanged += OnPlayerGoldChanged;
     }
 
     private void OnDestroy()
     {
+        PlayerEvents.Spawned -= Initialise;
         PlayerEvents.GoldChanged -= OnPlayerGoldChanged;
     }
 
-    private void Start()
+    private void Initialise()
     {
         _playerInventory = PlayerController.Instance.playerInventory;
         _goldText.text = _playerInventory.Gold.ToString(CultureInfo.CurrentCulture);

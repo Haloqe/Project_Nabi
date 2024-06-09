@@ -51,8 +51,13 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     private float _damageCooltime = 0.3f;
     private static readonly int IsAttacking = Animator.StringToHash("IsAttacking");
     private static readonly int AttackSpeed = Animator.StringToHash("AttackSpeed");
-    
-    
+
+
+    private void Awake()
+    {
+        PlayerEvents.Defeated += OnPlayerDefeated;
+    }
+
     protected virtual void Start()
     {
         _uiManager = UIManager.Instance;
@@ -68,15 +73,14 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         _slowRemainingTimes = new SortedDictionary<float, float> (
             Comparer<float>.Create((x, y) => y.CompareTo(x))
         );
+        
         Pattern = GetComponent<EnemyPattern>();
-
-        DamageInfo = new AttackInfo();
-        DamageInfo.Damage = new DamageInfo((EDamageType)Enum.Parse(typeof(EDamageType), EnemyData.DamageType), EnemyData.DefaultDamage);
-        PlayerEvents.Defeated += OnPlayerDefeated;
-
         Target = GameObject.FindWithTag("Player");
         _targetDamageable = Target.gameObject.GetComponent<IDamageable>();
-        Pattern.Init();
+        Pattern.Init();   
+        
+        DamageInfo = new AttackInfo();
+        DamageInfo.Damage = new DamageInfo((EDamageType)Enum.Parse(typeof(EDamageType), EnemyData.DamageType), EnemyData.DefaultDamage);
 
         Health = EnemyData.MaxHealth;
         _armour = EnemyData.DefaultArmour;
@@ -105,6 +109,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         if (_enemyManager != null) _enemyManager.RemoveEnemyFromSpawnedList(this);
     }
 
+    
     protected virtual void Update() 
     {
         UpdateRemainingStatusEffectTimes();

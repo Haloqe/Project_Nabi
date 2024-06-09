@@ -13,15 +13,17 @@ public class SoulShardUI : MonoBehaviour
     {
         _valueText = GetComponentInChildren<TextMeshProUGUI>();
         _iconAnimator = GetComponentInChildren<Animator>();
+        PlayerEvents.Spawned += Initialise;
         PlayerEvents.SoulShardChanged += OnPlayerSoulShardChanged;
     }
 
     private void OnDestroy()
     {
+        PlayerEvents.Spawned -= Initialise;
         PlayerEvents.SoulShardChanged -= OnPlayerSoulShardChanged;
     }
 
-    private void Start()
+    private void Initialise()
     {
         _playerInventory = PlayerController.Instance.playerInventory;
         _valueText.text = _playerInventory.SoulShard.ToString(CultureInfo.CurrentCulture);

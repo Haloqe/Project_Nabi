@@ -50,7 +50,6 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         // Get components
         AudioSource = GetComponent<AudioSource>();
         _butterflyPrefab = Resources.Load("Prefabs/Player/SpawnObjects/Butterfly").GameObject();
-        _dashUIOverlay = PlayerAttackManager.Instance.GetAttackOverlay(ELegacyType.Dash);
         _playerController = PlayerController.Instance;
         _uiManager = UIManager.Instance;
         _playerMovement = _playerController.playerMovement;
@@ -67,7 +66,6 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
             attacks.GetComponent<AttackBase_Melee>(), attacks.GetComponent<AttackBase_Ranged>(),
             attacks.GetComponent<AttackBase_Dash>(), attacks.GetComponent<AttackBase_Area>()
         };
-        _dashUIOverlay.fillAmount = 0.0f;
         IsAttackBufferAvailable = true;
         _currAttackIdx = -1;
         _bufferedAttackIdx = -1;
@@ -84,6 +82,12 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         playerInput.actions["Attack_Range"].performed += OnRangedAttack;
         playerInput.actions["Attack_Dash"].performed += OnDashAttack;
         playerInput.actions["Attack_Area"].performed += OnAreaAttack;
+    }
+
+    public void AssignDashOverlay(Image overlay)
+    {
+        _dashUIOverlay = overlay;
+        _dashUIOverlay.fillAmount = 0;
     }
 
     private void OnDestroy()

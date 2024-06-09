@@ -35,6 +35,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     // UI related
     private Sprite[] _passiveIconSpriteSheet;
     private Sprite[] _activeIconSpriteSheet;
+    private Sprite[] _activeLegacyDefaultSprites = new Sprite[4];
     private Image[] _activeLegacyIcons = new Image[4];
     private Image[] _activeLegacyOverlays = new Image[4];
     private Transform _passiveLegacyGroup;
@@ -49,6 +50,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     {
         base.Awake();
         if (IsToBeDestroyed) return;
+        
         _passiveIconSpriteSheet = Resources.LoadAll<Sprite>("Sprites/Icons/Abilities/PlayerPassiveSpritesheet");
         _activeIconSpriteSheet = Resources.LoadAll<Sprite>("Sprites/Icons/Abilities/PlayerActiveSpriteSheet");
         _collectedLegacyIDs = new HashSet<int>();
@@ -57,37 +59,71 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         _boundActiveLegacyIDs = new int[] {-1,-1,-1};
         _passiveLegacySlotPrefab = Utility.LoadGameObjectFromPath("Prefabs/UI/InGame/PassiveLegacySlot");
         ClockworkPrefab = Resources.Load("Prefabs/Interact/Clockwork").GameObject();
-        GameEvents.GameLoadEnded += OnGameLoadEnded;
-
+        
+        GameEvents.GameLoadEnded += InitInGameVariables;
+        GameEvents.Restarted += Reset;
         Init();
     }
 
-    private void OnGameLoadEnded()
-    {
-        _collectedLegacyIDs.Clear();
-        _collectedPassiveIDs.Clear();
-        _collectedLegacyPreservations.Clear();
-        _boundActiveLegacyIDs = new int[] {-1,-1,-1};
-        _slotDictionary.Clear();
-    }
-
+    // Should be called after player spawned, other managers initialised
+    // Only once when ui is initialised
     public void InitInGameVariables()
     {
-        _playerController = PlayerController.Instance;
-        _playerInput = FindObjectOfType<PlayerInput>();
-        _playerDamageDealer = FindObjectOfType<PlayerDamageDealer>();
-
-        // UI 
-        var combatCanvas = UIManager.Instance.GetInGameCombatUI();
-        var activeLegacyGroup = combatCanvas.transform.Find("ActiveLayoutGroup").transform;
-        for (int i = 0; i < 4; i++)
+        var gameManager = GameManager.Instance;
+        if (gameManager.IsFirstRun && gameManager.ActiveScene is ESceneType.CombatMap or ESceneType.DebugCombatMap)
         {
-             var slot = activeLegacyGroup.Find("Slot_" + i);
-             _activeLegacyIcons[i] = slot.Find("AbilityIcon").GetComponent<Image>();
-             _activeLegacyOverlays[i] = slot.Find("Overlay").GetComponent<Image>();
-             _activeLegacySlots[i] = slot.AddComponent<LegacySlotUI>();
+            // UI
+            var combatCanvas = UIManager.Instance.GetInGameCombatUI();
+            var activeLegacyGroup = combatCanvas.transform.Find("ActiveLayoutGroup").transform;
+            for (int i = 0; i < 4; i++)
+            {
+                var slot = activeLegacyGroup.Find("Slot_" + i);
+                _activeLegacySlots[i] = slot.AddComponent<LegacySlotUI>();
+                _activeLegacyIcons[i] = slot.Find("AbilityIcon").GetComponent<Image>();
+                _activeLegacyOverlays[i] = slot.Find("Overlay").GetComponent<Image>();
+                _activeLegacyDefaultSprites[i] = _activeLegacyIcons[i].sprite;
+            }
+            _passiveLegacyGroup = combatCanvas.transform.Find("PassiveLayoutGroup").transform;
+            
+            _playerController = PlayerController.Instance;
+            _playerInput = FindObjectOfType<PlayerInput>();
+            _playerDamageDealer = FindObjectOfType<PlayerDamageDealer>();
+            _playerDamageDealer.AssignDashOverlay(GetAttackOverlay(ELegacyType.Dash));
         }
-        _passiveLegacyGroup = combatCanvas.transform.Find("PassiveLayoutGroup").transform;
+    }
+
+    private void Reset()
+    {
+        var gameManager = GameManager.Instance;
+        if (gameManager.ActiveScene is ESceneType.Boss) return;
+        
+        // Destroy passive slots
+        foreach (var slotPair in _slotDictionary)
+        {
+            if (_collectedPassiveIDs.Contains(slotPair.Key))
+                Destroy(slotPair.Value.gameObject);
+        }
+        _slotDictionary.Clear();
+        
+        // Clear bound data
+        _collectedLegacyIDs.Clear();
+        _collectedLegacyPreservations.Clear();
+        _collectedPassiveIDs.Clear();
+        _boundActiveLegacyIDs = new int[] {-1,-1,-1};
+        
+        // Initialise UI
+        foreach (var activeLegacySlot in _activeLegacySlots)
+        {
+            activeLegacySlot.ResetToDefault();
+        }
+        foreach (Transform passiveLegacySlot in _passiveLegacyGroup)
+        {
+            Destroy(passiveLegacySlot.gameObject);
+        }
+        for (int i = 0; i < 3; i++)
+        {
+            _activeLegacyIcons[i].sprite = _activeLegacyDefaultSprites[i];
+        }
     }
     
     private void Init()

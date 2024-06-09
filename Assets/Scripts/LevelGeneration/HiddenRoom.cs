@@ -1,13 +1,16 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using Unity.Mathematics;
 using UnityEngine;
 
 public class HiddenRoom : MonoBehaviour
 {
+    private UIManager _uiManager;
     public string roomName;
     public int roomLevel; // 0 - Lowest, 1 - Medium, 2 - Highest
-    public float enemyKillTimeLimit;
+    public int enemyKillTimeLimit;
     public GameObject chestPrefab;
     public Transform chestPosition;
     
@@ -16,6 +19,9 @@ public class HiddenRoom : MonoBehaviour
     private Chest _chest;
     private EnemySpawner _enemySpawner;
     private List<GameObject> _spawnedEnemies;
+    
+    private GameObject _timerUI;
+    private TextMeshProUGUI _timerText;
 
     private void Awake()
     {
@@ -25,6 +31,11 @@ public class HiddenRoom : MonoBehaviour
         _returnPortal.connectedHiddenRoom = this;
     }
 
+    private void Start()
+    {
+        _uiManager = UIManager.Instance;
+    }
+
     public void OnEnter(Vector3 previousPos)
     {
         _chest = Instantiate(chestPrefab, chestPosition.position, quaternion.identity).GetComponent<Chest>();
@@ -32,7 +43,7 @@ public class HiddenRoom : MonoBehaviour
         _returnPortal.SetDestination(previousPos);
         _chest.ResetReward(roomLevel);
         string desc = enemyKillTimeLimit > 0 ? $"시간 제한: {enemyKillTimeLimit}초" : string.Empty;
-        UIManager.Instance.DisplayRoomGuideUI(roomName, desc);
+        _uiManager.DisplayRoomGuideUI(roomName, desc);
         
         if (roomLevel is 0 or 1)
         {
@@ -49,6 +60,7 @@ public class HiddenRoom : MonoBehaviour
 
     public void OnExit()
     {
+        Destroy(_timerUI);
         InGameEvents.EnemySlayed -= CheckEnemiesAllKilled;
         if (_spawnedEnemies != null && _spawnedEnemies.Count != 0)
         {
@@ -67,11 +79,24 @@ public class HiddenRoom : MonoBehaviour
 
     private IEnumerator EnemyKillTimeLimitCoroutine()
     {
-        yield return new WaitForSecondsRealtime(enemyKillTimeLimit + 0.1f);
+        // Initialise UI
+        _timerUI = _uiManager.DisplayTimerUI();
+        _timerText = _timerUI.GetComponentInChildren<TextMeshProUGUI>();
+        
+        int counter = enemyKillTimeLimit;
+        while (counter > 0)
+        {
+            _timerText.text = counter.ToString("D2");
+            if (counter <= 10) _timerText.color = Color.red;
+            yield return new WaitForSecondsRealtime(1f);
+            counter--;
+        }
+        yield return new WaitForSecondsRealtime(0.1f);
+        
         var player = PlayerController.Instance;
         player.transform.position = _exitDestination;
         player.EnablePlayerInput();
-        UIManager.Instance.EnableMap();
+        _uiManager.EnableMap();
         OnExit();
     }
 
@@ -100,6 +125,8 @@ public class HiddenRoom : MonoBehaviour
         if (_spawnedEnemies.Count == 0)
         {
             StopCoroutine(nameof(EnemyKillTimeLimitCoroutine));
+            _timerText.text = ":)";
+            _timerText.color = Color.white;
             _chest.gameObject.SetActive(true);
             _returnPortal.gameObject.SetActive(true);
         }

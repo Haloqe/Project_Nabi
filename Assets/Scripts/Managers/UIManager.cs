@@ -36,6 +36,7 @@ public class UIManager : Singleton<UIManager>
     private GameObject _metaUpgradeUIPrefab;
     private GameObject _roomGuidePrefab;
     private GameObject _settingsPrefab;
+    private GameObject _timerPrefab;
 
     // UI Instantiated Objects
     private GameObject _mainMenuUI;
@@ -203,6 +204,7 @@ public class UIManager : Singleton<UIManager>
         _tensionOverlay.gameObject.SetActive(false);
         _zoomedMap.SetActive(false);
         _loadingScreenUI.SetActive(false);
+        _inGameCombatUI.SetActive(true);
         _flowerUIDisplayRemainingTime = 0;
 
         ESceneType currSceneType = GameManager.Instance.ActiveScene;
@@ -221,6 +223,7 @@ public class UIManager : Singleton<UIManager>
         
         OnPlayerHPChanged(0,1,1);
         UpdateDarkGaugeUI(0);
+        UsePlayerControl();
     }
 
     private void OnCombatSceneChanged()
@@ -363,6 +366,7 @@ public class UIManager : Singleton<UIManager>
         _bookPrefab             = Utility.LoadGameObjectFromPath(path + "InGame/Book/BookCanvas");
         _metaUpgradeUIPrefab    = Utility.LoadGameObjectFromPath(path + "InGame/MetaUpgradeCanvas");
         _roomGuidePrefab        = Utility.LoadGameObjectFromPath(path + "InGame/RoomGuideUI");
+        _timerPrefab            = Utility.LoadGameObjectFromPath(path + "InGame/TimerUI");
         
         _warriorUIPrefabs = new GameObject[(int)EWarrior.MAX];
         for (int i = 0; i < (int)EWarrior.MAX; i++)
@@ -397,6 +401,8 @@ public class UIManager : Singleton<UIManager>
 
     private void OnPlayerSpawned()
     {
+        if (!GameManager.Instance.IsFirstRun) return;
+        Debug.Log("Player Spawned");
         _playerAttackManager = PlayerAttackManager.Instance;
         _playerController = PlayerController.Instance;
         _playerHPSlider.value = 1;
@@ -668,5 +674,10 @@ public class UIManager : Singleton<UIManager>
             UIIAMap.LoadBindingOverridesFromJson(uiRebinds);
         if (!string.IsNullOrEmpty(playerRebinds))
             PlayerIAMap.LoadBindingOverridesFromJson(playerRebinds);
+    }
+
+    public GameObject DisplayTimerUI()
+    {
+        return Instantiate(_timerPrefab, Vector3.zero, Quaternion.identity);
     }
 }

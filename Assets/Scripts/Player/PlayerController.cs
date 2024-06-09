@@ -138,7 +138,8 @@ public class PlayerController : Singleton<PlayerController>
     private void OnRestarted()
     {
         StopAllCoroutines();
-
+        gameObject.SetActive(true);
+        
         // Initialise animator
         _animator.Rebind();
         _animator.Update(0f);
@@ -157,11 +158,11 @@ public class PlayerController : Singleton<PlayerController>
         EuphoriaEnemyGoldDropBuffPreserv = ELegacyPreservation.MAX;
         EuphoriaEcstasyUpgradePreserv = ELegacyPreservation.MAX;
         SommerHypHallucinationPreserv = ELegacyPreservation.MAX;
-        TurbelaMaxButterflyPreserv = ELegacyPreservation.MAX;
-        TurbelaDoubleSpawnPreserv = ELegacyPreservation.MAX;
-        TurbelaButterflyCritPreserv = ELegacyPreservation.MAX;
-        NightShadeFastChasePreserv = ELegacyPreservation.MAX;
         NightShadeShadeBonusPreserv = ELegacyPreservation.MAX;
+        TurbelaButterflyCritPreserv = ELegacyPreservation.MAX;
+        TurbelaMaxButterflyPreserv = ELegacyPreservation.MAX;
+        NightShadeFastChasePreserv = ELegacyPreservation.MAX;
+        TurbelaDoubleSpawnPreserv = ELegacyPreservation.MAX;
 
         // Reset ecstasy effect
         if (_ecstasyAffected != null)
@@ -173,10 +174,10 @@ public class PlayerController : Singleton<PlayerController>
         }
 
         // Initialise NightShade data
-        _shadowHosts.Clear();
-        nightShadeCollider.SetActive(false);
         IsMapEnabled = true;
+        _shadowHosts.Clear();
         _cumulativeMoveDirection = 0;
+        nightShadeCollider.SetActive(false);
     }
 
     private void OnPlayerStartResurrect()
@@ -241,20 +242,6 @@ public class PlayerController : Singleton<PlayerController>
         //     playerDamageReceiver.ChangeHealthByAmount(-1000);
         // }
         // count++;
-    }
-
-    private void MakeAStarGraph(int width, int depth, Vector3 center)
-    {
-        AstarData data = AstarPath.active.data;
-        GridGraph gg = data.AddGraph(typeof(GridGraph)) as GridGraph;
-        
-        float nodeSize = 0.5f;
-        gg.is2D = true;
-        gg.collision.use2D = true;
-        gg.collision.mask = LayerMask.GetMask("Platform");
-        gg.SetDimensions(width, depth, nodeSize);
-        
-        AstarPath.active.Scan();
     }
 
     private void OnValueChanged(ECondition condition, float changeAmount)
