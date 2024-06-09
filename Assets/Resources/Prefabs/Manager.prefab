@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 1152217624153404905}
   - component: {fileID: 135498183842000251}
   - component: {fileID: 1024742130193798094}
+  - component: {fileID: 7353101282215211239}
   m_Layer: 0
   m_Name: Manager
   m_TagString: Untagged
@@ -58,6 +59,12 @@ MonoBehaviour:
   - {fileID: 1001968923583309654, guid: 479ea3d6b1ab5fa4995b599e708c7ee5, type: 3}
   - {fileID: 5788937377512555165, guid: ddd820f2c8f76bf49baa5b0342ae1cca, type: 3}
   - {fileID: 3580925480644087038, guid: 0bb1742e410f7174cb8253e1c36f54c9, type: 3}
+  DeathAudioClips:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 8300000, guid: 2a6ecbd095e8940d78f25fd67b2ef67f, type: 3}
+  - {fileID: 8300000, guid: 119328952ba3b624d8964e6e2282f91a, type: 3}
+  - {fileID: 0}
 --- !u!114 &1161937486761566454
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -121,6 +128,12 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 88ff637b212c51a4b862b949af68c542, type: 2}
   - {fileID: 11400000, guid: 09c85ec34e5eaea45b7152685f312563, type: 2}
   clockworkLimit: 5
+  flowerPrefabs:
+  - {fileID: 5281415725582983996, guid: 50c98ad063874454d92e2d3ee8669fd2, type: 3}
+  - {fileID: 5281415725582983996, guid: 68423a81195f6cd449c0cb4e351dc61b, type: 3}
+  - {fileID: 4594218678600250604, guid: 3377156f81d825d4ca8da72d90d82402, type: 3}
+  - {fileID: 8898116619863434089, guid: c4e5e8c15459d6740bafe022fb0d9ab1, type: 3}
+  - {fileID: 6074377439898902056, guid: 1fa32443783f1574fb0b9cfec8df916a, type: 3}
 --- !u!114 &1152217624153404905
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -183,3 +196,99 @@ MonoBehaviour:
   mainMenuLoop: {fileID: 8300000, guid: 1adc3a686bdc425468e1fd67126682fd, type: 3}
   bossBgmIntro: {fileID: 8300000, guid: 752cfecd63b545546a080e58d09f0b3a, type: 3}
   bossBgmLoop: {fileID: 8300000, guid: a889e7adf36e28241ad1781df9964671, type: 3}
+--- !u!82 &7353101282215211239
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6988485656588162118}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: -7107099666651558238, guid: 32080237cf9d4494b87e70ac32eb9f9d, type: 2}
+  m_audioClip: {fileID: 0}
+  m_PlayOnAwake: 0
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4

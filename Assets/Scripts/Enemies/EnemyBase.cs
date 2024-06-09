@@ -449,7 +449,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     public virtual void DealDamage(IDamageable target, AttackInfo damageInfo)
     {
         damageInfo.AttackerArmourPenetration = EnemyData.DefaultArmourPenetration;
-        target.TakeDamage(damageInfo.Clone(cloneDamage:true, cloneStatusEffect:false));
+        target.TakeDamage(damageInfo.Clone(cloneDamage:true, cloneStatusEffect:true));
     }
 
     // Received Damage Handling
@@ -530,8 +530,6 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
     private IEnumerator DamageCoroutine(DamageInfo damage)
     {
-        int damageTypeIdx = (int)damage.Type;
-        
         // One-shot damage
         if (damage.Duration == 0)
         {

@@ -41,10 +41,14 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
     // Legacy
     public ELegacyPreservation[] BindingSkillPreservations { private set; get; }
     private readonly static int AttackIndex = Animator.StringToHash("AttackIndex");
+    
+    // SFX
+    public AudioSource AudioSource { get; private set; }
 
     private void Start()
     {
         // Get components
+        AudioSource = GetComponent<AudioSource>();
         _butterflyPrefab = Resources.Load("Prefabs/Player/SpawnObjects/Butterfly").GameObject();
         _dashUIOverlay = PlayerAttackManager.Instance.GetAttackOverlay(ELegacyType.Dash);
         _playerController = PlayerController.Instance;

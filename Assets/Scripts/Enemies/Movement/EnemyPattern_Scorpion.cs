@@ -108,7 +108,6 @@ public class EnemyPattern_Scorpion : EnemyPattern
     private void Update()
     {
         if (_isShootingBullets) TrackPlayer();
-        Debug.Log("the angle is now: " + _shooterObject.transform.eulerAngles.z);
     }
     
     public override void EnableMovement()

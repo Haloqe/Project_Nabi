@@ -6,6 +6,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using Object = UnityEngine.Object;
+using Random = UnityEngine.Random;
 
 public class LevelManager : Singleton<LevelManager>
 { 
@@ -34,9 +35,11 @@ public class LevelManager : Singleton<LevelManager>
     private Vector3Int[] _connectedDoorOffsets;
     private Vector3Int[] _traverseDirections;
     
-    // Clockwork spawners
+    // Spawners
     [SerializeField] private int clockworkLimit = 10;
     private List<ClockworkSpawner[]> _clockworkSpawnersByRoom;
+    [SerializeField] [NamedArray(typeof(EFlowerType))] private GameObject[] flowerPrefabs;
+    private List<Vector3> _flowerSpawners;
     
     // Secret Rooms
     private List<HiddenRoom>[] _hiddenRoomsByLevel;
@@ -53,6 +56,7 @@ public class LevelManager : Singleton<LevelManager>
         _maxHeight = 2000;
         _maxWidth = 2000;
         _superGrid = new ECellType[_maxHeight, _maxWidth];
+        _flowerSpawners = new List<Vector3>();
         _corridors = new[]
         {
             new List<Vector3Int>(), new List<Vector3Int>(),
@@ -82,6 +86,7 @@ public class LevelManager : Singleton<LevelManager>
         _corridors[0].Clear();
         _corridors[1].Clear();
         _generatedRooms.Clear();
+        _flowerSpawners.Clear();
         
         // Find game objects
         Transform root = GameObject.Find("SuperTilemaps").transform;
@@ -535,8 +540,9 @@ public class LevelManager : Singleton<LevelManager>
             }
         }
         
-        // TODO: Save spawners
+        // Save spawners
         _clockworkSpawnersByRoom.Add(roomObj.transform.GetComponentsInChildren<ClockworkSpawner>());
+        _flowerSpawners.Add(roomObj.transform.Find("FlowerSpawner").transform.position);
 
         // Return instantiated room game object
         return roomObj;
@@ -544,9 +550,10 @@ public class LevelManager : Singleton<LevelManager>
 
     private void PostProcessLevel()
     {
-        //AddSurroundingWallTiles();
+        // AddSurroundingWallTiles();
         GenerateMinimap();
         SetClockworkSpawners();
+        SetFlowerSpawners();
         SetHiddenRooms();
     }
     
@@ -617,6 +624,54 @@ public class LevelManager : Singleton<LevelManager>
             {
                 Destroy(shuffledSpawners[i].gameObject);
             }
+        }
+    }
+    
+    // Determine where to spawn flowers
+    private void SetFlowerSpawners()
+    {
+        if (_flowerSpawners.Count == 0) return;
+        
+        // Randomly select spawn positions
+        List<Vector3> flowerSpawnPointsUsed = new List<Vector3>();
+        List<Vector3> flowerSpawnPointsNotUsed = new List<Vector3>();
+        foreach (var flowerSpawner in _flowerSpawners)
+        {
+            // 33% spawn
+            if (Random.value <= 0.33f)
+            {
+                flowerSpawnPointsUsed.Add(flowerSpawner);
+            }
+            else
+            {
+                flowerSpawnPointsNotUsed.Add(flowerSpawner);
+            }
+        }
+        
+        // Check count limit
+        int numRooms = _generatedRooms.Count;
+        int minFlowersCount = numRooms / 3 - 2;
+        int maxFlowersCount = numRooms / 3 + 2;
+        
+        // Exceeded the upper limit?
+        while (flowerSpawnPointsUsed.Count > maxFlowersCount)
+        {
+            flowerSpawnPointsUsed.RemoveAt(Random.Range(0, flowerSpawnPointsUsed.Count));
+        }
+        
+        // Below the lower limit?
+        while (flowerSpawnPointsUsed.Count < minFlowersCount)
+        {
+            int randIdx = Random.Range(0, flowerSpawnPointsNotUsed.Count);
+            Vector3 newlyAddedSpawnPoint = flowerSpawnPointsNotUsed[randIdx];
+            flowerSpawnPointsNotUsed.RemoveAt(randIdx);
+            flowerSpawnPointsUsed.Add(newlyAddedSpawnPoint);
+        }
+        
+        // Spawn flowers
+        foreach (Vector3 flowerSpawnPoint in flowerSpawnPointsUsed)
+        {
+            Instantiate(flowerPrefabs[Random.Range(0, (int)EFlowerType.MAX)], flowerSpawnPoint, Quaternion.identity);
         }
     }
 

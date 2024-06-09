@@ -30,6 +30,9 @@ public class AttackBase_Melee : AttackBase
     
     // Animator variables
     private readonly static int IsMeleeCombo = Animator.StringToHash("IsMeleeCombo");
+    
+    // SFX
+    public AudioClip[] meleeSounds;
 
     public override void Start()
     {
@@ -115,6 +118,7 @@ public class AttackBase_Melee : AttackBase
             _animator.SetBool(IsMeleeCombo, true);
             _attackPostDelay = _comboDelay;
             _comboStack = 0; // Reset combo stack
+            _damageDealer.AudioSource.PlayOneShot(meleeSounds[Random.Range(0, meleeSounds.Length)], volumeScale: 1.5f);
             comboPSRenderer.flip = dir < 0 ? Vector3.right : Vector3.zero;
             comboEffector.SetActive(true);
         }
@@ -124,8 +128,9 @@ public class AttackBase_Melee : AttackBase
             _animator.SetBool(IsMeleeCombo, false);
             _attackPostDelay = _baseDelay;
             basePSRenderer.flip = dir < 0 ? Vector3.right : Vector3.zero;
-            AudioSourceBase.pitch = Random.Range(0.85f, 1.08f);
             baseEffector.SetActive(true);
+            _damageDealer.AudioSource.PlayOneShot(meleeSounds[Random.Range(0, meleeSounds.Length)]);
+            // AudioSourceBase.pitch = Random.Range(0.85f, 1.03f);
             if (ActiveLegacy) ((Legacy_Melee)ActiveLegacy).OnAttack_Base();
         }      
 

@@ -38,6 +38,10 @@ public class PlayerMovement : MonoBehaviour
     public float UpwardsGravityScale { get; private set; }
     public float DownwardsGravityScale { get; private set; }
 
+    // climbing
+    public bool IsClimbing { get; private set; }
+    private bool _isTouchingClimbable;
+    
     // attack
     private bool _isAttacking;
     public bool isDashing;
@@ -114,7 +118,7 @@ public class PlayerMovement : MonoBehaviour
     private void FixedUpdate()
     {
         // Disable extra movement if is rooted, dashing, or area-attacking
-        if (IsRooted || isDashing || isAreaAttacking) return;
+        if (IsRooted || isDashing || isAreaAttacking || IsClimbing) return;
 
         // Movement-driven velocity
         _rigidbody2D.velocity = new Vector2((_moveDirection * MoveSpeed * moveSpeedMultiplier) / Time.timeScale, _rigidbody2D.velocity.y);
@@ -291,6 +295,8 @@ public class PlayerMovement : MonoBehaviour
     {
         // can the player jump?
         if (IsRooted) return;
+        
+        // Counter
         if (_coyoteTimeCounter < 0f && _jumpCounter >= 2 || isDashing || _isAttacking)
         {
             _jumpBufferTimeCounter = _jumpBufferTime;
@@ -338,13 +344,15 @@ public class PlayerMovement : MonoBehaviour
     }
     
     public void ResetEnteredGroundCount() => _enteredGroundCount = 0;
-    
+
+
+    private int climbableEnterCount = 0;
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (!other.CompareTag("Ground")) return;
         if (++_enteredGroundCount > 1) return;
         
-        // On the ground
+        // Ground
         _isJumping = false;
         _jumpCounter = 0;
         _coyoteTimeCounter = _coyoteTime;
@@ -361,6 +369,12 @@ public class PlayerMovement : MonoBehaviour
         
         // Not on the ground
         _isJumping = true;
+        StartCoroutine(JumpTriggerDelayCoroutine());
+    }
+
+    private IEnumerator JumpTriggerDelayCoroutine()
+    {
+        yield return new WaitForSecondsRealtime(0.2f);
         _animator.SetBool(IsJumping, _isJumping);
     }
 

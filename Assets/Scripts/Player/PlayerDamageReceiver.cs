@@ -106,11 +106,11 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     
     private void Update()
     {
-        UpdateStatusEffectTimes();
+        UpdateRemainingStatusEffectTimes();
     }
 
     //updates the remaining time of various status effects
-    private void UpdateStatusEffectTimes()
+    private void UpdateRemainingStatusEffectTimes()
     {
         float deltaTime = Time.unscaledDeltaTime;
         bool shouldCheckUpdateMovement = false;
@@ -420,7 +420,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
             }
 
             // handle other status effects
-            UpdateStatusEffectTime(statusEffect.Effect, statusEffect.Duration);
+            UpdateNewStatusEffectTime(statusEffect.Effect, statusEffect.Duration);
 
             switch (statusEffect.Effect)
             {
@@ -455,22 +455,22 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         }
     }
 
-    private void UpdateStatusEffectTime(EStatusEffect effect, float duration)
+    private void UpdateNewStatusEffectTime(EStatusEffect effect, float duration)
     {
-        if (duration == 0) return; // TODO to be handled later (장판형 유지스킬)
+        if (duration == 0) return; 
 
         int effectIdx = (int)effect;
         // apply new effect
         if (_effectRemainingTimes[effectIdx] == 0)
         {
             _playerController.SetVFXActive(effectIdx, true);
-            Debug.Log("New " + effect.ToString() + " time: " + duration.ToString("0.0000"));
+            Debug.Log("New " + effect + " time: " + duration.ToString("0.0000"));
         }
         // or increment effect time
         else
         {
             duration = Mathf.Clamp(duration - _effectRemainingTimes[effectIdx], 0, float.MaxValue);
-            Debug.Log("Previous " + effect.ToString() + " time: " + _effectRemainingTimes[effectIdx] + 
+            Debug.Log("Previous " + effect + " time: " + _effectRemainingTimes[effectIdx] + 
                 " Updated time: " + (_effectRemainingTimes[effectIdx] + duration).ToString("0.0000"));
         }
         _effectRemainingTimes[effectIdx] += duration;
