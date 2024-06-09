@@ -49,12 +49,15 @@ public class EnemyPattern_Scorpion : EnemyPattern
     private float _clawAttackGap = 3f;
     
     // sfx
+    [SerializeField] private AudioSource[] _audioSources;
     [SerializeField] private AudioClip _laserAudio;
     [SerializeField] private AudioClip _bulletAudio;
     [SerializeField] private AudioClip _clawSnapAudio;
     [SerializeField] private AudioClip _electricFieldAudio;
     [SerializeField] private AudioClip[] _groundPoundAudio;
+    [SerializeField] private AudioClip _clawAttackAudio;
     [SerializeField] private AudioClip _clawDragAudio;
+    [SerializeField] private AudioClip _clawBlinkAudio;
     
     private void Awake()
     {
@@ -104,11 +107,10 @@ public class EnemyPattern_Scorpion : EnemyPattern
         base.Init();
         StartCoroutine(ShootBullet());
     }
-    
+
     private void Update()
     {
         if (_isShootingBullets) TrackPlayer();
-        Debug.Log("the angle is now: " + _shooterObject.transform.eulerAngles.z);
     }
     
     public override void EnableMovement()
@@ -116,6 +118,13 @@ public class EnemyPattern_Scorpion : EnemyPattern
         IsRooted = false;
         EnableFlip();
         // ResetMoveSpeed();
+    }
+
+    private void PlayAudio(int audioSourceIdx, AudioClip audioClip, float pitchRange = 0f, float volume = 1f)
+    {
+        _audioSources[audioSourceIdx].pitch = Random.Range(1 - pitchRange, 1 + pitchRange);
+        _audioSources[audioSourceIdx].volume = volume;
+        _audioSources[audioSourceIdx].PlayOneShot(audioClip);
     }
     
     private IEnumerator Bounce(Rigidbody2D rb, float speed)
@@ -179,6 +188,7 @@ public class EnemyPattern_Scorpion : EnemyPattern
                 _shooterPositionObject.transform.position, 
                 Quaternion.identity).GetComponent<Scorpion_Bullet>();
             bullet.Shoot(_shooterDirection);
+            PlayAudio(0, _bulletAudio, 0.3f, 0.7f);
             _shooterPositionObject.SetActive(false);
             GenerateRandomTailState();
         }
@@ -220,6 +230,11 @@ public class EnemyPattern_Scorpion : EnemyPattern
         _laserObject.SetActive(true);
         _laserVFXObject.SetActive(true);
         
+        _audioSources[0].loop = true;
+        _audioSources[0].volume = 1f;
+        _audioSources[0].clip = _laserAudio;
+        _audioSources[0].Play();
+        
         while (rotatedAmountCounter <= rotationDegrees * 2)
         {
             Vector3 position = _shooterPositionObject.transform.position;
@@ -250,6 +265,7 @@ public class EnemyPattern_Scorpion : EnemyPattern
             yield return null;
         }
 
+        _audioSources[0].loop = false;
         _lineRenderer.enabled = false;
         _laserObject.SetActive(false);
         _laserVFXObject.SetActive(false);
@@ -277,7 +293,7 @@ public class EnemyPattern_Scorpion : EnemyPattern
     {
         switch (_tailCycleCount)
         {
-            case >= 5:
+            case >= 6:
                 // StartCoroutine(Random.Range(0, 2) >= 1 ? ShootLaser() : ShootBullet());
                 if (Random.Range(1, 2) >= 1)
                 {
@@ -402,6 +418,7 @@ public class EnemyPattern_Scorpion : EnemyPattern
             _dustParticles[Math.Sign(i + 1)].SetActive(true);
         }
         yield return MoveClaws(_clawAttackPositions, 5f);
+        PlayAudio(1, _clawAttackAudio, 0.1f);
         
         yield return RotateByAmount(10f, -1, 50f);
         yield return VibrateClaws();
@@ -413,6 +430,8 @@ public class EnemyPattern_Scorpion : EnemyPattern
                 new Vector3(_armObjects[Math.Sign(i + 1) * 3].transform.position.x - i * 4f, -7f, 0);
             _dustParticles[Math.Sign(i + 1)].SetActive(true);
         }
+        
+        PlayAudio(1, _clawDragAudio, 0.25f);
         yield return MoveClaws(_defaultClawPositions, 2f);
         
         _isInAttackSequence = false;
@@ -452,6 +471,7 @@ public class EnemyPattern_Scorpion : EnemyPattern
         // resets colliders, resets claw colors, resets electricity active
         yield return new WaitForSeconds(_animator.GetCurrentAnimatorClipInfo(0)[0].clip.length * 1.7f);
         yield return new WaitForSeconds(0.5f);
+        
         yield return MoveClaws(_defaultClawPositions, 5f);
         
         _isInAttackSequence = false;
@@ -482,6 +502,8 @@ public class EnemyPattern_Scorpion : EnemyPattern
         };
         
         yield return MoveClaws(attackPosition, 3f);
+        PlayAudio(1, _groundPoundAudio[Random.Range(0, 3)], 0.2f);
+        PlayAudio(1, _groundPoundAudio[3], 0.2f);
         yield return new WaitForSeconds(0.5f);
         
         yield return VibrateClaws();
@@ -493,6 +515,8 @@ public class EnemyPattern_Scorpion : EnemyPattern
                 new Vector3(_armObjects[Math.Sign(i + 1) * 3].transform.position.x - i * 4f, -7f, 0);
             _dustParticles[Math.Sign(i + 1)].SetActive(true);
         }
+        
+        PlayAudio(1, _clawDragAudio, 0.25f);
         yield return MoveClaws(_defaultClawPositions, 2f);
         yield return RotateByAmount(30f, 1, 90f);
 

@@ -9,6 +9,10 @@ public class EnemyPattern_Insectivore : EnemyPattern
     private GameObject _bulletObject;
     private static readonly int IsAttacking = Animator.StringToHash("IsAttacking");
 
+    [SerializeField] private AudioClip _shootAudio;
+    [SerializeField] private AudioClip _snapAudio;
+    [SerializeField] private AudioClip _revealAudio;
+
     private void Awake()
     {
         MoveType = EEnemyMoveType.Stationary;
@@ -53,9 +57,18 @@ public class EnemyPattern_Insectivore : EnemyPattern
         _animator.SetBool(IsAttacking, true);
     }
 
+    private void PlaySnapSound()
+    {
+        _audioSource.pitch = Random.Range(1.2f, 1.6f);
+        _audioSource.PlayOneShot(_snapAudio);
+    }
+
     private IEnumerator FadeIn()
     {
         Color color = _spriteRenderer.material.color;
+        _audioSource.pitch = Random.Range(0.8f, 1.2f);
+        _audioSource.PlayOneShot(_revealAudio);
+        
         while (color.a < 0.8f)
         {
             color.a += 0.6f * Time.deltaTime;
@@ -79,6 +92,9 @@ public class EnemyPattern_Insectivore : EnemyPattern
             transform.position + new Vector3(Mathf.Sign(transform.localScale.x), 3f, 0),
             Quaternion.identity).GetComponent<Insectivore_Bullet>();
         bullet.Shoot(new Vector3(transform.localScale.x, 0, 0));
+        _audioSource.pitch = Random.Range(1.4f, 1.8f);
+        _audioSource.volume = 0.8f;
+        _audioSource.PlayOneShot(_shootAudio);
     }
 
     public override bool PlayerIsInAttackRange()

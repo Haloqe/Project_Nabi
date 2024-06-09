@@ -224,17 +224,17 @@ public class EnemyPattern_SpiderA : EnemyPattern
 
     public override bool PlayerIsInAttackRange() // the 30 pixels mentioned in flowchart
     {
+        if (_isInAttackState) return true;
         Vector3 targetPosition = _enemyBase.Target.transform.position;
         return Mathf.Abs(transform.position.x - targetPosition.x) <= _enemyBase.EnemyData.AttackRangeX 
-            && targetPosition.y - transform.position.y <= _enemyBase.EnemyData.AttackRangeY;
+            && Mathf.Abs(targetPosition.y - transform.position.y) <= _enemyBase.EnemyData.AttackRangeY;
     }
 
     public override bool PlayerIsInDetectRange() // range where it jumps towards player
     {
-        return Mathf.Abs(transform.position.x - _enemyBase.Target.transform.position.x)
-               <= _enemyBase.EnemyData.DetectRangeX 
-            && _enemyBase.Target.transform.position.y - transform.position.y
-               <= _enemyBase.EnemyData.DetectRangeY;
+        Vector3 targetPosition = _enemyBase.Target.transform.position;
+        return Mathf.Abs(transform.position.x - targetPosition.x) <= _enemyBase.EnemyData.DetectRangeX 
+            && Mathf.Abs(targetPosition.y - transform.position.y) <= _enemyBase.EnemyData.DetectRangeY;
         
         // is it over 30 pixels?
     }
@@ -246,12 +246,14 @@ public class EnemyPattern_SpiderA : EnemyPattern
 
     private bool PlayerIsInWebAttackRange()
     {
-        return Mathf.Abs(transform.position.x - _player.transform.position.x) <= _webAttackRange;
+        return Mathf.Abs(transform.position.x - _player.transform.position.x) <= _webAttackRange
+            && Mathf.Abs(_player.transform.position.y - transform.position.y) <= _enemyBase.EnemyData.AttackRangeY;
     }
 
     private bool PlayerIsInTeethAttackRange()
     {
-        return Mathf.Abs(transform.position.x - _player.transform.position.x) <= _teethAttackRange;
+        return Mathf.Abs(transform.position.x - _player.transform.position.x) <= _teethAttackRange 
+            && Mathf.Abs(_player.transform.position.y - transform.position.y) <= _enemyBase.EnemyData.AttackRangeY;
     }
     
     private bool IsGrounded()
