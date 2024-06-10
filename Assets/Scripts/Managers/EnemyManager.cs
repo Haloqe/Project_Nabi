@@ -17,7 +17,7 @@ public class EnemyManager : Singleton<EnemyManager>
     public GameObject TakeDamageVFXPrefab { private set; get; }
     public GameObject DeathVFXPrefab { private set; get; }
     public Material FlashMaterial { private set; get; }
-    [NamedArray(typeof(EEnemyType))] public AudioClip[] DeathAudioClips;
+    [NamedArray(typeof(EEnemyName))] public AudioClip[] DeathAudioClips;
     private AudioSource _audioSource;
     public EnemyVisibilityChecker VisibilityChecker { private set; get; }
     private List<EnemyBase> _spawnedEnemies;

@@ -17,7 +17,11 @@ public class EnemyManager : Singleton<EnemyManager>
     public GameObject TakeDamageVFXPrefab { private set; get; }
     public GameObject DeathVFXPrefab { private set; get; }
     public Material FlashMaterial { private set; get; }
-    public AudioClip[] DeathAudioClips;
+<<<<<<< HEAD
+    [NamedArray(typeof(EEnemyType))] public AudioClip[] DeathAudioClips;
+=======
+    [NamedArray(typeof(EEnemyName))] public AudioClip[] DeathAudioClips;
+>>>>>>> origin/feature/enemy/boss
     private AudioSource _audioSource;
     public EnemyVisibilityChecker VisibilityChecker { private set; get; }
     private List<EnemyBase> _spawnedEnemies;
@@ -37,10 +41,7 @@ public class EnemyManager : Singleton<EnemyManager>
         _audioSource = GetComponent<AudioSource>();
         GameEvents.MapLoaded += OnMapLoaded;
         GameEvents.GameLoadEnded += OnGameLoadEnded;
-<<<<<<< HEAD
-=======
         InGameEvents.EnemySlayed += OnEnemySlayed;
->>>>>>> origin/feature/enemy/boss
         PlayerEvents.Defeated += () =>
         {
             StopAllCoroutines();

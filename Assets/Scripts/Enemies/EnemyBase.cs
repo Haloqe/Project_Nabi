@@ -51,13 +51,11 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     private float _damageCooltime = 0.3f;
     private static readonly int IsAttacking = Animator.StringToHash("IsAttacking");
     private static readonly int AttackSpeed = Animator.StringToHash("AttackSpeed");
-
-
-    private void Awake()
-    {
-        PlayerEvents.Defeated += OnPlayerDefeated;
-    }
-
+    
+    // sfx
+    private AudioSource _audioSource;
+    [SerializeField] private AudioClip _hitAudio; 
+    
     protected virtual void Start()
     {
         _uiManager = UIManager.Instance;
@@ -68,6 +66,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         EnemyData = _enemyManager.GetEnemyData(typeID);
         _spriteRenderers = GetComponentsInChildren<SpriteRenderer>();
         _originalMaterial = _spriteRenderers[0].material;
+        _audioSource = GetComponent<AudioSource>();
         
         _effectRemainingTimes = new float[(int)EStatusEffect.MAX];
         _slowRemainingTimes = new SortedDictionary<float, float> (
@@ -109,7 +108,6 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         if (_enemyManager != null) _enemyManager.RemoveEnemyFromSpawnedList(this);
     }
 
-    
     protected virtual void Update() 
     {
         UpdateRemainingStatusEffectTimes();
@@ -410,6 +408,8 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     {
         if (other.gameObject.layer == LayerMask.NameToLayer("PlayerAbility"))
         {
+            _audioSource.pitch = Random.Range(0.8f, 1.2f);
+            _audioSource.PlayOneShot(_hitAudio);
             int direction = 1;
             if (_player.transform.localScale.x >= 0) direction = -1;
             Instantiate(_enemyManager.TakeDamageVFXPrefab, other.ClosestPoint(transform.position), 

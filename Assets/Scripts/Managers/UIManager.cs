@@ -212,7 +212,6 @@ public class UIManager : Singleton<UIManager>
         _bloodOverlay.gameObject.SetActive(false);
         _tensionOverlay.gameObject.SetActive(false);
         _zoomedMap.SetActive(false);
-        Debug.Log("Loading screen false");
         _loadingScreenUI.SetActive(false);
         _inGameCombatUI.SetActive(true);
         _flowerUIDisplayRemainingTime = 0;
@@ -384,7 +383,6 @@ public class UIManager : Singleton<UIManager>
             _warriorUIPrefabs[i] = Utility.LoadGameObjectFromPath(path + "InGame/Warrior/" + (EWarrior)i);
         }
         _loadingScreenUI = Instantiate(_loadingScreenPrefab, Vector3.zero, Quaternion.identity).gameObject;
-        Debug.Log("Loading screen false");
         _loadingScreenUI.SetActive(false);
         _settingsUI = Instantiate(_settingsPrefab, Vector3.zero, Quaternion.identity).gameObject;
         _settingsUI.SetActive(false);
@@ -395,7 +393,6 @@ public class UIManager : Singleton<UIManager>
 
     public void DisplayLoadingScreen()
     {
-        Debug.Log("Loading screen true");
         _loadingScreenUI.SetActive(true);
     }
     

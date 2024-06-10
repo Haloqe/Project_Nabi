@@ -396,13 +396,13 @@ public class PlayerMovement : MonoBehaviour
     public void AnimEvent_StartMoveHorizontal(float xVelocity)
     {
         if (IsRooted) return;
-
+        
         // Cast a ray to check a wall
         Vector2 playerCentre = new Vector2(transform.position.x, transform.position.y + 0.1f);
         Vector2 faceDir = new Vector2(-Mathf.Sign(gameObject.transform.localScale.x), 0f);
         RaycastHit2D hit = Physics2D.Raycast(playerCentre, faceDir, 1.0f);
         if (hit.collider != null && hit.collider.gameObject.layer == LayerMask.NameToLayer("Platform")) return;
-
+        
         // If no wall in front, move forward
         float dir = -Mathf.Sign(gameObject.transform.localScale.x);
         _additionalVelocity = new Vector2(_additionalVelocity.x + dir * xVelocity, _additionalVelocity.y);

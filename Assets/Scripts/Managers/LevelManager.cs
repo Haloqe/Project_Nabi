@@ -60,8 +60,8 @@ public class LevelManager : Singleton<LevelManager>
         base.Awake();
         if (IsToBeDestroyed) return;
         
-        _maxHeight = 2000;
-        _maxWidth = 2000;
+        _maxHeight = 2500;
+        _maxWidth = 2500;
         _superGrid = new ECellType[_maxHeight, _maxWidth];
         _corridors = new[]
         {
