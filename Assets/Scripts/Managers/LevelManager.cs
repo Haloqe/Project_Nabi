@@ -797,9 +797,7 @@ public class LevelManager : Singleton<LevelManager>
     
     private IEnumerator PostProcessCoroutine()
     {
-        Debug.Log("Waiting for astar to be scanned");
         yield return new WaitUntil(() => _aStarScanEnded);
-        Debug.Log("Astar scanned");
         GameManager.Instance.hasGameLoadEnded = true;
     }
     
@@ -908,7 +906,6 @@ public class LevelManager : Singleton<LevelManager>
         // Set camera follow target
         GameObject.Find("Virtual Camera").GetComponent<CinemachineVirtualCamera>().Follow = playerObject;
         PlayerEvents.Spawned.Invoke();
-        Debug.Log("Spawn Player End");
     }
 
     private void GenerateMinimap()

@@ -223,14 +223,15 @@ public class PlayerMovement : MonoBehaviour
     public void SetMoveDirection(float value)
     {
         _moveDirection = value;
-        if (value == 0 || isDashing)
+        if (value == 0)
         {
             IsMoving = false;
         }
-        else if (_isAttacking)
+        else if (_isAttacking || isDashing)
         {
             if (value != 0 && _playerController.playerDamageDealer.IsAttackBufferAvailable)
             {
+                Debug.Log("Updated: " + savedLookDirection);
                 savedLookDirection = value;
             }
         }
@@ -245,6 +246,7 @@ public class PlayerMovement : MonoBehaviour
     public float savedLookDirection = 0;
     public void UpdateLookDirectionOnAttackEnd()
     {
+        Debug.Log(savedLookDirection);
         transform.localScale = new Vector2(-Mathf.Sign(savedLookDirection) 
             * Mathf.Abs(transform.localScale.x), transform.localScale.y);
     }

@@ -5738,6 +5738,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   baseEffector: {fileID: 1123490876573057877}
   fireTransform: {fileID: 3431984937059004776}
+  fireSound: {fileID: 8300000, guid: d80313f77ed6ce74da2111b26a3e2932, type: 3}
+  bulletHitFleshSounds:
+  - {fileID: 8300000, guid: 6943486e2e319344db6a03664ed7f8c7, type: 3}
+  - {fileID: 8300000, guid: 372e1a948637a3d49a783a8183c1dff6, type: 3}
+  - {fileID: 8300000, guid: f6e81750a92543b4d8de1e15a7c1dfd4, type: 3}
+  - {fileID: 8300000, guid: f3ef693934717994095bfc7f32f31b7f, type: 3}
+  - {fileID: 8300000, guid: 671b451d118fefc4b9871ace99a605a3, type: 3}
+  bulletHitWallSounds: []
 --- !u!114 &8846949218276276624
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5751,6 +5759,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   baseEffector: {fileID: 4964522683273783373}
+  defaultDashSound: {fileID: 8300000, guid: dcb680f9e9f31e748a601053faf11da3, type: 3}
 --- !u!114 &3179075783509259498
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5765,6 +5774,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   baseEffector: {fileID: 3913349315384747956, guid: 60c2002fe81f81b4cbdfbe99b60fc01c, type: 3}
   vfxAddress: 
+  explodeSounds:
+  - {fileID: 8300000, guid: 250c562a829b2604897c75c82a486154, type: 3}
+  - {fileID: 8300000, guid: faa13d04adb9e2c438b72016c73f01cb, type: 3}
+  - {fileID: 8300000, guid: 33d0551535030df42a43b2a31c6d9f58, type: 3}
 --- !u!50 &4192845758978188837
 Rigidbody2D:
   serializedVersion: 4

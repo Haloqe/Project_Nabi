@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class Bomb : MonoBehaviour
 {
@@ -31,7 +30,9 @@ public class Bomb : MonoBehaviour
 
     private IEnumerator ExplodeCoroutine(float explodeDelay, float explodeDuration)
     {
-        yield return new WaitForSeconds(explodeDelay);
+        yield return new WaitForSeconds(explodeDelay - 0.3f);
+        Owner.PlayExplosionSound();
+        yield return new WaitForSeconds(0.3f);
 
         _collider.enabled = true;
         for (float time = 0; time < explodeDuration; time += Time.deltaTime)

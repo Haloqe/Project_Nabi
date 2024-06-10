@@ -12,6 +12,7 @@ public class GameManager : Singleton<GameManager>
     // References
     private PlayerController _player;
     private UIManager _uiManager;
+    private AudioManager _audioManager;
     
     // DEBUG Only
     private int _ingameMapSceneIdx;          // 플레이어가 실행한 씬
@@ -33,6 +34,7 @@ public class GameManager : Singleton<GameManager>
     private void Start()
     {
         _uiManager = UIManager.Instance;
+        _audioManager = AudioManager.Instance;
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode loadMode)
@@ -143,6 +145,7 @@ public class GameManager : Singleton<GameManager>
     public void LoadBossMap()
     {
         _uiManager.DisplayLoadingScreen();
+        _audioManager.StopBgm();
         SceneManager.LoadScene("Scenes/Boss_InGame");
     }
 

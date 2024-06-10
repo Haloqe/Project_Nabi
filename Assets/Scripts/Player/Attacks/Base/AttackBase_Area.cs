@@ -15,7 +15,9 @@ public class AttackBase_Area : AttackBase
     private int _currSelectedFlower;
     public string vfxAddress;
     StatusEffectInfo bombEffect;
-
+    
+    // SFX
+    [SerializeField] private AudioClip[] explodeSounds;
     
     public override void Start()
     {
@@ -248,5 +250,10 @@ public class AttackBase_Area : AttackBase
         attackToSend.Damage.TotalAmount *= _damageDealer.attackDamageMultipliers[(int)EPlayerAttackType.Area];
         Debug.Log("Damage: " + attackToSend.Damage.TotalAmount);
         _damageDealer.DealDamage(target, attackToSend);
+    }
+
+    public void PlayExplosionSound()
+    {
+        _damageDealer.AudioSource.PlayOneShot(explodeSounds[Random.Range(0, explodeSounds.Length)]);
     }
 }

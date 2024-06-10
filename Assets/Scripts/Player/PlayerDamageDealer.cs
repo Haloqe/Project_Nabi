@@ -233,8 +233,6 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
                 bool canAreaAttack = ((AttackBase_Area)AttackBases[attackIdx]).CheckAvailability();
                 if (!canAreaAttack) return;
             }
-
-            _playerMovement.savedLookDirection = -Mathf.Sign(transform.localScale.x);
             _playerMovement.DisableMovement(false);
         }
 
@@ -242,6 +240,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         _currAttackIdx = attackIdx;
         AttackBases[attackIdx].Attack();
         IsAttackBufferAvailable = false;
+        _playerMovement.savedLookDirection = -Mathf.Sign(transform.localScale.x);
     }
 
     public void OnAttackEnd(ELegacyType attackType)

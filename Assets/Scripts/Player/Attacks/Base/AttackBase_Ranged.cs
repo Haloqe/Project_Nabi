@@ -6,6 +6,11 @@ public class AttackBase_Ranged : AttackBase
     [SerializeField] private Transform fireTransform;
     private GameObject _bulletPrefab;
     private List<Bullet> _activeBullets;
+    
+    // SFX
+    public AudioClip fireSound;
+    public AudioClip[] bulletHitFleshSounds;
+    public AudioClip[] bulletHitWallSounds;
 
     public override void Start()
     {
@@ -62,6 +67,7 @@ public class AttackBase_Ranged : AttackBase
 
     public override void Attack()
     {
+        _damageDealer.AudioSource.PlayOneShot(fireSound, 0.5f);
         _animator.SetInteger(AttackIndex, (int)ELegacyType.Ranged);
         basePSRenderer.flip = Mathf.Sign(_player.localScale.x) < 0 ? Vector3.right : Vector3.zero;
         //baseEffector.SetActive(true);
@@ -87,7 +93,11 @@ public class AttackBase_Ranged : AttackBase
         
         // Deal damage to the target if the bullet is hit
         if (target != null)
+        {
             _damageDealer.DealDamage(target, savedAttackInfo);
+            _damageDealer.AudioSource.PlayOneShot(bulletHitFleshSounds[Random.Range(0,bulletHitFleshSounds.Length)],
+                Mathf.Clamp((float)(1.2 / Vector3.Distance(bullet.transform.position, _player.position)), 0.3f, 1f));
+        }
         
         _activeBullets.Remove(bullet);
     }

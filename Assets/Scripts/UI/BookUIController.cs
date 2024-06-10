@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
@@ -29,6 +30,10 @@ public class BookUIController : UIControllerBase
     private AudioSource _audioSource;
     [SerializeField] private AudioClip pageTurnClip;
     
+    // Ref
+    private AudioManager _audioManager;
+    private UIManager _uiManager;
+    
     private void Awake()
     {
         _pageObjects = new GameObject[numPages];
@@ -53,6 +58,12 @@ public class BookUIController : UIControllerBase
         {
             _optionTextDefaults[i] = _optionTexts[i].text;
         }
+    }
+
+    private void Start()
+    {
+        _audioManager = AudioManager.Instance;
+        _uiManager = UIManager.Instance;
     }
 
     private void OnEnable()
@@ -139,7 +150,8 @@ public class BookUIController : UIControllerBase
 
     public void CloseBook()
     {
-        UIManager.Instance.CloseFocusedUI();
+        _audioManager.ResetBGMVolumeToDefault();
+        _uiManager.CloseFocusedUI();
     }
     
     public override void OnNavigate(Vector2 value)
@@ -151,6 +163,7 @@ public class BookUIController : UIControllerBase
     public override void OnClose()
     {
         if (_isClosing) return;
+        _audioManager.LowerBGMVolumeUponUI();
         _canNavigate = false;
         StartCloseBookAnimation();
     }

@@ -21,10 +21,12 @@ public class PlayerInventory : MonoBehaviour
 
     private void Start()
     {
+        Debug.Log("PlayerInven - Start");
         _audioSource = GetComponent<AudioSource>();
         _uiManager = UIManager.Instance;
         _areaAttack = FindObjectOfType<AttackBase_Area>();
         _currentSelectedFlower = 0;
+        _uiManager.ChangeFlowerBomb(false);
         GameEvents.Restarted += OnRestarted;
         GameEvents.CombatSceneChanged += OnCombatSceneChanged;
     }
@@ -48,7 +50,7 @@ public class PlayerInventory : MonoBehaviour
     {
         // ChangeGoldByAmount(0);
         // ChangeSoulShardByAmount(0);
-        SelectFlower(1);
+        // SelectFlower(1);
     }
 
     public void ChangeGoldByAmount(int amount)

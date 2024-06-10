@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using TMPro;
 using Unity.Mathematics;
@@ -78,6 +79,8 @@ public class UIManager : Singleton<UIManager>
     // References
     private PlayerController _playerController;
     private PlayerAttackManager _playerAttackManager;
+    private AudioManager _audioManager;
+    private GameManager _gameManager;
     
     // Flower bomb
     [NamedArray(typeof(EFlowerType))] [SerializeField] private Sprite[] flowerIcons = new Sprite[(int)EFlowerType.MAX];
@@ -126,6 +129,12 @@ public class UIManager : Singleton<UIManager>
         _uiClickIARef = InputActionReference.Create(UIIAMap.FindAction("Click"));
         _playerClickIARef = InputActionReference.Create(_uiInputModule.leftClick);
         LoadActionRebinds();
+    }
+
+    private void Start()
+    {
+        _gameManager = GameManager.Instance;
+        _audioManager = AudioManager.Instance;
     }
 
     private void OnInGameFirstLoad()
@@ -203,11 +212,12 @@ public class UIManager : Singleton<UIManager>
         _bloodOverlay.gameObject.SetActive(false);
         _tensionOverlay.gameObject.SetActive(false);
         _zoomedMap.SetActive(false);
+        Debug.Log("Loading screen false");
         _loadingScreenUI.SetActive(false);
         _inGameCombatUI.SetActive(true);
         _flowerUIDisplayRemainingTime = 0;
 
-        ESceneType currSceneType = GameManager.Instance.ActiveScene;
+        ESceneType currSceneType = _gameManager.ActiveScene;
         switch (currSceneType)
         {
             case ESceneType.CombatMap:
@@ -229,7 +239,7 @@ public class UIManager : Singleton<UIManager>
     private void OnCombatSceneChanged()
     {
         // Minimap and zoomed map disabled in the boss map
-        if (GameManager.Instance.ActiveScene == ESceneType.Boss) DisableMap();
+        if (_gameManager.ActiveScene == ESceneType.Boss) DisableMap();
         
         // Update combat UI with bound legacy information
         //_playerAttackManager.UpdateLegacyUI();
@@ -374,6 +384,7 @@ public class UIManager : Singleton<UIManager>
             _warriorUIPrefabs[i] = Utility.LoadGameObjectFromPath(path + "InGame/Warrior/" + (EWarrior)i);
         }
         _loadingScreenUI = Instantiate(_loadingScreenPrefab, Vector3.zero, Quaternion.identity).gameObject;
+        Debug.Log("Loading screen false");
         _loadingScreenUI.SetActive(false);
         _settingsUI = Instantiate(_settingsPrefab, Vector3.zero, Quaternion.identity).gameObject;
         _settingsUI.SetActive(false);
@@ -384,6 +395,7 @@ public class UIManager : Singleton<UIManager>
 
     public void DisplayLoadingScreen()
     {
+        Debug.Log("Loading screen true");
         _loadingScreenUI.SetActive(true);
     }
     
@@ -401,8 +413,7 @@ public class UIManager : Singleton<UIManager>
 
     private void OnPlayerSpawned()
     {
-        if (!GameManager.Instance.IsFirstRun) return;
-        Debug.Log("Player Spawned");
+        if (!_gameManager.IsFirstRun) return;
         _playerAttackManager = PlayerAttackManager.Instance;
         _playerController = PlayerController.Instance;
         _playerHPSlider.value = 1;
@@ -464,6 +475,7 @@ public class UIManager : Singleton<UIManager>
 
     public void OpenBook()
     {
+        _audioManager.LowerBGMVolumeUponUI();
         OpenFocusedUI(_bookUI, true);
     }
     

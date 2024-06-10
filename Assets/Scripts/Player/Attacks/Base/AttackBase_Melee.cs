@@ -129,8 +129,7 @@ public class AttackBase_Melee : AttackBase
             _attackPostDelay = _baseDelay;
             basePSRenderer.flip = dir < 0 ? Vector3.right : Vector3.zero;
             baseEffector.SetActive(true);
-            _damageDealer.AudioSource.PlayOneShot(meleeSounds[Random.Range(0, meleeSounds.Length)]);
-            // AudioSourceBase.pitch = Random.Range(0.85f, 1.03f);
+            _damageDealer.AudioSource.PlayOneShot(meleeSounds[Random.Range(0, meleeSounds.Length)], volumeScale: 0.75f);
             if (ActiveLegacy) ((Legacy_Melee)ActiveLegacy).OnAttack_Base();
         }      
 

@@ -2,6 +2,7 @@ using System.Collections;
 using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class AttackBase_Dash : AttackBase
 {
@@ -22,6 +23,9 @@ public class AttackBase_Dash : AttackBase
     private readonly static int DashStart = Animator.StringToHash("DashStart");
     private readonly static int DashEnd = Animator.StringToHash("DashEnd");
     private readonly static int Teleport = Animator.StringToHash("Teleport");
+    
+    // SFX
+    [SerializeField] private AudioClip defaultDashSound;
 
     public override void Start()
     {
@@ -59,6 +63,7 @@ public class AttackBase_Dash : AttackBase
         }
         else
         {
+            _damageDealer.AudioSource.PlayOneShot(defaultDashSound, volumeScale: 0.7f);
             _animator.SetInteger(AttackIndex, (int)ELegacyType.Dash);
             baseEffector.transform.localScale = new Vector3(Mathf.Sign(_player.localScale.x), 1.0f, 1.0f);
             baseEffector.SetActive(true);
