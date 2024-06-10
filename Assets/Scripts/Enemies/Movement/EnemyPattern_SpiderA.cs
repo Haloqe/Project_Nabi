@@ -203,6 +203,8 @@ public class EnemyPattern_SpiderA : EnemyPattern
     private IEnumerator TeethAttack()
     {
         _isInAttackState = true;
+        yield return new WaitForSeconds(1.5f);
+        // TODO telegraph attack
         
         FlipEnemyTowardsTarget();
         _animator.SetBool(IsWalking, false);

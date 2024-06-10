@@ -11,8 +11,8 @@ public class EnemyPattern_Mantis : EnemyPattern
     public Collider2D _groundInFrontCollider;
     public Collider2D _ceilingInFrontCollider;
     
-    private float _dashSpeed = 5f;
-    private float _dashTime = 1f;
+    private float _dashSpeed = 12f;
+    private float _dashTime = 0.3f;
     
     private bool _isInAttackSequence;
     
@@ -103,21 +103,21 @@ public class EnemyPattern_Mantis : EnemyPattern
 
     private IEnumerator Telegraph()
     {
+        _isInAttackSequence = true;
         _animator.SetTrigger("Telegraph");
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(1f);
         StartCoroutine(AttackSequence());
         yield break;
     }
 
     private IEnumerator AttackSequence()
     {
-        // if (IsFlippable) FlipEnemyTowardsTarget();
-        
         _animator.SetTrigger("FirstAttack");
         yield return DashAttack();
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(0.5f);
         _animator.SetTrigger("SecondAttack");
         yield return DashAttack();
+        yield return new WaitForSeconds(0.3f);
 
         _animator.SetTrigger("EndAttack");
         _isInAttackSequence = false;
@@ -129,8 +129,7 @@ public class EnemyPattern_Mantis : EnemyPattern
         float direction = Math.Sign(transform.localScale.x);
         while (dashTimeCounter <= _dashTime)
         {
-            _rigidBody.velocity = IsAtEdge() ? new Vector2(0, 0) :
-                new Vector2(_dashSpeed * direction, 0f);
+            _rigidBody.velocity = IsAtEdge() ? new Vector2(0, 0) : new Vector2(_dashSpeed * direction, 0f);
             dashTimeCounter += Time.deltaTime;
             yield return null;
         }
