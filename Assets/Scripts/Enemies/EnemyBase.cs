@@ -621,21 +621,25 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         if (Pattern.PlayerIsInAttackRange() || Pattern.IsAttackingPlayer)
         {
             Pattern.Attack();
+            return;
         }
-        else if (Pattern.PlayerIsInDetectRange())
+        
+        if (Pattern.PlayerIsInDetectRange())
         {
             Pattern.IsChasingPlayer = true;
             ActionTimeCounter = EnemyData.ChasePlayerDuration;
             Pattern.Chase();
+            return;
         }
-        else if (Pattern.IsChasingPlayer)
+        
+        if (Pattern.IsChasingPlayer)
         {
             Pattern.Chase();
+            if (ActionTimeCounter <= 0) Pattern.IsChasingPlayer = false;
+            return;
         }
-        else
-        {
-            Pattern.Patrol();
-        }
+
+        Pattern.Patrol();
     }
 
     public void ChangeAttackSpeedByPercentage(float percentage)

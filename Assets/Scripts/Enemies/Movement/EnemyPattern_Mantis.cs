@@ -10,11 +10,11 @@ public class EnemyPattern_Mantis : EnemyPattern
     public LayerMask _groundLayer;
     public Collider2D _groundInFrontCollider;
     public Collider2D _ceilingInFrontCollider;
-    
-    private float _dashSpeed = 12f;
+
+    private float _chaseSpeed = 5f;
+    private float _dashSpeed = 16f;
     private float _dashTime = 0.3f;
-    
-    private bool _isInAttackSequence;
+    [SerializeField] private ParticleSystemRenderer _dashVFX;
     
     private static readonly int IsAttacking = Animator.StringToHash("IsAttacking");
 
@@ -23,15 +23,16 @@ public class EnemyPattern_Mantis : EnemyPattern
         MoveType = EEnemyMoveType.LinearPath;
     }
 
-    private void WalkForward()
+    private void WalkForward(bool isChasing = false)
     {
         if (IsRooted) return;
         if (!IsGrounded()) return;
         if (IsAtEdge()) FlipEnemy();
+        float moveSpeed = isChasing ? _chaseSpeed : MoveSpeed;
 
         _rigidBody.velocity = transform.localScale.x > Mathf.Epsilon ?
-            new Vector2(MoveSpeed, 0f) :
-            new Vector2(-MoveSpeed, 0f); //if it's facing right
+            new Vector2(moveSpeed, 0f) :
+            new Vector2(-moveSpeed, 0f); //if it's facing right
     }
 
     // private void GenerateRandomState()
@@ -56,7 +57,6 @@ public class EnemyPattern_Mantis : EnemyPattern
         if (IsAtEdge() && IsChasingPlayer)
         {
             _rigidBody.velocity = Vector2.zero;
-            // _animator.SetBool(IsWalking, false);
             return;
         }
 
@@ -79,16 +79,11 @@ public class EnemyPattern_Mantis : EnemyPattern
             return;
         }
         
-        if (_enemyBase.ActionTimeCounter < 0)
-        {
-            IsChasingPlayer = false;
-            return;
-        }
         _animator.SetBool(IsAttacking, false);
         // _animator.SetBool(IsWalking, true);
         
         FlipEnemyTowardsTarget();
-        WalkForward();
+        WalkForward(true);
     }
 
     public override void Attack()
@@ -96,18 +91,18 @@ public class EnemyPattern_Mantis : EnemyPattern
         // if (IsFlippable) FlipEnemyTowardsTarget();
         // _animator.SetBool(IsAttacking, true);
         // ChangeSpeedByPercentage(0);
-        if (_isInAttackSequence) return;
+        if (IsAttackingPlayer) return;
 
         StartCoroutine(Telegraph());
     }
 
     private IEnumerator Telegraph()
     {
-        _isInAttackSequence = true;
+        IsAttackingPlayer = true;
         _animator.SetTrigger("Telegraph");
+        _rigidBody.velocity = Vector2.zero;
         yield return new WaitForSeconds(1f);
         StartCoroutine(AttackSequence());
-        yield break;
     }
 
     private IEnumerator AttackSequence()
@@ -120,16 +115,17 @@ public class EnemyPattern_Mantis : EnemyPattern
         yield return new WaitForSeconds(0.3f);
 
         _animator.SetTrigger("EndAttack");
-        _isInAttackSequence = false;
+        IsAttackingPlayer = false;
     }
 
     private IEnumerator DashAttack()
     {
         float dashTimeCounter = 0;
         float direction = Math.Sign(transform.localScale.x);
+        _dashVFX.flip = new Vector3(-direction, 0, 0);
         while (dashTimeCounter <= _dashTime)
         {
-            _rigidBody.velocity = IsAtEdge() ? new Vector2(0, 0) : new Vector2(_dashSpeed * direction, 0f);
+            _rigidBody.velocity = IsAtEdge() ? Vector2.zero : new Vector2(_dashSpeed * direction, 0f);
             dashTimeCounter += Time.deltaTime;
             yield return null;
         }
@@ -137,7 +133,6 @@ public class EnemyPattern_Mantis : EnemyPattern
 
     public override bool PlayerIsInAttackRange()
     {
-        if (_isInAttackSequence) return true;
         return Mathf.Abs(transform.position.x - _enemyBase.Target.transform.position.x)
                <= _enemyBase.EnemyData.AttackRangeX 
             && Mathf.Abs(_enemyBase.Target.transform.position.y - transform.position.y)

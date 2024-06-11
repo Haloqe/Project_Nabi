@@ -915,7 +915,7 @@ public class LevelManager : Singleton<LevelManager>
         playerObject.position = playerSpawnPoint;
         
         // Set camera follow target
-        GameObject.Find("Virtual Camera").GetComponent<CinemachineVirtualCamera>().Follow = playerObject;
+        // GameObject.Find("Virtual Camera").GetComponent<CinemachineVirtualCamera>().Follow = playerObject;
         
         // Trigger event
         if (isFirstSpawn && currScene == ESceneType.CombatMap0) PlayerEvents.SpawnedFirstTime.Invoke();

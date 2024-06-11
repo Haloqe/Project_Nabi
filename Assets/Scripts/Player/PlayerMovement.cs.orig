@@ -1,7 +1,6 @@
-using System;
 using System.Collections;
+using Cinemachine;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -9,6 +8,7 @@ public class PlayerMovement : MonoBehaviour
     private Rigidbody2D _rigidbody2D;
     private Animator _animator;
     private PlayerController _playerController;
+    private AudioSource _audioSource;
     
     // physics
     private BoxCollider2D _mainCollider;
@@ -16,10 +16,11 @@ public class PlayerMovement : MonoBehaviour
     private float _defaultBounciness;
 
     // movement
+    private bool _isMoveDisabled;
     private readonly float _defaultMoveSpeed = 9f;
     public float MoveSpeed { get; private set; } 
     public float moveSpeedMultiplier = 1f;
-    private Vector2 _moveDirection;
+    private float _moveDirection;
     public bool IsMoving { get; private set; }
     public bool IsRooted { get; private set; }
     public bool isOnMovingPlatform;
@@ -34,31 +35,44 @@ public class PlayerMovement : MonoBehaviour
     private int _jumpCounter;
     private readonly float _coyoteTime = 0.2f;
     private float _coyoteTimeCounter;
-    private readonly float _jumpBufferTime = 0.2f;
+    private readonly float _jumpBufferTime = 0.3f;
     private float _jumpBufferTimeCounter;
     public float UpwardsGravityScale { get; private set; }
     public float DownwardsGravityScale { get; private set; }
-
+    
     // attack
     private bool _isAttacking;
     public bool isDashing;
     public bool isAreaAttacking; 
+    public bool isRangedAttacking;
     
-    // Others
+    // camera
+    private CameraManager _cameraManager;
+    private CameraFollowObject _cameraFollowObject;
+    private float _fallSpeedYDampingChangeThreshold;
+
+    // animator
     private readonly static int Moving = Animator.StringToHash("IsMoving");
     private readonly static int IsDoubleJumping = Animator.StringToHash("IsDoubleJumping");
     private readonly static int IsJumping = Animator.StringToHash("IsJumping");
-
-    public bool isRangedAttacking;
+<<<<<<< HEAD
+ 
+    // SFX
+    [SerializeField] private AudioClip jumpSound;
+    [SerializeField] private AudioClip[] jumpLandSounds;
+=======
+>>>>>>> origin/feature/enemy/boss
 
     private void Start()
     {
         GameEvents.Restarted += OnRestarted;
         PlayerEvents.Defeated += OnDefeated;
+        // PlayerEvents.Spawned += OnSpawned;
         InGameEvents.TimeSlowDown += OnTimeSlowDown;
         InGameEvents.TimeRevertNormal += OnTimeRevertNormal;
         
         _playerController = PlayerController.Instance;
+        _audioSource = GetComponent<AudioSource>();
         _animator = GetComponent<Animator>();
         _rigidbody2D = GetComponent<Rigidbody2D>();
         MoveSpeed = _defaultMoveSpeed;
@@ -67,7 +81,11 @@ public class PlayerMovement : MonoBehaviour
         _isJumping = true;
         IsMoving = false;
         UpwardsGravityScale = 2f;
-        DownwardsGravityScale = 5f;
+        DownwardsGravityScale = 4.5f;
+
+        _cameraManager = CameraManager.Instance;
+        _fallSpeedYDampingChangeThreshold = _cameraManager.FallSpeedYDampingChangeThreshold;
+        _cameraFollowObject = GameObject.Find("CameraFollowingObject").GetComponent<CameraFollowObject>();
 
         _mainCollider = GetComponents<BoxCollider2D>()[0];
         _defaultBounciness = _mainCollider.sharedMaterial.bounciness;
@@ -84,9 +102,18 @@ public class PlayerMovement : MonoBehaviour
 
     private void OnDefeated()
     {
-        _moveDirection = Vector2.zero;
+        _moveDirection = 0;
         _additionalVelocity = Vector2.zero;
     }
+
+    // private void OnSpawned()
+    // {
+    //     Debug.Log("player spawning rnnnn");
+    //     GameObject followObject = new GameObject("CameraFollowingObject");
+    //     _cameraFollowObject = followObject.AddComponent<CameraFollowObject>();
+    //     GameObject.Find("Virtual Camera").GetComponent<CinemachineVirtualCamera>().Follow = followObject.transform;
+    //     
+    // }
     
     private void OnRestarted()
     {
@@ -110,61 +137,50 @@ public class PlayerMovement : MonoBehaviour
         _animator.SetBool(Moving, IsMoving && !IsRooted);
         _coyoteTimeCounter -= Time.unscaledDeltaTime;
         _jumpBufferTimeCounter -= Time.unscaledDeltaTime;
+
+        // if player is falling past a certain speed threshold
+        if (_rigidbody2D.velocity.y < _fallSpeedYDampingChangeThreshold
+            && !_cameraManager.IsLerpingYDamping
+            && !_cameraManager.LerpedFromPlayerFalling)
+        {
+            _cameraManager.LerpYDamping(true);
+        }
+
+        // if player is standing still or moving up
+        if (_rigidbody2D.velocity.y >= 0f
+            && !_cameraManager.IsLerpingYDamping
+            && _cameraManager.LerpedFromPlayerFalling)
+        {
+            _cameraManager.LerpedFromPlayerFalling = false;
+            _cameraManager.LerpYDamping(false);
+        }
     }
 
     private void FixedUpdate()
     {
         // Disable extra movement if is rooted, dashing, or area-attacking
         if (IsRooted || isDashing || isAreaAttacking) return;
-        
-<<<<<<< HEAD
+
         // Movement-driven velocity
-        _rigidbody2D.velocity = new Vector2((_moveDirection.x * MoveSpeed * moveSpeedMultiplier) / Time.timeScale, _rigidbody2D.velocity.y);
-=======
-        _rigidbody2D.velocity = _additionalVelocity.magnitude != 0 ? 
-            new Vector2(_additionalVelocity.x / Time.timeScale, _additionalVelocity.y + _rigidbody2D.velocity.y) : 
-            new Vector2((_moveDirection.x * MoveSpeed * moveSpeedMultiplier) / Time.timeScale, _rigidbody2D.velocity.y);
->>>>>>> origin/feature/enemy/boss
+        _rigidbody2D.velocity =
+            new Vector2((_moveDirection * MoveSpeed * moveSpeedMultiplier) / Time.timeScale, _rigidbody2D.velocity.y);
 
         // Animation-driven velocity
-        if (animStopMove)
+        if (_isMoveDisabled)
             _rigidbody2D.velocity = Vector2.zero;
         else if (_additionalVelocity.magnitude != 0)
             _rigidbody2D.velocity = _additionalVelocity / Time.timeScale;
-        
-<<<<<<< HEAD
-        // Alter gravity scale while jumping
-        // TODO MOVE somewhere else
-        if (!isRangedAttacking)
+ 
+        if (!isRangedAttacking && _isJumping && (!_isRunningFirstJump || _rigidbody2D.velocity.y < 0))
         {
-            if (!_isJumping)
-            {
-                _rigidbody2D.gravityScale = _playerController.DefaultGravityScale;
-            }
-            else
-            {
-                if (_isRunningFirstJump && _jumpCounter <= 1)
-                {
-                    _rigidbody2D.gravityScale = UpwardsGravityScale;
-                }
-                else if (!_isRunningFirstJump || _rigidbody2D.velocity.y < 0)
-                {
-                    _rigidbody2D.gravityScale = DownwardsGravityScale;
-                }
-            }
-            // During time slow, increase gravity scale
-            if (Time.timeScale != 1)
-            {
-                _rigidbody2D.gravityScale /= (Time.timeScale * Time.timeScale);
-            }
-=======
-        if ((!_isRunningFirstJump || _rigidbody2D.velocity.y < 0) && _isJumping)
-        {
-            _rigidbody2D.gravityScale = _downwardsGravityScale;
->>>>>>> origin/feature/enemy/boss
+            _rigidbody2D.gravityScale = DownwardsGravityScale;
+            if (Time.timeScale != 1) _rigidbody2D.gravityScale /= (Time.timeScale * Time.timeScale);
         }
-    }
 
+        if (_rigidbody2D.velocity.y < -35f)
+            _rigidbody2D.velocity = new Vector2(_rigidbody2D.velocity.x, -35f);
+    }
+    
     private void OnTimeRevertNormal()
     {
         if (!_isJumping)
@@ -252,17 +268,17 @@ public class PlayerMovement : MonoBehaviour
         MoveSpeed = _defaultMoveSpeed;
         jumpForce = _defaultJumpForce;
     }
-
-    public void SetMoveDirection(Vector2 value)
+    
+    public void SetMoveDirection(float value)
     {
         _moveDirection = value;
-        if (value.x == 0 || isDashing)
+        if (value == 0)
         {
             IsMoving = false;
         }
-        else if (_isAttacking)
+        else if (_isAttacking || isDashing)
         {
-            if (value.x != 0 && _playerController.playerDamageDealer.IsAttackBufferAvailable)
+            if (value != 0 && _playerController.playerDamageDealer.IsAttackBufferAvailable)
             {
                 savedLookDirection = value;
             }
@@ -271,14 +287,17 @@ public class PlayerMovement : MonoBehaviour
         {
             // Note: Player sprite default direction is left
             IsMoving = true;
-            transform.localScale = new Vector2(-Mathf.Sign(value.x) * Mathf.Abs(transform.localScale.x), transform.localScale.y);
+            transform.localScale =
+                new Vector2(-Mathf.Sign(value) * Mathf.Abs(transform.localScale.x), transform.localScale.y);
+            
+            _cameraFollowObject.TurnCamera();
         }
     }
 
-    public Vector3 savedLookDirection = Vector3.zero;
+    public float savedLookDirection = 0;
     public void UpdateLookDirectionOnAttackEnd()
     {
-        transform.localScale = new Vector2(-Mathf.Sign(savedLookDirection.x) 
+        transform.localScale = new Vector2(-Mathf.Sign(savedLookDirection) 
             * Mathf.Abs(transform.localScale.x), transform.localScale.y);
     }
 
@@ -291,11 +310,11 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             _isAttacking = false;
-            if (_moveDirection.x != 0)
+            if (_moveDirection != 0)
             {
                 // Note: Player sprite default direction is left
                 IsMoving = true;
-                transform.localScale = new Vector2(-Mathf.Sign(_moveDirection.x) * Mathf.Abs(transform.localScale.x), transform.localScale.y);
+                transform.localScale = new Vector2(-Mathf.Sign(_moveDirection) * Mathf.Abs(transform.localScale.x), transform.localScale.y);
             }
         }
     }
@@ -323,30 +342,32 @@ public class PlayerMovement : MonoBehaviour
     public void StartJump()
     {
         // can the player jump?
-<<<<<<< HEAD
-        if (IsRooted || _isAttacking) return;
-        if (_coyoteTimeCounter < 0f && _jumpCounter >= 2 || isDashing)
-=======
-        if (_isRooted) return;
+        if (IsRooted) return;
+        
+        // Counter
         if (_coyoteTimeCounter < 0f && _jumpCounter >= 2 || isDashing || _isAttacking)
->>>>>>> origin/feature/enemy/boss
         {
             _jumpBufferTimeCounter = _jumpBufferTime;
             return;
         }
         
+        // is this a second jump?
+        _isJumping = true;
         _jumpCounter += 1;
         _jumpBufferTimeCounter = 0;
-        
-        // is this a second jump?
         if (_jumpCounter >= 2)
         {
             _animator.SetBool(IsDoubleJumping, true);
+            _audioSource.PlayOneShot(jumpSound, 0.7f);
             _rigidbody2D.velocity = new Vector2(_rigidbody2D.velocity.x, jumpForce * 1.3f / Time.timeScale);
             return;
         }
         
-        _rigidbody2D.gravityScale = _upwardsGravityScale;
+        // Set gravity scale
+        _rigidbody2D.gravityScale = UpwardsGravityScale;
+        if (Time.timeScale != 1) _rigidbody2D.gravityScale /= Time.timeScale * Time.timeScale;
+        
+        // Start jump
         StartCoroutine(nameof(FirstJump));
     }
 
@@ -354,6 +375,30 @@ public class PlayerMovement : MonoBehaviour
     {
         StopCoroutine(nameof(FirstJump));
         _isRunningFirstJump = false;
+    }
+
+    private IEnumerator JumpLandCheckCoroutine()
+    {
+        while (true) 
+        {
+            // Only check collision if player is falling
+            if (_rigidbody2D.velocity.y <= 0) 
+            {
+                // Is the player soon hitting the ground?
+                RaycastHit2D hit = Physics2D.Linecast(transform.position, transform.position + Vector3.down * 0.6f);
+            
+                // If the player is soon hitting the ground and the ground is close enough
+                if (hit.collider != null && hit.collider.CompareTag("Ground")) 
+                {
+                    // Play the landing audio
+                    _audioSource.PlayOneShot(jumpLandSounds[Random.Range(0, jumpLandSounds.Length)], 1f);
+                    yield break;
+                }
+            }
+        
+            // If not, 
+            yield return null;
+        }
     }
 
     private IEnumerator FirstJump()
@@ -372,12 +417,14 @@ public class PlayerMovement : MonoBehaviour
         _isRunningFirstJump = false;
     }
     
+    public void ResetEnteredGroundCount() => _enteredGroundCount = 0;
+    
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (!other.CompareTag("Ground")) return;
         if (++_enteredGroundCount > 1) return;
         
-        // On the ground
+        // Ground
         _isJumping = false;
         _jumpCounter = 0;
         _coyoteTimeCounter = _coyoteTime;
@@ -393,7 +440,22 @@ public class PlayerMovement : MonoBehaviour
         if (--_enteredGroundCount > 0) return;
         
         // Not on the ground
+        if (!_isJumping)
+        {
+            StartCoroutine(JumpTriggerDelayCoroutine());
+        }
+        else
+        {
+            _animator.SetBool(IsJumping, _isJumping);
+            //Debug.Log("Startedjumpcheck");
+            //StartCoroutine(JumpLandCheckCoroutine());
+        }
         _isJumping = true;
+    }
+
+    private IEnumerator JumpTriggerDelayCoroutine()
+    {
+        yield return new WaitForSecondsRealtime(0.2f);
         _animator.SetBool(IsJumping, _isJumping);
     }
 
@@ -405,33 +467,31 @@ public class PlayerMovement : MonoBehaviour
     }
 
     #region Animation Event Handlers
+    public void AnimEvent_StopMove()
+    {
+        _isMoveDisabled = true;
+    }
+    
+    public void AnimEvent_StartMove()
+    {
+        _isMoveDisabled = false;
+    }
+    
     // Move horizontally to the direction the character is facing
     public void AnimEvent_StartMoveHorizontal(float xVelocity)
     {
         if (IsRooted) return;
-
+        
         // Cast a ray to check a wall
         Vector2 playerCentre = new Vector2(transform.position.x, transform.position.y + 0.1f);
         Vector2 faceDir = new Vector2(-Mathf.Sign(gameObject.transform.localScale.x), 0f);
         RaycastHit2D hit = Physics2D.Raycast(playerCentre, faceDir, 1.0f);
         if (hit.collider != null && hit.collider.gameObject.layer == LayerMask.NameToLayer("Platform")) return;
-
+        
         // If no wall in front, move forward
         float dir = -Mathf.Sign(gameObject.transform.localScale.x);
         _additionalVelocity = new Vector2(_additionalVelocity.x + dir * xVelocity, _additionalVelocity.y);
     }
-
-    public void AnimEvent_StopMove()
-    {
-        animStopMove = true;
-    }
-
-    private bool animStopMove;
-    public void AnimEvent_StartMove()
-    {
-        animStopMove = false;
-    }
-    
     public void AnimEvent_StartMoveVertical(float yVelocity)
     {
         _additionalVelocity = new Vector2(_additionalVelocity.x, yVelocity);

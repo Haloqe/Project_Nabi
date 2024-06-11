@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Cinemachine;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -26,7 +27,6 @@ public class GameManager : Singleton<GameManager>
     {
         base.Awake();
         if (IsToBeDestroyed) return;
-
         PlayerMetaData = SaveSystem.LoadMetaData();
         _ingameMapSceneIdx = _releaseMapSceneIdx;
         SceneManager.sceneLoaded += OnSceneLoaded;
@@ -132,6 +132,10 @@ public class GameManager : Singleton<GameManager>
 
         // When all set, spawn player 
         LevelManager.Instance.SpawnPlayer();
+        
+        GameObject followObject = new GameObject("CameraFollowingObject");
+        followObject.AddComponent<CameraFollowObject>();
+        GameObject.Find("Virtual Camera").GetComponent<CinemachineVirtualCamera>().Follow = followObject.transform;
         _player = PlayerController.Instance;
         GameEvents.GameLoadEnded.Invoke();
         
