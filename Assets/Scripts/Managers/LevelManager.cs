@@ -53,7 +53,7 @@ public class LevelManager : Singleton<LevelManager>
     
     // Spawn points
     private Vector3 _metaSpawnPoint;
-    public Transform CombatSpawnPoint { get; private set; }
+    public Vector3 CombatSpawnPoint { get; private set; }
     
     protected override void Awake()
     {
@@ -86,7 +86,6 @@ public class LevelManager : Singleton<LevelManager>
         _hiddenPortalSpawners = new List<HiddenPortal>();
         
         InitialiseRooms();
-        GenerateLevelGraph();
     }
     
     public void Generate()
@@ -110,6 +109,7 @@ public class LevelManager : Singleton<LevelManager>
         // Level generation
         _levelGenerationEnded = false;
         _aStarScanEnded = false;
+        GenerateLevelGraph();
         GenerateLevel();
     }
 
@@ -118,7 +118,9 @@ public class LevelManager : Singleton<LevelManager>
     {
         // Populate Level Graph
         _levelGraph = new LevelGraph();
-        _levelGraph.SetDefaultType();
+        if (GameManager.Instance.ActiveScene == ESceneType.CombatMap0)
+            _levelGraph.GeneratePreMidBossGraph();
+        else _levelGraph.GeneratePostMidBossGraph();
 
         // +1 for the virtual first room
         _availableDoors = new List<List<Door>>(_levelGraph.GetNumRooms() + 1);
@@ -186,8 +188,10 @@ public class LevelManager : Singleton<LevelManager>
                 toVisit.Push(new SRoomInfo(roomInfo.RoomID, nextRoomID));
             }
         }
-        CombatSpawnPoint = _generatedRooms[0].transform.Find("PlayerStart");
-        Debug.AssertFormat(CombatSpawnPoint != null, "Player spawn point is not set in the entrance room. Please add the prefab '/Prefabs/Player/PlayerStart' to the room prefab.");
+        
+        var playerSpawner =_generatedRooms[0].transform.Find("PlayerStart");
+        Debug.AssertFormat(playerSpawner != null, "Player spawn point is not set in the entrance room. Please add the prefab '/Prefabs/Player/PlayerStart' to the room prefab.");
+        CombatSpawnPoint = playerSpawner.position;
         
         _levelGenerationEnded = true;
         StartCoroutine(LevelGenerationCoroutine());
@@ -553,7 +557,8 @@ public class LevelManager : Singleton<LevelManager>
         
         // Save spawners
         _clockworkSpawnersByRoom.Add(roomObj.transform.GetComponentsInChildren<ClockworkSpawner>());
-        _flowerSpawners.Add(roomObj.transform.Find("FlowerSpawner").transform.position);
+        var flowerSpawner = roomObj.transform.Find("FlowerSpawner");
+        if (flowerSpawner) _flowerSpawners.Add(flowerSpawner.transform.position);
         _hiddenPortalSpawners.AddRange(roomObj.transform.GetComponentsInChildren<HiddenPortal>());
 
         // Return instantiated room game object
@@ -875,12 +880,14 @@ public class LevelManager : Singleton<LevelManager>
         Transform playerObject = null;
         Vector3 playerSpawnPoint;
         ESceneType currScene = GameManager.Instance.ActiveScene;
+        bool isFirstSpawn = false;
         
         // Find player
         // Player is not spawned
         if (PlayerController.Instance == null)
         {
             playerObject = Instantiate(GameManager.Instance.PlayerPrefab).gameObject.transform;
+            isFirstSpawn = true;
         }
         // Player exists already
         else
@@ -889,10 +896,14 @@ public class LevelManager : Singleton<LevelManager>
         }
         
         // Find spawn point
-        if (currScene == ESceneType.CombatMap)
+        if (currScene == ESceneType.CombatMap0)
         {
             // Spawn at meta map
             playerSpawnPoint = _metaSpawnPoint;
+        }
+        else if (currScene == ESceneType.CombatMap1)
+        {
+            playerSpawnPoint = CombatSpawnPoint;
         }
         else
         {
@@ -905,6 +916,9 @@ public class LevelManager : Singleton<LevelManager>
         
         // Set camera follow target
         GameObject.Find("Virtual Camera").GetComponent<CinemachineVirtualCamera>().Follow = playerObject;
+        
+        // Trigger event
+        if (isFirstSpawn && currScene == ESceneType.CombatMap0) PlayerEvents.SpawnedFirstTime.Invoke();
         PlayerEvents.Spawned.Invoke();
     }
 

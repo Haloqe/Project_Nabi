@@ -7,6 +7,7 @@ public class PlayerMovement : MonoBehaviour
     private Rigidbody2D _rigidbody2D;
     private Animator _animator;
     private PlayerController _playerController;
+    private AudioSource _audioSource;
     
     // physics
     private BoxCollider2D _mainCollider;
@@ -49,6 +50,9 @@ public class PlayerMovement : MonoBehaviour
     private readonly static int IsDoubleJumping = Animator.StringToHash("IsDoubleJumping");
     private readonly static int IsJumping = Animator.StringToHash("IsJumping");
  
+    // SFX
+    [SerializeField] private AudioClip jumpSound;
+    [SerializeField] private AudioClip[] jumpLandSounds;
 
     private void Start()
     {
@@ -58,6 +62,7 @@ public class PlayerMovement : MonoBehaviour
         InGameEvents.TimeRevertNormal += OnTimeRevertNormal;
         
         _playerController = PlayerController.Instance;
+        _audioSource = GetComponent<AudioSource>();
         _animator = GetComponent<Animator>();
         _rigidbody2D = GetComponent<Rigidbody2D>();
         MoveSpeed = _defaultMoveSpeed;
@@ -231,7 +236,6 @@ public class PlayerMovement : MonoBehaviour
         {
             if (value != 0 && _playerController.playerDamageDealer.IsAttackBufferAvailable)
             {
-                Debug.Log("Updated: " + savedLookDirection);
                 savedLookDirection = value;
             }
         }
@@ -246,7 +250,6 @@ public class PlayerMovement : MonoBehaviour
     public float savedLookDirection = 0;
     public void UpdateLookDirectionOnAttackEnd()
     {
-        Debug.Log(savedLookDirection);
         transform.localScale = new Vector2(-Mathf.Sign(savedLookDirection) 
             * Mathf.Abs(transform.localScale.x), transform.localScale.y);
     }
@@ -302,11 +305,13 @@ public class PlayerMovement : MonoBehaviour
         }
         
         // is this a second jump?
+        _isJumping = true;
         _jumpCounter += 1;
         _jumpBufferTimeCounter = 0;
         if (_jumpCounter >= 2)
         {
             _animator.SetBool(IsDoubleJumping, true);
+            _audioSource.PlayOneShot(jumpSound, 0.7f);
             _rigidbody2D.velocity = new Vector2(_rigidbody2D.velocity.x, jumpForce * 1.3f / Time.timeScale);
             return;
         }
@@ -323,6 +328,30 @@ public class PlayerMovement : MonoBehaviour
     {
         StopCoroutine(nameof(FirstJump));
         _isRunningFirstJump = false;
+    }
+
+    private IEnumerator JumpLandCheckCoroutine()
+    {
+        while (true) 
+        {
+            // Only check collision if player is falling
+            if (_rigidbody2D.velocity.y <= 0) 
+            {
+                // Is the player soon hitting the ground?
+                RaycastHit2D hit = Physics2D.Linecast(transform.position, transform.position + Vector3.down * 0.6f);
+            
+                // If the player is soon hitting the ground and the ground is close enough
+                if (hit.collider != null && hit.collider.CompareTag("Ground")) 
+                {
+                    // Play the landing audio
+                    _audioSource.PlayOneShot(jumpLandSounds[Random.Range(0, jumpLandSounds.Length)], 1f);
+                    yield break;
+                }
+            }
+        
+            // If not, 
+            yield return null;
+        }
     }
 
     private IEnumerator FirstJump()
@@ -364,8 +393,17 @@ public class PlayerMovement : MonoBehaviour
         if (--_enteredGroundCount > 0) return;
         
         // Not on the ground
+        if (!_isJumping)
+        {
+            StartCoroutine(JumpTriggerDelayCoroutine());
+        }
+        else
+        {
+            _animator.SetBool(IsJumping, _isJumping);
+            //Debug.Log("Startedjumpcheck");
+            //StartCoroutine(JumpLandCheckCoroutine());
+        }
         _isJumping = true;
-        StartCoroutine(JumpTriggerDelayCoroutine());
     }
 
     private IEnumerator JumpTriggerDelayCoroutine()

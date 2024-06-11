@@ -138,7 +138,7 @@ public class EnemyManager : Singleton<EnemyManager>
     
     private IEnumerator ActiveCheckCoroutine()
     {
-        var activeDistance = 50f;
+        var activeDistance = 40f;
         var wait = new WaitForSeconds(2f);
         var player = PlayerController.Instance.transform;
 

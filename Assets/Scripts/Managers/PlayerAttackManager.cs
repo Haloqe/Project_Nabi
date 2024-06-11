@@ -70,7 +70,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     public void InitInGameVariables()
     {
         var gameManager = GameManager.Instance;
-        if (gameManager.IsFirstRun && gameManager.ActiveScene is ESceneType.CombatMap or ESceneType.DebugCombatMap)
+        if (gameManager.IsFirstRun && gameManager.ActiveScene is ESceneType.CombatMap0 or ESceneType.DebugCombatMap)
         {
             // UI
             var combatCanvas = UIManager.Instance.GetInGameCombatUI();

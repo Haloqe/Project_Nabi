@@ -8,6 +8,15 @@ public enum ELocalisation
     KOR,
     MAX,
 }
+
+public enum EAudioType
+{
+    Master,
+    BGM,
+    Enemy,
+    Others,
+    UI,
+}
 #endregion Settings
 
 //--------------------------------------------------------------------------------
@@ -297,6 +306,8 @@ public enum EPortalType
     SecretToCombat,
     MetaToCombat,
     CombatToBoss,
+    CombatToMidBoss,
+    MidBossToCombat,
 }
 
 public enum EFlowerType
@@ -368,8 +379,10 @@ public enum EEnemyType
 public enum ESceneType
 {
     MainMenu,
-    CombatMap,
+    CombatMap0,
+    CombatMap1,
     DebugCombatMap,
+    MidBoss,
     Boss,
 }
 #endregion

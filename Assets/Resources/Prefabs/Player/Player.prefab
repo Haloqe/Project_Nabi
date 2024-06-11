@@ -5106,6 +5106,11 @@ MonoBehaviour:
   isDashing: 0
   isAreaAttacking: 0
   isRangedAttacking: 0
+  jumpSound: {fileID: 8300000, guid: 6af9a4ee9aa72e049b56fb1b584c48f7, type: 3}
+  jumpLandSounds:
+  - {fileID: 8300000, guid: e4577f0427181df4396140013fc76fc4, type: 3}
+  - {fileID: 8300000, guid: dc64b7c5675657f40a6ba591bb5a3eb8, type: 3}
+  - {fileID: 8300000, guid: 14d786f3b5942054a8e7974fc40c8e4f, type: 3}
   savedLookDirection: 0
 --- !u!114 &39438638665260744
 MonoBehaviour:
@@ -5323,7 +5328,7 @@ BoxCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0.050000012, y: 0}
+  m_Offset: {x: 0.050000012, y: -0.02}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0}
@@ -5334,7 +5339,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.5, y: 0.22}
+  m_Size: {x: 0.5, y: 0.19}
   m_EdgeRadius: 0
 --- !u!114 &6388299134933228857
 MonoBehaviour:

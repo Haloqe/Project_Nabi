@@ -4,7 +4,8 @@ public class SettingsData_Sound
     public bool isMuted;
     public float masterVolume;
     public float musicVolume;
-    public float sfxVolume;
+    public float enemyVolume;
+    public float othersVolume;
     public float uiVolume;
     
     public SettingsData_Sound Clone()

@@ -408,8 +408,11 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     {
         if (other.gameObject.layer == LayerMask.NameToLayer("PlayerAbility"))
         {
-            _audioSource.pitch = Random.Range(0.8f, 1.2f);
-            _audioSource.PlayOneShot(_hitAudio);
+            if (_audioSource)
+            {
+                _audioSource.pitch = Random.Range(0.8f, 1.2f);
+                _audioSource.PlayOneShot(_hitAudio);   
+            }
             int direction = 1;
             if (_player.transform.localScale.x >= 0) direction = -1;
             Instantiate(_enemyManager.TakeDamageVFXPrefab, other.ClosestPoint(transform.position), 
@@ -579,7 +582,16 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     public void Die(bool shouldDropReward = true)
     {
         // Inform player
-        InGameEvents.EnemySlayed?.Invoke(this);
+        InGameEvents.EnemySlayed.Invoke(this);
+        if (typeID == 4)
+        {
+            InGameEvents.MidBossSlayed?.Invoke();
+            FindObjectOfType<Portal>(true).gameObject.SetActive(true);
+        }
+        else if (typeID == 5)
+        {
+            InGameEvents.BossSlayed?.Invoke();
+        }
 
         StopAllCoroutines();
         if (shouldDropReward)

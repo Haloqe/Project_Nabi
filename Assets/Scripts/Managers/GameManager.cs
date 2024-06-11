@@ -8,16 +8,17 @@ public class GameManager : Singleton<GameManager>
     public ESceneType ActiveScene { get; private set; }
     public PlayerMetaData PlayerMetaData { get; private set; }
     public GameObject PlayerPrefab;
-    
+
     // References
     private PlayerController _player;
     private UIManager _uiManager;
     private AudioManager _audioManager;
-    
+
     // DEBUG Only
-    private int _ingameMapSceneIdx;          // 플레이어가 실행한 씬
-    private int _releaseMapSceneIdx=1;       // 랜덤 제너레이션 씬
-    
+    private int _ingameMapSceneIdx;       // 플레이어가 실행한 씬
+    private int _releaseMapSceneIdx = 1;  // 랜덤 제너레이션 씬
+    private int _releaseMapSceneIdx2 = 7; // 여왕벌 이후
+
     // todo temp
     public bool IsFirstRun = true;
 
@@ -25,6 +26,7 @@ public class GameManager : Singleton<GameManager>
     {
         base.Awake();
         if (IsToBeDestroyed) return;
+
         PlayerMetaData = SaveSystem.LoadMetaData();
         _ingameMapSceneIdx = _releaseMapSceneIdx;
         SceneManager.sceneLoaded += OnSceneLoaded;
@@ -44,16 +46,27 @@ public class GameManager : Singleton<GameManager>
             ActiveScene = ESceneType.MainMenu;
             GameEvents.MainMenuLoaded.Invoke();
         }
+        else if (scene.name.StartsWith("RealMidBoss"))
+        {
+            ActiveScene = ESceneType.MidBoss;
+            LevelManager.Instance.SpawnPlayer();
+            PostLoadInGame();
+        }
         else if (scene.name.StartsWith("Boss"))
         {
             ActiveScene = ESceneType.Boss;
             LevelManager.Instance.SpawnPlayer();
             PostLoadInGame();
         }
-        else if (scene.name.StartsWith("MapGen"))
+        else if (scene.name.StartsWith("MapGen_Pre"))
         {
-            ActiveScene = ESceneType.CombatMap;
+            ActiveScene = ESceneType.CombatMap0;
             _ingameMapSceneIdx = scene.buildIndex;
+            PostLoadInGame();
+        }
+        else if (scene.name.StartsWith("MapGen_Post"))
+        {
+            ActiveScene = ESceneType.CombatMap1;
             PostLoadInGame();
         }
         else if (scene.name.EndsWith("InGame"))
@@ -64,20 +77,20 @@ public class GameManager : Singleton<GameManager>
         }
     }
 
-    private void LoadInGame()
+    private void LoadInGame(int idx)
     {
         // Loading screen
         _uiManager.HideAllInGameUI();
         _uiManager.DisplayLoadingScreen();
-        
+
         // Load new in-game scene
-        // TEMP TODO
-        StartCoroutine(LoadSceneAsync());
+        StartCoroutine(LoadSceneAsync(idx));
     }
-    
-    private IEnumerator LoadSceneAsync()
+
+    private IEnumerator LoadSceneAsync(int idx)
     {
-        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(_ingameMapSceneIdx);
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(
+            idx == 0 ? _ingameMapSceneIdx : _releaseMapSceneIdx2);
 
         // Wait until the asynchronous scene fully loads
         while (!asyncLoad.isDone)
@@ -89,14 +102,14 @@ public class GameManager : Singleton<GameManager>
     public bool hasGameLoadEnded;
     private void PostLoadInGame()
     {
-        if (ActiveScene == ESceneType.CombatMap || ActiveScene == ESceneType.DebugCombatMap)
+        if (ActiveScene is ESceneType.CombatMap0 or ESceneType.DebugCombatMap)
         {
             if (IsFirstRun) GameEvents.InGameFirstLoadStarted.Invoke();
             else GameEvents.CombatSceneChanged.Invoke();
         }
-        
+
         // Generate new map
-        if (ActiveScene == ESceneType.CombatMap)
+        if (ActiveScene is ESceneType.CombatMap0 or ESceneType.CombatMap1)
         {
             hasGameLoadEnded = false;
             LevelManager.Instance.Generate();
@@ -114,15 +127,16 @@ public class GameManager : Singleton<GameManager>
         GameEvents.MapLoaded.Invoke();
         
         // If not first run, reset variables
-        if (ActiveScene != ESceneType.Boss && !IsFirstRun) GameEvents.Restarted.Invoke();
+        if (ActiveScene is ESceneType.CombatMap0 or ESceneType.DebugCombatMap && !IsFirstRun) 
+            GameEvents.Restarted.Invoke();
 
         // When all set, spawn player 
         LevelManager.Instance.SpawnPlayer();
-        //StartCoroutine(PlayerSpawnCoroutine());
-        
         _player = PlayerController.Instance;
         GameEvents.GameLoadEnded.Invoke();
-        if (ActiveScene == ESceneType.Boss) GameEvents.CombatSceneChanged.Invoke();
+        
+        if (ActiveScene is ESceneType.Boss or ESceneType.MidBoss or ESceneType.CombatMap1)
+            GameEvents.CombatSceneChanged.Invoke();
     }
 
     // private IEnumerator PlayerSpawnCoroutine()
@@ -142,10 +156,16 @@ public class GameManager : Singleton<GameManager>
         SceneManager.LoadScene("Scenes/MainMenu");
     }
 
-    public void LoadBossMap()
+    public void LoadMidBossMap()
     {
         _uiManager.DisplayLoadingScreen();
-        _audioManager.StopBgm();
+        SceneManager.LoadScene("Scenes/RealMidBoss_InGame");
+    }
+    
+    public void LoadBossMap()
+    {
+        Debug.Log("LoadBossMap");
+        _uiManager.DisplayLoadingScreen();
         SceneManager.LoadScene("Scenes/Boss_InGame");
     }
 
@@ -175,11 +195,16 @@ public class GameManager : Singleton<GameManager>
         IsFirstRun = true;
         PlayerMetaData = new PlayerMetaData();
         SaveSystem.RemoveMetaData();
-        LoadInGame();
+        LoadInGame(0);
     }
 
     public void ContinueGame()
     {
-        LoadInGame();
+        LoadInGame(0);
+    }
+
+    public void LoadPostMidBossCombatMap()
+    {
+        LoadInGame(1);
     }
 }

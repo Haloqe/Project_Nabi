@@ -8,6 +8,7 @@ public class Arbor : Interactor
     protected override void OnInteract(InputAction.CallbackContext obj)
     {
         tensionController.ChangeArbor(arborType);
+        tensionController.PlayArborEquipAudio();
         Destroy(gameObject);
     }
 }

@@ -11,7 +11,7 @@ public class WarriorUIController : UIControllerBase
     // Base
     private PlayerAttackManager _playerAttackManager;
     private PlayerController _player;
-    [SerializeField] private TextMeshProUGUI _titleTMP;
+    
     [SerializeField] private EWarrior _warrior;
     [SerializeField] private GameObject[] _legacyPanels;
     private int _numUsedPanels;
@@ -44,12 +44,22 @@ public class WarriorUIController : UIControllerBase
     private float[][] _upgradeSuccessChances;
     private RectTransform _upgradeRect;
     
+    // SFX
+    private AudioSource _audioSource;
+    [SerializeField] private AudioClip clockworkCollectSound;
+    [SerializeField] private AudioClip clockworkBindSound;
+    
     public void Initialise(EWarrior warrior, bool isPristineClockwork)
     {
         _playerAttackManager = PlayerAttackManager.Instance;
         _player = PlayerController.Instance;
         _warrior = warrior;
         
+        // Play sound
+        _audioSource = GetComponent<AudioSource>();
+        _audioSource.PlayOneShot(clockworkCollectSound);
+        
+        // Initialise UI
         InitialiseConfirmUI();
         InitialiseBaseUI(isPristineClockwork);
         InitialiseUpgradeUI();
@@ -239,6 +249,7 @@ public class WarriorUIController : UIControllerBase
     
     private void CollectLegacy(int panelIndex)
     {
+        AudioManager.Instance.PlayOneShotClip(clockworkBindSound, 1f, EAudioType.Others);
         _playerAttackManager.CollectLegacy(_legacies[panelIndex].ID, _legacyPreservations[panelIndex]);
         UIManager.Instance.CloseFocusedUI();   
     }
@@ -382,6 +393,7 @@ public class WarriorUIController : UIControllerBase
                 // Up
                 case > 0:
                     {
+                        AudioManager.Instance.PlayUINavigateSound();
                         if (_selectedPanelIdx == 0) SelectPanel(3);
                         else if (_selectedPanelIdx == 3) SelectPanel(_numUsedPanels - 1);
                         else SelectPanel(_selectedPanelIdx - 1);
@@ -390,6 +402,7 @@ public class WarriorUIController : UIControllerBase
                 // Down
                 case < 0:
                     {
+                        AudioManager.Instance.PlayUINavigateSound();
                         if (_selectedPanelIdx == 3) SelectPanel(0);
                         else if (_selectedPanelIdx == _numUsedPanels - 1) SelectPanel(3);
                         else SelectPanel(_selectedPanelIdx + 1);

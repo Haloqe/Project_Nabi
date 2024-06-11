@@ -36,6 +36,9 @@ public class PlayerTensionController : MonoBehaviour
     private float _overloadDuration;
     private float _recoveryDuration;
     
+    // SFX
+    private AudioSource _audioSource;
+    
     // Arbor
     private EArborType _arborType;
     private GameObject _curArborDescriptionUI;
@@ -45,6 +48,7 @@ public class PlayerTensionController : MonoBehaviour
     
     private void Awake()
     {
+        _audioSource = GetComponent<AudioSource>();
         _tensionGaugeSlider = GetComponentInChildren<Slider>();
         _tensionGaugeText = GetComponentInChildren<TextMeshProUGUI>();
         _tensionGaugeFillImage = _tensionGaugeSlider.transform.Find("Fill Area").GetComponentInChildren<Image>();
@@ -53,9 +57,12 @@ public class PlayerTensionController : MonoBehaviour
         _fillRecoveryColour = new Color(0.3301887f, 0.3301887f, 0.3301887f, 1f);
         _overloadedColour = new Color(0.83f, 0, 0, 1);
         _slowedTimeScale = 0.5f;
-        PlayerEvents.Spawned += Initialise;
+        
+        PlayerEvents.SpawnedFirstTime += Initialise;
         PlayerEvents.StartResurrect += OnPlayerDefeated;
         PlayerEvents.Defeated += OnPlayerDefeated;
+        GameEvents.Restarted += OnRestarted;
+        GameEvents.CombatSceneChanged += OnCombatSceneChanged;
     }
 
     private void OnDestroy()
@@ -63,6 +70,7 @@ public class PlayerTensionController : MonoBehaviour
         PlayerEvents.Spawned -= Initialise;
         PlayerEvents.StartResurrect -= OnPlayerDefeated;
         PlayerEvents.Defeated -= OnPlayerDefeated;
+        GameEvents.Restarted -= OnRestarted;
     }
 
     private void Initialise()
@@ -74,6 +82,12 @@ public class PlayerTensionController : MonoBehaviour
         OnRestarted();
     }
 
+    private void OnCombatSceneChanged()
+    {
+        if (GameManager.Instance.ActiveScene == ESceneType.Boss)
+            ResetTension();
+    }
+    
     private void OnRestarted()
     {
         _incrementStep = 1;
@@ -106,6 +120,11 @@ public class PlayerTensionController : MonoBehaviour
             InGameEvents.TimeRevertNormal.Invoke();
         }
         SetTensionState(ETensionState.Innate);
+    }
+
+    public void PlayArborEquipAudio()
+    {
+        _audioSource.Play();
     }
     
     public void ChangeArbor(EArborType newArborType)
@@ -160,6 +179,7 @@ public class PlayerTensionController : MonoBehaviour
 
     private void SetTensionValue(int value)
     {
+        Debug.Log("SetTensionValue : " + value);
         // Update UI
         _tension = value;
         _tensionGaugeSlider.value = (float)value / _maxTension;

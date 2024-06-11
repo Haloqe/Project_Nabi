@@ -1,10 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
-using Pathfinding;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Serialization;
 
 public class PlayerController : Singleton<PlayerController>
 {
@@ -111,6 +109,7 @@ public class PlayerController : Singleton<PlayerController>
         PlayerEvents.ValueChanged += OnValueChanged;
         PlayerEvents.StartResurrect += OnPlayerStartResurrect;
         InGameEvents.EnemySlayed += OnEnemySlayed;
+        GameEvents.CombatSceneChanged += OnCombatSceneChanged;
         playerInput.actions["Jump"].started += OnStartJump;
         playerInput.actions["Jump"].canceled += OnReleaseJump;
         OnRestarted();
@@ -510,4 +509,39 @@ public class PlayerController : Singleton<PlayerController>
 
     public void DisablePlayerInput() => _playerIAMap.Disable();
     public void EnablePlayerInput() => _playerIAMap.Enable();
+    
+    public IEnumerator FadeOutCoroutine()
+    {
+        var spriteRenderer = GetComponent<SpriteRenderer>();
+        DisablePlayerInput();
+        
+        var color = spriteRenderer.color;
+        while (spriteRenderer.color.a > 0)
+        {
+            color.a -= 1f * Time.unscaledDeltaTime;
+            spriteRenderer.color = color;
+            yield return null;
+        }
+    }
+
+    public IEnumerator FadeInCoroutine()
+    {
+        DisablePlayerInput();
+        var spriteRenderer = GetComponent<SpriteRenderer>();
+        
+        var color = spriteRenderer.color;
+        while (spriteRenderer.color.a < 1)
+        {
+            color.a += 1f * Time.unscaledDeltaTime;
+            spriteRenderer.color = color;
+            yield return null;
+        }
+        
+        EnablePlayerInput();
+    }
+    
+    private void OnCombatSceneChanged()
+    {
+        StartCoroutine(FadeInCoroutine());
+    }
 }

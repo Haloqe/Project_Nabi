@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
@@ -8,10 +7,6 @@ using UnityEngine.UI;
 
 public class SettingsUIController : UIControllerBase
 {
-    // Ref
-    private AudioManager _audioManager;
-    private UIManager _uiManager;
-    
     // Parent
     public MainMenuUIController parentMainMenu;
     
@@ -85,9 +80,6 @@ public class SettingsUIController : UIControllerBase
 
     private void Start()
     {
-        _audioManager = AudioManager.Instance;
-        _uiManager = UIManager.Instance;
-        
         // TODO
         // get data from savefile
         LoadSoundSaveData();
@@ -100,11 +92,12 @@ public class SettingsUIController : UIControllerBase
 
     private void LoadSoundSaveData()
     {
-        _muteToggle.isOn = _audioManager.SoundSettingsData.isMuted;
-        _soundSliders[1].value = _audioManager.ConvertAudioMixerVolumeToFloat(1);
-        _soundSliders[2].value = _audioManager.ConvertAudioMixerVolumeToFloat(2);
-        _soundSliders[3].value = _audioManager.ConvertAudioMixerVolumeToFloat(3);
-        _soundSliders[4].value = _audioManager.ConvertAudioMixerVolumeToFloat(4);
+        _muteToggle.isOn = AudioManager.Instance.SoundSettingsData.isMuted;
+        _soundSliders[1].value = AudioManager.Instance.ConvertAudioMixerVolumeToFloat(0);
+        _soundSliders[2].value = AudioManager.Instance.ConvertAudioMixerVolumeToFloat(1);
+        _soundSliders[3].value = AudioManager.Instance.ConvertAudioMixerVolumeToFloat(2);
+        _soundSliders[4].value = AudioManager.Instance.ConvertAudioMixerVolumeToFloat(3);
+        _soundSliders[5].value = AudioManager.Instance.ConvertAudioMixerVolumeToFloat(4);
     }
 
     private void OnEnable()
@@ -131,6 +124,7 @@ public class SettingsUIController : UIControllerBase
             UnselectSettingDetail();
             if (_isNavigatingSound) StopAllCoroutines();
             _isNavigatingSound = false;
+            AudioManager.Instance.PlayUINavigateSound();
             
             int lastIdx = _settingDetailImages[_curSettingsGroup].Length - 1;
             if (value.y > 0) // up
@@ -165,11 +159,11 @@ public class SettingsUIController : UIControllerBase
         InputAction targetRelatedAction = null;
         if (_curDetailSettingIdx == 8) // Interact
         {
-            targetRelatedAction = _uiManager.PlayerIAMap.FindAction("Interact_Hold");
+            targetRelatedAction = UIManager.Instance.PlayerIAMap.FindAction("Interact_Hold");
         }
         else if (_curDetailSettingIdx == 9) // Map
         {
-            targetRelatedAction = _uiManager.UIIAMap.FindAction("CloseMap");
+            targetRelatedAction = UIManager.Instance.UIIAMap.FindAction("CloseMap");
         }
         var newBinding = targetRelatedAction.bindings[0];
         newBinding.overridePath = op.action.bindings[0].overridePath;
@@ -226,13 +220,13 @@ public class SettingsUIController : UIControllerBase
 
     public void OnSoundSliderValueChanged(int idx)
     {
-        _audioManager.SetAudioMixerVolumeByFloat(idx, _soundSliders[idx].value);
+        AudioManager.Instance.SetAudioMixerVolumeByFloat(idx, _soundSliders[idx + 1].value);
     }
 
     public void OnMuteToggleChanged()
     {
-        if (_muteToggle.isOn) _audioManager.Mute();
-        else _audioManager.Unmute();
+        if (_muteToggle.isOn) AudioManager.Instance.Mute();
+        else AudioManager.Instance.Unmute();
     }
     
     public override void OnSubmit()
@@ -268,8 +262,8 @@ public class SettingsUIController : UIControllerBase
         _isNavigatingSound = false;
         
         // Save settings
-        _uiManager.SaveActionRebinds();
-        _audioManager.SaveAudioSettings();
+        UIManager.Instance.SaveActionRebinds();
+        AudioManager.Instance.SaveAudioSettings();
         
         // Return to parent
         if (parentMainMenu != null)
@@ -285,6 +279,7 @@ public class SettingsUIController : UIControllerBase
         if (_curSettingsGroup == 1 && !CanSaveRebinds()) return; // Todo warning
         UnselectSettingsGroup();
         SelectSettingsGroup(_curSettingsGroup == 2 ? 0 : _curSettingsGroup + 1); 
+        AudioManager.Instance.PlayUINavigateSound();
     }
 
     public void OnReset()
@@ -299,7 +294,7 @@ public class SettingsUIController : UIControllerBase
                 break;
             
             case 2:
-                _audioManager.ResetAudioSettingsToDefault();
+                AudioManager.Instance.ResetAudioSettingsToDefault();
                 LoadSoundSaveData();
                 break;
         }
@@ -366,7 +361,7 @@ public class SettingsUIController : UIControllerBase
 
     private void ResetAllRebinds()
     {
-        _uiManager.UIIAMap.RemoveAllBindingOverrides();
-        _uiManager.PlayerIAMap.RemoveAllBindingOverrides();
+        UIManager.Instance.UIIAMap.RemoveAllBindingOverrides();
+        UIManager.Instance.PlayerIAMap.RemoveAllBindingOverrides();
     }
 }

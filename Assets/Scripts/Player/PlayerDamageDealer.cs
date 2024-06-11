@@ -145,7 +145,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         _spawnedButterflies.Clear();
         
         // Reset gauge values
-        ResetNightShadeDarkGauge();
+        //ResetNightShadeDarkGauge();
         
         // Reset UI
         _dashUIOverlay = PlayerAttackManager.Instance.GetAttackOverlay(ELegacyType.Dash);

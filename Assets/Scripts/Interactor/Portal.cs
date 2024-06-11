@@ -10,6 +10,7 @@ public class Portal : Interactor
     public bool _isHidden;
     private PlayerController _player;
     private UIManager _uiManager;
+    private AudioManager _audioManager;
     public EPortalType portalType;
     private Vector3 _destination;
     public HiddenRoom connectedHiddenRoom;
@@ -24,6 +25,7 @@ public class Portal : Interactor
         IsInteracting = true;
         _player = PlayerController.Instance;
         _uiManager = UIManager.Instance;
+        _audioManager = AudioManager.Instance;
         
         // Get destination location
         switch (portalType)
@@ -36,21 +38,24 @@ public class Portal : Interactor
                 break;
             
             case EPortalType.MetaToCombat:
-                _destination = LevelManager.Instance.CombatSpawnPoint.position;
+                _audioManager.StopBgm(0.5f);
+                _destination = LevelManager.Instance.CombatSpawnPoint;
                 break;
             
+            case EPortalType.CombatToMidBoss:
+                _audioManager.StopBgm(2f);
+                break;
+            
+            case EPortalType.MidBossToCombat:
+                _audioManager.StopBgm(2f);
+                break;
+                
             case EPortalType.CombatToBoss:
-                TeleportToBossMap();
-                return;
+                _audioManager.StopBgm(2f);
+                break;
         }
 
         StartCoroutine(TeleportCoroutine());
-    }
-
-    private void TeleportToBossMap()
-    {
-        _player.playerMovement.ResetEnteredGroundCount();
-        GameManager.Instance.LoadBossMap();
     }
 
     private void SetHiddenRoomTeleportPosition()
@@ -69,36 +74,41 @@ public class Portal : Interactor
 
     private IEnumerator TeleportCoroutine()
     {
-        var playerSpriteRenderer = _player.gameObject.GetComponent<SpriteRenderer>();
-        
         // Start teleport
         _player.DisablePlayerInput();
-        
-        // Fade in
-        var color = playerSpriteRenderer.color;
-        while (playerSpriteRenderer.color.a > 0)
-        {
-            color.a -= 1f * Time.unscaledDeltaTime;
-            playerSpriteRenderer.color = color;
-            yield return null;
-        }
+        yield return StartCoroutine(_player.FadeOutCoroutine());
         
         // Teleport
-        _player.transform.position = _destination;
-        yield return null;
-        OnPlayerEnterNextRoom();
-        yield return null;
-        
-        // Fade out
-        while (playerSpriteRenderer.color.a < 1)
+        // Case 1: Loading a new scene
+        switch (portalType)
         {
-            color.a += 1f * Time.unscaledDeltaTime;
-            playerSpriteRenderer.color = color;
-            yield return null;
+            // Case 2: Teleporting within a scene
+            case EPortalType.CombatToSecret:
+            case EPortalType.SecretToCombat:
+            case EPortalType.MetaToCombat:
+                _player.transform.position = _destination;
+                yield return null;
+                break;
+            
+            case EPortalType.CombatToMidBoss:
+                _player.playerMovement.ResetEnteredGroundCount();
+                GameManager.Instance.LoadMidBossMap();
+                yield break;
+            
+            case EPortalType.MidBossToCombat:
+                _player.playerMovement.ResetEnteredGroundCount();
+                GameManager.Instance.LoadPostMidBossCombatMap();
+                yield break;
+                
+            case EPortalType.CombatToBoss:
+                _player.playerMovement.ResetEnteredGroundCount();
+                GameManager.Instance.LoadBossMap();
+                yield break;
         }
         
-        // End teleport
-        _player.EnablePlayerInput();
+        // End teleport in Case 2
+        OnPlayerEnterNextRoom();
+        yield return StartCoroutine(_player.FadeInCoroutine());
         OnEndTeleport();
     }
 
@@ -118,6 +128,7 @@ public class Portal : Interactor
             
             case EPortalType.MetaToCombat:
                 _uiManager.EnableMap();
+                _audioManager.StartCombatBgm();
                 break;
         }
     }
@@ -134,7 +145,6 @@ public class Portal : Interactor
                 break;
             
             case EPortalType.MetaToCombat:
-                // Do something
                 break;
         }
         IsInteracting = false;

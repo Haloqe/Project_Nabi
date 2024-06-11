@@ -219,7 +219,7 @@ public class UIManager : Singleton<UIManager>
         ESceneType currSceneType = _gameManager.ActiveScene;
         switch (currSceneType)
         {
-            case ESceneType.CombatMap:
+            case ESceneType.CombatMap0:
                 DisplayRoomGuideUI("임시 메타맵", "");
                 DisableMap();
                 break;
@@ -238,7 +238,7 @@ public class UIManager : Singleton<UIManager>
     private void OnCombatSceneChanged()
     {
         // Minimap and zoomed map disabled in the boss map
-        if (_gameManager.ActiveScene == ESceneType.Boss) DisableMap();
+        DisableMap();
         
         // Update combat UI with bound legacy information
         //_playerAttackManager.UpdateLegacyUI();

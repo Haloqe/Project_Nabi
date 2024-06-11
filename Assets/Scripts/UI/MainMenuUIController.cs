@@ -235,8 +235,8 @@ public class MainMenuUIController : UIControllerBase
 
     private void StartHideTransition(bool stopBgm = true)
     {
-        if (stopBgm) _audioManager.StopBgm();
-        
+        if (stopBgm) _audioManager.StopBgm(1f);
+        _audioManager.PlayUIConfirmSound();
         _animator.enabled = true;
         _animator.SetTrigger(Transition);
         _underTransition = true;
