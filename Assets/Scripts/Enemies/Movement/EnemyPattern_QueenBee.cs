@@ -16,6 +16,12 @@ public class EnemyPattern_QueenBee : EnemyPattern
     private GameObject _bombObject;
     private EnemyManager _enemyManager;
     private Vector3[] _bombPositions = new Vector3[13];
+
+    [SerializeField] private float _leftMostPosition = -19.69f;
+    [SerializeField] private float _rightMostPosition = 14.99f;
+    [SerializeField] private float _bottomMostPosition = -6.79f;
+    [SerializeField] private float _topMostPosition = 7.99f;
+    
     private static readonly int IsAttacking = Animator.StringToHash("IsAttacking");
     private static readonly int AttackIndex = Animator.StringToHash("AttackIndex");
 
@@ -38,7 +44,7 @@ public class EnemyPattern_QueenBee : EnemyPattern
         float gap = 3f;
         for (int i = 0; i < _bombPositions.Length; i++)
         {
-            _bombPositions[i] = new Vector3(-19.5f + gap * i, -7f, 0);
+            _bombPositions[i] = new Vector3(_leftMostPosition + gap * i, _bottomMostPosition - 0.2f, 0);
         }
     }
 
@@ -93,15 +99,17 @@ public class EnemyPattern_QueenBee : EnemyPattern
 
     private IEnumerator MoveToPosition(Vector3 destination, float speed, bool facingTarget = true)
     {
-        transform.position = new Vector3(Mathf.Clamp(transform.position.x, -19.69f, 14.99f),
-            Mathf.Clamp(transform.position.y, -6.79f, 7.99f), 0f);
+        transform.position = new Vector3(Mathf.Clamp(transform.position.x, _leftMostPosition, _rightMostPosition),
+            Mathf.Clamp(transform.position.y, _bottomMostPosition, _topMostPosition), 0f);
         Vector3 clampedDestination = 
-            new Vector3(Mathf.Clamp(destination.x, -19.7f, 15f), 
-                Mathf.Clamp(destination.y, -6.8f, 8f), 0);
+            new Vector3(Mathf.Clamp(destination.x, _leftMostPosition, _rightMostPosition), 
+                Mathf.Clamp(destination.y, _bottomMostPosition, _topMostPosition), 0);
         Vector3 moveDirection = (clampedDestination - transform.position).normalized;
         while (!IsCloseEnough(gameObject, clampedDestination)
-               && transform.position.x is >= -19.7f and <= 15f
-               && transform.position.y is >= -6.8f and <= 8f)
+               && transform.position.x >= _leftMostPosition
+               && transform.position.x <= _rightMostPosition
+               && transform.position.y >= _bottomMostPosition
+               && transform.position.y <= _topMostPosition)
         {
             _rigidBody.velocity = moveDirection * speed;
             if (facingTarget) FlipEnemyTowardsTarget();

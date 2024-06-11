@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Cinemachine;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -118,6 +119,10 @@ public class GameManager : Singleton<GameManager>
 
         // When all set, spawn player 
         LevelManager.Instance.SpawnPlayer();
+        
+        GameObject followObject = new GameObject("CameraFollowingObject");
+        followObject.AddComponent<CameraFollowObject>();
+        GameObject.Find("Virtual Camera").GetComponent<CinemachineVirtualCamera>().Follow = followObject.transform;
         //StartCoroutine(PlayerSpawnCoroutine());
         
         _player = PlayerController.Instance;

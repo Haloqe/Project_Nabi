@@ -1,4 +1,5 @@
 using System.Collections;
+using Cinemachine;
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
@@ -43,17 +44,22 @@ public class PlayerMovement : MonoBehaviour
     public bool isDashing;
     public bool isAreaAttacking; 
     public bool isRangedAttacking;
+    
+    // camera
+    private CameraManager _cameraManager;
+    private CameraFollowObject _cameraFollowObject;
+    private float _fallSpeedYDampingChangeThreshold;
 
-    // Others
+    // animator
     private readonly static int Moving = Animator.StringToHash("IsMoving");
     private readonly static int IsDoubleJumping = Animator.StringToHash("IsDoubleJumping");
     private readonly static int IsJumping = Animator.StringToHash("IsJumping");
- 
 
     private void Start()
     {
         GameEvents.Restarted += OnRestarted;
         PlayerEvents.Defeated += OnDefeated;
+        // PlayerEvents.Spawned += OnSpawned;
         InGameEvents.TimeSlowDown += OnTimeSlowDown;
         InGameEvents.TimeRevertNormal += OnTimeRevertNormal;
         
@@ -66,7 +72,11 @@ public class PlayerMovement : MonoBehaviour
         _isJumping = true;
         IsMoving = false;
         UpwardsGravityScale = 2f;
-        DownwardsGravityScale = 5f;
+        DownwardsGravityScale = 4.5f;
+
+        _cameraManager = CameraManager.Instance;
+        _fallSpeedYDampingChangeThreshold = _cameraManager.FallSpeedYDampingChangeThreshold;
+        _cameraFollowObject = GameObject.Find("CameraFollowingObject").GetComponent<CameraFollowObject>();
 
         _mainCollider = GetComponents<BoxCollider2D>()[0];
         _defaultBounciness = _mainCollider.sharedMaterial.bounciness;
@@ -86,6 +96,15 @@ public class PlayerMovement : MonoBehaviour
         _moveDirection = 0;
         _additionalVelocity = Vector2.zero;
     }
+
+    // private void OnSpawned()
+    // {
+    //     Debug.Log("player spawning rnnnn");
+    //     GameObject followObject = new GameObject("CameraFollowingObject");
+    //     _cameraFollowObject = followObject.AddComponent<CameraFollowObject>();
+    //     GameObject.Find("Virtual Camera").GetComponent<CinemachineVirtualCamera>().Follow = followObject.transform;
+    //     
+    // }
     
     private void OnRestarted()
     {
@@ -109,6 +128,23 @@ public class PlayerMovement : MonoBehaviour
         _animator.SetBool(Moving, IsMoving && !IsRooted);
         _coyoteTimeCounter -= Time.unscaledDeltaTime;
         _jumpBufferTimeCounter -= Time.unscaledDeltaTime;
+
+        // if player is falling past a certain speed threshold
+        if (_rigidbody2D.velocity.y < _fallSpeedYDampingChangeThreshold
+            && !_cameraManager.IsLerpingYDamping
+            && !_cameraManager.LerpedFromPlayerFalling)
+        {
+            _cameraManager.LerpYDamping(true);
+        }
+
+        // if player is standing still or moving up
+        if (_rigidbody2D.velocity.y >= 0f
+            && !_cameraManager.IsLerpingYDamping
+            && _cameraManager.LerpedFromPlayerFalling)
+        {
+            _cameraManager.LerpedFromPlayerFalling = false;
+            _cameraManager.LerpYDamping(false);
+        }
     }
 
     private void FixedUpdate()
@@ -117,7 +153,8 @@ public class PlayerMovement : MonoBehaviour
         if (IsRooted || isDashing || isAreaAttacking) return;
 
         // Movement-driven velocity
-        _rigidbody2D.velocity = new Vector2((_moveDirection * MoveSpeed * moveSpeedMultiplier) / Time.timeScale, _rigidbody2D.velocity.y);
+        _rigidbody2D.velocity =
+            new Vector2((_moveDirection * MoveSpeed * moveSpeedMultiplier) / Time.timeScale, _rigidbody2D.velocity.y);
 
         // Animation-driven velocity
         if (_isMoveDisabled)
@@ -130,6 +167,9 @@ public class PlayerMovement : MonoBehaviour
             _rigidbody2D.gravityScale = DownwardsGravityScale;
             if (Time.timeScale != 1) _rigidbody2D.gravityScale /= (Time.timeScale * Time.timeScale);
         }
+
+        if (_rigidbody2D.velocity.y < -35f)
+            _rigidbody2D.velocity = new Vector2(_rigidbody2D.velocity.x, -35f);
     }
     
     private void OnTimeRevertNormal()
@@ -239,14 +279,16 @@ public class PlayerMovement : MonoBehaviour
         {
             // Note: Player sprite default direction is left
             IsMoving = true;
-            transform.localScale = new Vector2(-Mathf.Sign(value) * Mathf.Abs(transform.localScale.x), transform.localScale.y);
+            transform.localScale =
+                new Vector2(-Mathf.Sign(value) * Mathf.Abs(transform.localScale.x), transform.localScale.y);
+            
+            _cameraFollowObject.TurnCamera();
         }
     }
 
     public float savedLookDirection = 0;
     public void UpdateLookDirectionOnAttackEnd()
     {
-        Debug.Log(savedLookDirection);
         transform.localScale = new Vector2(-Mathf.Sign(savedLookDirection) 
             * Mathf.Abs(transform.localScale.x), transform.localScale.y);
     }
