@@ -57,6 +57,7 @@ public class EnemyPattern_Mantis : EnemyPattern
         if (IsAtEdge() && IsChasingPlayer)
         {
             _rigidBody.velocity = Vector2.zero;
+            
             return;
         }
 

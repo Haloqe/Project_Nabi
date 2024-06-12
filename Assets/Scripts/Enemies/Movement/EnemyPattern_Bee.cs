@@ -85,16 +85,21 @@ public class EnemyPattern_Bee : EnemyPattern
     private IEnumerator MoveToPosition(Vector3 destination, float speed, bool facingTarget)
     {
         _movingToPosition = true;
+        Debug.Log("destination: " + destination);
         
         Vector3 moveDirection = (destination - transform.position).normalized;
-        while (!IsCloseEnough(gameObject, destination) && _movingToPosition)
+        float timer = 0f;
+        while (!IsCloseEnough(gameObject, destination) && _movingToPosition && timer <= 1.5f)
         {
             _rigidBody.velocity = moveDirection * speed;
             if (facingTarget) FlipEnemyTowardsTarget();
             else FlipEnemyTowardsMovement();
             yield return null;
+            timer += Time.deltaTime;
         }
-
+        
+        Debug.Log("arrived at: " + transform.position);
+        _rigidBody.velocity = Vector2.zero;
         _movingToPosition = false;
     }
     
@@ -133,22 +138,28 @@ public class EnemyPattern_Bee : EnemyPattern
     {
         if (_isInAttackState) return;
         
-        if (!_animator.GetBool(IsAttacking))
-        {
-            _animator.SetBool(IsAttacking, true);
-            IsAttackingPlayer = true;
-            _targetPosition = _enemyBase.Target.transform.position;
-            StartCoroutine(Telegraph());
-            return;
-        }
+        _animator.SetBool(IsAttacking, true);
+        IsAttackingPlayer = true;
+        _targetPosition = _enemyBase.Target.transform.position;
+        StartCoroutine(Telegraph());
+        
+        
+        // if (!_animator.GetBool(IsAttacking))
+        // {
+        //     _animator.SetBool(IsAttacking, true);
+        //     IsAttackingPlayer = true;
+        //     _targetPosition = _enemyBase.Target.transform.position;
+        //     StartCoroutine(Telegraph());
+        //     return;
+        // }
 
-        if (_animator.GetBool(IsInAttackSequence))
-        {
-            StartCoroutine(AttackSequence());
-            return;
-        }
-
-        StartCoroutine(AttackEnd());
+        // if (_animator.GetBool(IsInAttackSequence))
+        // {
+        //     StartCoroutine(AttackSequence());
+        //     return;
+        // }
+        //
+        // StartCoroutine(AttackEnd());
     }
 
     private IEnumerator Telegraph()
@@ -167,17 +178,18 @@ public class EnemyPattern_Bee : EnemyPattern
         Vector3 position = _targetPosition + new Vector3(directionFacing * 3f, 3f, 0);
         position += new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), 0);
         yield return MoveToPosition(position, MoveSpeed, true);
-        _rigidBody.velocity = new Vector3(0f, 0f, 0f);
+        _rigidBody.velocity = Vector3.zero;
         yield return new WaitForSeconds(0.2f);
 
         _animator.SetBool(IsInAttackSequence, true);
         IsAttackingPlayer = true;
-        _isInAttackState = false;
+        StartCoroutine(AttackSequence());
+        // _isInAttackState = false;
     }
 
     private IEnumerator AttackSequence()
     {
-        _isInAttackState = true;
+        // _isInAttackState = true;
         
         _rigidBody.velocity = new Vector3(0f, 0f, 0f);
         Vector3 position = _targetPosition + new Vector3(0f, 0.5f, 0);
@@ -185,22 +197,23 @@ public class EnemyPattern_Bee : EnemyPattern
         _audioSources[0].loop = false;
         _audioSources[1].pitch = Random.Range(0.8f, 1.2f);
         _audioSources[1].PlayOneShot(_attackAudio);
-        yield return MoveToPosition(position, MoveSpeed * 3f, false);
+        yield return MoveToPosition(position, MoveSpeed * 3.5f, false);
         
         _animator.SetBool(IsInAttackSequence, false);
-        _isInAttackState = false;
+        StartCoroutine(AttackEnd());
+        // _isInAttackState = false;
     }
 
     private IEnumerator AttackEnd()
     {
-        _isInAttackState = true;
+        // _isInAttackState = true;
         
         int directionFacing = -1;
         if (_targetPosition.x > transform.position.x) directionFacing *= -1;
-        Vector3 position = _targetPosition + new Vector3(directionFacing * 2f, 2f, 0);
+        Vector3 position = transform.position + new Vector3(directionFacing * 2f, 2f, 0);
         position += new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), 0);
         yield return MoveToPosition(position, MoveSpeed, true);
-
+        
         yield return new WaitForSeconds(1.5f);
         
         _animator.SetBool(IsAttacking, false);
@@ -243,11 +256,11 @@ public class EnemyPattern_Bee : EnemyPattern
         return Physics2D.OverlapCircle(transform.position, _enemyBase.EnemyData.DetectRangeX, _playerLayer);
     }
 
-    // void OnDrawGizmos()
-    // {
-    //     Gizmos.DrawWireSphere(transform.position, _enemyBase.EnemyData.DetectRangeX);
-    //     // Gizmos.DrawWireSphere(transform.position, 0.8f);
-    //     Gizmos.DrawWireCube(transform.position,
-    //     new Vector2 (_enemyBase.EnemyData.AttackRangeX, _enemyBase.EnemyData.AttackRangeY));
-    // }
+    void OnDrawGizmos()
+    {
+        Gizmos.DrawWireSphere(transform.position, _enemyBase.EnemyData.DetectRangeX);
+        // Gizmos.DrawWireSphere(transform.position, 0.8f);
+        Gizmos.DrawWireCube(transform.position,
+        new Vector2 (_enemyBase.EnemyData.AttackRangeX, _enemyBase.EnemyData.AttackRangeY));
+    }
 }

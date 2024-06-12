@@ -5,10 +5,11 @@ using UnityEngine;
 public class BackgroundController : MonoBehaviour
 {
     private float _lengthX, _lengthY, _startPositionX, _startPositionY;
-    public GameObject Camera;
+    public GameObject _camera;
     public float ParallaxEffect;
     void Start()
     {
+        _camera = Camera.main.gameObject;
         _startPositionX = transform.position.x;
         _startPositionY = transform.position.y;
         _lengthX = GetComponentInChildren<SpriteRenderer>().bounds.size.x;
@@ -17,10 +18,10 @@ public class BackgroundController : MonoBehaviour
     
     void Update()
     {
-        float distanceX = Camera.transform.position.x * ParallaxEffect;
-        float movementX = Camera.transform.position.x * (1 - ParallaxEffect);
-        float distanceY = Camera.transform.position.y * ParallaxEffect;
-        float movementY = Camera.transform.position.y * (1 - ParallaxEffect);
+        float distanceX = _camera.transform.position.x * ParallaxEffect;
+        float movementX = _camera.transform.position.x * (1 - ParallaxEffect);
+        float distanceY = _camera.transform.position.y * ParallaxEffect;
+        float movementY = _camera.transform.position.y * (1 - ParallaxEffect);
 
         transform.position =
             new Vector3(_startPositionX + distanceX, _startPositionY + distanceY, transform.position.z);

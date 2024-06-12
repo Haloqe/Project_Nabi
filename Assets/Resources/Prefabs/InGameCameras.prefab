@@ -203,7 +203,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ad980451443d70438faac0bc6c235a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_TrackedObjectOffset: {x: 1, y: 0, z: 0}
+  m_TrackedObjectOffset: {x: 2, y: 1.5, z: 0}
   m_LookaheadTime: 0.05
   m_LookaheadSmoothing: 1
   m_LookaheadIgnoreY: 1
@@ -245,7 +245,6 @@ GameObject:
   - component: {fileID: 4490753932288906992}
   - component: {fileID: 7544602637501294606}
   - component: {fileID: 2280166720607547871}
-  - component: {fileID: 4917391347815282929}
   m_Layer: 0
   m_Name: Virtual Camera
   m_TagString: Untagged
@@ -320,18 +319,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff19f93802b090c4c8edc4f59a57118e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &4917391347815282929
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3011038617521303624}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1a8a05de0ac134f4f9d01bef6b9da077, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &3396993869598506025
 GameObject:
   m_ObjectHideFlags: 0
@@ -346,7 +333,6 @@ GameObject:
   - component: {fileID: 347060200359299296}
   - component: {fileID: 4404311968707150013}
   - component: {fileID: 728460834080475759}
-  - component: {fileID: 2841112205325245255}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -405,7 +391,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 4.953125
+  orthographic size: 10.4
   m_Depth: 3
   m_CullingMask:
     serializedVersion: 2
@@ -520,30 +506,6 @@ MonoBehaviour:
     mipBias: 0
     varianceClampScale: 0.9
     contrastAdaptiveSharpening: 0
---- !u!114 &2841112205325245255
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3396993869598506025}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c88f5cead0c0b2a4eb05b5900433f8d1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_ComponentVersion: 1
-  m_AssetsPPU: 32
-  m_RefResolutionX: 320
-  m_RefResolutionY: 180
-  m_CropFrame: 0
-  m_GridSnapping: 0
-  m_FilterMode: 0
-  m_UpscaleRT: 0
-  m_PixelSnapping: 0
-  m_CropFrameX: 0
-  m_CropFrameY: 0
-  m_StretchFill: 0
 --- !u!1 &3923645826950905269
 GameObject:
   m_ObjectHideFlags: 0
