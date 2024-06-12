@@ -47,13 +47,22 @@ public class EnemySpawner : MonoBehaviour
                     spawnID = Array.FindIndex(_spawnProbabilitiesAcc, probability => probability >= randValue);
                 }
             }
-            
-            // Randomise x-position a bit
-            float randX = UnityEngine.Random.Range(-3f, 3f);
-            // Randomise z-position to handle z-fighting
-            float randZ = UnityEngine.Random.Range(-2f, 2f);
-            transform.position = new Vector3(transform.position.x + randX, transform.position.y, randZ);
-            
+
+            if ((EEnemyType)spawnID is EEnemyType.VoidMantis or EEnemyType.Spider)
+            {
+                // Randomise x-position to disperse them
+                float randX = UnityEngine.Random.Range(-3f, 3f);
+                // Randomise z-position to handle z-fighting
+                float randZ = UnityEngine.Random.Range(-2f, 2f);
+                transform.position = new Vector3(transform.position.x + randX, transform.position.y, randZ);
+            }
+            else
+            {
+                // In the case of insectivore, bee, and queen bee, do not use random x offset
+                // Randomise z-position to handle z-fighting
+                float randZ = UnityEngine.Random.Range(-2f, 2f);
+                transform.position = new Vector3(transform.position.x, transform.position.y, randZ);
+            }
             
             // Spawn enemy
             _spawnedEnemies.Add(enemyManager.SpawnEnemy(spawnID, transform.position));

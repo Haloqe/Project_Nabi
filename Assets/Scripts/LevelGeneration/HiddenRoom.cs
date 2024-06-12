@@ -13,18 +13,20 @@ public class HiddenRoom : MonoBehaviour
     public int enemyKillTimeLimit;
     public GameObject chestPrefab;
     public Transform chestPosition;
-    
+
+    private AudioSource _audioSource;
     private Vector3 _exitDestination;
     private Portal _returnPortal;
     private Chest _chest;
     private EnemySpawner _enemySpawner;
     private List<GameObject> _spawnedEnemies;
     
-    private GameObject _timerUI;
-    private TextMeshProUGUI _timerText;
+    private GameObject _countdownUI;
+    private TextMeshProUGUI _countdownText;
 
     private void Awake()
     {
+        _audioSource = GetComponent<AudioSource>();
         _returnPortal = GetComponentInChildren<Portal>(includeInactive: true);
         _enemySpawner = GetComponentInChildren<EnemySpawner>(includeInactive: true);
         _returnPortal.portalType = EPortalType.SecretToCombat;
@@ -38,10 +40,12 @@ public class HiddenRoom : MonoBehaviour
 
     public void OnEnter(Vector3 previousPos)
     {
+        StartCoroutine(BGMFadeInCoroutine());
         _chest = Instantiate(chestPrefab, chestPosition.position, quaternion.identity).GetComponent<Chest>();
         _exitDestination = previousPos;
         _returnPortal.SetDestination(previousPos);
         _chest.ResetReward(roomLevel);
+        
         string desc = enemyKillTimeLimit > 0 ? $"시간 제한: {enemyKillTimeLimit}초" : string.Empty;
         _uiManager.DisplayRoomGuideUI(roomName, desc);
         
@@ -60,7 +64,8 @@ public class HiddenRoom : MonoBehaviour
 
     public void OnExit()
     {
-        Destroy(_timerUI);
+        Destroy(_countdownUI);
+        StartCoroutine(BGMFadeOutCoroutine());
         InGameEvents.EnemySlayed -= CheckEnemiesAllKilled;
         if (_spawnedEnemies != null && _spawnedEnemies.Count != 0)
         {
@@ -80,14 +85,14 @@ public class HiddenRoom : MonoBehaviour
     private IEnumerator EnemyKillTimeLimitCoroutine()
     {
         // Initialise UI
-        _timerUI = _uiManager.DisplayTimerUI();
-        _timerText = _timerUI.GetComponentInChildren<TextMeshProUGUI>();
+        _countdownUI = _uiManager.DisplayCountdownUI();
+        _countdownText = _countdownUI.GetComponentInChildren<TextMeshProUGUI>();
         
         int counter = enemyKillTimeLimit;
         while (counter > 0)
         {
-            _timerText.text = counter.ToString("D2");
-            if (counter <= 10) _timerText.color = Color.red;
+            _countdownText.text = counter.ToString("D2");
+            if (counter <= 10) _countdownText.color = Color.red;
             yield return new WaitForSecondsRealtime(1f);
             counter--;
         }
@@ -120,15 +125,47 @@ public class HiddenRoom : MonoBehaviour
     
     private void CheckEnemiesAllKilled(EnemyBase killedEnemy)
     {
+        // Wait until the last enemy is killed
         if (!_spawnedEnemies.Contains(killedEnemy.gameObject)) return;
         _spawnedEnemies.Remove(killedEnemy.gameObject);
-        if (_spawnedEnemies.Count == 0)
+        if (_spawnedEnemies.Count != 0) return;
+
+        // All enemies slayed
+        if (enemyKillTimeLimit > 0)
         {
             StopCoroutine(nameof(EnemyKillTimeLimitCoroutine));
-            _timerText.text = ":)";
-            _timerText.color = Color.white;
-            _chest.gameObject.SetActive(true);
-            _returnPortal.gameObject.SetActive(true);
+            _countdownText.text = ":)";
+            _countdownText.color = Color.white;   
+        }
+        _chest.gameObject.SetActive(true);
+        _returnPortal.gameObject.SetActive(true);
+    }
+
+    private IEnumerator BGMFadeOutCoroutine()
+    {
+        float start = _audioSource.volume;
+        float currentTime = 0;
+        while (currentTime < 0.5f)
+        {
+            currentTime += Time.unscaledDeltaTime;
+            _audioSource.volume = Mathf.Lerp(start, 0, currentTime / 0.5f);
+            yield return null;
+        }
+        _audioSource.enabled = false;
+        _audioSource.volume = start;
+    }
+    
+    private IEnumerator BGMFadeInCoroutine()
+    {
+        float target = _audioSource.volume;
+        _audioSource.enabled = true;
+        _audioSource.volume = 0;
+        float currentTime = 0;
+        while (currentTime < 0.5f)
+        {
+            currentTime += Time.unscaledDeltaTime;
+            _audioSource.volume = Mathf.Lerp(0, target, currentTime / 0.5f);
+            yield return null;
         }
     }
 }

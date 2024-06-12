@@ -10,7 +10,7 @@ public class NPC_Queen : Interactor
     {
         base.Start();
         _uiManager = UIManager.Instance;
-        StartCoroutine(BounceCoroutine());
+        //StartCoroutine(BounceCoroutine());
     }
     
     protected override void OnInteract(InputAction.CallbackContext obj)

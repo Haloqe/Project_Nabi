@@ -324,9 +324,13 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     private void Die()
     {
         _spriteRenderer.material = _originalMaterial;
-        // Can resurrect?
+        Array.Clear(_effectRemainingTimes, 0, _effectRemainingTimes.Length);
+        Array.Clear(_activeDOTCounts, 0, _activeDOTCounts.Length);
+        _slowRemainingTimes.Clear();
+        StopAllDamageCoroutines();
+        
+        // Resurrect or die
         if (canResurrect) StartCoroutine(ResurrectCoroutine());
-        // Die
         else PlayerEvents.Defeated.Invoke();
     }
 
@@ -343,11 +347,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     {
         // Start resurrect
         PlayerEvents.StartResurrect.Invoke();
-        Array.Clear(_effectRemainingTimes, 0, _effectRemainingTimes.Length);
-        Array.Clear(_activeDOTCounts, 0, _activeDOTCounts.Length);
-        StopAllDamageCoroutines();
         _shouldNotTakeDamage = true;
-        _slowRemainingTimes.Clear();
         _spriteRenderer.color = Color.white;
         canResurrect = false;
         _isResurrectFinished = false;

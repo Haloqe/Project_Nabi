@@ -292,7 +292,14 @@ public class AudioManager : Singleton<AudioManager>
 
     public void StartCombatBgm()
     {
-        StartBgmLoop(combatIntro, combatLoop, 0.5f);
+        if (GameManager.Instance.ActiveScene == ESceneType.CombatMap0)
+        {
+            StartBgmLoop(combatIntro, combatLoop, 0.5f);
+        }
+        else
+        {
+            StartBgmLoop(combatIntro2, combatLoop2, 0.5f);
+        }
     }
 
     private AudioMixerGroup GetAudioMixerGroup(EAudioType audioType)

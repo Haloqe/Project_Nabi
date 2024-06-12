@@ -713,9 +713,9 @@ public class LevelManager : Singleton<LevelManager>
         }
         
         // Check count limit
-        int minPortalsCount = 3;
+        int minPortalsCount = Math.Min(_hiddenPortalSpawners.Count, 3);
         int maxPortalsCount = 4;
-        Debug.AssertFormat(_hiddenPortalSpawners.Count >= minPortalsCount, "Not enough portal spawners added to the templates.");
+        Debug.AssertFormat(_hiddenPortalSpawners.Count >= 3, "Not enough portal spawners added to the templates.");
         
         // Exceeded the upper limit?
         while (portalSpawnersUsed.Count > maxPortalsCount)

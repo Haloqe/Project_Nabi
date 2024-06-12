@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
@@ -21,6 +20,10 @@ public class MainMenuUIController : UIControllerBase
     // Settings
     private SettingsUIController _settingsUIController;
     private bool _isSettingsActive;
+    
+    // Credits
+    private CreditsUI _creditsUI;
+    [SerializeField] private GameObject creditsUIPrefab;
     
     // 0: New game, 1: Continue, 2: Settings, 3: Quit
     private TextMeshProUGUI[] _options;
@@ -60,13 +63,17 @@ public class MainMenuUIController : UIControllerBase
         _selectedOptionIdx = 0;
         _audioSource = GetComponent<AudioSource>();
         _animator = GetComponent<Animator>();
+        
+        // Credits
+        _creditsUI = Instantiate(creditsUIPrefab, Vector3.zero, Quaternion.identity).GetComponent<CreditsUI>();
+        _creditsUI.BaseUIController = this;
 
         // Confirm panels
         _newGameConfirmPanel = gameObject.transform.Find("NewGameConfirmPanel").gameObject;
         _newGameConfirmTMPs = _newGameConfirmPanel.transform.Find("Options").GetComponentsInChildren<TextMeshProUGUI>();
         _newGameConfirmTexts = new string[2]
         {
-            _newGameConfirmTMPs[0].text, _newGameConfirmTMPs[1].text
+            _newGameConfirmTMPs[0].text, _newGameConfirmTMPs[1].text,
         };
     }
 
@@ -149,7 +156,7 @@ public class MainMenuUIController : UIControllerBase
             // Up
             case > 0:
                 {
-                    if (_selectedOptionIdx == 0) SelectOption(3);
+                    if (_selectedOptionIdx == 0) SelectOption(4);
                     else if (_selectedOptionIdx == 2 && !_hasSaveData) SelectOption(0);
                     else SelectOption(_selectedOptionIdx - 1);
                     break;
@@ -157,7 +164,7 @@ public class MainMenuUIController : UIControllerBase
             // Down
             case < 0:
                 {
-                    if (_selectedOptionIdx == 3) SelectOption(0);
+                    if (_selectedOptionIdx == 4) SelectOption(0);
                     else if (_selectedOptionIdx == 0 && !_hasSaveData) SelectOption(2);
                     else SelectOption(_selectedOptionIdx + 1);
                     break;
@@ -204,12 +211,15 @@ public class MainMenuUIController : UIControllerBase
                 StartHideTransition();
                 break;
             
-            case 2: // Settings
-                // TODO
+            case 3: // Settings 
                 StartHideTransition(stopBgm:false);
                 break;
             
-            case 3: // Quit
+            case 4: // Credits
+                StartHideTransition(stopBgm:false);
+                break;
+            
+            case 5: // Quit
                 _gameManager.QuitGame();
                 break;
         }
@@ -220,6 +230,11 @@ public class MainMenuUIController : UIControllerBase
         if (_isSettingsActive)
         {
             _settingsUIController.OnClose();
+            return;
+        }
+        if (_creditsUI.gameObject.activeSelf)
+        {
+            _creditsUI.OnCancel();
             return;
         }
         if (_newGameConfirmPanel.activeSelf) _newGameConfirmPanel.SetActive(false);
@@ -262,6 +277,11 @@ public class MainMenuUIController : UIControllerBase
                 _isSettingsActive = true;
                 _underTransition = false;
                 break;
+            
+            case 3: // Credits
+                _creditsUI.gameObject.SetActive(true);
+                _creditsUI.IsClosing = false;
+                break;
         }
     }
 
@@ -275,6 +295,13 @@ public class MainMenuUIController : UIControllerBase
     public void OnSettingsClosed()
     {
         _isSettingsActive = false;
+        _underTransition = true;
+        _animator.SetTrigger(Revert);
+    }
+
+    public void OnCreditsClosed()
+    {
+        _creditsUI.gameObject.SetActive(false);
         _underTransition = true;
         _animator.SetTrigger(Revert);
     }

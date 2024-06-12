@@ -21,7 +21,7 @@ public class GameManager : Singleton<GameManager>
     private int _releaseMapSceneIdx2 = 7; // 여왕벌 이후
 
     // todo temp
-    public bool IsFirstRun = true;
+    public bool isFirstRun = true;
 
     protected override void Awake()
     {
@@ -104,7 +104,7 @@ public class GameManager : Singleton<GameManager>
     {
         if (ActiveScene is ESceneType.CombatMap0 or ESceneType.DebugCombatMap)
         {
-            if (IsFirstRun) GameEvents.InGameFirstLoadStarted.Invoke();
+            if (isFirstRun) GameEvents.InGameFirstLoadStarted.Invoke();
             else GameEvents.CombatSceneChanged.Invoke();
         }
 
@@ -127,7 +127,7 @@ public class GameManager : Singleton<GameManager>
         GameEvents.MapLoaded.Invoke();
         
         // If not first run, reset variables
-        if (ActiveScene is ESceneType.CombatMap0 or ESceneType.DebugCombatMap && !IsFirstRun) 
+        if (ActiveScene is ESceneType.CombatMap0 or ESceneType.DebugCombatMap && !isFirstRun) 
             GameEvents.Restarted.Invoke();
 
         // When all set, spawn player 
@@ -175,7 +175,7 @@ public class GameManager : Singleton<GameManager>
 
     private void OnPlayerDefeated()
     {
-        IsFirstRun = false;
+        isFirstRun = false;
         PlayerMetaData.isDirty = true;
         PlayerMetaData.numDeaths++;
         PlayerMetaData.numSouls = _player.playerInventory.SoulShard;
@@ -196,7 +196,7 @@ public class GameManager : Singleton<GameManager>
     {
         if (_player) {Destroy(_player.gameObject);}
         _uiManager.DestroyAllInGameUI();
-        IsFirstRun = true;
+        isFirstRun = true;
         PlayerMetaData = new PlayerMetaData();
         SaveSystem.RemoveMetaData();
         LoadInGame(0);

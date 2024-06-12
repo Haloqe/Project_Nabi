@@ -85,8 +85,7 @@ public class UIManager : Singleton<UIManager>
     // Flower bomb
     [NamedArray(typeof(EFlowerType))] [SerializeField] private Sprite[] flowerIcons = new Sprite[(int)EFlowerType.MAX];
     private GameObject _flowerUILeft;
-    private GameObject _flowerUIRight;
-    private Image _flowerIconLeft;
+    private GameObject _flowerUIRight; 
     private Image _flowerIconRight;
     private Image _flowerIconMid;
     private Image _flowerOverlay;
@@ -175,14 +174,14 @@ public class UIManager : Singleton<UIManager>
         DontDestroyOnLoad(_metaUpgradeUI);
         
         // UI - flower bombs
-        var flowerSlotRoot = _inGameCombatUI.transform.Find("ActiveLayoutGroup").Find("Slot_3");
-        _flowerIconMid = flowerSlotRoot.Find("AbilityIcon").GetComponent<Image>();
-        _flowerOverlay = flowerSlotRoot.Find("Overlay").GetComponent<Image>();
-        _flowerCountText = flowerSlotRoot.Find("Count").GetComponent<TextMeshProUGUI>();
-        _flowerUILeft = flowerSlotRoot.Find("Slot_L").GameObject();
-        _flowerUIRight = flowerSlotRoot.Find("Slot_R").GameObject();
-        _flowerIconLeft = _flowerUILeft.transform.Find("Icon").GetComponent<Image>();
-        _flowerIconRight = _flowerUIRight.transform.Find("Icon").GetComponent<Image>();
+        //var flowerSlotRoot = _inGameCombatUI.transform.Find("ActiveLayoutGroup").Find("Slot_3");
+        //_flowerIconMid = flowerSlotRoot.Find("AbilityIcon").GetComponent<Image>();
+        //_flowerOverlay = flowerSlotRoot.Find("Overlay").GetComponent<Image>();
+        //_flowerCountText = flowerSlotRoot.Find("Count").GetComponent<TextMeshProUGUI>();
+        //_flowerUILeft = flowerSlotRoot.Find("Slot_L").GameObject();
+        //_flowerUIRight = flowerSlotRoot.Find("Slot_R").GameObject();
+        //_flowerIconLeft = _flowerUILeft.transform.Find("Icon").GetComponent<Image>();
+        //_flowerIconRight = _flowerUIRight.transform.Find("Icon").GetComponent<Image>();
     }
 
     public void HideAllInGameUI()
@@ -410,14 +409,13 @@ public class UIManager : Singleton<UIManager>
 
     private void OnPlayerSpawned()
     {
-        if (!_gameManager.IsFirstRun) return;
+        if (!_gameManager.isFirstRun) return;
         _playerAttackManager = PlayerAttackManager.Instance;
         _playerController = PlayerController.Instance;
         _playerHPSlider.value = 1;
         UsePlayerControl();
         
-        PlayerIAMap.FindAction("Bomb_Left").performed += OnBombSelect_Left;
-        PlayerIAMap.FindAction("Bomb_Right").performed += OnBombSelect_Right;
+        //PlayerIAMap.FindAction("ChangeFlowerBomb").performed += OnChangeFlowerBomb;
     }
 
     private void OpenFocusedUI(GameObject uiObject, bool shouldShowOverlay = false)
@@ -578,32 +576,21 @@ public class UIManager : Singleton<UIManager>
     }
 
     // Flower
-    private void OnBombSelect_Left(InputAction.CallbackContext obj) => ChangeFlowerBomb(true);
-    private void OnBombSelect_Right(InputAction.CallbackContext obj) => ChangeFlowerBomb(false);
-    
-    public void ChangeFlowerBomb(bool toPrevious)
+    public void OnChangeFlowerBomb(InputAction.CallbackContext obj)
     {
         // Compute left, mid, and right indices
         int oldIdx = _playerController.playerInventory.GetCurrentSelectedFlower();
         int midIdx;
-        if (toPrevious)
-        {
-            if (oldIdx <= 1) midIdx = (int)EFlowerType.MAX - 1;
-            else midIdx = oldIdx - 1;
-        }
-        else
-        {
-            if (oldIdx >= (int)EFlowerType.MAX - 1) midIdx = 1;
-            else midIdx = oldIdx + 1;
-        }
+        if (oldIdx >= (int)EFlowerType.MAX - 1) midIdx = 1;
+        else midIdx = oldIdx + 1;
         int leftIdx = midIdx == 1 ? (int)EFlowerType.MAX - 1 : midIdx - 1;
         int rightIdx = midIdx == (int)EFlowerType.MAX - 1 ? 1 : midIdx + 1;
         
         // Change selected flower bomb
-        _playerController.playerInventory.SelectFlower(midIdx);
+        //_playerController.playerInventory.SelectFlower(midIdx);
         
         // Update icons respectively
-        _flowerIconLeft.sprite = flowerIcons[leftIdx];
+        //_flowerIconLeft.sprite = flowerIcons[leftIdx];
         _flowerIconRight.sprite = flowerIcons[rightIdx];
         _flowerIconMid.sprite = flowerIcons[midIdx];
         
@@ -685,7 +672,7 @@ public class UIManager : Singleton<UIManager>
             PlayerIAMap.LoadBindingOverridesFromJson(playerRebinds);
     }
 
-    public GameObject DisplayTimerUI()
+    public GameObject DisplayCountdownUI()
     {
         return Instantiate(_timerPrefab, Vector3.zero, Quaternion.identity);
     }

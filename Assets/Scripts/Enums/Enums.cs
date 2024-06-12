@@ -314,8 +314,8 @@ public enum EFlowerType
 {
     NectarFlower,       // 회복
     IncendiaryFlower,   // 화염
-    StickyFlower,       // 젤리
-    BlizzardFlower,     // 냉기
+    StickyFlower,       // 끈적
+    BlizzardFlower,     // 한랭
     GravityFlower,      // 중력
     MAX,
 };
@@ -369,11 +369,11 @@ public enum EDoorDirection
 
 public enum EEnemyType
 {
-    VoidMantis,
-    Insectivore,
-    Bee,
-    Spider,
-    QueenBee,
+    VoidMantis,     // 0
+    Insectivore,    // 1
+    Bee,            // 2
+    Spider,         // 3
+    QueenBee,       // 4
 }
 
 public enum ESceneType

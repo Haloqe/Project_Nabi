@@ -26,7 +26,7 @@ public class PlayerInventory : MonoBehaviour
         _uiManager = UIManager.Instance;
         _areaAttack = FindObjectOfType<AttackBase_Area>();
         _currentSelectedFlower = 0;
-        _uiManager.ChangeFlowerBomb(false);
+        //_uiManager.ChangeFlowerBomb(false);
         GameEvents.Restarted += OnRestarted;
         GameEvents.CombatSceneChanged += OnCombatSceneChanged;
     }
@@ -43,7 +43,7 @@ public class PlayerInventory : MonoBehaviour
         Gold = 0;
         _currentSelectedFlower = 0;
         for (int i = 0; i < _numFlowers.Length; i++) _numFlowers[i] = 0;
-        _uiManager.ChangeFlowerBomb(false);
+        //_uiManager.ChangeFlowerBomb(false);
     }
 
     private void OnCombatSceneChanged()

@@ -31,10 +31,12 @@ public class Portal : Interactor
         switch (portalType)
         {
             case EPortalType.CombatToSecret:
+                _audioManager.StopBgm(0.5f);
                 SetHiddenRoomTeleportPosition();
                 break;
             
             case EPortalType.SecretToCombat:
+                
                 break;
             
             case EPortalType.MetaToCombat:
@@ -123,6 +125,7 @@ public class Portal : Interactor
             
             case EPortalType.SecretToCombat:
                 _uiManager.EnableMap();
+                _audioManager.StartCombatBgm();
                 connectedHiddenRoom.OnExit();
                 break;
             

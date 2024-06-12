@@ -63,7 +63,6 @@ public class AttackBase_Dash : AttackBase
         }
         else
         {
-            _damageDealer.AudioSource.PlayOneShot(defaultDashSound, volumeScale: 0.5f);
             _animator.SetInteger(AttackIndex, (int)ELegacyType.Dash);
             baseEffector.transform.localScale = new Vector3(Mathf.Sign(_player.localScale.x), 1.0f, 1.0f);
             baseEffector.SetActive(true);
