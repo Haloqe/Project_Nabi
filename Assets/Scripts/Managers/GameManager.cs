@@ -49,7 +49,6 @@ public class GameManager : Singleton<GameManager>
         else if (scene.name.StartsWith("MapGen_Pre"))
         {
             ActiveScene = ESceneType.CombatMap0;
-            //GameObject.Find("MainBackground").GetComponent<Canvas>().worldCamera = Camera.main;
             _ingameMapSceneIdx = scene.buildIndex;
             PostLoadInGame();
         }
@@ -171,7 +170,6 @@ public class GameManager : Singleton<GameManager>
     
     public void LoadBossMap()
     {
-        Debug.Log("LoadBossMap");
         _uiManager.DisplayLoadingScreen();
         SceneManager.LoadScene("Scenes/Boss_InGame");
     }

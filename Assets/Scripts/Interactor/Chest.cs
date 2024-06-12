@@ -60,9 +60,8 @@ public class Chest : Interactor
                     
                     // Random drop
                     float r = Random.value;
-                    DropSuperfood();
-                    if (r <= 0.5f) DropArbor();                           // 50% Arbor
-                    else if (r <= 0.8f) DropSuperfood();                         // 30% Superfood
+                    if (r <= 0.5f) DropArbor();                             // 50% Arbor
+                    else if (r <= 0.8f) DropSuperfood();                    // 30% Superfood
                     else if (r <= 0.95f) DropClockwork(isPristine:false);   // 15% Clockwork
                     else DropClockwork(isPristine:true);                    // 5% Pristine clockwork
                 }

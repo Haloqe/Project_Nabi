@@ -16,6 +16,7 @@ public class BookUIController : UIControllerBase
     private int curSelectedOption;
     private TextMeshProUGUI[] _optionTexts;
     private string[] _optionTextDefaults;
+    private bool _isSettingsOpen;
     
     // Animation
     private bool _isClosing;
@@ -33,6 +34,7 @@ public class BookUIController : UIControllerBase
     // Ref
     private AudioManager _audioManager;
     private UIManager _uiManager;
+    private SettingsUIController _settingsUIController;
     
     private void Awake()
     {
@@ -157,12 +159,22 @@ public class BookUIController : UIControllerBase
     public override void OnNavigate(Vector2 value)
     {
         if (!_canNavigate) return;
+        if (_isSettingsOpen)
+        {
+            _settingsUIController.OnNavigate(value);
+            return;
+        }
         _pages[_currPageIdx].OnNavigate(value);
     }
 
     public override void OnClose()
     {
         if (_isClosing) return;
+        if (_isSettingsOpen)
+        {
+            _settingsUIController.OnClose();
+            return;
+        }
         _audioManager.LowerBGMVolumeUponUI();
         _canNavigate = false;
         StartCloseBookAnimation();
@@ -171,6 +183,13 @@ public class BookUIController : UIControllerBase
     public override void OnTab()
     {
         if (!_canNavigate) return;
+
+        if (_isSettingsOpen)
+        {
+            _settingsUIController.OnTab();
+            return;
+        }
+        
         //if (!_isFlipOver) return;
         _canNavigate = false;
         int nextPage = _currPageIdx + 1 == numPages ? 0 : _currPageIdx + 1;
@@ -181,6 +200,13 @@ public class BookUIController : UIControllerBase
     public override void OnSubmit()
     {
         if (!_canNavigate) return;
+        
+        if (_isSettingsOpen)
+        {
+            _settingsUIController.OnSubmit();
+            return;
+        }
+        
         switch (curSelectedOption)
         {
             case 0: // Back
@@ -193,7 +219,10 @@ public class BookUIController : UIControllerBase
                 break;
             
             case 2: // Settings
-                //Todo
+                _settingsUIController = UIManager.Instance.OpenSettings();
+                _settingsUIController.backgroundImage.color = new Color(0, 0, 0, 1);
+                _settingsUIController.parentUI = this;
+                _isSettingsOpen = true;
                 break;
             
             case 3: // Quit
@@ -244,5 +273,11 @@ public class BookUIController : UIControllerBase
         _optionTexts[idx].text = $"> {_optionTextDefaults[idx]} <";
         _optionTexts[idx].color = new Color(1f, 0.7f, 0f, 1);
         curSelectedOption = idx;
+    }
+
+    public override void OnSettingsClosed()
+    {
+        _isSettingsOpen = false;
+        UIManager.Instance.UpdateCombatKeyBindText();
     }
 }

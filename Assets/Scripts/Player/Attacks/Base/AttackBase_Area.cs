@@ -129,6 +129,7 @@ public class AttackBase_Area : AttackBase
 
     public bool CheckAvailability()
     {
+        UIManager.Instance.DisplayFlowerBombUI();
         if (_inventory.GetNumberOfFlowers(_inventory.GetCurrentSelectedFlower()) <= 0)
         {
             _inventory.noFlowerVFX.SetActive(true);

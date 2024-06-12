@@ -6,4 +6,5 @@ public abstract class UIControllerBase : MonoBehaviour
         public abstract void OnSubmit();
         public abstract void OnClose();
         public abstract void OnTab();
+        public virtual void OnSettingsClosed() { }
 }

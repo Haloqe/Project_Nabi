@@ -112,6 +112,7 @@ public class PlayerController : Singleton<PlayerController>
         GameEvents.CombatSceneChanged += OnCombatSceneChanged;
         playerInput.actions["Jump"].started += OnStartJump;
         playerInput.actions["Jump"].canceled += OnReleaseJump;
+        
         OnRestarted();
     }
 
@@ -132,6 +133,7 @@ public class PlayerController : Singleton<PlayerController>
         for (int i = 0; i < EnemyManager.Instance.NumEnemyTypes; i++)
             _ecstasyAffected[i] = new List<EnemyBase>();
         IsMapEnabled = true;
+        _uiManager.UpdateCombatKeyBindText();
     }
 
     private void OnRestarted()
@@ -192,7 +194,7 @@ public class PlayerController : Singleton<PlayerController>
         _shadowHosts.Clear();
     }
     
-    void OnMove_Left(InputValue value)
+    private void OnMove_Left(InputValue value)
     {
         var dir = value.Get<float>();
         if (dir == 0) _cumulativeMoveDirection += 1;
@@ -200,47 +202,34 @@ public class PlayerController : Singleton<PlayerController>
         playerMovement.SetMoveDirection(_cumulativeMoveDirection);
     }
     
-    void OnMove_Right(InputValue value)
+    private void OnMove_Right(InputValue value)
     {
         var dir = value.Get<float>();
         if (dir == 0) _cumulativeMoveDirection -= 1;
         else _cumulativeMoveDirection += 1;
         playerMovement.SetMoveDirection(_cumulativeMoveDirection);
     }
-
-    void OnStartMove(InputValue value)
-    {
-        
-    }
     
-    void OnStartJump(InputAction.CallbackContext obj)
+    private void OnStartJump(InputAction.CallbackContext obj)
     {
         playerMovement.StartJump();
     }
 
-    void OnReleaseJump(InputAction.CallbackContext obj)
+    private void OnReleaseJump(InputAction.CallbackContext obj)
     {
         playerMovement.StopJump();
     }
 
     int count = 0;
-    void OnTestAction(InputValue value)
+    private void OnTestAction(InputValue value)
     {
         playerInventory.ChangeGoldByAmount(100);
         playerInventory.ChangeSoulShardByAmount(100);
-        // playerInventory.AddFlower(2);
-        // playerInventory.AddFlower(3);
-        // playerInventory.AddFlower(4);
-        //playerInventory.ChangeGoldByAmount(600);
-        // if (count == 0)
-        // {
-        //     playerInventory.AddFlower((int)EFlowerType.IncendiaryFlower);
-        // }
-        // else
-        // {
-        //     playerDamageReceiver.ChangeHealthByAmount(-1000);
-        // }
-        // count++;
+    }
+    
+    private void OnSelectNextFlowerBomb(InputValue value)
+    {
+        playerInventory.SelectNextFlower();
     }
 
     private void OnValueChanged(ECondition condition, float changeAmount)

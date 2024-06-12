@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using TMPro;
 using Unity.Mathematics;
@@ -81,17 +80,15 @@ public class UIManager : Singleton<UIManager>
     private PlayerAttackManager _playerAttackManager;
     private AudioManager _audioManager;
     private GameManager _gameManager;
+    private TextMeshProUGUI[] _combatKeyBindTMPs;
     
     // Flower bomb
-    [NamedArray(typeof(EFlowerType))] [SerializeField] private Sprite[] flowerIcons = new Sprite[(int)EFlowerType.MAX];
-    private GameObject _flowerUILeft;
-    private GameObject _flowerUIRight; 
-    private Image _flowerIconRight;
-    private Image _flowerIconMid;
-    private Image _flowerOverlay;
+    [NamedArray(typeof(EFlowerType))] [SerializeField] private Sprite[] flowerIconSprites = new Sprite[(int)EFlowerType.MAX];
+    private Image[] _flowerIconImages;
     private TextMeshProUGUI _flowerCountText;
+    private Animator _flowerPanelAnimator;
     private float _flowerUIDisplayRemainingTime;
-
+    
     protected override void Awake()
     {
         base.Awake();
@@ -161,6 +158,13 @@ public class UIManager : Singleton<UIManager>
         _bloodOverlay       = _inGameCombatUI.transform.Find("BloodOverlay").GetComponent<Image>();
         _tensionOverlay     = _inGameCombatUI.transform.Find("TensionOverlay").GetComponent<Image>();
         _minimap            = _inGameCombatUI.transform.Find("MinimapContainer").Find("Minimap").gameObject;
+
+        _combatKeyBindTMPs = new TextMeshProUGUI[5];
+        var activeLayoutGroup = _inGameCombatUI.transform.Find("ActiveLayoutGroup");
+        for (int i = 0; i < 4; i++)
+        {
+            _combatKeyBindTMPs[i] = activeLayoutGroup.Find("Slot_" + i).Find("KeyText").GetComponent<TextMeshProUGUI>();
+        }
         
         _inGameCombatUI.SetActive(true);
         _inGameCombatUI.GetComponent<Canvas>().worldCamera = _uiCamera;
@@ -174,14 +178,18 @@ public class UIManager : Singleton<UIManager>
         DontDestroyOnLoad(_metaUpgradeUI);
         
         // UI - flower bombs
-        //var flowerSlotRoot = _inGameCombatUI.transform.Find("ActiveLayoutGroup").Find("Slot_3");
-        //_flowerIconMid = flowerSlotRoot.Find("AbilityIcon").GetComponent<Image>();
-        //_flowerOverlay = flowerSlotRoot.Find("Overlay").GetComponent<Image>();
-        //_flowerCountText = flowerSlotRoot.Find("Count").GetComponent<TextMeshProUGUI>();
-        //_flowerUILeft = flowerSlotRoot.Find("Slot_L").GameObject();
-        //_flowerUIRight = flowerSlotRoot.Find("Slot_R").GameObject();
-        //_flowerIconLeft = _flowerUILeft.transform.Find("Icon").GetComponent<Image>();
-        //_flowerIconRight = _flowerUIRight.transform.Find("Icon").GetComponent<Image>();
+        var flowerSlotRoot = activeLayoutGroup.Find("Slot_3");
+        var otherFlowerSlots = flowerSlotRoot.Find("MaskPanel").Find("OtherFlowers").Find("Canvas");
+        _flowerIconImages = new Image[]
+        {
+            flowerSlotRoot.Find("AbilityIcon").GetComponent<Image>(),
+            otherFlowerSlots.Find("Icon1").GetComponent<Image>(),
+            otherFlowerSlots.Find("Icon2").GetComponent<Image>(),
+            otherFlowerSlots.Find("Icon3").GetComponent<Image>(),
+        };
+        _flowerPanelAnimator = flowerSlotRoot.Find("MaskPanel").GetComponentInChildren<Animator>();
+        _flowerCountText = flowerSlotRoot.Find("Count").GetComponent<TextMeshProUGUI>();
+        _combatKeyBindTMPs[4] = flowerSlotRoot.Find("MaskPanel").GetComponentInChildren<TextMeshProUGUI>(true);
     }
 
     public void HideAllInGameUI()
@@ -390,6 +398,24 @@ public class UIManager : Singleton<UIManager>
         DontDestroyOnLoad(_settingsUI);
     }
 
+    public void UpdateCombatKeyBindText()
+    {
+        // Inputs
+        var inputBindings = new InputBinding[]
+        {
+            _playerController.playerInput.actions["Attack_Melee"].bindings[0],
+            _playerController.playerInput.actions["Attack_Range"].bindings[0],
+            _playerController.playerInput.actions["Attack_Dash"].bindings[0],
+            _playerController.playerInput.actions["Attack_Area"].bindings[0],
+            _playerController.playerInput.actions["SelectNextFlowerBomb"].bindings[0],
+        };
+        
+        for (int i = 0; i < 5; i++)
+        {
+            _combatKeyBindTMPs[i].text = inputBindings[i].ToDisplayString();
+        }
+    }
+
     public void DisplayLoadingScreen()
     {
         _loadingScreenUI.SetActive(true);
@@ -414,8 +440,6 @@ public class UIManager : Singleton<UIManager>
         _playerController = PlayerController.Instance;
         _playerHPSlider.value = 1;
         UsePlayerControl();
-        
-        //PlayerIAMap.FindAction("ChangeFlowerBomb").performed += OnChangeFlowerBomb;
     }
 
     private void OpenFocusedUI(GameObject uiObject, bool shouldShowOverlay = false)
@@ -542,7 +566,9 @@ public class UIManager : Singleton<UIManager>
         ui.GetComponent<TextPopUpUI>().Init(parent, text);
     }
     private Vector3 playerUpOffset = new Vector3(0, 2.3f, 0);
-    
+    private readonly static int ShowFlowerPanel = Animator.StringToHash("Show");
+    private readonly static int HideFlowerPanel = Animator.StringToHash("Hide");
+
     // InGame popup - crit
     public void DisplayCritPopUp(Vector3 position)
     {
@@ -576,48 +602,57 @@ public class UIManager : Singleton<UIManager>
     }
 
     // Flower
-    public void OnChangeFlowerBomb(InputAction.CallbackContext obj)
+    private Color _noFlowerColour = new Color(1, 1, 1, 0.15f);
+    private int[] _flowerIndices = new int[]{1,2,3,4};
+    public void UpdateFlowerBombUI(int selectedFlowerIdx, int flowerCount)
     {
-        // Compute left, mid, and right indices
-        int oldIdx = _playerController.playerInventory.GetCurrentSelectedFlower();
-        int midIdx;
-        if (oldIdx >= (int)EFlowerType.MAX - 1) midIdx = 1;
-        else midIdx = oldIdx + 1;
-        int leftIdx = midIdx == 1 ? (int)EFlowerType.MAX - 1 : midIdx - 1;
-        int rightIdx = midIdx == (int)EFlowerType.MAX - 1 ? 1 : midIdx + 1;
-        
-        // Change selected flower bomb
-        //_playerController.playerInventory.SelectFlower(midIdx);
+        // Compute indices
+        _flowerIndices[0] = selectedFlowerIdx;
+        _flowerIndices[1] = (selectedFlowerIdx % 4) + 1;
+        _flowerIndices[2] = (selectedFlowerIdx + 1) % 4 + 1;
+        _flowerIndices[3] = (selectedFlowerIdx + 2) % 4 + 1;
         
         // Update icons respectively
-        //_flowerIconLeft.sprite = flowerIcons[leftIdx];
-        _flowerIconRight.sprite = flowerIcons[rightIdx];
-        _flowerIconMid.sprite = flowerIcons[midIdx];
+        for (int i = 0; i < 4; i++)
+        {
+            _flowerIconImages[i].sprite = flowerIconSprites[_flowerIndices[i]];
+            _flowerIconImages[i].color = _playerController.playerInventory
+                .GetNumberOfFlowers(_flowerIndices[i]) == 0 ? _noFlowerColour : Color.white;
+        }
         
-        // Update count text and fill
-        UpdateFlowerCount(midIdx);
+        // Update count text
+        _flowerCountText.text = flowerCount.ToString();
 
-        // Display left/right UI for a while
+        // Display flower UI for a while
         StartCoroutine(FlowerBombUICoroutine());
     }
 
-    public void UpdateFlowerCount(int idx)
+    public void DisplayFlowerBombUI()
     {
-        var count = _playerController.playerInventory.GetNumberOfFlowers(idx);
-        _flowerCountText.text = count.ToString();
-        _flowerOverlay.fillAmount = count == 0 ? 1 : 0;
+        StartCoroutine(FlowerBombUICoroutine());
+    }
+
+    public void UpdateFlowerUICount(int flowerIndex, int flowerCount)
+    {
+        _flowerCountText.text = flowerCount.ToString();
+        for (int i = 0; i < 4; i++)
+        {
+            if (_flowerIndices[i] == flowerIndex)
+            {
+                _flowerIconImages[i].color = flowerCount == 0 ? _noFlowerColour : Color.white;
+                return;
+            }
+        }
     }
 
     private IEnumerator FlowerBombUICoroutine()
     {
-        _flowerUIDisplayRemainingTime += 2.0f;
-        
         // Show left/right UI
-        if (!_flowerUILeft.activeSelf)
+        if (_flowerUIDisplayRemainingTime == 0)
         {
-            _flowerUILeft.SetActive(true);
-            _flowerUIRight.SetActive(true);
+            _flowerPanelAnimator.SetTrigger(ShowFlowerPanel);
         }
+        _flowerUIDisplayRemainingTime += 2.0f;
         
         // Wait for some duration
         yield return new WaitForSeconds(2.0f);
@@ -626,8 +661,7 @@ public class UIManager : Singleton<UIManager>
         // Hide left/right UI
         if (_flowerUIDisplayRemainingTime == 0.0f)
         {
-            _flowerUILeft.SetActive(false);
-            _flowerUIRight.SetActive(false);
+            _flowerPanelAnimator.SetTrigger(HideFlowerPanel);
         }
     }
     

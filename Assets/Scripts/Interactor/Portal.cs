@@ -93,7 +93,6 @@ public class Portal : Interactor
             
             case EPortalType.MetaToCombat:
                 _player.transform.position = _destination;
-                //GameObject.Find("MainBackground").gameObject.SetActive(false);
                 yield return null;
                 break;
             

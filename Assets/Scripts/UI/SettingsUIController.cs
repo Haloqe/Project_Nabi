@@ -8,7 +8,7 @@ using UnityEngine.UI;
 public class SettingsUIController : UIControllerBase
 {
     // Parent
-    public MainMenuUIController parentMainMenu;
+    public UIControllerBase parentUI;
     
     // Settings group
     private int _curSettingsGroup; // 0: 일반 1: 조작 2: 사운드
@@ -37,6 +37,7 @@ public class SettingsUIController : UIControllerBase
     private Slider[] _soundSliders;
     
     // Colours
+    public Image backgroundImage;
     private Color _unselectedBgColour;
     private Color _selectedBgColour;
     private Color _unselectedTextColour;
@@ -262,15 +263,12 @@ public class SettingsUIController : UIControllerBase
         _isNavigatingSound = false;
         
         // Save settings
-        UIManager.Instance.SaveActionRebinds();
         AudioManager.Instance.SaveAudioSettings();
+        UIManager.Instance.SaveActionRebinds();
         
         // Return to parent
-        if (parentMainMenu != null)
-        {
-            parentMainMenu.OnSettingsClosed();
-            parentMainMenu = null;
-        }
+        if (parentUI != null) parentUI.OnSettingsClosed();
+        parentUI = null;
         gameObject.SetActive(false);
     }
 

@@ -10,7 +10,7 @@ public class PlayerInventory : MonoBehaviour
     public int Gold { get; private set; }
     public int SoulShard { get; private set; }
     private int[] _numFlowers = new int[5];
-    private int _currentSelectedFlower = 0;
+    private int _currentSelectedFlower;
     
     // VFXs
     public GameObject noFlowerVFX;
@@ -21,12 +21,10 @@ public class PlayerInventory : MonoBehaviour
 
     private void Start()
     {
-        Debug.Log("PlayerInven - Start");
         _audioSource = GetComponent<AudioSource>();
         _uiManager = UIManager.Instance;
         _areaAttack = FindObjectOfType<AttackBase_Area>();
-        _currentSelectedFlower = 0;
-        //_uiManager.ChangeFlowerBomb(false);
+        SelectFlower(1);
         GameEvents.Restarted += OnRestarted;
         GameEvents.CombatSceneChanged += OnCombatSceneChanged;
     }
@@ -41,9 +39,8 @@ public class PlayerInventory : MonoBehaviour
     private void OnRestarted()
     {
         Gold = 0;
-        _currentSelectedFlower = 0;
         for (int i = 0; i < _numFlowers.Length; i++) _numFlowers[i] = 0;
-        //_uiManager.ChangeFlowerBomb(false);
+        SelectFlower(1);
     }
 
     private void OnCombatSceneChanged()
@@ -85,25 +82,15 @@ public class PlayerInventory : MonoBehaviour
     // Store the number of flower bombs the player owns
     public void AddFlower(int flowerIndex)
     {
-        _numFlowers[flowerIndex]++;
-        
-        // Instant UI update?
-        if (_currentSelectedFlower == flowerIndex)
-        {
-            _uiManager.UpdateFlowerCount(flowerIndex);
-        }
+        _uiManager.UpdateFlowerUICount(flowerIndex, ++_numFlowers[flowerIndex]);
+        _uiManager.DisplayFlowerBombUI();
     }
 
     // Decrease the number of flower bombs the player owns
     public void RemoveFlower(int flowerIndex)
     {
-        _numFlowers[flowerIndex]--;
-        
-        // Instant UI update?
-        if (_currentSelectedFlower == flowerIndex)
-        {
-            _uiManager.UpdateFlowerCount(flowerIndex);
-        }
+        _uiManager.UpdateFlowerUICount(flowerIndex, --_numFlowers[flowerIndex]);
+        _uiManager.DisplayFlowerBombUI();
     }
 
     // Return the number of flower bombs currently stored
@@ -113,10 +100,11 @@ public class PlayerInventory : MonoBehaviour
     }
 
     //Select a certain flower ready to be used
-    public void SelectFlower(int flowerIndex)
+    private void SelectFlower(int flowerIndex)
     {
         _currentSelectedFlower = flowerIndex;
         _areaAttack.UpdateVFX(flowerIndex);
+        _uiManager.UpdateFlowerBombUI(flowerIndex, _numFlowers[flowerIndex]);
     }
 
     //Return the current selected flower
@@ -124,4 +112,6 @@ public class PlayerInventory : MonoBehaviour
     {
         return _currentSelectedFlower;
     }
+
+    public void SelectNextFlower() => SelectFlower(_currentSelectedFlower % 4 + 1);
 }

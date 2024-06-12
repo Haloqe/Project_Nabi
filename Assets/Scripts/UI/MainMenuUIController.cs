@@ -211,15 +211,15 @@ public class MainMenuUIController : UIControllerBase
                 StartHideTransition();
                 break;
             
-            case 3: // Settings 
+            case 2: // Settings
                 StartHideTransition(stopBgm:false);
                 break;
             
-            case 4: // Credits
+            case 3: // Credits
                 StartHideTransition(stopBgm:false);
                 break;
             
-            case 5: // Quit
+            case 4: // Quit
                 _gameManager.QuitGame();
                 break;
         }
@@ -273,7 +273,8 @@ public class MainMenuUIController : UIControllerBase
             
             case 2: // Settings
                 _settingsUIController = _uiManager.OpenSettings();
-                _settingsUIController.parentMainMenu = this;
+                _settingsUIController.backgroundImage.color = new Color(0, 0, 0, 0.9f);
+                _settingsUIController.parentUI = this;
                 _isSettingsActive = true;
                 _underTransition = false;
                 break;
@@ -292,7 +293,7 @@ public class MainMenuUIController : UIControllerBase
         _animator.enabled = false;
     }
 
-    public void OnSettingsClosed()
+    public override void OnSettingsClosed()
     {
         _isSettingsActive = false;
         _underTransition = true;
