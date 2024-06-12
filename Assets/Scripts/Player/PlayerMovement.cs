@@ -48,7 +48,7 @@ public class PlayerMovement : MonoBehaviour
     
     // camera
     private CameraManager _cameraManager;
-    private CameraFollowObject _cameraFollowObject;
+    public CameraFollowObject CameraFollowObject;
     private float _fallSpeedYDampingChangeThreshold;
 
     // animator
@@ -82,7 +82,7 @@ public class PlayerMovement : MonoBehaviour
 
         _cameraManager = CameraManager.Instance;
         _fallSpeedYDampingChangeThreshold = _cameraManager.FallSpeedYDampingChangeThreshold;
-        _cameraFollowObject = GameObject.Find("CameraFollowingObject").GetComponent<CameraFollowObject>();
+        // CameraFollowObject = GameObject.Find("CameraFollowingObject").GetComponent<CameraFollowObject>();
 
         _mainCollider = GetComponents<BoxCollider2D>()[0];
         _defaultBounciness = _mainCollider.sharedMaterial.bounciness;
@@ -107,7 +107,7 @@ public class PlayerMovement : MonoBehaviour
     // {
     //     Debug.Log("player spawning rnnnn");
     //     GameObject followObject = new GameObject("CameraFollowingObject");
-    //     _cameraFollowObject = followObject.AddComponent<CameraFollowObject>();
+    //     CameraFollowObject = followObject.AddComponent<CameraFollowObject>();
     //     GameObject.Find("Virtual Camera").GetComponent<CinemachineVirtualCamera>().Follow = followObject.transform;
     //     
     // }
@@ -287,7 +287,7 @@ public class PlayerMovement : MonoBehaviour
             transform.localScale =
                 new Vector2(-Mathf.Sign(value) * Mathf.Abs(transform.localScale.x), transform.localScale.y);
             
-            _cameraFollowObject.TurnCamera();
+            CameraFollowObject.TurnCamera();
         }
     }
 

@@ -20,6 +20,7 @@ public class CameraManager : Singleton<CameraManager>
     private CinemachineFramingTransposer _framingTransposer;
 
     private float _normalYPanAmount;
+    private float _normalYOffsetAmount;
 
     void Start()
     {
@@ -32,8 +33,9 @@ public class CameraManager : Singleton<CameraManager>
             }
         }
 
-        _normalYPanAmount = _framingTransposer.m_YDamping;
-        
+        // _normalYPanAmount = _framingTransposer.m_YDamping;
+        _normalYOffsetAmount = _framingTransposer.m_TrackedObjectOffset.y;
+
     }
 
     public void LerpYDamping(bool isPlayerFalling)
@@ -87,7 +89,7 @@ public class CameraManager : Singleton<CameraManager>
         }
         else
         {
-            endOffsetAmount = 0;
+            endOffsetAmount = _normalYOffsetAmount;
         }
 
         float timer = 0f;

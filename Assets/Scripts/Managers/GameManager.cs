@@ -133,10 +133,10 @@ public class GameManager : Singleton<GameManager>
         // When all set, spawn player 
         LevelManager.Instance.SpawnPlayer();
         
-        GameObject followObject = new GameObject("CameraFollowingObject");
-        followObject.AddComponent<CameraFollowObject>();
-        GameObject.Find("Virtual Camera").GetComponent<CinemachineVirtualCamera>().Follow = followObject.transform;
         _player = PlayerController.Instance;
+        GameObject followObject = new GameObject("CameraFollowingObject");
+        _player.playerMovement.CameraFollowObject = followObject.AddComponent<CameraFollowObject>();
+        GameObject.Find("Virtual Camera").GetComponent<CinemachineVirtualCamera>().Follow = followObject.transform;
         GameEvents.GameLoadEnded.Invoke();
         
         if (ActiveScene is ESceneType.Boss or ESceneType.MidBoss or ESceneType.CombatMap1)

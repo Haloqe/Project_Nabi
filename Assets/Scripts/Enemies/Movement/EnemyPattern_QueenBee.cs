@@ -17,10 +17,17 @@ public class EnemyPattern_QueenBee : EnemyPattern
     private EnemyManager _enemyManager;
     private Vector3[] _bombPositions = new Vector3[13];
 
-    [SerializeField] private float _leftMostPosition = -19.69f;
-    [SerializeField] private float _rightMostPosition = 14.99f;
-    [SerializeField] private float _bottomMostPosition = -6.79f;
-    [SerializeField] private float _topMostPosition = 7.99f;
+    private float _leftMostPosition = -33f;
+    private float _rightMostPosition = 6f;
+    private float _bottomMostPosition = -11f;
+    private float _topMostPosition = 2f;
+
+    [SerializeField] private AudioSource[] _audioSources;
+    [SerializeField] private AudioClip _battleCryAudio;
+    [SerializeField] private AudioClip _bodySlamTelegraphAudio;
+    [SerializeField] private AudioClip _bodySlamSequence;
+    [SerializeField] private AudioClip _poisonTelegraphAudio;
+    [SerializeField] private AudioClip _poisonExplosionAudio;
     
     private static readonly int IsAttacking = Animator.StringToHash("IsAttacking");
     private static readonly int AttackIndex = Animator.StringToHash("AttackIndex");
@@ -44,8 +51,15 @@ public class EnemyPattern_QueenBee : EnemyPattern
         float gap = 3f;
         for (int i = 0; i < _bombPositions.Length; i++)
         {
-            _bombPositions[i] = new Vector3(_leftMostPosition + gap * i, _bottomMostPosition - 0.2f, 0);
+            _bombPositions[i] = new Vector3(_leftMostPosition + gap * i, _bottomMostPosition, 0);
         }
+    }
+    
+    private void PlayAudio(int audioSourceIdx, AudioClip audioClip, float pitchRange = 0f, float volume = 1f)
+    {
+        _audioSources[audioSourceIdx].pitch = Random.Range(1 - pitchRange, 1 + pitchRange);
+        _audioSources[audioSourceIdx].volume = volume;
+        _audioSources[audioSourceIdx].PlayOneShot(audioClip);
     }
 
     public override void Attack()
@@ -62,7 +76,7 @@ public class EnemyPattern_QueenBee : EnemyPattern
         bool lessThanTwoBees = allBees.Length <= 1;
         if (lessThanTwoBees)
         {
-            StartCoroutine(SpawnMinions(Random.Range(3, 7)));
+            StartCoroutine(SpawnMinions(Random.Range(3, 5)));
             return;
         }
         
@@ -172,6 +186,7 @@ public class EnemyPattern_QueenBee : EnemyPattern
         
         yield return MoveToAttackPosition();
         yield return new WaitForSeconds(1f);
+        PlayAudio(0, _battleCryAudio, 0.15f);
         _animator.SetBool(IsAttacking, true);
         _animator.SetInteger(AttackIndex, 1);
         yield return new WaitForSeconds(1f);
@@ -194,6 +209,7 @@ public class EnemyPattern_QueenBee : EnemyPattern
     {
         yield return MoveToAttackPosition();
         yield return new WaitForSeconds(1f);
+        PlayAudio(0, _poisonTelegraphAudio, 0.15f);
         _animator.SetBool(id: IsAttacking, true);
         _animator.SetInteger(AttackIndex, 3);
         yield return new WaitForSeconds(1f);
@@ -203,6 +219,9 @@ public class EnemyPattern_QueenBee : EnemyPattern
         {
             Instantiate(_bombObject, position, Quaternion.identity);
         }
+
+        yield return new WaitForSeconds(1f);
+        PlayAudio(1, _poisonExplosionAudio, 0.1f);
     }
 
     private IEnumerator BodySlam()
@@ -216,6 +235,7 @@ public class EnemyPattern_QueenBee : EnemyPattern
         
         yield return MoveToPosition(startPosition, MoveSpeed * 1.3f);
         _rigidBody.velocity = new Vector2(0f, 0f);
+        PlayAudio(0, _bodySlamTelegraphAudio, 0.1f);
         _animator.SetBool(IsAttacking, true);
         _animator.SetInteger(AttackIndex, 2);
         yield return new WaitForSeconds(0.8f);
@@ -223,6 +243,7 @@ public class EnemyPattern_QueenBee : EnemyPattern
         float dashSpeed = MoveSpeed * 5f;
         _dustParticle.SetActive(true);
         _dustParticle.transform.localScale = new Vector3(-directionFacing, 1, 1);
+        PlayAudio(1, _bodySlamSequence, 0.1f);
         yield return MoveToPosition(finalPosition, dashSpeed, false);
 
         _animator.SetBool(IsAttacking, false);
@@ -238,6 +259,7 @@ public class EnemyPattern_QueenBee : EnemyPattern
         
         yield return MoveToAttackPosition();
         yield return new WaitForSeconds(1f);
+        PlayAudio(0, _battleCryAudio, 0.15f);
         _animator.SetBool(IsAttacking, true);
         _animator.SetInteger(AttackIndex, 1);
         yield return new WaitForSeconds(1f);

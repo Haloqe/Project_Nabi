@@ -47,7 +47,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
 
     private void Awake()
     {
-        BaseHealth = 100;//000;
+        BaseHealth = 200;//000;
         _currHealth = MaxHealth;
     }
     
@@ -213,6 +213,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     
     public void TakeDamage(AttackInfo damageInfo)
     {
+        if (_playerMovement.isDashing) return;
         if (_shouldNotTakeDamage) return;
         
         // Attempt evade
