@@ -46,27 +46,30 @@ public class GameManager : Singleton<GameManager>
             ActiveScene = ESceneType.MainMenu;
             GameEvents.MainMenuLoaded.Invoke();
         }
-        else if (scene.name.StartsWith("RealMidBoss"))
-        {
-            ActiveScene = ESceneType.MidBoss;
-            LevelManager.Instance.SpawnPlayer();
-            PostLoadInGame();
-        }
-        else if (scene.name.StartsWith("Boss"))
-        {
-            ActiveScene = ESceneType.Boss;
-            LevelManager.Instance.SpawnPlayer();
-            PostLoadInGame();
-        }
         else if (scene.name.StartsWith("MapGen_Pre"))
         {
             ActiveScene = ESceneType.CombatMap0;
+            //GameObject.Find("MainBackground").GetComponent<Canvas>().worldCamera = Camera.main;
             _ingameMapSceneIdx = scene.buildIndex;
             PostLoadInGame();
         }
         else if (scene.name.StartsWith("MapGen_Post"))
         {
             ActiveScene = ESceneType.CombatMap1;
+            PostLoadInGame();
+        }
+        else if (scene.name.StartsWith("RealMidBoss"))
+        {
+            ActiveScene = ESceneType.MidBoss;
+            GameObject.Find("MainBackground").GetComponent<Canvas>().worldCamera = Camera.main;
+            LevelManager.Instance.SpawnPlayer();
+            PostLoadInGame();
+        }
+        else if (scene.name.StartsWith("Boss"))
+        {
+            ActiveScene = ESceneType.Boss;
+            GameObject.Find("MainBackground").GetComponent<Canvas>().worldCamera = Camera.main;
+            LevelManager.Instance.SpawnPlayer();
             PostLoadInGame();
         }
         else if (scene.name.EndsWith("InGame"))

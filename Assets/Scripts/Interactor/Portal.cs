@@ -87,8 +87,13 @@ public class Portal : Interactor
             // Case 2: Teleporting within a scene
             case EPortalType.CombatToSecret:
             case EPortalType.SecretToCombat:
+                _player.transform.position = _destination;
+                yield return null;
+                break;
+            
             case EPortalType.MetaToCombat:
                 _player.transform.position = _destination;
+                //GameObject.Find("MainBackground").gameObject.SetActive(false);
                 yield return null;
                 break;
             
