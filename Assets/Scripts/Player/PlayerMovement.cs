@@ -287,7 +287,7 @@ public class PlayerMovement : MonoBehaviour
             transform.localScale =
                 new Vector2(-Mathf.Sign(value) * Mathf.Abs(transform.localScale.x), transform.localScale.y);
             
-            CameraFollowObject.TurnCamera();
+            if (CameraFollowObject != null) CameraFollowObject.TurnCamera();
         }
     }
 

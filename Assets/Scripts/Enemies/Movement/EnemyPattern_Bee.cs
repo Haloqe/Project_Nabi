@@ -85,7 +85,6 @@ public class EnemyPattern_Bee : EnemyPattern
     private IEnumerator MoveToPosition(Vector3 destination, float speed, bool facingTarget)
     {
         _movingToPosition = true;
-        Debug.Log("destination: " + destination);
         
         Vector3 moveDirection = (destination - transform.position).normalized;
         float timer = 0f;
@@ -98,7 +97,6 @@ public class EnemyPattern_Bee : EnemyPattern
             timer += Time.deltaTime;
         }
         
-        Debug.Log("arrived at: " + transform.position);
         _rigidBody.velocity = Vector2.zero;
         _movingToPosition = false;
     }

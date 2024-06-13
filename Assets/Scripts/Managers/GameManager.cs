@@ -31,6 +31,7 @@ public class GameManager : Singleton<GameManager>
         _ingameMapSceneIdx = _releaseMapSceneIdx;
         SceneManager.sceneLoaded += OnSceneLoaded;
         PlayerEvents.Defeated += OnPlayerDefeated;
+        GameEvents.Restarted += OnRestarted;
     }
 
     private void Start()
@@ -139,7 +140,8 @@ public class GameManager : Singleton<GameManager>
         _player = PlayerController.Instance;
         GameObject followObject = new GameObject("CameraFollowingObject");
         _player.playerMovement.CameraFollowObject = followObject.AddComponent<CameraFollowObject>();
-        GameObject.Find("Virtual Camera").GetComponent<CinemachineVirtualCamera>().Follow = followObject.transform;
+        CameraManager.Instance.CurrentCamera.Follow = followObject.transform;
+        
         GameEvents.GameLoadEnded.Invoke();
         
         if (ActiveScene is ESceneType.Boss or ESceneType.MidBoss or ESceneType.CombatMap1)
@@ -183,6 +185,13 @@ public class GameManager : Singleton<GameManager>
         PlayerMetaData.numDeaths++;
         PlayerMetaData.numSouls = _player.playerInventory.SoulShard;
         SaveSystem.SaveMetaData();
+    }
+
+    private void OnRestarted()
+    {
+        CameraManager.Instance.SwapCamera(
+            CameraManager.Instance.CurrentCamera,
+            CameraManager.Instance.AllVirtualCameras[0]);
     }
     
    public void QuitGame()
