@@ -45,9 +45,11 @@ public class PlayerTensionController : MonoBehaviour
     [SerializeField] private Image curArborIcon;
     [FormerlySerializedAs("arborIcons")] [SerializeField] [NamedArray(typeof(EArborType))] private Sprite[] arborIconSprites; 
     [SerializeField] [NamedArray(typeof(EArborType))] private GameObject[] arborDescriptionUIs;
-    
-    private void Awake()
+
+    private bool _eventsBound = false;
+    private void Start()
     {
+        Debug.Log("TensionController: Start");
         _audioSource = GetComponent<AudioSource>();
         _tensionGaugeSlider = GetComponentInChildren<Slider>();
         _tensionGaugeText = GetComponentInChildren<TextMeshProUGUI>();
@@ -59,22 +61,26 @@ public class PlayerTensionController : MonoBehaviour
         _slowedTimeScale = 0.5f;
         
         PlayerEvents.SpawnedFirstTime += Initialise;
-        PlayerEvents.StartResurrect += OnPlayerDefeated;
+        PlayerEvents.StartResurrect += () => OnPlayerDefeated(true);
         PlayerEvents.Defeated += OnPlayerDefeated;
         GameEvents.Restarted += OnRestarted;
         GameEvents.CombatSceneChanged += OnCombatSceneChanged;
+        _eventsBound = true;
     }
-
+    
     private void OnDestroy()
     {
-        PlayerEvents.Spawned -= Initialise;
-        PlayerEvents.StartResurrect -= OnPlayerDefeated;
+        if (!_eventsBound) return;
+        PlayerEvents.SpawnedFirstTime -= Initialise;
+        PlayerEvents.StartResurrect -= () => OnPlayerDefeated(true);
         PlayerEvents.Defeated -= OnPlayerDefeated;
         GameEvents.Restarted -= OnRestarted;
+        GameEvents.CombatSceneChanged -= OnCombatSceneChanged;
     }
 
     private void Initialise()
     {
+        Debug.Log("TensionController: Initialise");
         _enemyManager = EnemyManager.Instance;
         _player = PlayerController.Instance;
         _overheatedVFX = _player.transform.Find("OverheatedVFX").gameObject;
@@ -90,8 +96,9 @@ public class PlayerTensionController : MonoBehaviour
     
     private void OnRestarted()
     {
+        Debug.Log("Tension controller OnRestarted");
         _incrementStep = 1;
-        _maxTension = 50;
+        _maxTension = 30;
         _recoveryDuration = 3.0f;
         _tensionGaugeOutline.effectColor = _fillNormalColour;
         _tensionGaugeText.color = Color.white;
@@ -110,7 +117,7 @@ public class PlayerTensionController : MonoBehaviour
         _player.updateTensionUponHit = false;
     }
     
-    private void OnPlayerDefeated()
+    private void OnPlayerDefeated(bool isRealDeath)
     {
         StopAllCoroutines();
         ResetTension();

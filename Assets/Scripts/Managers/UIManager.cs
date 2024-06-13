@@ -135,6 +135,7 @@ public class UIManager : Singleton<UIManager>
 
     private void OnInGameFirstLoad()
     {
+        Debug.Log("OnInGameFirstLoad");
         //_uiCamera = GameObject.Find("UI Camera").GetComponent<Camera>();
         _uiCamera = GameObject.Find("Main Camera").GetComponent<Camera>();
         _activeFocusedUI = null;
@@ -145,19 +146,21 @@ public class UIManager : Singleton<UIManager>
         _zoomedMap          = Instantiate(_zoomedMapPrefab, Vector3.zero, Quaternion.identity).GameObject();
         _bookUI             = Instantiate(_bookPrefab, Vector3.zero, Quaternion.identity).GameObject();
         _metaUpgradeUI      = Instantiate(_metaUpgradeUIPrefab, Vector3.zero, Quaternion.identity).GameObject();
+        
         _metaUIController   = _metaUpgradeUI.GetComponent<MetaUIController>();
         _bookUIController   = _bookUI.GetComponentInChildren<BookUIController>();
         _defeatedUIController = _defeatedUI.GetComponent<DefeatedUIController>();
         _mapController      = _zoomedMap.GetComponent<MapController>();
+        
         _playerHPSlider     = _inGameCombatUI.GetComponentInChildren<Slider>();
         _playerHPGlobe      = _inGameCombatUI.transform.Find("Globe").Find("HealthGlobe").Find("HealthGlobeMask").Find("Fill").GetComponent<Image>();
         _hpText             = _inGameCombatUI.transform.Find("Globe").GetComponentInChildren<TextMeshProUGUI>();
         _darkGaugeSlider    = _inGameCombatUI.transform.Find("DarkSlider").GetComponentInChildren<Slider>();
         _darkGaugeText      = _inGameCombatUI.transform.Find("DarkSlider").GetComponentInChildren<TextMeshProUGUI>();
-        TensionController  = _inGameCombatUI.transform.Find("TensionSlider").GetComponent<PlayerTensionController>();
         _bloodOverlay       = _inGameCombatUI.transform.Find("BloodOverlay").GetComponent<Image>();
         _tensionOverlay     = _inGameCombatUI.transform.Find("TensionOverlay").GetComponent<Image>();
         _minimap            = _inGameCombatUI.transform.Find("MinimapContainer").Find("Minimap").gameObject;
+        TensionController   = _inGameCombatUI.transform.Find("TensionSlider").GetComponent<PlayerTensionController>();
 
         _combatKeyBindTMPs = new TextMeshProUGUI[5];
         var activeLayoutGroup = _inGameCombatUI.transform.Find("ActiveLayoutGroup");
@@ -344,12 +347,12 @@ public class UIManager : Singleton<UIManager>
         OpenFocusedUI(_defeatedUI);
     }
 
-    private void OnPlayerDefeated()
+    private void OnPlayerDefeated(bool isRealDeath)
     {
         StopCoroutine(nameof(BloodOverlayCoroutine));
         CloseFocusedUI();
         PlayerIAMap.Disable();
-        StartCoroutine(GameOverCoroutine());
+        if (isRealDeath) StartCoroutine(GameOverCoroutine());
     }
     
     private void OnPlayerStartResurrect()
@@ -709,5 +712,16 @@ public class UIManager : Singleton<UIManager>
     public GameObject DisplayCountdownUI()
     {
         return Instantiate(_timerPrefab, Vector3.zero, Quaternion.identity);
+    }
+
+    public void LoadMainMenuDelayed() => StartCoroutine(LoadMainMenuDelayedCoroutine());
+    private IEnumerator LoadMainMenuDelayedCoroutine()
+    {
+        Debug.Log("LoadMainMenu-Start");
+        DisplayLoadingScreen();
+        yield return new WaitForSecondsRealtime(0.5f);
+        Debug.Log("LoadMainMenu-Return");
+        GameManager.Instance.LoadMainMenu();
+        HideLoadingScreen();
     }
 }

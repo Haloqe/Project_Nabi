@@ -3,7 +3,7 @@ using UnityEngine.Events;
 public static class PlayerEvents
 {
     public static UnityAction<float, float, float> HpChanged;
-    public static UnityAction Defeated;
+    public static UnityAction<bool> Defeated; // true - real, false - for main menu
     public static UnityAction StartResurrect;
     public static UnityAction EndResurrect;
     public static UnityAction SpawnedFirstTime;

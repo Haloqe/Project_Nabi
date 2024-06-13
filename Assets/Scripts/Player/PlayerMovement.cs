@@ -97,7 +97,7 @@ public class PlayerMovement : MonoBehaviour
         InGameEvents.TimeRevertNormal -= OnTimeRevertNormal;
     }
 
-    private void OnDefeated()
+    private void OnDefeated(bool isRealDeath)
     {
         _moveDirection = 0;
         _additionalVelocity = Vector2.zero;
@@ -439,7 +439,7 @@ public class PlayerMovement : MonoBehaviour
         // Not on the ground
         if (!_isJumping)
         {
-            StartCoroutine(JumpTriggerDelayCoroutine());
+            if (isActiveAndEnabled) StartCoroutine(JumpTriggerDelayCoroutine());
         }
         else
         {

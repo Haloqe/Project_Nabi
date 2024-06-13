@@ -106,6 +106,7 @@ public class GameManager : Singleton<GameManager>
     {
         if (ActiveScene is ESceneType.CombatMap0 or ESceneType.DebugCombatMap)
         {
+            Debug.Log(isFirstRun? "This is first run" : "This is not first run");
             if (isFirstRun) GameEvents.InGameFirstLoadStarted.Invoke();
             else GameEvents.CombatSceneChanged.Invoke();
         }
@@ -174,13 +175,16 @@ public class GameManager : Singleton<GameManager>
         SceneManager.LoadScene("Scenes/Boss_InGame");
     }
 
-    private void OnPlayerDefeated()
+    private void OnPlayerDefeated(bool isRealDeath)
     {
         isFirstRun = false;
-        PlayerMetaData.isDirty = true;
-        PlayerMetaData.numDeaths++;
-        PlayerMetaData.numSouls = _player.playerInventory.SoulShard;
-        SaveSystem.SaveMetaData();
+        if (isRealDeath)
+        {
+            PlayerMetaData.isDirty = true;
+            PlayerMetaData.numDeaths++;
+            PlayerMetaData.numSouls = _player.playerInventory.SoulShard;
+            SaveSystem.SaveMetaData();
+        }
     }
     
    public void QuitGame()

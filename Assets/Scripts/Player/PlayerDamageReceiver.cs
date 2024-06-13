@@ -251,11 +251,16 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         _activeDamageCoroutines.Remove(damageCoroutine); 
     }
 
-    private void OnPlayerDefeated()
+    private void OnPlayerDefeated(bool isRealDeath)
     {
+        _spriteRenderer.material = _originalMaterial;
+        Array.Clear(_effectRemainingTimes, 0, _effectRemainingTimes.Length);
+        Array.Clear(_activeDOTCounts, 0, _activeDOTCounts.Length);
+        _slowRemainingTimes.Clear();
+        StopAllDamageCoroutines();
         _shouldNotTakeDamage = true;
         StopAllCoroutines();
-        _animator.SetBool(IsDead, true);
+        if (isRealDeath) _animator.SetBool(IsDead, true);
         _spriteRenderer.color = Color.white;
     }
 
@@ -324,15 +329,17 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
 
     private void Die()
     {
-        _spriteRenderer.material = _originalMaterial;
-        Array.Clear(_effectRemainingTimes, 0, _effectRemainingTimes.Length);
-        Array.Clear(_activeDOTCounts, 0, _activeDOTCounts.Length);
-        _slowRemainingTimes.Clear();
-        StopAllDamageCoroutines();
-        
         // Resurrect or die
-        if (canResurrect) StartCoroutine(ResurrectCoroutine());
-        else PlayerEvents.Defeated.Invoke();
+        if (canResurrect)
+        {
+            _spriteRenderer.material = _originalMaterial;
+            Array.Clear(_effectRemainingTimes, 0, _effectRemainingTimes.Length);
+            Array.Clear(_activeDOTCounts, 0, _activeDOTCounts.Length);
+            _slowRemainingTimes.Clear();
+            StopAllDamageCoroutines();
+            StartCoroutine(ResurrectCoroutine());
+        }
+        else PlayerEvents.Defeated.Invoke(true);
     }
 
     private void StopAllDamageCoroutines()

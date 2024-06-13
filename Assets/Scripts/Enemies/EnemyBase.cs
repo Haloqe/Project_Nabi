@@ -85,7 +85,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         _armour = EnemyData.DefaultArmour;
     }
     
-    private void OnPlayerDefeated()
+    private void OnPlayerDefeated(bool isRealDeath)
     {
         foreach (SpriteRenderer spriteRenderer in _spriteRenderers)
             spriteRenderer.material = _originalMaterial;

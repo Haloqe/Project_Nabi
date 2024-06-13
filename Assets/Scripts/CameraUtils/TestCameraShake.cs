@@ -37,8 +37,10 @@ public class TestCameraShake : MonoBehaviour
         }        
     }
 
-    public void OnPlayerDefeated()
+    public void OnPlayerDefeated(bool isRealDeath)
     {
+        if (!isRealDeath) return;
+        
         // TEMP
         _cbmcp.m_AmplitudeGain = Mathf.Max(_cbmcp.m_AmplitudeGain,_shakeIntensity * 8);
         _remainingTime += (_shakeTime * 2 - _remainingTime);

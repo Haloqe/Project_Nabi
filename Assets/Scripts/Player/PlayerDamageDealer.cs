@@ -73,7 +73,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         // Bind events
         GameEvents.GameLoadEnded += OnRestarted;
         PlayerEvents.Defeated += OnPlayerDefeated;
-        PlayerEvents.StartResurrect += OnPlayerDefeated;
+        PlayerEvents.StartResurrect += () => OnPlayerDefeated(true);
         GameEvents.CombatSceneChanged += OnCombatSceneChanged;
         
         // Input Binding for Attacks
@@ -95,7 +95,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         if (GetComponent<PlayerController>().IsToBeDestroyed) return;
         GameEvents.GameLoadEnded -= OnRestarted;
         PlayerEvents.Defeated -= OnPlayerDefeated;
-        PlayerEvents.StartResurrect -= OnPlayerDefeated;
+        PlayerEvents.StartResurrect -= () => OnPlayerDefeated(true);
         GameEvents.CombatSceneChanged -= OnCombatSceneChanged;
         
         var playerInput = GetComponent<PlayerInput>();
@@ -105,7 +105,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         playerInput.actions["Attack_Area"].performed -= OnAreaAttack;
     }
 
-    private void OnPlayerDefeated()
+    private void OnPlayerDefeated(bool isRealDeath)
     {
         foreach (var butterfly in _spawnedButterflies) Destroy(butterfly.gameObject);
         _spawnedButterflies.Clear();

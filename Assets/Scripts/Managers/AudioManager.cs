@@ -58,7 +58,7 @@ public class AudioManager : Singleton<AudioManager>
         
         GameEvents.MainMenuLoaded += OnMainMenuLoaded;
         GameEvents.GameLoadEnded += OnGameLoadEnded;
-        PlayerEvents.Defeated += () => StopBgm(1f);
+        PlayerEvents.Defeated += OnPlayerDefeated;
         
         _audioMixerGroups = new AudioMixerGroup[]
         {
@@ -83,6 +83,11 @@ public class AudioManager : Singleton<AudioManager>
         DontDestroyOnLoad(_bgmPlayer);
     }
 
+    private void OnPlayerDefeated(bool isRealDeath)
+    {
+        StopBgm(1f);    
+    }
+    
     private void Start()
     {
         GetSavedData();

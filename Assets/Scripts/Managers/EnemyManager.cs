@@ -38,13 +38,15 @@ public class EnemyManager : Singleton<EnemyManager>
         GameEvents.MapLoaded += OnMapLoaded;
         GameEvents.GameLoadEnded += OnGameLoadEnded;
         InGameEvents.EnemySlayed += OnEnemySlayed;
-        PlayerEvents.Defeated += () =>
-        {
-            StopAllCoroutines();
-            _spawnedEnemies.Clear();
-        };
+        PlayerEvents.Defeated += OnPlayerDefeated;
         
         Init(Application.dataPath + "/Tables/EnemyDataTable.csv");
+    }
+
+    private void OnPlayerDefeated(bool isRealDeath)
+    {
+        StopAllCoroutines();
+        _spawnedEnemies.Clear();
     }
     
     // Spawn enemies from spawners

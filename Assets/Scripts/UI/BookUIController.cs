@@ -1,7 +1,7 @@
-using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
+
 public class BookUIController : UIControllerBase
 {
     // Pages
@@ -17,6 +17,15 @@ public class BookUIController : UIControllerBase
     private TextMeshProUGUI[] _optionTexts;
     private string[] _optionTextDefaults;
     private bool _isSettingsOpen;
+    
+    // Confirm
+    private GameObject _confirmPanel;
+    private bool _isConfirmPanelForMenu; 
+    private TextMeshProUGUI _confirmDetailTMP;
+    private TextMeshProUGUI[] _confirmOptionsTMPs; // 0: No, 1: Yes
+    private string[] _confirmTexts;
+    private int _selectedConfirmOption;
+    private Color _confirmSelectedColour;
     
     // Animation
     private bool _isClosing;
@@ -52,6 +61,16 @@ public class BookUIController : UIControllerBase
         _tabs[2] = transform.Find("Tab_2").gameObject;
         _animator = GetComponent<Animator>();
         _audioSource = GetComponent<AudioSource>();
+        
+        // Confirm panels
+        _confirmPanel = transform.parent.Find("ConfirmPanel").gameObject;
+        _confirmDetailTMP = _confirmPanel.transform.Find("InfoText").GetComponent<TextMeshProUGUI>();
+        _confirmOptionsTMPs = _confirmPanel.transform.Find("Options").GetComponentsInChildren<TextMeshProUGUI>();
+        _confirmTexts = new string[2]
+        {
+            _confirmOptionsTMPs[0].text, _confirmOptionsTMPs[1].text,
+        };
+        _confirmSelectedColour = new Color(0.9f, 0.7f, 0, 1);
         
         // Options
         _optionTexts = transform.Find("Options").GetComponentsInChildren<TextMeshProUGUI>();
@@ -114,8 +133,8 @@ public class BookUIController : UIControllerBase
 
     public void OnPointerClickTab(int tabIdx)
     {
+        if (_confirmPanel.activeSelf) return;
         if (!_canNavigate) return;
-        //if (!_isFlipOver) return;
         StartCoroutine(DisplayPage(tabIdx));
     }
 
@@ -159,6 +178,15 @@ public class BookUIController : UIControllerBase
     public override void OnNavigate(Vector2 value)
     {
         if (!_canNavigate) return;
+        
+        // Confirm panel
+        if (_confirmPanel.activeSelf)
+        {
+            OnNavigateConfirmPanel(value.x);
+            return;
+        }
+        
+        // Settings
         if (_isSettingsOpen)
         {
             _settingsUIController.OnNavigate(value);
@@ -170,6 +198,14 @@ public class BookUIController : UIControllerBase
     public override void OnClose()
     {
         if (_isClosing) return;
+        
+        // Confirm panel
+        if (_confirmPanel.activeSelf)
+        {
+            _confirmPanel.SetActive(false);
+            return;
+        }
+        // Settings
         if (_isSettingsOpen)
         {
             _settingsUIController.OnClose();
@@ -196,13 +232,35 @@ public class BookUIController : UIControllerBase
         UnselectSelectedOption();
         StartCoroutine(DisplayPage(nextPage));
     }
-
+    
     public override void OnSubmit()
     {
         if (!_canNavigate) return;
         
+        // Confirm Panel
+        if (_confirmPanel.activeSelf)
+        {
+            _confirmPanel.SetActive(false);
+            if (_selectedConfirmOption == 1) 
+            {
+                _confirmPanel.SetActive(false);
+                if (_isConfirmPanelForMenu)
+                {
+                    // GameManager.Instance.isFirstRun = false;
+                    // PlayerEvents.Defeated.Invoke(false);
+                    // GameManager.Instance.LoadMainMenu();
+                    PlayerEvents.Defeated.Invoke(false);
+                    _uiManager.LoadMainMenuDelayed();
+                }
+                else GameManager.Instance.QuitGame();
+            }
+            return;
+        }
+        
+        // Settings
         if (_isSettingsOpen)
         {
+            GameManager.Instance.isFirstRun = false;
             _settingsUIController.OnSubmit();
             return;
         }
@@ -214,8 +272,9 @@ public class BookUIController : UIControllerBase
                 break;
             
             case 1: // Main menu
-                // Todo confirm
-                GameManager.Instance.LoadMainMenu();
+                _confirmPanel.SetActive(true);
+                _isConfirmPanelForMenu = true;
+                _confirmDetailTMP.text = "이번 회차의 플레이 기록이 삭제됩니다.\n메인 메뉴로 돌아갈까요?";
                 break;
             
             case 2: // Settings
@@ -226,8 +285,9 @@ public class BookUIController : UIControllerBase
                 break;
             
             case 3: // Quit
-                // Todo confirm
-                GameManager.Instance.QuitGame();
+                _confirmPanel.SetActive(true);
+                _isConfirmPanelForMenu = false;
+                _confirmDetailTMP.text = "보유한 영혼 조각, 업그레이드,\n플레이 기록이 전부 삭제됩니다.\n삭제한 기록은 되돌릴 수 없습니다.\n처음부터 시작할까요?";
                 break;
         }
     }
@@ -279,5 +339,35 @@ public class BookUIController : UIControllerBase
     {
         _isSettingsOpen = false;
         UIManager.Instance.UpdateCombatKeyBindText();
+    }
+    
+    // Confirm panel
+    private void OnNavigateConfirmPanel(float x)
+    {
+        if (x == 0) return;
+        
+        _audioSource.Play();
+        UnselectPreviousConfirmOption();
+        if (x < 0) // left
+        {
+            SelectConfirmOption(_selectedConfirmOption == 1 ? 0 : 1);
+        }
+        else // right
+        {
+            SelectConfirmOption(_selectedConfirmOption == 0 ? 1 : 0);
+        }
+    }
+
+    private void SelectConfirmOption(int idx)
+    {
+        _confirmOptionsTMPs[idx].color = _confirmSelectedColour;
+        _confirmOptionsTMPs[idx].text = $"> {_confirmTexts[idx]} <";
+        _selectedConfirmOption = idx;
+    }
+    
+    private void UnselectPreviousConfirmOption()
+    {
+        _confirmOptionsTMPs[_selectedConfirmOption].color = Color.white;
+        _confirmOptionsTMPs[_selectedConfirmOption].text = _confirmTexts[_selectedConfirmOption];
     }
 }
