@@ -49,7 +49,6 @@ public class PlayerTensionController : MonoBehaviour
     private bool _eventsBound = false;
     private void Start()
     {
-        Debug.Log("TensionController: Start");
         _audioSource = GetComponent<AudioSource>();
         _tensionGaugeSlider = GetComponentInChildren<Slider>();
         _tensionGaugeText = GetComponentInChildren<TextMeshProUGUI>();
@@ -80,7 +79,6 @@ public class PlayerTensionController : MonoBehaviour
 
     private void Initialise()
     {
-        Debug.Log("TensionController: Initialise");
         _enemyManager = EnemyManager.Instance;
         _player = PlayerController.Instance;
         _overheatedVFX = _player.transform.Find("OverheatedVFX").gameObject;
@@ -96,7 +94,6 @@ public class PlayerTensionController : MonoBehaviour
     
     private void OnRestarted()
     {
-        Debug.Log("Tension controller OnRestarted");
         _incrementStep = 1;
         _maxTension = 30;
         _recoveryDuration = 3.0f;
@@ -186,7 +183,6 @@ public class PlayerTensionController : MonoBehaviour
 
     private void SetTensionValue(int value)
     {
-        Debug.Log("SetTensionValue : " + value);
         // Update UI
         _tension = value;
         _tensionGaugeSlider.value = (float)value / _maxTension;

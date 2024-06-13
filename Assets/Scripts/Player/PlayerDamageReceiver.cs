@@ -236,7 +236,6 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         // 피해 감소
         damage.TotalAmount -= damage.TotalAmount * damageReductionRatio;
         
-        Debug.Log("Player damaged: " + damage.TotalAmount);
         StartCoroutine(DamageCoroutine(damage));
     }
     

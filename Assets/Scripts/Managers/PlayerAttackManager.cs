@@ -154,7 +154,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     private void Init_WarriorData()
     {
         _warriors = new SWarrior[(int)EWarrior.MAX];
-        string dataPath = Application.dataPath + "/Tables/WarriorsTable.csv";
+        string dataPath = Path.Combine(Application.streamingAssetsPath, "Tables/WarriorsTable.csv");
         Debug.Assert(File.Exists(dataPath));
 
         using (var reader = new StreamReader(dataPath))
@@ -194,7 +194,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         }
         
         // Retrieve data
-        string dataPath = Application.dataPath + "/Tables/LegaciesTable.csv";
+        string dataPath = Path.Combine(Application.streamingAssetsPath, "Tables/LegaciesTable.csv");
         Debug.Assert(File.Exists(dataPath));
 
         using (var reader = new StreamReader(dataPath))

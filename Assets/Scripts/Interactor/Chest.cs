@@ -1,5 +1,7 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Random = UnityEngine.Random;
 
 public class Chest : Interactor
 {
@@ -80,6 +82,7 @@ public class Chest : Interactor
             0 => 6f,
             1 => 8f,
             2 => 11f,
+            _ => throw new ArgumentOutOfRangeException(),
         };
 
         // Drop coins

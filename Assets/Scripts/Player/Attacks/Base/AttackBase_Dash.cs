@@ -9,7 +9,7 @@ public class AttackBase_Dash : AttackBase
     // Base Dash
     private Rigidbody2D _rigidbody2D;
     private readonly float _dashStrength = 2.5f;
-    private readonly float _dashDuration = 0.35f;
+    private readonly float _dashDuration = 0.29f;
     
     // Nightshade Dash
     private readonly float _nightShadeDashTimeLimit = 4.5f;

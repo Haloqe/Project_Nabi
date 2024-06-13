@@ -40,7 +40,7 @@ public class EnemyManager : Singleton<EnemyManager>
         InGameEvents.EnemySlayed += OnEnemySlayed;
         PlayerEvents.Defeated += OnPlayerDefeated;
         
-        Init(Application.dataPath + "/Tables/EnemyDataTable.csv");
+        Init(Path.Combine(Application.streamingAssetsPath, "Tables/EnemyDataTable.csv"));
     }
 
     private void OnPlayerDefeated(bool isRealDeath)
@@ -69,7 +69,14 @@ public class EnemyManager : Singleton<EnemyManager>
 
     private void OnEnemySlayed(EnemyBase slayedEnemyBase)
     {
-        _audioSource.pitch = Random.Range(0.5f, 1.5f);
+        if (slayedEnemyBase.typeID == (int)EEnemyType.QueenBee)
+        {
+            _audioSource.pitch = Random.Range(1.25f, 1.6f);
+        }
+        else
+        {
+            _audioSource.pitch = Random.Range(0.8f, 1.5f);
+        }
         _audioSource.PlayOneShot(DeathAudioClips[slayedEnemyBase.typeID]);
         _spawnedEnemies.Remove(slayedEnemyBase);
     }

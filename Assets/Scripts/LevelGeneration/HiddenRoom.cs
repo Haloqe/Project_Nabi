@@ -1,12 +1,15 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Cinemachine;
 using TMPro;
 using Unity.Mathematics;
 using UnityEngine;
 
 public class HiddenRoom : MonoBehaviour
 {
+    [SerializeField] public int virtualCameraIndex;
+    private CinemachineVirtualCamera _roomCamera;
     private UIManager _uiManager;
     public string roomName;
     public int roomLevel; // 0 - Lowest, 1 - Medium, 2 - Highest
@@ -26,6 +29,7 @@ public class HiddenRoom : MonoBehaviour
 
     private void Awake()
     {
+        _roomCamera = CameraManager.Instance.AllVirtualCameras[virtualCameraIndex];
         _audioSource = GetComponent<AudioSource>();
         _returnPortal = GetComponentInChildren<Portal>(includeInactive: true);
         _enemySpawner = GetComponentInChildren<EnemySpawner>(includeInactive: true);
@@ -40,6 +44,8 @@ public class HiddenRoom : MonoBehaviour
 
     public void OnEnter(Vector3 previousPos)
     {
+        CameraManager.Instance.SwapCamera(
+            CameraManager.Instance.AllVirtualCameras[1], _roomCamera);
         StartCoroutine(BGMFadeInCoroutine());
         _chest = Instantiate(chestPrefab, chestPosition.position, quaternion.identity).GetComponent<Chest>();
         _exitDestination = previousPos;
@@ -64,6 +70,7 @@ public class HiddenRoom : MonoBehaviour
 
     public void OnExit()
     {
+        CameraManager.Instance.SwapCamera(_roomCamera, CameraManager.Instance.AllVirtualCameras[1]);
         Destroy(_countdownUI);
         StartCoroutine(BGMFadeOutCoroutine());
         InGameEvents.EnemySlayed -= CheckEnemiesAllKilled;
@@ -87,12 +94,18 @@ public class HiddenRoom : MonoBehaviour
         // Initialise UI
         _countdownUI = _uiManager.DisplayCountdownUI();
         _countdownText = _countdownUI.GetComponentInChildren<TextMeshProUGUI>();
-        
+
+        bool urgentChanged = false;
         int counter = enemyKillTimeLimit;
         while (counter > 0)
         {
             _countdownText.text = counter.ToString("D2");
-            if (counter <= 10) _countdownText.color = Color.red;
+            if (!urgentChanged && counter <= 10)
+            {
+                urgentChanged = true;
+                _countdownText.color = Color.red;
+                _countdownText.fontSize += 5f;
+            }
             yield return new WaitForSecondsRealtime(1f);
             counter--;
         }

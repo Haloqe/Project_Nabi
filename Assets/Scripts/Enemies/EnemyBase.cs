@@ -586,11 +586,13 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         if (typeID == 4)
         {
             InGameEvents.MidBossSlayed?.Invoke();
+            AudioManager.Instance.StopBgm(1.5f);
             FindObjectOfType<Portal>(true).gameObject.SetActive(true);
         }
         else if (typeID == 5)
         {
             InGameEvents.BossSlayed?.Invoke();
+            // Need ending scene here..... :(
         }
 
         StopAllCoroutines();

@@ -1,11 +1,14 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Cinemachine;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 public class CameraManager : Singleton<CameraManager>
 {
-    [SerializeField] private CinemachineVirtualCamera[] _allVirtualCameras;
+    public CinemachineVirtualCamera[] AllVirtualCameras;
     
     private float _fallPanAmount = 0.25f;
     private float _fallYPanTime = 0.35f;
@@ -16,30 +19,34 @@ public class CameraManager : Singleton<CameraManager>
     public bool IsLerpingYDamping { get; private set; }
     public bool LerpedFromPlayerFalling { get; set; }
 
-    private CinemachineVirtualCamera _currentCamera;
+    public CinemachineVirtualCamera CurrentCamera { get; private set; }
     private CinemachineFramingTransposer _framingTransposer;
 
     private float _normalYPanAmount;
     private float _normalYOffsetAmount;
+    private bool _isFramingTransposed = false;
 
     void Start()
     {
-        for (int i = 0; i < _allVirtualCameras.Length; i++)
+        for (int i = 0; i < AllVirtualCameras.Length; i++)
         {
-            if (_allVirtualCameras[i].enabled)
+            if (AllVirtualCameras[i].enabled)
             {
-                _currentCamera = _allVirtualCameras[i];
-                _framingTransposer = _currentCamera.GetCinemachineComponent<CinemachineFramingTransposer>();
+                CurrentCamera = AllVirtualCameras[i];
+                _framingTransposer = CurrentCamera.GetCinemachineComponent<CinemachineFramingTransposer>();
             }
         }
 
         // _normalYPanAmount = _framingTransposer.m_YDamping;
+        if (_framingTransposer == null) return; 
+        
         _normalYOffsetAmount = _framingTransposer.m_TrackedObjectOffset.y;
-
+        _isFramingTransposed = true;
     }
 
     public void LerpYDamping(bool isPlayerFalling)
     {
+        if (!_isFramingTransposed) return;
         // StartCoroutine(LerpYDampingAction(isPlayerFalling));
         StartCoroutine(LerpYOffsetAction(isPlayerFalling));
     }
@@ -78,7 +85,7 @@ public class CameraManager : Singleton<CameraManager>
     private IEnumerator LerpYOffsetAction(bool isPlayerFalling)
     {
         IsLerpingYDamping = true;
-
+        
         float startOffsetAmount = _framingTransposer.m_TrackedObjectOffset.y;
         float endOffsetAmount = 0f;
 
@@ -91,7 +98,7 @@ public class CameraManager : Singleton<CameraManager>
         {
             endOffsetAmount = _normalYOffsetAmount;
         }
-
+        
         float timer = 0f;
         while (timer < _fallYPanTime)
         {
@@ -104,5 +111,27 @@ public class CameraManager : Singleton<CameraManager>
         }
         
         IsLerpingYDamping = false;
+    }
+    
+    public void SwapCamera(CinemachineVirtualCamera camera1, CinemachineVirtualCamera camera2)
+    {
+        camera1.enabled = false;
+        camera2.enabled = true;
+        StartCoroutine(AssignCollider(Array.IndexOf(AllVirtualCameras, camera2)));
+        CurrentCamera = camera2;
+        _framingTransposer = CurrentCamera.GetCinemachineComponent<CinemachineFramingTransposer>();
+        _isFramingTransposed = _framingTransposer != null;
+        GameObject followObject = GameObject.Find("CameraFollowingObject");
+        if (followObject != null) CurrentCamera.Follow = followObject.transform;
+    }
+
+    private IEnumerator AssignCollider(int cameraIndex)
+    {
+        if (cameraIndex == 1) yield break;
+        yield return null;
+        CompositeCollider2D collider = GameObject.Find(cameraIndex.ToString()).GetComponent<CompositeCollider2D>();
+        AllVirtualCameras[cameraIndex].GetComponent<CinemachineConfiner2D>().m_BoundingShape2D = collider;
+        if (cameraIndex is 5 or 6)
+            CurrentCamera.Follow = PlayerController.Instance.gameObject.transform;
     }
 }

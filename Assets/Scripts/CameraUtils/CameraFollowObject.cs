@@ -10,6 +10,12 @@ public class CameraFollowObject : MonoBehaviour
     private void Start()
     {
         _playerTransform = PlayerController.Instance.transform;
+        if (CameraManager.Instance.CurrentCamera == CameraManager.Instance.AllVirtualCameras[5]
+            || CameraManager.Instance.CurrentCamera == CameraManager.Instance.AllVirtualCameras[6])
+        {
+            CameraManager.Instance.CurrentCamera.Follow = _playerTransform;
+            Destroy(gameObject);
+        }
     }
     
     private void Update()

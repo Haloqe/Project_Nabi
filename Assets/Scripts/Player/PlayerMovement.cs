@@ -287,7 +287,7 @@ public class PlayerMovement : MonoBehaviour
             transform.localScale =
                 new Vector2(-Mathf.Sign(value) * Mathf.Abs(transform.localScale.x), transform.localScale.y);
             
-            CameraFollowObject.TurnCamera();
+            if (CameraFollowObject != null) CameraFollowObject.TurnCamera();
         }
     }
 
@@ -439,13 +439,11 @@ public class PlayerMovement : MonoBehaviour
         // Not on the ground
         if (!_isJumping)
         {
-            if (isActiveAndEnabled) StartCoroutine(JumpTriggerDelayCoroutine());
+            if (gameObject.activeInHierarchy) StartCoroutine(JumpTriggerDelayCoroutine());
         }
         else
         {
             _animator.SetBool(IsJumping, _isJumping);
-            //Debug.Log("Startedjumpcheck");
-            //StartCoroutine(JumpLandCheckCoroutine());
         }
         _isJumping = true;
     }

@@ -89,9 +89,9 @@ public class BookUIController : UIControllerBase
 
     private void OnEnable()
     {
+        UnselectSelectedOption();
         curSelectedOption = -1;
         _canNavigate = false;
-        //_isFlipOver = false;
         _isClosing = false;
         _currPageIdx = 0;
         foreach (var tab in _tabs)
@@ -175,6 +175,11 @@ public class BookUIController : UIControllerBase
         _uiManager.CloseFocusedUI();
     }
     
+    public void OnReset()
+    {
+        if (_isSettingsOpen) _settingsUIController.OnReset();
+    }
+    
     public override void OnNavigate(Vector2 value)
     {
         if (!_canNavigate) return;
@@ -246,11 +251,8 @@ public class BookUIController : UIControllerBase
                 _confirmPanel.SetActive(false);
                 if (_isConfirmPanelForMenu)
                 {
-                    // GameManager.Instance.isFirstRun = false;
-                    // PlayerEvents.Defeated.Invoke(false);
-                    // GameManager.Instance.LoadMainMenu();
                     PlayerEvents.Defeated.Invoke(false);
-                    _uiManager.LoadMainMenuDelayed();
+                    GameManager.Instance.LoadMainMenuDelayed();
                 }
                 else GameManager.Instance.QuitGame();
             }
@@ -287,17 +289,13 @@ public class BookUIController : UIControllerBase
             case 3: // Quit
                 _confirmPanel.SetActive(true);
                 _isConfirmPanelForMenu = false;
-                _confirmDetailTMP.text = "보유한 영혼 조각, 업그레이드,\n플레이 기록이 전부 삭제됩니다.\n삭제한 기록은 되돌릴 수 없습니다.\n처음부터 시작할까요?";
+                _confirmDetailTMP.text = "이번 회차의 플레이 기록이 삭제됩니다.\n게임을 종료할까요?";
                 break;
         }
     }
 
     public void OnSubmitOption()
     {
-        switch (curSelectedOption)
-        {
-            
-        }
     }
     
     // Options

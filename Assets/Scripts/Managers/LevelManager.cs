@@ -60,8 +60,8 @@ public class LevelManager : Singleton<LevelManager>
         base.Awake();
         if (IsToBeDestroyed) return;
         
-        _maxHeight = 2500;
-        _maxWidth = 2500;
+        _maxHeight = 3000;
+        _maxWidth = 3000;
         _superGrid = new ECellType[_maxHeight, _maxWidth];
         _corridors = new[]
         {
@@ -87,7 +87,8 @@ public class LevelManager : Singleton<LevelManager>
         
         InitialiseRooms();
     }
-    
+
+    private int tryCount = 0;
     public void Generate()
     {
         // Reset values
@@ -104,13 +105,20 @@ public class LevelManager : Singleton<LevelManager>
         _superWallTilemap = root.Find("SuperWall").GetComponent<Tilemap>();
         _roomsContainer = GameObject.Find("Rooms").transform;
         _clockworkSpawnersByRoom = new List<ClockworkSpawner[]>();
-        _metaSpawnPoint = GameObject.FindWithTag("PlayerStart_Meta").transform.position;
+        if (GameManager.Instance.ActiveScene == ESceneType.CombatMap0)
+            _metaSpawnPoint = GameObject.FindWithTag("PlayerStart_Meta").transform.position;
         
         // Level generation
         _levelGenerationEnded = false;
         _aStarScanEnded = false;
         GenerateLevelGraph();
-        GenerateLevel();
+        
+        // TODO FIX. Currently a naive solution to retry generation until success. Need to add corridors instead.
+        while (!GenerateLevel())
+        {
+            Debug.Log("[LevelGeneration] Attempt " + ++tryCount + " has failed. Retrying...");
+            Generate();
+        }
     }
 
     // TEMP
@@ -146,7 +154,7 @@ public class LevelManager : Singleton<LevelManager>
         }
     }
 
-    private void GenerateLevel()
+    private bool GenerateLevel()
     {
         // Add starting room
         var startingVirtualRoom = new GameObject("StartingRoom");
@@ -179,7 +187,7 @@ public class LevelManager : Singleton<LevelManager>
 
             // Place the room
             var res = PlaceRoom(roomInfo.PrevRoomID, currRoomID);
-            if (!res) continue;
+            if (!res) return false;
 
             // Add its connected rooms to the visit stack
             var nextRoomIDs = _levelGraph.GetConnectedRooms(currRoomID);
@@ -195,8 +203,9 @@ public class LevelManager : Singleton<LevelManager>
         
         _levelGenerationEnded = true;
         StartCoroutine(LevelGenerationCoroutine());
+        return true;
     }
-
+    
     private bool PlaceRoom(int prevRoomID, int currRoomID)
     {
         // If the previous room has no door to connect to, return

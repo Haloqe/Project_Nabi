@@ -5,6 +5,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class UIManager : Singleton<UIManager>
@@ -37,6 +38,7 @@ public class UIManager : Singleton<UIManager>
     private GameObject _roomGuidePrefab;
     private GameObject _settingsPrefab;
     private GameObject _timerPrefab;
+    private GameObject _creditsUIPrefab;
 
     // UI Instantiated Objects
     private GameObject _mainMenuUI;
@@ -104,6 +106,7 @@ public class UIManager : Singleton<UIManager>
         GameEvents.InGameFirstLoadStarted += OnInGameFirstLoad;
         GameEvents.GameLoadEnded += OnGameLoadEnded;
         GameEvents.CombatSceneChanged += OnCombatSceneChanged;
+        InGameEvents.BossSlayed += OnBossSlayed;
         InGameEvents.TimeSlowDown += () => _tensionOverlay.gameObject.SetActive(true);
         InGameEvents.TimeRevertNormal += () => _tensionOverlay.gameObject.SetActive(false);
 
@@ -135,7 +138,6 @@ public class UIManager : Singleton<UIManager>
 
     private void OnInGameFirstLoad()
     {
-        Debug.Log("OnInGameFirstLoad");
         //_uiCamera = GameObject.Find("UI Camera").GetComponent<Camera>();
         _uiCamera = GameObject.Find("Main Camera").GetComponent<Camera>();
         _activeFocusedUI = null;
@@ -372,6 +374,7 @@ public class UIManager : Singleton<UIManager>
         string path = "Prefabs/UI/";
         _loadingScreenPrefab    = Utility.LoadGameObjectFromPath(path + "LoadingCanvas");
         _settingsPrefab         = Utility.LoadGameObjectFromPath(path + "SettingsCanvas");
+        _creditsUIPrefab        = Utility.LoadGameObjectFromPath(path + "CreditsCanvas");
         _focusedOverlayPrefab   = Utility.LoadGameObjectFromPath(path + "InGame/FocusedCanvas");
         _defeatedUIPrefab       = Utility.LoadGameObjectFromPath(path + "InGame/DefeatedCanvas");
         _inGameCombatPrefab     = Utility.LoadGameObjectFromPath(path + "InGame/CombatCanvas");
@@ -555,6 +558,10 @@ public class UIManager : Singleton<UIManager>
         {
             _mainMenuUIController.OnReset();
         }
+        else if (_activeFocusedUI == _bookUI)
+        {
+            _bookUIController.OnReset();
+        }
     }
 
     private void OnSubmit(InputAction.CallbackContext obj)
@@ -714,14 +721,29 @@ public class UIManager : Singleton<UIManager>
         return Instantiate(_timerPrefab, Vector3.zero, Quaternion.identity);
     }
 
-    public void LoadMainMenuDelayed() => StartCoroutine(LoadMainMenuDelayedCoroutine());
-    private IEnumerator LoadMainMenuDelayedCoroutine()
+    private void OnBossSlayed() => StartCoroutine(GameEndCoroutine());
+    private IEnumerator GameEndCoroutine()
     {
-        Debug.Log("LoadMainMenu-Start");
-        DisplayLoadingScreen();
-        yield return new WaitForSecondsRealtime(0.5f);
-        Debug.Log("LoadMainMenu-Return");
-        GameManager.Instance.LoadMainMenu();
-        HideLoadingScreen();
+        _audioManager.StopBgm(1f);
+        SaveSystem.SaveMetaData();
+        yield return new WaitForSecondsRealtime(5f);
+        
+        PlayerEvents.Defeated.Invoke(false);
+        _gameManager.PlayerMetaData.isDirty = true;
+        _gameManager.PlayerMetaData.numSouls = _playerController.playerInventory.SoulShard;
+        
+        var creditsUI = DisplayCreditsUI();
+        DontDestroyOnLoad(creditsUI.gameObject);
+        creditsUI.gameObject.SetActive(true);
+        PlayerIAMap.Disable();
+        UIIAMap.Disable();
+        yield return new WaitForSecondsRealtime(1.5f);
+        
+        _gameManager.LoadMainMenu();
+    }
+
+    public CreditsUI DisplayCreditsUI()
+    {
+        return Instantiate(_creditsUIPrefab, Vector3.zero, Quaternion.identity).GetComponent<CreditsUI>();
     }
 }

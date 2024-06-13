@@ -14,11 +14,13 @@ public class Portal : Interactor
     public EPortalType portalType;
     private Vector3 _destination;
     public HiddenRoom connectedHiddenRoom;
+    private GameObject _cameras;
     private readonly static float[] HiddenRoomChanceByLevel = new float[]
     { 
-        0, 0, 1.0f,
-    };
-
+        //0.2f, 0.45f, 0.35f,
+        0,1,0
+    }; 
+    
     protected override void OnInteract(InputAction.CallbackContext obj)
     {
         if (IsInteracting) return;
@@ -93,12 +95,18 @@ public class Portal : Interactor
             
             case EPortalType.MetaToCombat:
                 _player.transform.position = _destination;
+                CameraManager.Instance.SwapCamera(
+                    CameraManager.Instance.AllVirtualCameras[0],
+                    CameraManager.Instance.AllVirtualCameras[1]);
                 yield return null;
                 break;
             
             case EPortalType.CombatToMidBoss:
                 _player.playerMovement.ResetEnteredGroundCount();
                 GameManager.Instance.LoadMidBossMap();
+                CameraManager.Instance.SwapCamera(
+                    CameraManager.Instance.AllVirtualCameras[1],
+                    CameraManager.Instance.AllVirtualCameras[5]);
                 yield break;
             
             case EPortalType.MidBossToCombat:
@@ -109,6 +117,9 @@ public class Portal : Interactor
             case EPortalType.CombatToBoss:
                 _player.playerMovement.ResetEnteredGroundCount();
                 GameManager.Instance.LoadBossMap();
+                CameraManager.Instance.SwapCamera(
+                    CameraManager.Instance.AllVirtualCameras[1],
+                    CameraManager.Instance.AllVirtualCameras[6]);
                 yield break;
         }
         

@@ -14,6 +14,14 @@ public class CreditsUI : MonoBehaviour
         {
                 if (IsClosing) return;
                 IsClosing = true;
-                BaseUIController.OnCreditsClosed();
+                if (BaseUIController != null)
+                {
+                        BaseUIController.OnCreditsClosed();
+                }
+                else
+                {
+                        UIManager.Instance.UIIAMap.Enable();
+                        Destroy(gameObject);
+                }
         }
 }

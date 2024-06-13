@@ -106,7 +106,7 @@ public class PlayerController : Singleton<PlayerController>
 
         // Events binding
         GameEvents.Restarted += OnRestarted;
-        PlayerEvents.ValueChanged += OnValueChanged;
+        // PlayerEvents.ValueChanged += OnValueChanged;
         PlayerEvents.StartResurrect += OnPlayerStartResurrect;
         InGameEvents.EnemySlayed += OnEnemySlayed;
         GameEvents.CombatSceneChanged += OnCombatSceneChanged;
@@ -120,7 +120,7 @@ public class PlayerController : Singleton<PlayerController>
     {
         if (IsToBeDestroyed) return;
         GameEvents.Restarted -= OnRestarted;
-        PlayerEvents.ValueChanged -= OnValueChanged;
+        // PlayerEvents.ValueChanged -= OnValueChanged;
         PlayerEvents.StartResurrect -= OnPlayerStartResurrect;
         InGameEvents.EnemySlayed -= OnEnemySlayed;
         playerInput.actions["Jump"].started -= OnStartJump;
@@ -220,7 +220,7 @@ public class PlayerController : Singleton<PlayerController>
         playerMovement.StopJump();
     }
 
-    int count = 0;
+    //int count = 0;
     private void OnTestAction(InputValue value)
     {
         playerInventory.ChangeGoldByAmount(100);
@@ -232,16 +232,16 @@ public class PlayerController : Singleton<PlayerController>
         playerInventory.SelectNextFlower();
     }
 
-    private void OnValueChanged(ECondition condition, float changeAmount)
-    {
-        return;
-        switch (condition)
-        {
-            // case ECondition.SlayedEnemiesCount:
-            //     _slayedEnemiesCount += (int)changeAmount;
-            //     break;
-        }
-    }
+    // private void OnValueChanged(ECondition condition, float changeAmount)
+    // {
+    //     return;
+    //     switch (condition)
+    //     {
+    //         // case ECondition.SlayedEnemiesCount:
+    //         //     _slayedEnemiesCount += (int)changeAmount;
+    //         //     break;
+    //     }
+    // }
 
     private void OnEnemySlayed(EnemyBase slayedEnemy)
     {
@@ -451,15 +451,12 @@ public class PlayerController : Singleton<PlayerController>
     public bool AddShadowHost(EnemyBase enemy)
     {
         // Max number of shadow hosts reached?
-        Debug.Log("Shadow host max??");
         if (_shadowHosts.Count >= _shadowHostLimit) return false;
 
         // Already a shadow host?
-        Debug.Log("Shadow host already?");
         if (_shadowHosts.Contains(enemy)) return false;
 
         // Add enemy to the list
-        Debug.Log("Shadow host Added");
         _shadowHosts.Add(enemy);
         StartCoroutine(nameof(ShadowHostAutoUpdateCoroutine));
         return true;
@@ -467,7 +464,6 @@ public class PlayerController : Singleton<PlayerController>
 
     public void RemoveShadowHost(EnemyBase enemy)
     {
-        Debug.Log("Shadow host Removed");
         _shadowHosts.Remove(enemy);
         StopCoroutine(nameof(ShadowHostAutoUpdateCoroutine));
     }

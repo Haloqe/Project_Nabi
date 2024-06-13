@@ -23,7 +23,6 @@ public class MainMenuUIController : UIControllerBase
     
     // Credits
     private CreditsUI _creditsUI;
-    [SerializeField] private GameObject creditsUIPrefab;
     
     // 0: New game, 1: Continue, 2: Settings, 3: Quit
     private TextMeshProUGUI[] _options;
@@ -64,10 +63,6 @@ public class MainMenuUIController : UIControllerBase
         _audioSource = GetComponent<AudioSource>();
         _animator = GetComponent<Animator>();
         
-        // Credits
-        _creditsUI = Instantiate(creditsUIPrefab, Vector3.zero, Quaternion.identity).GetComponent<CreditsUI>();
-        _creditsUI.BaseUIController = this;
-
         // Confirm panels
         _newGameConfirmPanel = gameObject.transform.Find("NewGameConfirmPanel").gameObject;
         _newGameConfirmTMPs = _newGameConfirmPanel.transform.Find("Options").GetComponentsInChildren<TextMeshProUGUI>();
@@ -88,6 +83,11 @@ public class MainMenuUIController : UIControllerBase
         _hasSaveData = _gameManager.PlayerMetaData.isDirty;
         _options[1].color = _hasSaveData ? _unselectedColour : _unavailableColour;
         SelectOption(_hasSaveData ? 1 : 0, false);
+        
+        // Credits
+        _creditsUI = _uiManager.DisplayCreditsUI();
+        _creditsUI.BaseUIController = this;
+
     }
 
     private void SelectOption(int newOptionIdx, bool shouldPlaySound = true)

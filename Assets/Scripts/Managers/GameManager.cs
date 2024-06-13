@@ -31,6 +31,7 @@ public class GameManager : Singleton<GameManager>
         _ingameMapSceneIdx = _releaseMapSceneIdx;
         SceneManager.sceneLoaded += OnSceneLoaded;
         PlayerEvents.Defeated += OnPlayerDefeated;
+        GameEvents.Restarted += OnRestarted;
     }
 
     private void Start()
@@ -39,15 +40,23 @@ public class GameManager : Singleton<GameManager>
         _audioManager = AudioManager.Instance;
     }
 
+    private GameObject _inGameCameras;
     private void OnSceneLoaded(Scene scene, LoadSceneMode loadMode)
     {
         if (scene.name.Contains("MainMenu"))
         {
+            // In the case of delayed load, hide loading screen
+            if (_uiManager) _uiManager.HideLoadingScreen();
+            if (_inGameCameras) _inGameCameras.SetActive(false);
+            
             ActiveScene = ESceneType.MainMenu;
             GameEvents.MainMenuLoaded.Invoke();
         }
         else if (scene.name.StartsWith("MapGen_Pre"))
         {
+            if (!_inGameCameras) _inGameCameras = GameObject.Find("InGameCameras");
+            else _inGameCameras.SetActive(true);
+            
             ActiveScene = ESceneType.CombatMap0;
             _ingameMapSceneIdx = scene.buildIndex;
             PostLoadInGame();
@@ -106,7 +115,6 @@ public class GameManager : Singleton<GameManager>
     {
         if (ActiveScene is ESceneType.CombatMap0 or ESceneType.DebugCombatMap)
         {
-            Debug.Log(isFirstRun? "This is first run" : "This is not first run");
             if (isFirstRun) GameEvents.InGameFirstLoadStarted.Invoke();
             else GameEvents.CombatSceneChanged.Invoke();
         }
@@ -139,7 +147,8 @@ public class GameManager : Singleton<GameManager>
         _player = PlayerController.Instance;
         GameObject followObject = new GameObject("CameraFollowingObject");
         _player.playerMovement.CameraFollowObject = followObject.AddComponent<CameraFollowObject>();
-        GameObject.Find("Virtual Camera").GetComponent<CinemachineVirtualCamera>().Follow = followObject.transform;
+        CameraManager.Instance.CurrentCamera.Follow = followObject.transform;
+        
         GameEvents.GameLoadEnded.Invoke();
         
         if (ActiveScene is ESceneType.Boss or ESceneType.MidBoss or ESceneType.CombatMap1)
@@ -186,6 +195,13 @@ public class GameManager : Singleton<GameManager>
             SaveSystem.SaveMetaData();
         }
     }
+
+    private void OnRestarted()
+    {
+        CameraManager.Instance.SwapCamera(
+            CameraManager.Instance.CurrentCamera,
+            CameraManager.Instance.AllVirtualCameras[0]);
+    }
     
    public void QuitGame()
     {
@@ -215,5 +231,13 @@ public class GameManager : Singleton<GameManager>
     public void LoadPostMidBossCombatMap()
     {
         LoadInGame(1);
+    }
+    
+    public void LoadMainMenuDelayed() => StartCoroutine(LoadMainMenuDelayedCoroutine());
+    private IEnumerator LoadMainMenuDelayedCoroutine()
+    {
+        _uiManager.DisplayLoadingScreen();
+        yield return new WaitForSecondsRealtime(0.5f);
+        LoadMainMenu();
     }
 }

@@ -159,7 +159,6 @@ public class Butterfly : MonoBehaviour
             // If enemy goes out of the screen, stop travelling
             if (target != _player && !_visibilityChecker.VisibleEnemies.Contains(target.gameObject))
             {
-                Debug.Log("Enemy out of screen");
                 target = null;
                 break;
             }
@@ -181,7 +180,6 @@ public class Butterfly : MonoBehaviour
             // Enemy reached
             if (target != _player)
             {
-                Debug.Log("Enemy reached");
                 _enemy = target;
                 _isAttacking = true;
                 _enemyDamageable = _enemy.GetComponent<IDamageable>();
