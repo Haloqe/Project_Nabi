@@ -23,8 +23,8 @@ public class MapController : UIControllerBase
 
     private void Awake()
     {
-        _mapCamera = GameObject.Find("InGameCameras").transform.Find("Map Camera");
-        _minimapCamera = Camera.main.transform.Find("Minimap Camera");
+        _mapCamera = CameraManager.Instance.mapCamera.transform;
+        _minimapCamera = CameraManager.Instance.minimapCamera.transform;
         _mapCameraComponent = _mapCamera.GetComponent<Camera>();
         _defaultCamSize = _mapCameraComponent.orthographicSize;
     }

@@ -1,14 +1,15 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using Cinemachine;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Rendering.Universal;
 
 public class CameraManager : Singleton<CameraManager>
 {
     public CinemachineVirtualCamera[] AllVirtualCameras;
+    public AudioListener inGameAudioListener;
+    public Camera inGameMainCamera;
+    public Camera mapCamera;
+    public Camera minimapCamera;
     
     private float _fallPanAmount = 0.25f;
     private float _fallYPanTime = 0.35f;

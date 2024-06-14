@@ -139,7 +139,7 @@ public class UIManager : Singleton<UIManager>
     private void OnInGameFirstLoad()
     {
         //_uiCamera = GameObject.Find("UI Camera").GetComponent<Camera>();
-        _uiCamera = GameObject.Find("Main Camera").GetComponent<Camera>();
+        _uiCamera = CameraManager.Instance.inGameMainCamera;
         _activeFocusedUI = null;
         
         _focusedOverlay     = Instantiate(_focusedOverlayPrefab, Vector3.zero, Quaternion.identity).GameObject();

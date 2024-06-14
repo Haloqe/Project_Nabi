@@ -27,8 +27,13 @@ public class GameManager : Singleton<GameManager>
     {
         base.Awake();
         if (IsToBeDestroyed) return;
+        
         PlayerMetaData = SaveSystem.LoadMetaData();
         _ingameMapSceneIdx = _releaseMapSceneIdx;
+        var cameraPrefab = Resources.Load<GameObject>("Prefabs/InGameCameras");
+        var inGameCameras = Instantiate(cameraPrefab, Vector3.zero, Quaternion.identity);
+        inGameCameras.GetComponentInChildren<AudioListener>().enabled = false;
+        
         SceneManager.sceneLoaded += OnSceneLoaded;
         PlayerEvents.Defeated += OnPlayerDefeated;
         GameEvents.Restarted += OnRestarted;
@@ -39,24 +44,21 @@ public class GameManager : Singleton<GameManager>
         _uiManager = UIManager.Instance;
         _audioManager = AudioManager.Instance;
     }
-
-    private GameObject _inGameCameras;
+    
     private void OnSceneLoaded(Scene scene, LoadSceneMode loadMode)
     {
         if (scene.name.Contains("MainMenu"))
         {
             // In the case of delayed load, hide loading screen
             if (_uiManager) _uiManager.HideLoadingScreen();
-            if (_inGameCameras) _inGameCameras.SetActive(false);
+            CameraManager.Instance.inGameAudioListener.enabled = false;
             
             ActiveScene = ESceneType.MainMenu;
             GameEvents.MainMenuLoaded.Invoke();
         }
         else if (scene.name.StartsWith("MapGen_Pre"))
         {
-            if (!_inGameCameras) _inGameCameras = GameObject.Find("InGameCameras");
-            else _inGameCameras.SetActive(true);
-            
+            CameraManager.Instance.inGameAudioListener.enabled = true;
             ActiveScene = ESceneType.CombatMap0;
             _ingameMapSceneIdx = scene.buildIndex;
             PostLoadInGame();

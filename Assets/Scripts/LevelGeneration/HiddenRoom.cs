@@ -29,7 +29,6 @@ public class HiddenRoom : MonoBehaviour
 
     private void Awake()
     {
-        _roomCamera = CameraManager.Instance.AllVirtualCameras[virtualCameraIndex];
         _audioSource = GetComponent<AudioSource>();
         _returnPortal = GetComponentInChildren<Portal>(includeInactive: true);
         _enemySpawner = GetComponentInChildren<EnemySpawner>(includeInactive: true);
@@ -40,6 +39,7 @@ public class HiddenRoom : MonoBehaviour
     private void Start()
     {
         _uiManager = UIManager.Instance;
+        _roomCamera = CameraManager.Instance.AllVirtualCameras[virtualCameraIndex];
     }
 
     public void OnEnter(Vector3 previousPos)
