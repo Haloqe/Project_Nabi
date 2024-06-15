@@ -68,9 +68,13 @@ public class UIManager : Singleton<UIManager>
     private TextMeshProUGUI _hpText;
     private Slider _darkGaugeSlider;
     private TextMeshProUGUI _darkGaugeText;
-    private Image _bloodOverlay;
     private Image _tensionOverlay;
     public PlayerTensionController TensionController { get; private set; }
+    
+    // Blood overlay
+    private Image _bloodOverlayLowHP;
+    private Image _bloodOverlayHit;
+    private float _bloodOverlayHitDisplayTime;
     
     // UI Navigation
     private GameObject _activeFocusedUI;
@@ -89,7 +93,7 @@ public class UIManager : Singleton<UIManager>
     private Image[] _flowerIconImages;
     private TextMeshProUGUI _flowerCountText;
     private Animator _flowerPanelAnimator;
-    private float _flowerUIDisplayRemainingTime;
+    private float _flowerUIDisplayTime;
     
     protected override void Awake()
     {
@@ -159,7 +163,8 @@ public class UIManager : Singleton<UIManager>
         _hpText             = _inGameCombatUI.transform.Find("Globe").GetComponentInChildren<TextMeshProUGUI>();
         _darkGaugeSlider    = _inGameCombatUI.transform.Find("DarkSlider").GetComponentInChildren<Slider>();
         _darkGaugeText      = _inGameCombatUI.transform.Find("DarkSlider").GetComponentInChildren<TextMeshProUGUI>();
-        _bloodOverlay       = _inGameCombatUI.transform.Find("BloodOverlay").GetComponent<Image>();
+        _bloodOverlayLowHP  = _inGameCombatUI.transform.Find("BloodOverlay_LowHP").GetComponent<Image>();
+        _bloodOverlayHit    = _inGameCombatUI.transform.Find("BloodOverlay_Hit").GetComponent<Image>();
         _tensionOverlay     = _inGameCombatUI.transform.Find("TensionOverlay").GetComponent<Image>();
         _minimap            = _inGameCombatUI.transform.Find("MinimapContainer").Find("Minimap").gameObject;
         TensionController   = _inGameCombatUI.transform.Find("TensionSlider").GetComponent<PlayerTensionController>();
@@ -221,12 +226,13 @@ public class UIManager : Singleton<UIManager>
     
     private void OnGameLoadEnded()
     {
-        _bloodOverlay.gameObject.SetActive(false);
+        _bloodOverlayLowHP.gameObject.SetActive(false);
         _tensionOverlay.gameObject.SetActive(false);
         _zoomedMap.SetActive(false);
         _loadingScreenUI.SetActive(false);
         _inGameCombatUI.SetActive(true);
-        _flowerUIDisplayRemainingTime = 0;
+        _flowerUIDisplayTime = 0;
+        _bloodOverlayHitDisplayTime = 0;
 
         ESceneType currSceneType = _gameManager.ActiveScene;
         switch (currSceneType)
@@ -293,30 +299,33 @@ public class UIManager : Singleton<UIManager>
         float hp = newHpRatio * maxHp;
         _hpText.text = Utility.FormatFloat(hp) + "/" + Utility.FormatFloat(maxHp);
         
-        // If HP previously below threshold and just moved over threshold, turn off blood overlay
+        // Show hit blood overlay if damaged
+        if (changeAmount < 0) StartCoroutine(nameof(BloodOverlayHitCoroutine));
+        
+        // If HP previously below threshold and just moved over threshold, turn off low hp blood overlay
         float critHpRatio = _playerController.HpCriticalThreshold;
         if (oldHpRatio <= critHpRatio) 
         {
             if (newHpRatio > critHpRatio)
             {
-                _bloodOverlay.gameObject.SetActive(false);
-                StopCoroutine(nameof(BloodOverlayCoroutine));
+                _bloodOverlayLowHP.gameObject.SetActive(false);
+                StopCoroutine(nameof(BloodOverlayLowHPCoroutine));
             }
             // When player dies, stop blinking the overlay
             else if (newHpRatio == 0.0f)
             {
-                StopCoroutine(nameof(BloodOverlayCoroutine));
+                StopCoroutine(nameof(BloodOverlayLowHPCoroutine));
             }
         }
         // If HP previously over threshold and just moved below threshold, turn on blood overlay
         else if (newHpRatio <= critHpRatio)
         {
-            _bloodOverlay.gameObject.SetActive(true);
-            StartCoroutine(nameof(BloodOverlayCoroutine));
+            _bloodOverlayLowHP.gameObject.SetActive(true);
+            StartCoroutine(nameof(BloodOverlayLowHPCoroutine));
         }
     }
 
-    private IEnumerator BloodOverlayCoroutine()
+    private IEnumerator BloodOverlayLowHPCoroutine()
     {
         float duration = 1;
         var minColour = new Color(0, 0, 0, 0);
@@ -327,7 +336,7 @@ public class UIManager : Singleton<UIManager>
         for (float time = 0; time < duration; time += Time.unscaledDeltaTime)
         {
             float progress = Mathf.Lerp(0, time, duration);
-            _bloodOverlay.color = Color.Lerp(minColour, midColour, progress);
+            _bloodOverlayLowHP.color = Color.Lerp(minColour, midColour, progress);
             yield return null;
         }
         
@@ -337,9 +346,23 @@ public class UIManager : Singleton<UIManager>
             for (float time = 0; time < duration * 2; time += Time.unscaledDeltaTime)
             {
                 float progress = Mathf.PingPong(time, duration) / duration;
-                _bloodOverlay.color = Color.Lerp(midColour, maxColour, progress);
+                _bloodOverlayLowHP.color = Color.Lerp(midColour, maxColour, progress);
                 yield return null;
             }
+        }
+    }
+
+    private IEnumerator BloodOverlayHitCoroutine()
+    {
+        float duration = 0.5f;
+        _bloodOverlayHitDisplayTime += duration; 
+        _bloodOverlayHit.gameObject.SetActive(true);
+        yield return new WaitForSecondsRealtime(duration);
+        
+        _bloodOverlayHitDisplayTime -= duration;
+        if (_bloodOverlayHitDisplayTime <= 0)
+        {
+            _bloodOverlayHit.gameObject.SetActive(false);
         }
     }
     
@@ -351,7 +374,7 @@ public class UIManager : Singleton<UIManager>
 
     private void OnPlayerDefeated(bool isRealDeath)
     {
-        StopCoroutine(nameof(BloodOverlayCoroutine));
+        StopCoroutine(nameof(BloodOverlayLowHPCoroutine));
         CloseFocusedUI();
         PlayerIAMap.Disable();
         if (isRealDeath) StartCoroutine(GameOverCoroutine());
@@ -359,7 +382,8 @@ public class UIManager : Singleton<UIManager>
     
     private void OnPlayerStartResurrect()
     {
-        StopCoroutine(nameof(BloodOverlayCoroutine));
+        StopCoroutine(nameof(BloodOverlayLowHPCoroutine));
+        StopCoroutine(nameof(BloodOverlayHitCoroutine));
         CloseFocusedUI();
         PlayerIAMap.Disable();
     }
@@ -658,18 +682,18 @@ public class UIManager : Singleton<UIManager>
     private IEnumerator FlowerBombUICoroutine()
     {
         // Show left/right UI
-        if (_flowerUIDisplayRemainingTime == 0)
+        if (_flowerUIDisplayTime == 0)
         {
             _flowerPanelAnimator.SetTrigger(ShowFlowerPanel);
         }
-        _flowerUIDisplayRemainingTime += 2.0f;
+        _flowerUIDisplayTime += 2.0f;
         
         // Wait for some duration
         yield return new WaitForSeconds(2.0f);
-        _flowerUIDisplayRemainingTime -= 2.0f;
+        _flowerUIDisplayTime -= 2.0f;
         
         // Hide left/right UI
-        if (_flowerUIDisplayRemainingTime == 0.0f)
+        if (_flowerUIDisplayTime == 0.0f)
         {
             _flowerPanelAnimator.SetTrigger(HideFlowerPanel);
         }
