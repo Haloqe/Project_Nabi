@@ -3,6 +3,7 @@ using System.Collections;
 using Cinemachine;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class GameManager : Singleton<GameManager>
 {
@@ -52,13 +53,13 @@ public class GameManager : Singleton<GameManager>
             // In the case of delayed load, hide loading screen
             if (_uiManager) _uiManager.HideLoadingScreen();
             CameraManager.Instance.inGameAudioListener.enabled = false;
-            
             ActiveScene = ESceneType.MainMenu;
             GameEvents.MainMenuLoaded.Invoke();
         }
         else if (scene.name.StartsWith("MapGen_Pre"))
         {
             CameraManager.Instance.inGameAudioListener.enabled = true;
+            GameObject.Find("FogOfWarCanvas").GetComponent<Canvas>().worldCamera = CameraManager.Instance.inGameMainCamera;
             ActiveScene = ESceneType.CombatMap0;
             _ingameMapSceneIdx = scene.buildIndex;
             PostLoadInGame();
