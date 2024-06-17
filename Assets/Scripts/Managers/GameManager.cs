@@ -59,7 +59,7 @@ public class GameManager : Singleton<GameManager>
         else if (scene.name.StartsWith("MapGen_Pre"))
         {
             CameraManager.Instance.inGameAudioListener.enabled = true;
-            GameObject.Find("FogOfWarCanvas").GetComponent<Canvas>().worldCamera = CameraManager.Instance.inGameMainCamera;
+            //GameObject.Find("FogOfWarCanvas").GetComponent<Canvas>().worldCamera = CameraManager.Instance.inGameMainCamera;
             ActiveScene = ESceneType.CombatMap0;
             _ingameMapSceneIdx = scene.buildIndex;
             PostLoadInGame();

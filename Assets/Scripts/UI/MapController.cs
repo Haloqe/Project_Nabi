@@ -67,7 +67,7 @@ public class MapController : UIControllerBase
 
         while (_mapCamera.position != target)
         {
-            _mapCamera.position = Vector3.Lerp(start, target, time / Vector3.Distance(start, target) * 120f);
+            _mapCamera.position = Vector3.Lerp(start, target, time / Vector3.Distance(start, target) * 130f);
             time += Time.unscaledDeltaTime;
             yield return null;
         }
