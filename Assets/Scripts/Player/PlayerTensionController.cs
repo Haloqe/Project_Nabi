@@ -95,8 +95,8 @@ public class PlayerTensionController : MonoBehaviour
     private void OnRestarted()
     {
         _incrementStep = 1;
-        _maxTension = 30;
-        _recoveryDuration = 3.0f;
+        _maxTension = 4; 
+        _recoveryDuration = 1.0f; 
         _tensionGaugeOutline.effectColor = _fillNormalColour;
         _tensionGaugeText.color = Color.white;
         _curArborDescriptionUI = arborDescriptionUIs[(int)EArborType.Default];

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using Cinemachine;
 using UnityEngine;
+using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -10,6 +11,7 @@ public class GameManager : Singleton<GameManager>
     public ESceneType ActiveScene { get; private set; }
     public PlayerMetaData PlayerMetaData { get; private set; }
     public GameObject PlayerPrefab;
+    private bool _isInitialLoad = true;
 
     // References
     private PlayerController _player;
@@ -45,16 +47,35 @@ public class GameManager : Singleton<GameManager>
         _uiManager = UIManager.Instance;
         _audioManager = AudioManager.Instance;
     }
-    
+
+    public void OnMainMenuInitialLoad()
+    {
+        _uiManager.UIIAMap.Enable();
+        GameObject.Find("LogoUI").SetActive(false);
+        GameEvents.MainMenuLoaded.Invoke();
+        _isInitialLoad = false;
+    }
+        
     private void OnSceneLoaded(Scene scene, LoadSceneMode loadMode)
     {
         if (scene.name.Contains("MainMenu"))
         {
-            // In the case of delayed load, hide loading screen
-            if (_uiManager) _uiManager.HideLoadingScreen();
             CameraManager.Instance.inGameAudioListener.enabled = false;
             ActiveScene = ESceneType.MainMenu;
-            GameEvents.MainMenuLoaded.Invoke();
+            
+            // Initial load
+            if (_isInitialLoad)
+            {
+                GetComponent<InputSystemUIInputModule>().enabled = false;
+            } 
+            else
+            {
+                GameObject.Find("LogoUI").SetActive(false);
+                
+                // In the case of delayed load, hide loading screen
+                if (_uiManager) _uiManager.HideLoadingScreen();
+                GameEvents.MainMenuLoaded.Invoke();
+            }
         }
         else if (scene.name.StartsWith("MapGen_Pre"))
         {
