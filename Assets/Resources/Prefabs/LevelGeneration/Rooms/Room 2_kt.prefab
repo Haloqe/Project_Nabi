@@ -2881,7 +2881,7 @@ TilemapRenderer:
   m_SortingLayer: 5
   m_SortingOrder: 0
   m_ChunkSize: {x: 32, y: 32, z: 32}
-  m_ChunkCullingBounds: {x: 0.016129017, y: 0.016129017, z: 0}
+  m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
   m_MaxChunkCount: 16
   m_MaxFrameAge: 16
   m_SortOrder: 0
@@ -4453,7 +4453,7 @@ TilemapRenderer:
   m_SortingLayer: 5
   m_SortingOrder: -1
   m_ChunkSize: {x: 32, y: 32, z: 32}
-  m_ChunkCullingBounds: {x: 0.016129017, y: 0.016129017, z: 0}
+  m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
   m_MaxChunkCount: 16
   m_MaxFrameAge: 16
   m_SortOrder: 0
@@ -4493,7 +4493,6 @@ Transform:
   - {fileID: 8609274286635340523}
   - {fileID: 1572622087136098988}
   - {fileID: 6293425123500505998}
-  - {fileID: 8137131644265534526}
   m_Father: {fileID: 4055074043689444985}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6356460679567331324
@@ -5613,7 +5612,7 @@ TilemapRenderer:
   m_SortingLayer: 7
   m_SortingOrder: 1
   m_ChunkSize: {x: 32, y: 32, z: 32}
-  m_ChunkCullingBounds: {x: 0.016129017, y: 0.016129017, z: 0}
+  m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
   m_MaxChunkCount: 16
   m_MaxFrameAge: 16
   m_SortOrder: 0
@@ -11159,7 +11158,7 @@ TilemapRenderer:
   m_SortingLayer: 2
   m_SortingOrder: 0
   m_ChunkSize: {x: 32, y: 32, z: 32}
-  m_ChunkCullingBounds: {x: 0.016129017, y: 0.016129017, z: 0}
+  m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
   m_MaxChunkCount: 16
   m_MaxFrameAge: 16
   m_SortOrder: 0
@@ -11880,7 +11879,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7161971565757800894, guid: 9abb1a9108bb1d348b4373402d8aa11d, type: 3}
       propertyPath: spawnLimit
-      value: 3
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7161971565757800894, guid: 9abb1a9108bb1d348b4373402d8aa11d, type: 3}
       propertyPath: spawnProbabilities.Array.data[0]
@@ -11907,84 +11906,6 @@ PrefabInstance:
 Transform:
   m_CorrespondingSourceObject: {fileID: 5082662573633383571, guid: 9abb1a9108bb1d348b4373402d8aa11d, type: 3}
   m_PrefabInstance: {fileID: 3599352434005835384}
-  m_PrefabAsset: {fileID: 0}
---- !u!1001 &3919777302289758381
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 7575820701394233413}
-    m_Modifications:
-    - target: {fileID: 5082662573633383571, guid: 9abb1a9108bb1d348b4373402d8aa11d, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 4.38337
-      objectReference: {fileID: 0}
-    - target: {fileID: 5082662573633383571, guid: 9abb1a9108bb1d348b4373402d8aa11d, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -3.8314447
-      objectReference: {fileID: 0}
-    - target: {fileID: 5082662573633383571, guid: 9abb1a9108bb1d348b4373402d8aa11d, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -0.18489523
-      objectReference: {fileID: 0}
-    - target: {fileID: 5082662573633383571, guid: 9abb1a9108bb1d348b4373402d8aa11d, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5082662573633383571, guid: 9abb1a9108bb1d348b4373402d8aa11d, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5082662573633383571, guid: 9abb1a9108bb1d348b4373402d8aa11d, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5082662573633383571, guid: 9abb1a9108bb1d348b4373402d8aa11d, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5082662573633383571, guid: 9abb1a9108bb1d348b4373402d8aa11d, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5082662573633383571, guid: 9abb1a9108bb1d348b4373402d8aa11d, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5082662573633383571, guid: 9abb1a9108bb1d348b4373402d8aa11d, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6663131527956598955, guid: 9abb1a9108bb1d348b4373402d8aa11d, type: 3}
-      propertyPath: m_Name
-      value: EnemySpawner (4)
-      objectReference: {fileID: 0}
-    - target: {fileID: 7161971565757800894, guid: 9abb1a9108bb1d348b4373402d8aa11d, type: 3}
-      propertyPath: spawnProbabilities.Array.data[0]
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7161971565757800894, guid: 9abb1a9108bb1d348b4373402d8aa11d, type: 3}
-      propertyPath: spawnProbabilities.Array.data[1]
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7161971565757800894, guid: 9abb1a9108bb1d348b4373402d8aa11d, type: 3}
-      propertyPath: spawnProbabilities.Array.data[2]
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7161971565757800894, guid: 9abb1a9108bb1d348b4373402d8aa11d, type: 3}
-      propertyPath: spawnProbabilities.Array.data[3]
-      value: 1
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 9abb1a9108bb1d348b4373402d8aa11d, type: 3}
---- !u!4 &8137131644265534526 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 5082662573633383571, guid: 9abb1a9108bb1d348b4373402d8aa11d, type: 3}
-  m_PrefabInstance: {fileID: 3919777302289758381}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &5239637954961869882
 PrefabInstance:
@@ -12113,7 +12034,15 @@ PrefabInstance:
       value: EnemySpawner (2)
       objectReference: {fileID: 0}
     - target: {fileID: 7161971565757800894, guid: 9abb1a9108bb1d348b4373402d8aa11d, type: 3}
+      propertyPath: spawnLimit
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7161971565757800894, guid: 9abb1a9108bb1d348b4373402d8aa11d, type: 3}
       propertyPath: spawnProbabilities.Array.data[0]
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7161971565757800894, guid: 9abb1a9108bb1d348b4373402d8aa11d, type: 3}
+      propertyPath: spawnProbabilities.Array.data[1]
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7161971565757800894, guid: 9abb1a9108bb1d348b4373402d8aa11d, type: 3}
