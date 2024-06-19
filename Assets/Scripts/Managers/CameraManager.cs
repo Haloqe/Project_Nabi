@@ -116,6 +116,7 @@ public class CameraManager : Singleton<CameraManager>
     
     public void SwapCamera(CinemachineVirtualCamera camera1, CinemachineVirtualCamera camera2)
     {
+        if (!isActiveAndEnabled) return;
         camera1.enabled = false;
         camera2.enabled = true;
         StartCoroutine(AssignCollider(Array.IndexOf(AllVirtualCameras, camera2)));

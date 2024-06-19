@@ -19,7 +19,7 @@ public class GameManager : Singleton<GameManager>
     // DEBUG Only
     private int _ingameMapSceneIdx;       // 플레이어가 실행한 씬
     private int _releaseMapSceneIdx = 1;  // 랜덤 제너레이션 씬
-    private int _releaseMapSceneIdx2 = 4; // 여왕벌 이후
+    private int _releaseMapSceneIdx2 = 2; // 여왕벌 이후
 
     // todo temp
     public bool isFirstRun = true;
@@ -256,7 +256,6 @@ public class GameManager : Singleton<GameManager>
 
     public void ContinueGame()
     {
-        _player.gameObject.SetActive(true);
         LoadInGame(0);
     }
 

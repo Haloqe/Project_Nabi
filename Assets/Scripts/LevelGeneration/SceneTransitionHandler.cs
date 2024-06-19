@@ -20,6 +20,8 @@ public class SceneTransitionHandler : MonoBehaviour
                         
                         case ECutSceneType.IntroPostTutorial:
                                 GameManager.Instance.isRunningTutorial = false;
+                                PlayerController.Instance.gameObject.SetActive(true);
+                                GameEvents.Restarted.Invoke();
                                 GameManager.Instance.ContinueGame();
                                 break;
                 }
