@@ -750,7 +750,7 @@ public class UIManager : Singleton<UIManager>
     {
         _audioManager.StopBgm(1f);
         SaveSystem.SaveMetaData();
-        yield return new WaitForSecondsRealtime(5f);
+        yield return new WaitForSecondsRealtime(8f);
         
         PlayerEvents.Defeated.Invoke(false);
         _gameManager.PlayerMetaData.isDirty = true;

@@ -59,6 +59,12 @@ public class TestCameraShake : MonoBehaviour
         _remainingTime = 0;
     }
 
+    public void OnMidBossDeath(float deathSequenceTime)
+    {
+        _cbmcp.m_AmplitudeGain = Mathf.Max(_cbmcp.m_AmplitudeGain,_shakeIntensity * 8);
+        _remainingTime = deathSequenceTime;
+    }
+
     private void LateUpdate()
     {
         if (_remainingTime > 0)

@@ -166,7 +166,7 @@ public class EnemyPattern_Bee : EnemyPattern
         
         _audioSources[1].PlayOneShot(_detectAudio);
         _audioSources[0].loop = true;
-        _audioSources[0].volume = 0.2f;
+        _audioSources[0].volume = 0.1f;
         _audioSources[0].pitch = Random.Range(0.9f, 1.1f);
         _audioSources[0].clip = _chaseAudio;
         _audioSources[0].Play();

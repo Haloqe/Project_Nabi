@@ -494,6 +494,16 @@ public class PlayerController : Singleton<PlayerController>
 
     public void DisablePlayerInput() => _playerIAMap.Disable();
     public void EnablePlayerInput() => _playerIAMap.Enable();
+
+    public void SetSpriteActiveFalse()
+    {
+        GetComponent<SpriteRenderer>().enabled = false;
+    }
+    
+    public void SetSpriteActiveTrue()
+    {
+        GetComponent<SpriteRenderer>().enabled = true;
+    }
     
     public IEnumerator FadeOutCoroutine()
     {
@@ -521,8 +531,10 @@ public class PlayerController : Singleton<PlayerController>
             spriteRenderer.color = color;
             yield return null;
         }
-        
-        EnablePlayerInput();
+
+        if (_gameManager.ActiveScene != ESceneType.MidBoss
+            && _gameManager.ActiveScene != ESceneType.Boss)
+            EnablePlayerInput();
     }
     
     private void OnCombatSceneChanged()

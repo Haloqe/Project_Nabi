@@ -1,5 +1,7 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Playables;
+using UnityEngine.Rendering.Universal;
 using Random = UnityEngine.Random;
 
 
@@ -7,6 +9,9 @@ public class EnemyPattern_QueenBee : EnemyPattern
 {
     [SerializeField] private GameObject _dustParticle;
     private BossHealthBar _bossHealthBar;
+    private SpriteRenderer _spriteRenderer;
+    private GameObject _attackHitbox;
+    private GameObject _defaultParticleObject;
     private float _maxHealth;
     private bool _isBouncing = true;
     private bool _beesAreCommanded;
@@ -17,10 +22,10 @@ public class EnemyPattern_QueenBee : EnemyPattern
     private EnemyManager _enemyManager;
     private Vector3[] _bombPositions = new Vector3[13];
 
-    private float _leftMostPosition = -33f;
-    private float _rightMostPosition = 6f;
+    private float _leftMostPosition = -28f;
+    private float _rightMostPosition = 4f;
     private float _bottomMostPosition = -11f;
-    private float _topMostPosition = 2f;
+    private float _topMostPosition = -1f;
 
     [SerializeField] private AudioSource[] _audioSources;
     [SerializeField] private AudioClip _battleCryAudio;
@@ -28,6 +33,12 @@ public class EnemyPattern_QueenBee : EnemyPattern
     [SerializeField] private AudioClip _bodySlamSequence;
     [SerializeField] private AudioClip _poisonTelegraphAudio;
     [SerializeField] private AudioClip _poisonExplosionAudio;
+    [SerializeField] private AudioClip _dyingAudio;
+    [SerializeField] private AudioClip _deathEnd;
+
+    private PlayableDirector _encounterTimeline;
+    private PlayableDirector _deathTimeline;
+    private bool _isInCutscene = true;
     
     private static readonly int IsAttacking = Animator.StringToHash("IsAttacking");
     private static readonly int AttackIndex = Animator.StringToHash("AttackIndex");
@@ -37,6 +48,9 @@ public class EnemyPattern_QueenBee : EnemyPattern
         MoveType = EEnemyMoveType.QueenBee;
         _spawnVFXPrefab = Resources.Load("Prefabs/Effects/SpawnPoofVFX");
         _bombObject = Resources.Load<GameObject>("Prefabs/Enemies/Spawns/QueenBee_bomb");
+        _spriteRenderer = GetComponent<SpriteRenderer>();
+        _attackHitbox = GameObject.Find("AttackHitbox");
+        _defaultParticleObject = GameObject.Find("defaultVFX");
     }
 
     public override void Init()
@@ -47,12 +61,37 @@ public class EnemyPattern_QueenBee : EnemyPattern
         _bossHealthBar = Instantiate(Resources.Load<GameObject>("Prefabs/UI/InGame/BossHealthUI"),
             Vector3.zero, Quaternion.identity).GetComponentInChildren<BossHealthBar>();
         _maxHealth = _enemyBase.EnemyData.MaxHealth;
+        _encounterTimeline = GameObject.Find("Encounter Timeline").GetComponent<PlayableDirector>();
+        _deathTimeline = GameObject.Find("Death Timeline").GetComponent<PlayableDirector>();
 
         float gap = 3f;
         for (int i = 0; i < _bombPositions.Length; i++)
         {
             _bombPositions[i] = new Vector3(_leftMostPosition + gap * i, _bottomMostPosition, 0);
         }
+        
+        StartCoroutine(StartEncounterTimeline());
+    }
+
+    private IEnumerator StartEncounterTimeline()
+    {
+        Light2D playerLight = _player.GetComponentInChildren<Light2D>();
+        playerLight.enabled = false;
+        _attackHitbox.SetActive(false);
+        _defaultParticleObject.SetActive(false);
+        _spriteRenderer.enabled = false;
+        SpriteRenderer playerRenderer = _player.GetComponent<SpriteRenderer>();
+        playerRenderer.enabled = false;
+        _encounterTimeline.Play();
+        
+        yield return new WaitForSeconds(10f);
+        playerRenderer.enabled = true;
+        _defaultParticleObject.SetActive(true);
+        _spriteRenderer.enabled = true;
+        _attackHitbox.SetActive(true);
+        playerLight.enabled = true;
+        PlayerController.Instance.EnablePlayerInput();
+        _isInCutscene = false;
     }
     
     private void PlayAudio(int audioSourceIdx, AudioClip audioClip, float pitchRange = 0f, float volume = 1f)
@@ -64,7 +103,7 @@ public class EnemyPattern_QueenBee : EnemyPattern
 
     public override void Attack()
     {
-        if (_isInAttackSequence) return;
+        if (_isInAttackSequence || _isInCutscene) return;
         
         if (_justFinishedAttack)
         {
@@ -338,6 +377,40 @@ public class EnemyPattern_QueenBee : EnemyPattern
     public override void OnTakeDamage(float damage, float maxHealth)
     {
         _bossHealthBar.OnBossHPChanged(damage / maxHealth);
+    }
+
+    public override void OnDeath()
+    {
+        _isInCutscene = true;
+        StopAllCoroutines();
+        transform.Find("VFXs").gameObject.SetActive(false);
+        StartCoroutine(OnDeathCoroutine());
+        EnemyPattern_Bee[] allBeesScript = FindObjectsOfType<EnemyPattern_Bee>();
+        foreach (var b in allBeesScript)
+        {
+            b.gameObject.GetComponent<EnemyBase>().Die();
+        }
+        CameraManager.Instance.AllVirtualCameras[5].GetComponent<TestCameraShake>().OnMidBossDeath(10f);
+    }
+
+    private IEnumerator OnDeathCoroutine()
+    {
+        Vector3 deathPosition = new Vector3(-9f, -4.5f, 0);
+        yield return MoveToPosition(deathPosition, MoveSpeed * 5, false);
+        GameObject.Find("QueenBee Mannequin").transform.position = deathPosition;
+        _attackHitbox.SetActive(false);
+        _defaultParticleObject.SetActive(false);
+        _spriteRenderer.enabled = false;
+        
+        _deathTimeline.Play();
+        _audioSources[1].loop = true;
+        _audioSources[1].clip = _dyingAudio; 
+        _audioSources[1].Play();
+        
+        yield return new WaitForSeconds(8f);
+
+        _audioSources[1].Stop();
+        FindObjectOfType<Portal>(true).gameObject.SetActive(true);
     }
     
     public override bool PlayerIsInAttackRange()

@@ -174,6 +174,7 @@ public abstract class EnemyPattern : MonoBehaviour
     }
 
     public virtual void OnTakeDamage(float damage, float maxHealth) {}
+    public virtual void OnDeath() {}
 
     public virtual void Patrol() {}
     public virtual void Chase() {}
