@@ -49,6 +49,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     private float _armour;
     private float _damageCooltimeCounter;
     private float _damageCooltime = 0.3f;
+    private bool _isDead;
     private static readonly int IsAttacking = Animator.StringToHash("IsAttacking");
     private static readonly int AttackSpeed = Animator.StringToHash("AttackSpeed");
     
@@ -406,6 +407,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
     private void OnTriggerEnter2D(Collider2D other)
     {
+        if (_isDead) return;
         if (other.gameObject.layer == LayerMask.NameToLayer("PlayerAbility"))
         {
             if (_audioSource)
@@ -583,16 +585,21 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     {
         // Inform player
         InGameEvents.EnemySlayed.Invoke(this);
-        if (typeID == 4)
+        switch (typeID)
         {
-            InGameEvents.MidBossSlayed?.Invoke();
-            AudioManager.Instance.StopBgm(1.5f);
-            FindObjectOfType<Portal>(true).gameObject.SetActive(true);
-        }
-        else if (typeID == 5)
-        {
-            InGameEvents.BossSlayed?.Invoke();
-            // Need ending scene here..... :(
+            case 4:
+                if (_isDead) return;
+                _isDead = true;
+                InGameEvents.MidBossSlayed?.Invoke();
+                AudioManager.Instance.StopBgm(1.5f);
+                StartCoroutine(OnMidBossDeath());
+                return;
+            case 5:
+                if (_isDead) return;
+                _isDead = true;
+                InGameEvents.BossSlayed?.Invoke();
+                StartCoroutine(OnBossDeath());
+                return;
         }
 
         StopAllCoroutines();
@@ -606,6 +613,36 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         Instantiate(_enemyManager.DeathVFXPrefab, transform.position, Quaternion.identity);
         Destroy(gameObject);
     }
+
+    private IEnumerator OnMidBossDeath()
+    {
+        Pattern.OnDeath();
+        yield return new WaitForSeconds(6f);
+        transform.position = new Vector3(-9f, -5.5f, 0);
+        for (int i = 0; i < 4; i++)
+        {
+            DropGold();
+            DropSoulShard();
+            yield return new WaitForSeconds(0.8f);
+        }
+        StopAllCoroutines();
+        Destroy(gameObject);
+    }
+
+    private IEnumerator OnBossDeath()
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            DropGold();
+            DropSoulShard();
+            yield return new WaitForSeconds(0.8f);
+        }
+        Pattern.OnDeath();
+        yield return new WaitForSeconds(10f);
+        StopAllCoroutines();
+        Destroy(gameObject);
+    }
+    
     #endregion Damage Dealing and Receiving
 
     #region Enemy Pattern

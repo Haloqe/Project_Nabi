@@ -2,13 +2,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Rendering.Universal;
+using UnityEngine.Playables;
 using Object = UnityEngine.Object; 
 using Random = UnityEngine.Random;
 
 public class EnemyPattern_Scorpion : EnemyPattern
 {
-    // colliders
+    // colliders & rigid bodies
     public List<Collider2D> AttackableColliders;
     
     // attack loop stuff
@@ -32,7 +32,7 @@ public class EnemyPattern_Scorpion : EnemyPattern
     private Object[] _VFXobjects;
     private Vector3 _shooterDirection;
     private Vector3 _playerDirection;
-    private bool _isShootingBullets = true;
+    private bool _isShootingBullets = false;
     private int _raycastLayerMask;
     private LineRenderer _lineRenderer;
     
@@ -58,6 +58,9 @@ public class EnemyPattern_Scorpion : EnemyPattern
     [SerializeField] private AudioClip _clawAttackAudio;
     [SerializeField] private AudioClip _clawDragAudio;
     [SerializeField] private AudioClip _clawBlinkAudio;
+    
+    private PlayableDirector _encounterTimeline;
+    private bool _isInCutscene = true;
     
     private void Awake()
     {
@@ -105,6 +108,23 @@ public class EnemyPattern_Scorpion : EnemyPattern
     public override void Init()
     {
         base.Init();
+        _encounterTimeline = GameObject.Find("Encounter Timeline").GetComponent<PlayableDirector>();
+        StartCoroutine(StartEncounterTimeline());
+    }
+
+    private IEnumerator StartEncounterTimeline()
+    {
+        yield return new WaitForSeconds(2.5f);
+        CameraManager.Instance.SwapCamera(
+            CameraManager.Instance.AllVirtualCameras[7],
+            CameraManager.Instance.AllVirtualCameras[6]);
+        yield return new WaitForSeconds(2f);
+
+        _encounterTimeline.Play();
+        yield return new WaitForSeconds(2.6f);
+        PlayerController.Instance.EnablePlayerInput();
+        _isInCutscene = false;
+        _isShootingBullets = true;
         StartCoroutine(ShootBullet());
     }
 
@@ -200,7 +220,6 @@ public class EnemyPattern_Scorpion : EnemyPattern
         
         float rotationSpeed = 10.8f;
         float rotationDegrees = 15f;
-        // int direction = Random.Range(0f, 1f) > 0.5f ? -1 : 1;
         float rotatedAmountCounter = 0f;
         int direction = (int)Mathf.Sign(_player.transform.localScale.x);
         
@@ -408,7 +427,9 @@ public class EnemyPattern_Scorpion : EnemyPattern
         yield return RotateByAmount(10f, 1, 50f);
         
         _animator.SetTrigger("GroundPound");
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(1.8f);
+        PlayAudio(1, _clawAttackAudio, 0.1f);
+        yield return new WaitForSeconds(0.2f);
         for (int i = -1; i <= 1; i += 2)
         {
             _dustParticles[Math.Sign(i + 1)].transform.localScale = 
@@ -418,10 +439,13 @@ public class EnemyPattern_Scorpion : EnemyPattern
             _dustParticles[Math.Sign(i + 1)].SetActive(true);
         }
         yield return MoveClaws(_clawAttackPositions, 5f);
-        PlayAudio(1, _clawAttackAudio, 0.1f);
         
         yield return RotateByAmount(10f, -1, 50f);
-        yield return VibrateClaws();
+        StartCoroutine(VibrateClaws());
+        yield return new WaitForSeconds(1.8f);
+        PlayAudio(1, _clawDragAudio, 0.25f);
+        yield return new WaitForSeconds(0.2f);
+        
         for (int i = -1; i <= 1; i += 2)
         {
             _dustParticles[Math.Sign(i + 1)].transform.localScale = 
@@ -430,8 +454,6 @@ public class EnemyPattern_Scorpion : EnemyPattern
                 new Vector3(_armObjects[Math.Sign(i + 1) * 3].transform.position.x - i * 4f, -7f, 0);
             _dustParticles[Math.Sign(i + 1)].SetActive(true);
         }
-        
-        PlayAudio(1, _clawDragAudio, 0.25f);
         yield return MoveClaws(_defaultClawPositions, 2f);
         
         _isInAttackSequence = false;
@@ -465,16 +487,42 @@ public class EnemyPattern_Scorpion : EnemyPattern
         _isInAttackSequence = true;
         
         yield return MoveClaws(_electricClawPositions, 5f);
-        _animator.SetTrigger("ElectricityAttack");
         yield return new WaitForSeconds(1f);
+        _animator.SetTrigger("ElectricityAttack");
         // animator: sets colliders, sets claw colors, sets electricity active
         // resets colliders, resets claw colors, resets electricity active
-        yield return new WaitForSeconds(_animator.GetCurrentAnimatorClipInfo(0)[0].clip.length * 1.7f);
+        yield return new WaitForSeconds(4.83f * 1.7f);
         yield return new WaitForSeconds(0.5f);
         
         yield return MoveClaws(_defaultClawPositions, 5f);
         
         _isInAttackSequence = false;
+    }
+
+    private void PlayElectricFieldAudio()
+    {
+        _audioSources[1].volume = 0.7f;
+        _audioSources[1].PlayOneShot(_electricFieldAudio);
+    }
+
+    private void StopElectricFieldAudio()
+    {
+        _audioSources[1].Stop();
+        _audioSources[1].volume = 1f;
+    }
+
+    private void PlayClawBlinkAudio()
+    {
+        _audioSources[2].PlayOneShot(_clawBlinkAudio);
+    }
+
+    private IEnumerator PlayClawSnapAudio()
+    {
+        _audioSources[1].pitch = Random.Range(0.4f, 0.7f);
+        _audioSources[1].PlayOneShot(_clawSnapAudio);
+        yield return new WaitForSeconds(0.1f);
+        _audioSources[1].pitch = Random.Range(0.4f, 0.7f);
+        _audioSources[1].PlayOneShot(_clawSnapAudio);
     }
 
     private IEnumerator GroundPound()
@@ -525,7 +573,7 @@ public class EnemyPattern_Scorpion : EnemyPattern
     
     public override void Attack()
     {
-        if (_isInAttackSequence) return;
+        if (_isInAttackSequence || _isInCutscene) return;
         
         switch (_cycleCount)
         {
@@ -540,30 +588,49 @@ public class EnemyPattern_Scorpion : EnemyPattern
             break;
             
             default:
-            // GenerateRandomAttack();
             StartCoroutine(ClawAttack());
             _cycleCount++;
             break;
         }
     }
-    
-    // private void GenerateRandomAttack()
-    // {
-    //     switch (Random.Range(1, 3))
-    //     {
-    //         case 0:
-    //         StartCoroutine(ShootLaser());
-    //         break;
-    //
-    //         case 1:
-    //         StartCoroutine(ClawAttack());
-    //         break;
-    //     }
-    // }
 
     public override void OnTakeDamage(float damage, float maxHealth)
     {
         _bossHealthBar.OnBossHPChanged(damage / maxHealth);
+        if (_enemyBase.Health <= 0) OnDeath();
+    }
+
+    public override void OnDeath()
+    {
+        if (_isInCutscene) return;
+        _isInCutscene = true;
+        StopAllCoroutines();
+        _isShootingBullets = false;
+        StartCoroutine(OnDeathCoroutine());
+    }
+
+    private IEnumerator OnDeathCoroutine()
+    {
+        foreach (Rigidbody2D rb in _bouncingPartRigidBodies)
+        {
+            rb.velocity = Vector2.zero;
+            rb.bodyType = RigidbodyType2D.Kinematic;
+        }
+        
+        float timer = 0f;
+        while (timer <= 2f)
+        {
+            transform.position += 0.1f * timer * new Vector3(
+                Random.Range(-0.5f, 0.5f),
+                Random.Range(-0.5f, 0.5f), 0);
+            yield return null;
+            timer += Time.deltaTime;
+        }
+        
+        _rigidBody.bodyType = RigidbodyType2D.Dynamic;
+        _rigidBody.gravityScale = 1f;
+        
+        yield return new WaitForSeconds(5f);
     }
 
     public override bool PlayerIsInAttackRange()

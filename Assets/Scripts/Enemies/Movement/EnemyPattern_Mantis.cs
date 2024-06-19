@@ -16,6 +16,9 @@ public class EnemyPattern_Mantis : EnemyPattern
     private float _dashTime = 0.3f;
     [SerializeField] private ParticleSystemRenderer _dashVFX;
     
+    // sfx
+    [SerializeField] private AudioClip _dashAudio;
+    
     private static readonly int IsAttacking = Animator.StringToHash("IsAttacking");
 
     private void Awake()
@@ -121,6 +124,8 @@ public class EnemyPattern_Mantis : EnemyPattern
 
     private IEnumerator DashAttack()
     {
+        _audioSource.pitch = Random.Range(0.85f, 1.15f);
+        _audioSource.PlayOneShot(_dashAudio);
         float dashTimeCounter = 0;
         float direction = Math.Sign(transform.localScale.x);
         _dashVFX.flip = new Vector3(-direction, 0, 0);

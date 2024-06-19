@@ -119,7 +119,7 @@ public class Portal : Interactor
                 GameManager.Instance.LoadBossMap();
                 CameraManager.Instance.SwapCamera(
                     CameraManager.Instance.AllVirtualCameras[1],
-                    CameraManager.Instance.AllVirtualCameras[6]);
+                    CameraManager.Instance.AllVirtualCameras[7]);
                 yield break;
         }
         
