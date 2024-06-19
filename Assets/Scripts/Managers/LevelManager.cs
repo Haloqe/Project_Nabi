@@ -920,14 +920,23 @@ public class LevelManager : Singleton<LevelManager>
             var spawnpoint = GameObject.FindWithTag("PlayerStart");
             if (spawnpoint != null) playerSpawnPoint = spawnpoint.transform.position;
             else playerSpawnPoint = playerObject.transform.position;
+            if (currScene == ESceneType.Tutorial)
+            {
+                playerObject.localScale = new Vector3(-1, 1, 1);
+            }
         }
         playerObject.position = playerSpawnPoint;
+        playerObject.gameObject.SetActive(true);
         
         // Set camera follow target
         // GameObject.Find("Virtual Camera").GetComponent<CinemachineVirtualCamera>().Follow = playerObject;
         
         // Trigger event
-        if (isFirstSpawn && currScene == ESceneType.CombatMap0) PlayerEvents.SpawnedFirstTime.Invoke();
+        if (isFirstSpawn)
+        {
+            PlayerEvents.SpawnedFirstTime.Invoke();
+            isFirstSpawn = false;
+        }
         PlayerEvents.Spawned.Invoke();
     }
 

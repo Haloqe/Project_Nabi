@@ -384,5 +384,12 @@ public enum ESceneType
     DebugCombatMap,
     MidBoss,
     Boss,
+    Tutorial,
 }
 #endregion
+
+public enum ECutSceneType
+{
+    IntroPreTutorial,
+    IntroPostTutorial,
+}

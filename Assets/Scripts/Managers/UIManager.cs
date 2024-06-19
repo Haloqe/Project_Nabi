@@ -179,6 +179,7 @@ public class UIManager : Singleton<UIManager>
         _inGameCombatUI.SetActive(true);
         _inGameCombatUI.GetComponent<Canvas>().worldCamera = _uiCamera;
         _inGameCombatUI.GetComponent<Canvas>().planeDistance = 20;
+        _mapController.Initialise();
         
         DontDestroyOnLoad(_focusedOverlay);
         DontDestroyOnLoad(_defeatedUI);
@@ -238,7 +239,7 @@ public class UIManager : Singleton<UIManager>
         switch (currSceneType)
         {
             case ESceneType.CombatMap0:
-                DisplayRoomGuideUI("임시 메타맵", "");
+                DisplayRoomGuideUI("잊혀진 회의터", "");
                 DisableMap();
                 break;
             
@@ -246,11 +247,17 @@ public class UIManager : Singleton<UIManager>
                 var hpRatio = _playerController.playerDamageReceiver.GetHPRatio();
                 OnPlayerHPChanged(0,hpRatio,hpRatio);
                 return;
+            
+            case ESceneType.Tutorial:
+                DisableMap();
+                break;
         }
         
         OnPlayerHPChanged(0,1,1);
         UpdateDarkGaugeUI(0);
-        UsePlayerControl();
+        
+        if (currSceneType != ESceneType.Tutorial) UsePlayerControl();
+        else UseUIControl();
     }
 
     private void OnCombatSceneChanged()
@@ -272,7 +279,7 @@ public class UIManager : Singleton<UIManager>
         UIIAMap.Enable();
     }
 
-    private void UsePlayerControl()
+    public void UsePlayerControl()
     {
         PlayerIAMap.Enable();
         UIIAMap.Disable();
@@ -524,6 +531,7 @@ public class UIManager : Singleton<UIManager>
 
     public void OpenBook()
     {
+        if (GameManager.Instance.ActiveScene == ESceneType.Tutorial) return;
         _audioManager.LowerBGMVolumeUponUI();
         OpenFocusedUI(_bookUI, true);
     }
@@ -535,6 +543,7 @@ public class UIManager : Singleton<UIManager>
 
     public void OpenMap()
     {
+        if (GameManager.Instance.ActiveScene == ESceneType.Tutorial) return;
         _mapController.ResetMapCamera();
         OpenFocusedUI(_zoomedMap);
     }
@@ -590,6 +599,11 @@ public class UIManager : Singleton<UIManager>
 
     private void OnSubmit(InputAction.CallbackContext obj)
     {
+        if (GameManager.Instance.ActiveScene == ESceneType.Tutorial)
+        {
+            FindObjectOfType<TutorialHandler>().OnEnter();
+            return;
+        }
         if (_activeFocusedUIController) _activeFocusedUIController.OnSubmit();
     }
     

@@ -328,6 +328,8 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
 
     private void Die()
     {
+        if (GameManager.Instance.isRunningTutorial) return;
+        
         // Resurrect or die
         if (canResurrect)
         {

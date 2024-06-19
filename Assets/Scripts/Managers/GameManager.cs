@@ -1,10 +1,7 @@
-using System;
 using System.Collections;
-using Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 public class GameManager : Singleton<GameManager>
 {
@@ -12,6 +9,7 @@ public class GameManager : Singleton<GameManager>
     public PlayerMetaData PlayerMetaData { get; private set; }
     public GameObject PlayerPrefab;
     private bool _isInitialLoad = true;
+    public bool isRunningTutorial;
 
     // References
     private PlayerController _player;
@@ -21,7 +19,7 @@ public class GameManager : Singleton<GameManager>
     // DEBUG Only
     private int _ingameMapSceneIdx;       // 플레이어가 실행한 씬
     private int _releaseMapSceneIdx = 1;  // 랜덤 제너레이션 씬
-    private int _releaseMapSceneIdx2 = 7; // 여왕벌 이후
+    private int _releaseMapSceneIdx2 = 4; // 여왕벌 이후
 
     // todo temp
     public bool isFirstRun = true;
@@ -77,12 +75,17 @@ public class GameManager : Singleton<GameManager>
                 GameEvents.MainMenuLoaded.Invoke();
             }
         }
+        else if (scene.name.StartsWith("Tutorial"))
+        {
+            ActiveScene = ESceneType.Tutorial;
+            PostLoadInGame();
+        }
         else if (scene.name.StartsWith("MapGen_Pre"))
         {
             CameraManager.Instance.inGameAudioListener.enabled = true;
-            //GameObject.Find("FogOfWarCanvas").GetComponent<Canvas>().worldCamera = CameraManager.Instance.inGameMainCamera;
             ActiveScene = ESceneType.CombatMap0;
             _ingameMapSceneIdx = scene.buildIndex;
+            CameraManager.Instance.gameObject.SetActive(true);
             PostLoadInGame();
         }
         else if (scene.name.StartsWith("MapGen_Post"))
@@ -124,8 +127,7 @@ public class GameManager : Singleton<GameManager>
 
     private IEnumerator LoadSceneAsync(int idx)
     {
-        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(
-            idx == 0 ? _ingameMapSceneIdx : _releaseMapSceneIdx2);
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(idx == 0 ? _ingameMapSceneIdx : _releaseMapSceneIdx2);
 
         // Wait until the asynchronous scene fully loads
         while (!asyncLoad.isDone)
@@ -137,10 +139,13 @@ public class GameManager : Singleton<GameManager>
     public bool hasGameLoadEnded;
     private void PostLoadInGame()
     {
-        if (ActiveScene is ESceneType.CombatMap0 or ESceneType.DebugCombatMap)
+        if (ActiveScene is ESceneType.Tutorial)
         {
-            if (isFirstRun) GameEvents.InGameFirstLoadStarted.Invoke();
-            else GameEvents.CombatSceneChanged.Invoke();
+            GameEvents.InGameFirstLoadStarted.Invoke();
+        }
+        else if (ActiveScene is ESceneType.CombatMap0)
+        {
+            GameEvents.CombatSceneChanged.Invoke();
         }
 
         // Generate new map
@@ -162,17 +167,19 @@ public class GameManager : Singleton<GameManager>
         GameEvents.MapLoaded.Invoke();
         
         // If not first run, reset variables
-        if (ActiveScene is ESceneType.CombatMap0 or ESceneType.DebugCombatMap && !isFirstRun) 
+        if (ActiveScene is ESceneType.CombatMap0 /*or ESceneType.DebugCombatMap*/ && !isFirstRun) 
             GameEvents.Restarted.Invoke();
 
         // When all set, spawn player 
         LevelManager.Instance.SpawnPlayer();
         
         _player = PlayerController.Instance;
-        GameObject followObject = new GameObject("CameraFollowingObject");
-        _player.playerMovement.CameraFollowObject = followObject.AddComponent<CameraFollowObject>();
-        CameraManager.Instance.CurrentCamera.Follow = followObject.transform;
-        
+        if (ActiveScene is not ESceneType.Tutorial)
+        {
+            GameObject followObject = new GameObject("CameraFollowingObject");
+            _player.playerMovement.CameraFollowObject = followObject.AddComponent<CameraFollowObject>();
+            CameraManager.Instance.CurrentCamera.Follow = followObject.transform;
+        }
         GameEvents.GameLoadEnded.Invoke();
         
         if (ActiveScene is ESceneType.Boss or ESceneType.MidBoss or ESceneType.CombatMap1)
@@ -239,16 +246,17 @@ public class GameManager : Singleton<GameManager>
     
     public void StartNewGame()
     {
-        if (_player) {Destroy(_player.gameObject);}
+        if (_player) Destroy(_player.gameObject);
         _uiManager.DestroyAllInGameUI();
         isFirstRun = true;
         PlayerMetaData = new PlayerMetaData();
         SaveSystem.RemoveMetaData();
-        LoadInGame(0);
+        SceneManager.LoadScene("IntroPreTutorial");
     }
 
     public void ContinueGame()
     {
+        _player.gameObject.SetActive(true);
         LoadInGame(0);
     }
 
@@ -263,5 +271,10 @@ public class GameManager : Singleton<GameManager>
         _uiManager.DisplayLoadingScreen();
         yield return new WaitForSecondsRealtime(0.5f);
         LoadMainMenu();
+    }
+
+    public void LoadTutorial()
+    {
+        SceneManager.LoadScene("Tutorial");
     }
 }

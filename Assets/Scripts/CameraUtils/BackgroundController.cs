@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class BackgroundController : MonoBehaviour
@@ -7,7 +8,7 @@ public class BackgroundController : MonoBehaviour
     public float ParallaxEffect;
     void Start()
     {
-        _camera = Camera.main.gameObject;
+        _camera = CameraManager.Instance.inGameMainCamera.GameObject();
         _startPositionX = transform.position.x;
         _startPositionY = transform.position.y;
         _lengthX = GetComponentInChildren<SpriteRenderer>().bounds.size.x;

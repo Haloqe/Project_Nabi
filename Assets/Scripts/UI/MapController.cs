@@ -21,7 +21,7 @@ public class MapController : UIControllerBase
     private float _minCamSize = 10;
     private float _maxCamSize = 60;
 
-    private void Awake()
+    public void Initialise()
     {
         _mapCamera = CameraManager.Instance.mapCamera.transform;
         _minimapCamera = CameraManager.Instance.minimapCamera.transform;
