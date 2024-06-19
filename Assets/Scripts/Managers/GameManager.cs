@@ -86,6 +86,7 @@ public class GameManager : Singleton<GameManager>
             ActiveScene = ESceneType.CombatMap0;
             _ingameMapSceneIdx = scene.buildIndex;
             CameraManager.Instance.gameObject.SetActive(true);
+            UIManager.Instance.UsePlayerControl();
             PostLoadInGame();
         }
         else if (scene.name.StartsWith("MapGen_Post"))

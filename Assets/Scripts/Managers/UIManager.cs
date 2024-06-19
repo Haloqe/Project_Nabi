@@ -251,8 +251,7 @@ public class UIManager : Singleton<UIManager>
                 DisableMap();
                 break;
         }
-        
-        OnPlayerHPChanged(0,1,1);
+        //OnPlayerHPChanged(0,1,1);
         UpdateDarkGaugeUI(0);
         
         if (currSceneType != ESceneType.Tutorial) UsePlayerControl();
@@ -262,7 +261,8 @@ public class UIManager : Singleton<UIManager>
     private void OnCombatSceneChanged()
     {
         // Minimap and zoomed map disabled in the boss map
-        DisableMap();
+        if (GameManager.Instance.ActiveScene is ESceneType.MidBoss or ESceneType.Boss)
+            DisableMap();
         
         // Update combat UI with bound legacy information
         //_playerAttackManager.UpdateLegacyUI();

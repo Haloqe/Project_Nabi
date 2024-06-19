@@ -539,6 +539,7 @@ public class PlayerController : Singleton<PlayerController>
     
     private void OnCombatSceneChanged()
     {
-        StartCoroutine(FadeInCoroutine());
+        if (GameManager.Instance.ActiveScene != ESceneType.CombatMap0)
+            StartCoroutine(FadeInCoroutine());
     }
 }
