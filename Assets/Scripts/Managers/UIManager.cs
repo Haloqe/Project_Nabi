@@ -5,7 +5,6 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class UIManager : Singleton<UIManager>
@@ -361,7 +360,7 @@ public class UIManager : Singleton<UIManager>
 
     private IEnumerator BloodOverlayHitCoroutine()
     {
-        float duration = 0.5f;
+        float duration = 0.2f;
         _bloodOverlayHitDisplayTime += duration; 
         _bloodOverlayHit.gameObject.SetActive(true);
         yield return new WaitForSecondsRealtime(duration);
