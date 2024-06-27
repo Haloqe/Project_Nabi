@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
 
 public class GameManager : Singleton<GameManager>
 {
@@ -9,7 +10,10 @@ public class GameManager : Singleton<GameManager>
     public PlayerMetaData PlayerMetaData { get; private set; }
     public GameObject PlayerPrefab;
     private bool _isInitialLoad = true;
+    
+    // Tutorial
     public bool isRunningTutorial;
+    public ECutSceneType activeCutScene;
 
     // References
     private PlayerController _player;
@@ -48,6 +52,7 @@ public class GameManager : Singleton<GameManager>
 
     public void OnMainMenuInitialLoad()
     {
+        GetComponent<InputSystemUIInputModule>().enabled = true;
         _uiManager.UIIAMap.Enable();
         GameObject.Find("LogoUI").SetActive(false);
         GameEvents.MainMenuLoaded.Invoke();
@@ -77,7 +82,6 @@ public class GameManager : Singleton<GameManager>
         }
         else if (scene.name.StartsWith("Tutorial"))
         {
-            ActiveScene = ESceneType.Tutorial;
             PostLoadInGame();
         }
         else if (scene.name.StartsWith("MapGen_Pre"))
@@ -86,7 +90,6 @@ public class GameManager : Singleton<GameManager>
             ActiveScene = ESceneType.CombatMap0;
             _ingameMapSceneIdx = scene.buildIndex;
             CameraManager.Instance.gameObject.SetActive(true);
-            UIManager.Instance.UsePlayerControl();
             PostLoadInGame();
         }
         else if (scene.name.StartsWith("MapGen_Post"))
@@ -253,6 +256,7 @@ public class GameManager : Singleton<GameManager>
         PlayerMetaData = new PlayerMetaData();
         SaveSystem.RemoveMetaData();
         SceneManager.LoadScene("IntroPreTutorial");
+        ActiveScene = ESceneType.Tutorial;
     }
 
     public void ContinueGame()

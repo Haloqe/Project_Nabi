@@ -138,7 +138,7 @@ public class AttackBase_Melee : AttackBase
 
     public void OnComboHit()
     {
-        FindObjectOfType<TestCameraShake>().OnComboAttack();
+        FindObjectOfType<TestCameraShake>()?.OnComboAttack();
         Vector3 vfxPosition = new Vector3(_player.position.x - Mathf.Sign(_player.localScale.x), _player.position.y, 0);
         Instantiate(currComboHitEffect, vfxPosition, Quaternion.identity);
         if (ActiveLegacy) ((Legacy_Melee)ActiveLegacy).OnAttack_Combo();

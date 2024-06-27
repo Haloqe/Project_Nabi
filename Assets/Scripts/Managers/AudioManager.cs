@@ -29,6 +29,10 @@ public class AudioManager : Singleton<AudioManager>
     [SerializeField] private AudioClip mainMenuIntro;
     [SerializeField] private AudioClip mainMenuLoop;
     
+    // Scene
+    [Space(15)][Header("Scene")]
+    [SerializeField] private AudioClip introSceneLoop;
+    
     // Meta progress map
     [Space(15)][Header("InGame")]
     [SerializeField] private AudioClip metaIntro;
@@ -213,8 +217,8 @@ public class AudioManager : Singleton<AudioManager>
         while (currentTime < duration)
         {
             currentTime += Time.unscaledDeltaTime;
-            _introAudioSource.volume = Mathf.Lerp(start, 0.1f, currentTime / duration);
-            _loopAudioSource.volume = Mathf.Lerp(start, 0.1f, currentTime / duration);
+            _introAudioSource.volume = Mathf.Lerp(start, 0f, currentTime / duration);
+            _loopAudioSource.volume = Mathf.Lerp(start, 0f, currentTime / duration);
             yield return null;
         }
         _introAudioSource.Stop();
@@ -331,5 +335,10 @@ public class AudioManager : Singleton<AudioManager>
     public void PlayUIConfirmSound()
     {
         _uiAudioSource.PlayOneShot(uiConfirmSound);
+    }
+
+    public void PlayIntroCutSceneBGM()
+    {
+        StartBgmLoop(null, introSceneLoop, 0.8f);
     }
 }

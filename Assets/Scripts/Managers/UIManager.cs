@@ -5,6 +5,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
+using UnityEngine.Playables;
 using UnityEngine.UI;
 
 public class UIManager : Singleton<UIManager>
@@ -262,14 +263,12 @@ public class UIManager : Singleton<UIManager>
     {
         // Minimap and zoomed map disabled in the boss map
         if (GameManager.Instance.ActiveScene is ESceneType.MidBoss or ESceneType.Boss)
+        {
             DisableMap();
-        
-        // Update combat UI with bound legacy information
-        //_playerAttackManager.UpdateLegacyUI();
-        
+        }
         _uiCamera = GameObject.Find("Main Camera").GetComponent<Camera>();
-        _activeFocusedUI = null;
         _inGameCombatUI.GetComponent<Canvas>().worldCamera = _uiCamera;
+        _activeFocusedUI = null;
     }
     
     private void UseUIControl()
@@ -557,6 +556,13 @@ public class UIManager : Singleton<UIManager>
     
     private void OnClose(InputAction.CallbackContext obj)
     {
+        if (_gameManager.ActiveScene == ESceneType.Tutorial)
+        {
+            if (_gameManager.isRunningTutorial) return;
+            FindObjectOfType<PlayableDirector>().Stop();
+            FindObjectOfType<SceneTransitionHandler>().StartSceneTransition();
+            return;
+        }
         if (_activeFocusedUI == _warriorUIObject || _activeFocusedUI == _bookUI || _activeFocusedUI == _mainMenuUI)
         {
             _activeFocusedUIController.OnClose();

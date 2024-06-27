@@ -1,17 +1,26 @@
+using System;
 using UnityEngine;
 
 public class SceneTransitionHandler : MonoBehaviour
 {
         public ECutSceneType cutSceneType;
+        private bool _isUnderTransition;
 
         public void Awake()
         {
-                UIManager.Instance.UIIAMap.Disable();
+                GameManager.Instance.activeCutScene = cutSceneType;
                 CameraManager.Instance.gameObject.SetActive(false);
+                if (cutSceneType == ECutSceneType.IntroPreTutorial)
+                {
+                        AudioManager.Instance.PlayIntroCutSceneBGM();
+                }
         }
-        
+
         public void StartSceneTransition()
         {
+                if (_isUnderTransition) return;
+                _isUnderTransition = true;
+                
                 switch (cutSceneType)
                 {
                         case ECutSceneType.IntroPreTutorial:
@@ -19,9 +28,8 @@ public class SceneTransitionHandler : MonoBehaviour
                                 break;
                         
                         case ECutSceneType.IntroPostTutorial:
-                                GameManager.Instance.isRunningTutorial = false;
                                 PlayerController.Instance.gameObject.SetActive(true);
-                                GameEvents.Restarted.Invoke();
+                                AudioManager.Instance.StopBgm(2.5f);
                                 GameManager.Instance.ContinueGame();
                                 break;
                 }

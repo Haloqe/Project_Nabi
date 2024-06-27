@@ -24,6 +24,7 @@ public class LevelManager : Singleton<LevelManager>
     private List<Vector3Int>[] _corridors;
     private List<List<Door>> _availableDoors;
 
+    private GameObject _startingRoom;
     private Tilemap _mapTilemap;
     private Tilemap _superWallTilemap;
     private Transform _roomsContainer;
@@ -98,6 +99,7 @@ public class LevelManager : Singleton<LevelManager>
         _generatedRooms.Clear();
         _flowerSpawners.Clear();
         _hiddenPortalSpawners.Clear();
+        if (_startingRoom) Destroy(_startingRoom);
         
         // Find game objects
         Transform root = GameObject.Find("SuperTilemaps").transform;
@@ -157,11 +159,11 @@ public class LevelManager : Singleton<LevelManager>
     private bool GenerateLevel()
     {
         // Add starting room
-        var startingVirtualRoom = new GameObject("StartingRoom");
-        var door1 = startingVirtualRoom.AddComponent<Door>();
-        var door2 = startingVirtualRoom.AddComponent<Door>();
-        var door3 = startingVirtualRoom.AddComponent<Door>();
-        var door4 = startingVirtualRoom.AddComponent<Door>();
+        _startingRoom = new GameObject("StartingRoom");
+        var door1 = _startingRoom.AddComponent<Door>();
+        var door2 = _startingRoom.AddComponent<Door>();
+        var door3 = _startingRoom.AddComponent<Door>();
+        var door4 = _startingRoom.AddComponent<Door>();
         door1.SetValues(EConnectionType.Vertical, EDoorDirection.Up, new Vector3Int(1000, 999, 0), 3,4,6);
         door2.SetValues(EConnectionType.Vertical, EDoorDirection.Down, new Vector3Int(1000, 1001, 0), 3,4,6);
         door3.SetValues(EConnectionType.Horizontal, EDoorDirection.Left, new Vector3Int(501, 1000, 0), 3,4,6);
@@ -875,6 +877,7 @@ public class LevelManager : Singleton<LevelManager>
         }
     }
 
+    
     public void SpawnPlayer()
     {
         // TODO commented for debug
@@ -935,7 +938,6 @@ public class LevelManager : Singleton<LevelManager>
         if (isFirstSpawn)
         {
             PlayerEvents.SpawnedFirstTime.Invoke();
-            isFirstSpawn = false;
         }
         PlayerEvents.Spawned.Invoke();
     }

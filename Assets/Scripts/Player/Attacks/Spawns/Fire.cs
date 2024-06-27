@@ -6,23 +6,25 @@ using UnityEngine.Networking;
 public class Fire : MonoBehaviour
 {
     public AttackBase_Area Owner;
-    public int burningDelay = 0;
     public int burningDuration;
-    public bool readyToCollide;
-    // Collider
     private List<int> _affectedEnemies;
     private FireChild[] _fireChildren;
+    private AttackInfo _attackInfo;
 
     private void Start()
     {
         _affectedEnemies = new List<int>();
         _fireChildren = GetComponentsInChildren<FireChild>();
+        _attackInfo = new AttackInfo
+        {
+            Damage = new DamageInfo(EDamageType.Base, 5),
+            ShouldUpdateTension = false,
+        };
         StartCoroutine(BurningCoroutine());
     }
 
     private IEnumerator BurningCoroutine()
     {
-        yield return new WaitForSecondsRealtime(burningDelay);
         StartCoroutine(nameof(BurnToggleCoroutine));
         yield return new WaitForSecondsRealtime(burningDuration);
         StopCoroutine(nameof(BurnToggleCoroutine));
@@ -33,11 +35,11 @@ public class Fire : MonoBehaviour
     {
         while (true)
         {
-            yield return new WaitForSecondsRealtime(1.5f);
+            yield return new WaitForSecondsRealtime(1f);
             _affectedEnemies.Clear();
             foreach (var fire in _fireChildren)
             {
-                fire.Toggle();
+                fire.ToggleCollider();
             }
         }
     }
@@ -49,7 +51,7 @@ public class Fire : MonoBehaviour
         if (rootEnemyDamageable == null || Utility.IsObjectInList(rootEnemyDamageable.GetGameObject(), _affectedEnemies)) return;
 
         // Do damage
-        Owner.DealDamage(rootEnemyDamageable, true);
+        Owner.DealDamage(rootEnemyDamageable, _attackInfo);
         _affectedEnemies.Add(rootEnemyDamageable.GetGameObject().GetInstanceID()); 
     }
     

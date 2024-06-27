@@ -4,8 +4,8 @@ using UnityEngine;
 public class GravityField : MonoBehaviour
 {
     public AttackBase_Area Owner;
-    public int pullDelay = 0;
-    public int pullDuration = 5;
+    public Vector3 GravCorePos;
+    private AttackInfo _attackInfo;
 
     // Collider 
     private List<int> _affectedEnemies;
@@ -13,6 +13,13 @@ public class GravityField : MonoBehaviour
     private void Start()
     {
         _affectedEnemies = new List<int>();
+        _attackInfo = new AttackInfo
+        {
+            Damage = null,
+            StatusEffects = { new StatusEffectInfo(EStatusEffect.GravityPull, 75, 5) },
+            ShouldUpdateTension = false,
+            GravCorePosition = GravCorePos,
+        };
     }
 
     public void OnTriggerEnter2D(Collider2D collision)
@@ -22,7 +29,7 @@ public class GravityField : MonoBehaviour
         if (rootEnemyDamageable == null || Utility.IsObjectInList(rootEnemyDamageable.GetGameObject(), _affectedEnemies)) return;
 
         // Do damage
-        Owner.DealDamage(rootEnemyDamageable, false);
+        Owner.DealDamage(rootEnemyDamageable, _attackInfo);
         _affectedEnemies.Add(rootEnemyDamageable.GetGameObject().GetInstanceID());
     }
 

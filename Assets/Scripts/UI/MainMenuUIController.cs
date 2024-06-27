@@ -204,11 +204,11 @@ public class MainMenuUIController : UIControllerBase
                     SelectConfirmOption(0);
                     return;
                 }
-                StartHideTransition();
+                StartHideTransition(0.5f);
                 break;
             
             case 1: // Continue
-                StartHideTransition();
+                StartHideTransition(stopBgm:true);
                 break;
             
             case 2: // Settings
@@ -248,9 +248,9 @@ public class MainMenuUIController : UIControllerBase
     public void OnPointerEnter(int optionIdx) => SelectOption(optionIdx);
     public void OnPointerClick() => OnSubmit();
 
-    private void StartHideTransition(bool stopBgm = true)
+    private void StartHideTransition(float fadeOutDuration = 1f, bool stopBgm = true)
     {
-        if (stopBgm) _audioManager.StopBgm(1f);
+        if (stopBgm) _audioManager.StopBgm(fadeOutDuration);
         _audioManager.PlayUIConfirmSound();
         _animator.enabled = true;
         _animator.SetTrigger(Transition);

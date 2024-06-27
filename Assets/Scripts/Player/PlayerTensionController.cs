@@ -176,6 +176,7 @@ public class PlayerTensionController : MonoBehaviour
     {
         // Cannot change tension value during overloaded/recovery state
         if (_tensionState is ETensionState.Overloaded or ETensionState.Recovery) return;
+        if (GameManager.Instance.isRunningTutorial) return;
         
         // Otherwise, increment tension
         SetTensionValue(_tension + _incrementStep);   

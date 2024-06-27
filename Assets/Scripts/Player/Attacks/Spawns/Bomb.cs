@@ -52,7 +52,7 @@ public class Bomb : MonoBehaviour
         if (rootEnemyDamageable == null || Utility.IsObjectInList(rootEnemyDamageable.GetGameObject(), _affectedEnemies)) return;
         
         // Do damage
-        Owner.DealDamage(rootEnemyDamageable, false);
+        Owner.DealDamage(rootEnemyDamageable);
         _affectedEnemies.Add(rootEnemyDamageable.GetGameObject().GetInstanceID());
     }
 }

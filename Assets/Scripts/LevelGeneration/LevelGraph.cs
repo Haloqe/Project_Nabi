@@ -88,13 +88,13 @@ public class LevelGraph
     {
         int prevRoomID = AddRoom(ERoomType.Entrance);
         SetStartRoom(prevRoomID);
-        
         ConnectNewRoomToPrev(ERoomType.Normal);
-        ConnectNewRoomToPrev(ERoomType.Normal);
-        ConnectNewRoomToPrev(ERoomType.Normal);
-        ConnectNewRoomToPrev(ERoomType.Normal);
-        ConnectNewRoomToPrev(ERoomType.Normal);
-        ConnectNewRoomToPrev(ERoomType.MidBoss);
+        ConnectNewRoomToPrev(ERoomType.Boss);
+        // ConnectNewRoomToPrev(ERoomType.Normal);
+        // ConnectNewRoomToPrev(ERoomType.Normal);
+        // ConnectNewRoomToPrev(ERoomType.Normal);
+        // ConnectNewRoomToPrev(ERoomType.Normal);
+        // ConnectNewRoomToPrev(ERoomType.MidBoss);
     }
 
     public void GeneratePostMidBossGraph()

@@ -11,7 +11,7 @@ public class PlayerMovement : MonoBehaviour
     private AudioSource _audioSource;
     
     // physics
-    private BoxCollider2D _mainCollider;
+    private CapsuleCollider2D _mainCollider;
     private float _defaultFriction;
     private float _defaultBounciness;
 
@@ -84,7 +84,7 @@ public class PlayerMovement : MonoBehaviour
         _fallSpeedYDampingChangeThreshold = _cameraManager.FallSpeedYDampingChangeThreshold;
         // CameraFollowObject = GameObject.Find("CameraFollowingObject").GetComponent<CameraFollowObject>();
 
-        _mainCollider = GetComponents<BoxCollider2D>()[0];
+        _mainCollider = GetComponent<CapsuleCollider2D>();
         _defaultBounciness = _mainCollider.sharedMaterial.bounciness;
         _defaultFriction = _mainCollider.sharedMaterial.friction;
     }
