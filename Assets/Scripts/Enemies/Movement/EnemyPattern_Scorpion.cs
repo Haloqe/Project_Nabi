@@ -103,6 +103,7 @@ public class EnemyPattern_Scorpion : EnemyPattern
         
         _raycastLayerMask = LayerMask.GetMask("Platform");
         _lineRenderer = GetComponent<LineRenderer>();
+        Init();
     }
 
     public override void Init()
@@ -513,7 +514,7 @@ public class EnemyPattern_Scorpion : EnemyPattern
 
     private void PlayClawBlinkAudio()
     {
-        _audioSources[2].PlayOneShot(_clawBlinkAudio);
+        _audioSources[2].PlayOneShot(_clawBlinkAudio, 0.4f);
     }
 
     private IEnumerator PlayClawSnapAudio()
@@ -603,14 +604,17 @@ public class EnemyPattern_Scorpion : EnemyPattern
     public override void OnDeath()
     {
         if (_isInCutscene) return;
+        _bossHealthBar.transform.root.gameObject.SetActive(false);
         _isInCutscene = true;
         StopAllCoroutines();
         _isShootingBullets = false;
+        GameManager.Instance.OnBossSlayed();
         StartCoroutine(OnDeathCoroutine());
     }
 
     private IEnumerator OnDeathCoroutine()
     {
+        AudioManager.Instance.StopBgm(2.5f);
         foreach (Rigidbody2D rb in _bouncingPartRigidBodies)
         {
             rb.velocity = Vector2.zero;
@@ -631,6 +635,7 @@ public class EnemyPattern_Scorpion : EnemyPattern
         _rigidBody.gravityScale = 1f;
         
         yield return new WaitForSeconds(5f);
+        GameManager.Instance.LoadBossCutScene();
     }
 
     public override bool PlayerIsInAttackRange()

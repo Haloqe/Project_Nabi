@@ -14,6 +14,7 @@ public class GameManager : Singleton<GameManager>
     // Tutorial
     public bool isRunningTutorial;
     public ECutSceneType activeCutScene;
+    public bool isRunningCutScene;
 
     // References
     private PlayerController _player;
@@ -35,9 +36,10 @@ public class GameManager : Singleton<GameManager>
         
         PlayerMetaData = SaveSystem.LoadMetaData();
         _ingameMapSceneIdx = _releaseMapSceneIdx;
+        
         var cameraPrefab = Resources.Load<GameObject>("Prefabs/InGameCameras");
         var inGameCameras = Instantiate(cameraPrefab, Vector3.zero, Quaternion.identity);
-        inGameCameras.GetComponentInChildren<AudioListener>().enabled = false;
+        inGameCameras.SetActive(false);
         
         SceneManager.sceneLoaded += OnSceneLoaded;
         PlayerEvents.Defeated += OnPlayerDefeated;
@@ -64,6 +66,7 @@ public class GameManager : Singleton<GameManager>
         if (scene.name.Contains("MainMenu"))
         {
             CameraManager.Instance.inGameAudioListener.enabled = false;
+            CameraManager.Instance.gameObject.SetActive(false);
             ActiveScene = ESceneType.MainMenu;
             
             // Initial load
@@ -86,10 +89,10 @@ public class GameManager : Singleton<GameManager>
         }
         else if (scene.name.StartsWith("MapGen_Pre"))
         {
+            CameraManager.Instance.gameObject.SetActive(true);
             CameraManager.Instance.inGameAudioListener.enabled = true;
             ActiveScene = ESceneType.CombatMap0;
             _ingameMapSceneIdx = scene.buildIndex;
-            CameraManager.Instance.gameObject.SetActive(true);
             PostLoadInGame();
         }
         else if (scene.name.StartsWith("MapGen_Post"))
@@ -141,15 +144,25 @@ public class GameManager : Singleton<GameManager>
     }
 
     public bool hasGameLoadEnded;
+    private bool _isInGameFirstLoad = true;
     private void PostLoadInGame()
     {
         if (ActiveScene is ESceneType.Tutorial)
         {
             GameEvents.InGameFirstLoadStarted.Invoke();
+            _isInGameFirstLoad = false;
         }
         else if (ActiveScene is ESceneType.CombatMap0)
         {
-            GameEvents.CombatSceneChanged.Invoke();
+            if (_isInGameFirstLoad)
+            {
+                _isInGameFirstLoad = false;
+                GameEvents.InGameFirstLoadStarted.Invoke();
+            }
+            else
+            {
+                GameEvents.CombatSceneChanged.Invoke();
+            }
         }
 
         // Generate new map
@@ -168,7 +181,6 @@ public class GameManager : Singleton<GameManager>
     private IEnumerator PostLoadInGameCoroutine()
     {
         yield return new WaitUntil(() => hasGameLoadEnded);
-        GameEvents.MapLoaded.Invoke();
         
         // If not first run, reset variables
         if (ActiveScene is ESceneType.CombatMap0 /*or ESceneType.DebugCombatMap*/ && !isFirstRun) 
@@ -184,6 +196,7 @@ public class GameManager : Singleton<GameManager>
             _player.playerMovement.CameraFollowObject = followObject.AddComponent<CameraFollowObject>();
             CameraManager.Instance.CurrentCamera.Follow = followObject.transform;
         }
+        GameEvents.MapLoaded.Invoke();
         GameEvents.GameLoadEnded.Invoke();
         
         if (ActiveScene is ESceneType.Boss or ESceneType.MidBoss or ESceneType.CombatMap1)
@@ -280,5 +293,21 @@ public class GameManager : Singleton<GameManager>
     public void LoadTutorial()
     {
         SceneManager.LoadScene("Tutorial");
+    }
+
+    public void LoadBossCutScene()
+    {
+        SceneManager.LoadScene("CutScene_Boss");
+        _uiManager.PlayerIAMap.Disable();
+        _uiManager.HideAllInGameUI();
+        _player.gameObject.SetActive(false);
+    }
+
+    public void OnBossSlayed()
+    {
+        PlayerEvents.Defeated.Invoke(false);
+        PlayerMetaData.isDirty = true;
+        PlayerMetaData.numSouls = _player.playerInventory.SoulShard;
+        SaveSystem.SaveMetaData();
     }
 }

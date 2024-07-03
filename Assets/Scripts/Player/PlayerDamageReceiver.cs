@@ -364,8 +364,8 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         
         IsSilencedExceptCleanse = false;
         _animator.SetBool(IsDead, true);
-        _animator.SetBool(ShouldResurrect, true);
-
+        _animator.SetBool(ShouldResurrect, true); 
+        
         yield return null;
         yield return null;
         _animator.SetBool(IsDead, false); // prevent transition to death animation
@@ -393,12 +393,8 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         _isResurrectFinished = true;
     }
     
-    // TODO FIX: damage visualisation
     private IEnumerator DamagedRoutine()
     {
-        // _spriteRenderer.color = new Color(0.267f, 0.9f, 0.99f);
-        // yield return new WaitForSeconds(0.1f);
-        // _spriteRenderer.color = Color.white;
         _spriteRenderer.material = _flashMaterial;
         yield return new WaitForSecondsRealtime(0.1f);
         _spriteRenderer.material = _originalMaterial;
@@ -409,7 +405,6 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
         return _currHealth / MaxHealth;
     }
     #endregion Damage Dealing and Receiving
-
 
     #region Status effects handling
     //TODO

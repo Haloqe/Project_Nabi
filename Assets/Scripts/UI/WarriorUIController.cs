@@ -278,6 +278,7 @@ public class WarriorUIController : UIControllerBase
                 // Change legacy
                 if (_activeShakeCoroutine != null) StopCoroutine(_activeShakeCoroutine);
                 _confirmPanelObject.SetActive(false);
+                
                 CollectLegacy(_selectedPanelIdx);
             }
         }

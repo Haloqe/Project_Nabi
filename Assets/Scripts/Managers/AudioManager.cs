@@ -32,6 +32,7 @@ public class AudioManager : Singleton<AudioManager>
     // Scene
     [Space(15)][Header("Scene")]
     [SerializeField] private AudioClip introSceneLoop;
+    [SerializeField] private AudioClip endingSceneLoop;
     
     // Meta progress map
     [Space(15)][Header("InGame")]
@@ -340,5 +341,10 @@ public class AudioManager : Singleton<AudioManager>
     public void PlayIntroCutSceneBGM()
     {
         StartBgmLoop(null, introSceneLoop, 0.8f);
+    }
+    
+    public void PlayEndingCutSceneBGM()
+    {
+        StartBgmLoop(null, endingSceneLoop, 0.8f);
     }
 }

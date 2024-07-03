@@ -82,16 +82,18 @@ public class PlayerInventory : MonoBehaviour
     // Store the number of flower bombs the player owns
     public void AddFlower(int flowerIndex)
     {
+        ++_numFlowers[flowerIndex];
         if (_currentSelectedFlower == flowerIndex)
-            _uiManager.UpdateFlowerUICount(flowerIndex, ++_numFlowers[flowerIndex]);
+            _uiManager.UpdateFlowerUICount(flowerIndex, _numFlowers[flowerIndex]);
         _uiManager.DisplayFlowerBombUI();
     }
 
     // Decrease the number of flower bombs the player owns
     public void RemoveFlower(int flowerIndex)
     {
+        --_numFlowers[flowerIndex];
         if (_currentSelectedFlower == flowerIndex)
-            _uiManager.UpdateFlowerUICount(flowerIndex, --_numFlowers[flowerIndex]);
+            _uiManager.UpdateFlowerUICount(flowerIndex, _numFlowers[flowerIndex]);
         _uiManager.DisplayFlowerBombUI();
     }
 

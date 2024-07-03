@@ -64,11 +64,11 @@ public class AttackInfo
     public AttackInfo Clone(bool cloneDamage, bool cloneStatusEffect)
     {
         var info = new AttackInfo(Damage, StatusEffects, IncomingDirectionX, GravCorePosition, CanBeDarkAttack, ShouldUpdateTension);
-        if (cloneDamage)
+        if (cloneDamage && info.Damage != null)
         {
             info.Damage = info.Damage.Clone();
         }
-        if (cloneStatusEffect)
+        if (cloneStatusEffect && info.StatusEffects != null)
         {
             info.StatusEffects = GetClonedStatusEffect();
         }

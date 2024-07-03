@@ -51,6 +51,7 @@ public class EnemyPattern_QueenBee : EnemyPattern
         _spriteRenderer = GetComponent<SpriteRenderer>();
         _attackHitbox = GameObject.Find("AttackHitbox");
         _defaultParticleObject = GameObject.Find("defaultVFX");
+        Init();
     }
 
     public override void Init()
@@ -381,6 +382,7 @@ public class EnemyPattern_QueenBee : EnemyPattern
 
     public override void OnDeath()
     {
+        _bossHealthBar.transform.root.gameObject.SetActive(false);
         _isInCutscene = true;
         StopAllCoroutines();
         transform.Find("VFXs").gameObject.SetActive(false);

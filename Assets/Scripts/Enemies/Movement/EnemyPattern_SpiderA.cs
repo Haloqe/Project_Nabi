@@ -13,7 +13,7 @@ public class EnemyPattern_SpiderA : EnemyPattern
     public Collider2D _ceilingInFrontCollider;
     
     // others
-    private GameObject _webObject;
+    [SerializeField] private GameObject _webObject;
     private PlayerDamageReceiver _playerDamageReceiver;
     private bool _isInAttackState = false;
     private bool _isInChaseState = false;
@@ -38,7 +38,7 @@ public class EnemyPattern_SpiderA : EnemyPattern
     private void Awake()
     {
         MoveType = EEnemyMoveType.SpiderA;
-        _webObject = Resources.Load<GameObject>("Prefabs/Enemies/Spawns/Spider_web");
+        Init();
     }
     
     public override void Init()

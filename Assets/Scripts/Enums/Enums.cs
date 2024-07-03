@@ -392,4 +392,5 @@ public enum ECutSceneType
 {
     IntroPreTutorial,
     IntroPostTutorial,
+    Ending,
 }

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
 public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
@@ -46,6 +47,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     //Enemy health attribute
     public AttackInfo DamageInfo;
     public float Health { get; private set; }
+    public float maxHealth;
     private float _armour;
     private float _damageCooltimeCounter;
     private float _damageCooltime = 0.3f;
@@ -57,7 +59,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     private AudioSource _audioSource;
     [SerializeField] private AudioClip _hitAudio; 
     
-    protected virtual void Start()
+    private void Awake()
     {
         _uiManager = UIManager.Instance;
         _player = PlayerController.Instance;
@@ -74,16 +76,22 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
             Comparer<float>.Create((x, y) => y.CompareTo(x))
         );
         
+        Target = _player.gameObject;
+        _targetDamageable = Target.GetComponent<IDamageable>();
         Pattern = GetComponent<EnemyPattern>();
-        Target = GameObject.FindWithTag("Player");
-        _targetDamageable = Target.gameObject.GetComponent<IDamageable>();
-        Pattern.Init();   
         
         DamageInfo = new AttackInfo();
         DamageInfo.Damage = new DamageInfo((EDamageType)Enum.Parse(typeof(EDamageType), EnemyData.DamageType), EnemyData.DefaultDamage);
 
-        Health = EnemyData.MaxHealth;
+        maxHealth = maxHealth == 0 ? EnemyData.MaxHealth : maxHealth;
+        Health = maxHealth;
         _armour = EnemyData.DefaultArmour;
+    }
+
+    public void SetMaxHealth(float newMaxHealth)
+    {
+        maxHealth = newMaxHealth;
+        Health = newMaxHealth;
     }
     
     private void OnPlayerDefeated(bool isRealDeath)
@@ -534,7 +542,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     {
         Debug.Log("[" + gameObject.name + "] Health " + amount);
         if (amount < 0) StartCoroutine(DamagedRoutine(amount));
-        Health = Mathf.Clamp(Health + amount, 0, EnemyData.MaxHealth);
+        Health = Mathf.Clamp(Health + amount, 0, maxHealth);
         if (Health == 0) Die();
     }
 
@@ -572,7 +580,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
     
     private IEnumerator DamagedRoutine(float amount)
     {
-        Pattern.OnTakeDamage(amount, EnemyData.MaxHealth);
+        Pattern.OnTakeDamage(amount, maxHealth);
         
         foreach (SpriteRenderer spriteRenderer in _spriteRenderers)
             spriteRenderer.material = _enemyManager.FlashMaterial;
@@ -594,10 +602,10 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
                 AudioManager.Instance.StopBgm(1.5f);
                 StartCoroutine(OnMidBossDeath());
                 return;
+            
             case 5:
                 if (_isDead) return;
                 _isDead = true;
-                InGameEvents.BossSlayed?.Invoke();
                 StartCoroutine(OnBossDeath());
                 return;
         }

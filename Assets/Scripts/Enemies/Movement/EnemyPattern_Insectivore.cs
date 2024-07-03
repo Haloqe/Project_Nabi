@@ -6,7 +6,7 @@ public class EnemyPattern_Insectivore : EnemyPattern
     SpriteRenderer _spriteRenderer;
     private bool _isHidden = true;
     private GameObject _attackHitbox;
-    private GameObject _bulletObject;
+    [SerializeField] private GameObject _bulletObject;
     private static readonly int IsAttacking = Animator.StringToHash("IsAttacking");
 
     [SerializeField] private AudioClip _shootAudio;
@@ -23,7 +23,7 @@ public class EnemyPattern_Insectivore : EnemyPattern
         _spriteRenderer.material.color = color;
         
         _attackHitbox = transform.Find("AttackHitbox").transform.gameObject;
-        _bulletObject = Resources.Load<GameObject>("Prefabs/Enemies/Spawns/Insectivore_bullet");
+        Init();
     }
     
     public override void Patrol()

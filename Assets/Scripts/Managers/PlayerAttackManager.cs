@@ -60,7 +60,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
         _passiveLegacySlotPrefab = Utility.LoadGameObjectFromPath("Prefabs/UI/InGame/PassiveLegacySlot");
         ClockworkPrefab = Resources.Load("Prefabs/Interact/Clockwork").GameObject();
         
-        GameEvents.GameLoadEnded += InitInGameVariables;
+        PlayerEvents.SpawnedFirstTime += InitInGameVariables;
         GameEvents.Restarted += Reset;
         Init();
     }
@@ -69,27 +69,23 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
     // Only once when ui is initialised
     public void InitInGameVariables()
     {
-        var gameManager = GameManager.Instance;
-        if (gameManager.isFirstRun && gameManager.ActiveScene is ESceneType.Tutorial or ESceneType.DebugCombatMap)
+        // UI
+        var combatCanvas = UIManager.Instance.GetInGameCombatUI();
+        var activeLegacyGroup = combatCanvas.transform.Find("ActiveLayoutGroup").transform;
+        for (int i = 0; i < 4; i++)
         {
-            // UI
-            var combatCanvas = UIManager.Instance.GetInGameCombatUI();
-            var activeLegacyGroup = combatCanvas.transform.Find("ActiveLayoutGroup").transform;
-            for (int i = 0; i < 4; i++)
-            {
-                var slot = activeLegacyGroup.Find("Slot_" + i);
-                _activeLegacySlots[i] = slot.AddComponent<LegacySlotUI>();
-                _activeLegacyIcons[i] = slot.Find("AbilityIcon").GetComponent<Image>();
-                _activeLegacyOverlays[i] = slot.Find("Overlay").GetComponent<Image>();
-                _activeLegacyDefaultSprites[i] = _activeLegacyIcons[i].sprite;
-            }
-            _passiveLegacyGroup = combatCanvas.transform.Find("PassiveLayoutGroup").transform;
-            
-            _playerController = PlayerController.Instance;
-            _playerInput = FindObjectOfType<PlayerInput>();
-            _playerDamageDealer = FindObjectOfType<PlayerDamageDealer>();
-            _playerDamageDealer.AssignDashOverlay(GetAttackOverlay(ELegacyType.Dash));
+            var slot = activeLegacyGroup.Find("Slot_" + i);
+            _activeLegacySlots[i] = slot.AddComponent<LegacySlotUI>();
+            _activeLegacyIcons[i] = slot.Find("AbilityIcon").GetComponent<Image>();
+            _activeLegacyOverlays[i] = slot.Find("Overlay").GetComponent<Image>();
+            _activeLegacyDefaultSprites[i] = _activeLegacyIcons[i].sprite;
         }
+        _passiveLegacyGroup = combatCanvas.transform.Find("PassiveLayoutGroup").transform;
+            
+        _playerController = PlayerController.Instance;
+        _playerInput = FindObjectOfType<PlayerInput>();
+        _playerDamageDealer = FindObjectOfType<PlayerDamageDealer>();
+        _playerDamageDealer.AssignDashOverlay(GetAttackOverlay(ELegacyType.Dash));
     }
 
     private void Reset()

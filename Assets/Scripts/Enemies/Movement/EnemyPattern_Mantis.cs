@@ -24,6 +24,7 @@ public class EnemyPattern_Mantis : EnemyPattern
     private void Awake()
     {
         MoveType = EEnemyMoveType.LinearPath;
+        Init();
     }
 
     private void WalkForward(bool isChasing = false)

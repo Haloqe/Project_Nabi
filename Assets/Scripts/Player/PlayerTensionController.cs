@@ -17,12 +17,6 @@ public class PlayerTensionController : MonoBehaviour
     private Color _fillRecoveryColour;
     private Color _overloadedColour;
     
-    // References
-    private EnemyManager _enemyManager;
-    private PlayerController _player;
-    private GameObject _overloadedVFX;
-    private GameObject _overheatedVFX;
-    
     // Features
     private float _slowedTimeScale;
     private int _incrementStep;
@@ -47,7 +41,7 @@ public class PlayerTensionController : MonoBehaviour
     [SerializeField] [NamedArray(typeof(EArborType))] private GameObject[] arborDescriptionUIs;
 
     private bool _eventsBound = false;
-    private void Start()
+    private void Awake()
     {
         _audioSource = GetComponent<AudioSource>();
         _tensionGaugeSlider = GetComponentInChildren<Slider>();
@@ -59,9 +53,10 @@ public class PlayerTensionController : MonoBehaviour
         _overloadedColour = new Color(0.83f, 0, 0, 1);
         _slowedTimeScale = 0.5f;
         
-        PlayerEvents.SpawnedFirstTime += Initialise;
+        //PlayerEvents.SpawnedFirstTime += Initialise;
         PlayerEvents.StartResurrect += () => OnPlayerDefeated(true);
         PlayerEvents.Defeated += OnPlayerDefeated;
+        PlayerEvents.SpawnedFirstTime += OnRestarted;
         GameEvents.Restarted += OnRestarted;
         GameEvents.CombatSceneChanged += OnCombatSceneChanged;
         _eventsBound = true;
@@ -70,20 +65,11 @@ public class PlayerTensionController : MonoBehaviour
     private void OnDestroy()
     {
         if (!_eventsBound) return;
-        PlayerEvents.SpawnedFirstTime -= Initialise;
+        PlayerEvents.SpawnedFirstTime -= OnRestarted;
         PlayerEvents.StartResurrect -= () => OnPlayerDefeated(true);
         PlayerEvents.Defeated -= OnPlayerDefeated;
         GameEvents.Restarted -= OnRestarted;
         GameEvents.CombatSceneChanged -= OnCombatSceneChanged;
-    }
-
-    private void Initialise()
-    {
-        _enemyManager = EnemyManager.Instance;
-        _player = PlayerController.Instance;
-        _overheatedVFX = _player.transform.Find("OverheatedVFX").gameObject;
-        _overloadedVFX = _player.transform.Find("OverloadedVFX").gameObject;
-        OnRestarted();
     }
 
     private void OnCombatSceneChanged()
@@ -95,7 +81,7 @@ public class PlayerTensionController : MonoBehaviour
     private void OnRestarted()
     {
         _incrementStep = 1;
-        _maxTension = 4; 
+        _maxTension = 20; 
         _recoveryDuration = 1.0f; 
         _tensionGaugeOutline.effectColor = _fillNormalColour;
         _tensionGaugeText.color = Color.white;
@@ -111,7 +97,7 @@ public class PlayerTensionController : MonoBehaviour
         _slowedTimeScale = 0.5f;
         _critAdditionByStates = new float[]{0.0f, 0.05f, 0.15f, 0.0f};
         _damageMultiplierByStates = new float[]{1.0f, 1.1f, 1.2f, 1.0f};
-        _player.updateTensionUponHit = false;
+        PlayerController.Instance.updateTensionUponHit = false;
     }
     
     private void OnPlayerDefeated(bool isRealDeath)
@@ -133,10 +119,12 @@ public class PlayerTensionController : MonoBehaviour
     
     public void ChangeArbor(EArborType newArborType)
     {
+        Debug.Log("Change arbor to default");
         // Remove old arbor
         if (_arborType != EArborType.Default && newArborType != EArborType.Default)
         {
-            var oldArbor = Instantiate(_enemyManager.GetArborOfType(_arborType), _player.transform.position, Quaternion.identity);
+            var oldArbor = Instantiate(EnemyManager.Instance.GetArborOfType(_arborType),
+                PlayerController.Instance.transform.position, Quaternion.identity);
             oldArbor.GetComponent<Arbor>().tensionController = this;
         }
         ResetArborUpgrades();
@@ -166,7 +154,7 @@ public class PlayerTensionController : MonoBehaviour
                 break;
             
             case EArborType.Paranoia:
-                _player.updateTensionUponHit = true;
+                PlayerController.Instance.updateTensionUponHit = true;
                 break;
         }
     }
@@ -205,12 +193,12 @@ public class PlayerTensionController : MonoBehaviour
     private void SetTensionState(ETensionState newState)
     {
         // Remove previous state effects
-        _player.AddCriticalRate(-_critAdditionByStates[(int)_tensionState]);
+        PlayerController.Instance.AddCriticalRate(-_critAdditionByStates[(int)_tensionState]);
 
         // Apply new state effects
         _tensionState = newState;
-        _player.playerDamageDealer.totalDamageMultiplier = _damageMultiplierByStates[(int)newState];
-        _player.AddCriticalRate(_critAdditionByStates[(int)newState]);
+        PlayerController.Instance.playerDamageDealer.totalDamageMultiplier = _damageMultiplierByStates[(int)newState];
+        PlayerController.Instance.AddCriticalRate(_critAdditionByStates[(int)newState]);
 
         switch (newState)
         {
@@ -219,12 +207,12 @@ public class PlayerTensionController : MonoBehaviour
                 break;
             
             case ETensionState.Overheated:
-                _overheatedVFX.SetActive(true);
+                PlayerController.Instance.overheatedVFX.SetActive(true);
                 break;
             
             case ETensionState.Overloaded:
                 // Update UI and VFX
-                _overloadedVFX.SetActive(true);
+                PlayerController.Instance.overloadedVFX.SetActive(true);
                 _tensionGaugeText.text = "OVERLOADED"; 
                 _tensionGaugeText.color = _overloadedColour;
                 _tensionGaugeOutline.effectColor = _overloadedColour;

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -25,14 +26,14 @@ public abstract class EnemyPattern : MonoBehaviour
     public float influenceRange;
     public float distanceToGravField;
     private readonly static int IsAttacking = Animator.StringToHash("IsAttacking");
-
+    
     public virtual void Init()
     {
+        _player = PlayerController.Instance.gameObject;
         _animator = GetComponent<Animator>();
         _rigidBody = GetComponent<Rigidbody2D>();
         _enemyBase = GetComponent<EnemyBase>();
         _audioSource = GetComponent<AudioSource>();
-        _player = GameObject.FindWithTag("Player");
         MoveSpeed = _enemyBase.EnemyData.DefaultMoveSpeed;
         EnableMovement();
     }

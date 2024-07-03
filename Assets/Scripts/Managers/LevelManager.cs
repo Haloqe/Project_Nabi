@@ -92,34 +92,46 @@ public class LevelManager : Singleton<LevelManager>
     private int tryCount = 0;
     public void Generate()
     {
-        // Reset values
-        Array.Clear(_superGrid, 0, _superGrid.Length);
-        _corridors[0].Clear();
-        _corridors[1].Clear();
-        _generatedRooms.Clear();
-        _flowerSpawners.Clear();
-        _hiddenPortalSpawners.Clear();
-        if (_startingRoom) Destroy(_startingRoom);
-        
         // Find game objects
         Transform root = GameObject.Find("SuperTilemaps").transform;
         _mapTilemap = root.Find("Map").GetComponent<Tilemap>();
         _superWallTilemap = root.Find("SuperWall").GetComponent<Tilemap>();
         _roomsContainer = GameObject.Find("Rooms").transform;
-        _clockworkSpawnersByRoom = new List<ClockworkSpawner[]>();
         if (GameManager.Instance.ActiveScene == ESceneType.CombatMap0)
-            _metaSpawnPoint = GameObject.FindWithTag("PlayerStart_Meta").transform.position;
-        
-        // Level generation
-        _levelGenerationEnded = false;
-        _aStarScanEnded = false;
-        GenerateLevelGraph();
-        
-        // TODO FIX. Currently a naive solution to retry generation until success. Need to add corridors instead.
-        while (!GenerateLevel())
         {
-            Debug.Log("[LevelGeneration] Attempt " + ++tryCount + " has failed. Retrying...");
-            Generate();
+            _metaSpawnPoint = GameObject.FindWithTag("PlayerStart_Meta").transform.position;
+        }
+        
+        // Generate
+        GenerateLevelGraph();
+        while (true)
+        {
+            // Clear values from the previous level generation
+            Array.Clear(_superGrid, 0, _superGrid.Length);
+            _corridors[0].Clear();
+            _corridors[1].Clear();
+            _generatedRooms.Clear();
+            _flowerSpawners.Clear();
+            _hiddenPortalSpawners.Clear();
+            _superWallTilemap.ClearAllTiles();
+            _mapTilemap.ClearAllTiles();
+            _clockworkSpawnersByRoom = new List<ClockworkSpawner[]>();
+            _availableDoors = new List<List<Door>>(_levelGraph.GetNumRooms() + 1);
+            for (int i = 0; i < _availableDoors.Capacity; i++) _availableDoors.Add(new List<Door>());
+            foreach (Transform room in _roomsContainer) Destroy(room.gameObject);
+            if (_startingRoom) Destroy(_startingRoom);
+
+            // Level generation
+            _levelGenerationEnded = false;
+            _aStarScanEnded = false;
+
+            // TODO FIX. Currently a naive solution to retry generation until success. Need to add corridors instead.
+            if (!GenerateLevel())
+            {
+                Debug.Log("[LevelGeneration] Attempt " + ++tryCount + " has failed. Retrying...");
+                continue;
+            }
+            break;
         }
     }
 
@@ -131,10 +143,6 @@ public class LevelManager : Singleton<LevelManager>
         if (GameManager.Instance.ActiveScene == ESceneType.CombatMap0)
             _levelGraph.GeneratePreMidBossGraph();
         else _levelGraph.GeneratePostMidBossGraph();
-
-        // +1 for the virtual first room
-        _availableDoors = new List<List<Door>>(_levelGraph.GetNumRooms() + 1);
-        for (int i = 0; i < _availableDoors.Capacity; i++) _availableDoors.Add(new List<Door>());
     }
 
     private void InitialiseRooms()
@@ -151,6 +159,10 @@ public class LevelManager : Singleton<LevelManager>
         {
             RoomBase roomBase = room.GetComponent<RoomBase>();
             roomBase.Initialise();
+            foreach (var tilemap in roomBase.Tilemaps)
+            {
+             tilemap.gameObject.SetActive(true);   
+            }
             roomBase.Tilemaps[(int)ETilemapType.Wall].CompressBounds();
             _roomsByType[(int)roomBase.RoomType].Add(roomBase);
         }
@@ -164,10 +176,10 @@ public class LevelManager : Singleton<LevelManager>
         var door2 = _startingRoom.AddComponent<Door>();
         var door3 = _startingRoom.AddComponent<Door>();
         var door4 = _startingRoom.AddComponent<Door>();
-        door1.SetValues(EConnectionType.Vertical, EDoorDirection.Up, new Vector3Int(1000, 999, 0), 3,4,6);
-        door2.SetValues(EConnectionType.Vertical, EDoorDirection.Down, new Vector3Int(1000, 1001, 0), 3,4,6);
-        door3.SetValues(EConnectionType.Horizontal, EDoorDirection.Left, new Vector3Int(501, 1000, 0), 3,4,6);
-        door4.SetValues(EConnectionType.Horizontal, EDoorDirection.Right, new Vector3Int(999, 1000, 0), 3,4,6);
+        door1.SetValues(EConnectionType.Vertical, EDoorDirection.Up, new Vector3Int(1000, 1000, 0), 3,4,6);
+        door2.SetValues(EConnectionType.Vertical, EDoorDirection.Down, new Vector3Int(1000, 1000, 0), 3,4,6);
+        door3.SetValues(EConnectionType.Horizontal, EDoorDirection.Left, new Vector3Int(1000, 1000, 0), 3,4,6);
+        door4.SetValues(EConnectionType.Horizontal, EDoorDirection.Right, new Vector3Int(1000, 1000, 0), 3,4,6);
         _availableDoors[_levelGraph.GetNumRooms()] = new List<Door>{ door1, door2, door3, door4 };
         
         // Initialise
@@ -549,10 +561,12 @@ public class LevelManager : Singleton<LevelManager>
         var roomWallTilemap = roomObj.GetComponent<RoomBase>().Tilemaps[(int)ETilemapType.Wall];
         roomWallTilemap.GetComponent<TilemapRenderer>().enabled = false;
         Vector3Int doorLocalPos = newDoor.RangeLocalBLPosition;
-        BoundsInt localBounds = roomWallTilemap.cellBounds;
-        BoundsInt worldBounds = localBounds;
-        worldBounds.SetMinMax(newDoor.DoorWorldBLPosition - doorLocalPos + localBounds.min, newDoor.DoorWorldBLPosition - doorLocalPos + localBounds.max);
-        _superWallTilemap.SetTilesBlock(worldBounds, roomWallTilemap.GetTilesBlock(localBounds));
+        foreach (var localPos in roomWallTilemap.cellBounds.allPositionsWithin)
+        {   
+            if (roomWallTilemap.HasTile(localPos))
+                _superWallTilemap.SetTile(newDoor.DoorWorldBLPosition - doorLocalPos + localPos, WallRuleTile);
+        }
+        //_superWallTilemap.SetTilesBlock(worldBounds, roomWallTilemap.GetTilesBlock(localBounds));
 
         if (newRoom.RoomType != ERoomType.Entrance)
         {
@@ -578,7 +592,7 @@ public class LevelManager : Singleton<LevelManager>
 
     private void PostProcessLevel()
     {
-        // AddSurroundingWallTiles();
+        AddSurroundingWallTiles();
         GenerateMinimap();
         SetClockworkSpawners();
         SetFlowerSpawners();
@@ -892,14 +906,13 @@ public class LevelManager : Singleton<LevelManager>
         Transform playerObject = null;
         Vector3 playerSpawnPoint;
         ESceneType currScene = GameManager.Instance.ActiveScene;
-        bool isFirstSpawn = false;
         
         // Find player
         // Player is not spawned
         if (PlayerController.Instance == null)
         {
             playerObject = Instantiate(GameManager.Instance.PlayerPrefab).gameObject.transform;
-            isFirstSpawn = true;
+            PlayerEvents.SpawnedFirstTime.Invoke();
         }
         // Player exists already
         else
@@ -912,6 +925,7 @@ public class LevelManager : Singleton<LevelManager>
         {
             // Spawn at meta map
             playerSpawnPoint = _metaSpawnPoint;
+            playerObject.localScale = new Vector3(1, 1, 1);
         }
         else if (currScene == ESceneType.CombatMap1)
         {
@@ -920,8 +934,8 @@ public class LevelManager : Singleton<LevelManager>
         else
         {
             // Boss map or debug map
-            var spawnpoint = GameObject.FindWithTag("PlayerStart");
-            if (spawnpoint != null) playerSpawnPoint = spawnpoint.transform.position;
+            var spawnPoint = GameObject.FindWithTag("PlayerStart");
+            if (spawnPoint != null) playerSpawnPoint = spawnPoint.transform.position;
             else playerSpawnPoint = playerObject.transform.position;
             if (currScene == ESceneType.Tutorial)
             {
@@ -931,14 +945,6 @@ public class LevelManager : Singleton<LevelManager>
         playerObject.position = playerSpawnPoint;
         playerObject.gameObject.SetActive(true);
         
-        // Set camera follow target
-        // GameObject.Find("Virtual Camera").GetComponent<CinemachineVirtualCamera>().Follow = playerObject;
-        
-        // Trigger event
-        if (isFirstSpawn)
-        {
-            PlayerEvents.SpawnedFirstTime.Invoke();
-        }
         PlayerEvents.Spawned.Invoke();
     }
 

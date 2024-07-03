@@ -105,12 +105,11 @@ public class UIManager : Singleton<UIManager>
         PlayerEvents.StartResurrect += OnPlayerStartResurrect;
         PlayerEvents.EndResurrect += OnPlayerEndResurrect;
         PlayerEvents.HpChanged += OnPlayerHPChanged;
-        PlayerEvents.Spawned += OnPlayerSpawned;
+        PlayerEvents.SpawnedFirstTime += OnPlayerSpawnedFirstTime;
         GameEvents.MainMenuLoaded += OnMainMenuLoaded;
         GameEvents.InGameFirstLoadStarted += OnInGameFirstLoad;
         GameEvents.GameLoadEnded += OnGameLoadEnded;
         GameEvents.CombatSceneChanged += OnCombatSceneChanged;
-        InGameEvents.BossSlayed += OnBossSlayed;
         InGameEvents.TimeSlowDown += () => _tensionOverlay.gameObject.SetActive(true);
         InGameEvents.TimeRevertNormal += () => _tensionOverlay.gameObject.SetActive(false);
 
@@ -143,7 +142,7 @@ public class UIManager : Singleton<UIManager>
     private void OnInGameFirstLoad()
     {
         //_uiCamera = GameObject.Find("UI Camera").GetComponent<Camera>();
-        _uiCamera = CameraManager.Instance.inGameMainCamera;
+        _uiCamera = CameraManager.Instance.uiCamera;
         _activeFocusedUI = null;
         
         _focusedOverlay     = Instantiate(_focusedOverlayPrefab, Vector3.zero, Quaternion.identity).GameObject();
@@ -239,6 +238,7 @@ public class UIManager : Singleton<UIManager>
         switch (currSceneType)
         {
             case ESceneType.CombatMap0:
+                OnPlayerHPChanged(0,0,1);
                 DisplayRoomGuideUI("잊혀진 회의터", "");
                 DisableMap();
                 break;
@@ -252,11 +252,16 @@ public class UIManager : Singleton<UIManager>
                 DisableMap();
                 break;
         }
-        //OnPlayerHPChanged(0,1,1);
         UpdateDarkGaugeUI(0);
         
-        if (currSceneType != ESceneType.Tutorial) UsePlayerControl();
-        else UseUIControl();
+        if (currSceneType != ESceneType.Tutorial)
+        {
+            UsePlayerControl();
+        }
+        else
+        {
+            UseUIControl();
+        }
     }
 
     private void OnCombatSceneChanged()
@@ -266,9 +271,10 @@ public class UIManager : Singleton<UIManager>
         {
             DisableMap();
         }
-        _uiCamera = GameObject.Find("Main Camera").GetComponent<Camera>();
-        _inGameCombatUI.GetComponent<Canvas>().worldCamera = _uiCamera;
+        _uiCamera = CameraManager.Instance.inGameMainCamera;
+        //_inGameCombatUI.GetComponent<Canvas>().worldCamera = _uiCamera;
         _activeFocusedUI = null;
+        OnPlayerHPChanged(0,0,1);
     }
     
     private void UseUIControl()
@@ -303,6 +309,7 @@ public class UIManager : Singleton<UIManager>
         float maxHp = _playerController.playerDamageReceiver.MaxHealth;
         float hp = newHpRatio * maxHp;
         _hpText.text = Utility.FormatFloat(hp) + "/" + Utility.FormatFloat(maxHp);
+        Debug.Log("OnPlayerHpChanged: " + _hpText.text);
         
         // Show hit blood overlay if damaged
         if (changeAmount < 0) StartCoroutine(nameof(BloodOverlayHitCoroutine));
@@ -323,7 +330,7 @@ public class UIManager : Singleton<UIManager>
             }
         }
         // If HP previously over threshold and just moved below threshold, turn on blood overlay
-        else if (newHpRatio <= critHpRatio)
+        if (newHpRatio <= critHpRatio)
         {
             _bloodOverlayLowHP.gameObject.SetActive(true);
             StartCoroutine(nameof(BloodOverlayLowHPCoroutine));
@@ -334,8 +341,8 @@ public class UIManager : Singleton<UIManager>
     {
         float duration = 1;
         var minColour = new Color(0, 0, 0, 0);
-        var midColour = new Color(1, 1, 1, 0.5f);
-        var maxColour = Color.white;
+        var midColour = new Color(1, 1, 1, 0.4f);
+        var maxColour = new Color(1, 1, 1, 0.9f);
         
         // Increase alpha to 0.5
         for (float time = 0; time < duration; time += Time.unscaledDeltaTime)
@@ -468,9 +475,8 @@ public class UIManager : Singleton<UIManager>
         OpenFocusedUI(_mainMenuUI);
     }
 
-    private void OnPlayerSpawned()
+    private void OnPlayerSpawnedFirstTime()
     {
-        if (!_gameManager.isFirstRun) return;
         _playerAttackManager = PlayerAttackManager.Instance;
         _playerController = PlayerController.Instance;
         _playerHPSlider.value = 1;
@@ -506,7 +512,6 @@ public class UIManager : Singleton<UIManager>
     public bool OpenWarriorUI(Clockwork interactor, bool isPristineClockwork = false)
     {
         if (_activeFocusedUI) return false; 
-        
         _warriorUIObject = Instantiate(_warriorUIPrefabs[(int)interactor.warrior], Vector3.zero, Quaternion.identity).GameObject();
         _warriorUIObject.GetComponent<Canvas>().worldCamera = _uiCamera;
         _warriorUIController = _warriorUIObject.GetComponent<WarriorUIController>();
@@ -529,7 +534,7 @@ public class UIManager : Singleton<UIManager>
 
     public void OpenBook()
     {
-        if (GameManager.Instance.ActiveScene == ESceneType.Tutorial) return;
+        if (_gameManager.isRunningCutScene) return;
         _audioManager.LowerBGMVolumeUponUI();
         OpenFocusedUI(_bookUI, true);
     }
@@ -541,7 +546,7 @@ public class UIManager : Singleton<UIManager>
 
     public void OpenMap()
     {
-        if (GameManager.Instance.ActiveScene == ESceneType.Tutorial) return;
+        if (_gameManager.isRunningCutScene) return;
         _mapController.ResetMapCamera();
         OpenFocusedUI(_zoomedMap);
     }
@@ -556,7 +561,7 @@ public class UIManager : Singleton<UIManager>
     
     private void OnClose(InputAction.CallbackContext obj)
     {
-        if (_gameManager.ActiveScene == ESceneType.Tutorial)
+        if (_gameManager.isRunningCutScene)
         {
             if (_gameManager.isRunningTutorial) return;
             FindObjectOfType<PlayableDirector>().Stop();
@@ -764,16 +769,9 @@ public class UIManager : Singleton<UIManager>
         return Instantiate(_timerPrefab, Vector3.zero, Quaternion.identity);
     }
 
-    private void OnBossSlayed() => StartCoroutine(GameEndCoroutine());
-    private IEnumerator GameEndCoroutine()
+    public IEnumerator GameEndCoroutine()
     {
         _audioManager.StopBgm(1f);
-        SaveSystem.SaveMetaData();
-        yield return new WaitForSecondsRealtime(8f);
-        
-        PlayerEvents.Defeated.Invoke(false);
-        _gameManager.PlayerMetaData.isDirty = true;
-        _gameManager.PlayerMetaData.numSouls = _playerController.playerInventory.SoulShard;
         
         var creditsUI = DisplayCreditsUI();
         DontDestroyOnLoad(creditsUI.gameObject);

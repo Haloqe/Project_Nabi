@@ -10,6 +10,7 @@ public class CameraManager : Singleton<CameraManager>
     public Camera inGameMainCamera;
     public Camera mapCamera;
     public Camera minimapCamera;
+    public Camera uiCamera;
     
     private float _fallPanAmount = 0.25f;
     private float _fallYPanTime = 0.35f;
@@ -26,7 +27,7 @@ public class CameraManager : Singleton<CameraManager>
     private float _normalYPanAmount;
     private float _normalYOffsetAmount;
     private bool _isFramingTransposed = false;
-
+    
     void Start()
     {
         for (int i = 0; i < AllVirtualCameras.Length; i++)

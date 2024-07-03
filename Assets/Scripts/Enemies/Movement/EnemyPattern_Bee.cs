@@ -30,6 +30,7 @@ public class EnemyPattern_Bee : EnemyPattern
 
     private void Awake()
     {
+        Init();
         MoveType = EEnemyMoveType.Flight;
         _seeker = GetComponent<Seeker>();
         InvokeRepeating(nameof(UpdatePath), 0f, 0.5f);

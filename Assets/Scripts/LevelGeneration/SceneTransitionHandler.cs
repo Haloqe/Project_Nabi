@@ -8,11 +8,19 @@ public class SceneTransitionHandler : MonoBehaviour
 
         public void Awake()
         {
+                GameManager.Instance.isRunningCutScene = true;
                 GameManager.Instance.activeCutScene = cutSceneType;
                 CameraManager.Instance.gameObject.SetActive(false);
-                if (cutSceneType == ECutSceneType.IntroPreTutorial)
+                switch (cutSceneType)
                 {
-                        AudioManager.Instance.PlayIntroCutSceneBGM();
+                        case ECutSceneType.IntroPreTutorial:
+                                AudioManager.Instance.PlayIntroCutSceneBGM();
+                                break;
+                        case ECutSceneType.Ending:
+                                AudioManager.Instance.PlayEndingCutSceneBGM();
+                                break;
+                        default:
+                                break;
                 }
         }
 
@@ -28,9 +36,15 @@ public class SceneTransitionHandler : MonoBehaviour
                                 break;
                         
                         case ECutSceneType.IntroPostTutorial:
+                                GameManager.Instance.isRunningCutScene = false;
                                 PlayerController.Instance.gameObject.SetActive(true);
                                 AudioManager.Instance.StopBgm(2.5f);
                                 GameManager.Instance.ContinueGame();
+                                break;
+                        
+                        case ECutSceneType.Ending:
+                                GameManager.Instance.isRunningCutScene = false;
+                                UIManager.Instance.StartCoroutine(UIManager.Instance.GameEndCoroutine());
                                 break;
                 }
         }

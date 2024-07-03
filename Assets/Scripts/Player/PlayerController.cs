@@ -74,11 +74,15 @@ public class PlayerController : Singleton<PlayerController>
     public float[] nightShadeFastChaseStats;
     public float[] nightShadeShadeBonusStats;
 
+    // VFX
+    public GameObject overheatedVFX;
+    public GameObject overloadedVFX;
+    
     protected override void Awake()
     {
         base.Awake();
         if (IsToBeDestroyed) return;
-
+        
         // Initialise values
         BaseStrength = 3.0f;
         BaseArmour = 3.0f;

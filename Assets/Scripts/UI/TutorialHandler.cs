@@ -23,12 +23,18 @@ public class TutorialHandler : MonoBehaviour
         public void OnEnter()
         {
                 if (isTutorialCombatStarted) return;
+                
+                // Tutorial Setup
                 AudioManager.Instance.PlayUIConfirmSound();
                 isTutorialCombatStarted = true;
-                var mantis = EnemyManager.Instance.SpawnEnemy((int)EEnemyType.VoidMantis, new Vector3(4.33f, -8.34f, 0f), true);
-                mantis.transform.localScale = new Vector3(1.4f, 1.4f, 1);
                 guideUI.SetActive(false);
                 UIManager.Instance.UsePlayerControl();
+                
+                // Tutorial Enemy Spawn
+                var mantis = EnemyManager.Instance.SpawnEnemy((int)EEnemyType.VoidMantis, new Vector3(4.33f, -8.34f, 0f), true);
+                mantis.transform.localScale = new Vector3(1.4f, 1.4f, 1);
+                var mantisEnemyBase = mantis.GetComponent<EnemyBase>();
+                mantisEnemyBase.SetMaxHealth(mantisEnemyBase.EnemyData.MaxHealth * 3);
         }
         
         private void OnEndTutorial(EnemyBase enemy)
