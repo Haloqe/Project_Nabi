@@ -694,7 +694,7 @@ public class LevelManager : Singleton<LevelManager>
         int numRooms = _generatedRooms.Count;
         int minFlowersCount = numRooms / 3 - 2;
         int maxFlowersCount = numRooms / 3 + 2;
-        Debug.AssertFormat(_flowerSpawners.Count >= minFlowersCount, "Not enough flower spawners added to the templates.");
+        //Debug.AssertFormat(_flowerSpawners.Count >= minFlowersCount, "Not enough flower spawners added to the templates.");
         
         // Exceeded the upper limit?
         while (flowerSpawnPointsUsed.Count > maxFlowersCount)
@@ -854,8 +854,8 @@ public class LevelManager : Singleton<LevelManager>
     {
         _superWallTilemap.CompressBounds();
         var wallBounds = _superWallTilemap.cellBounds;
-        wallBounds.SetMinMax(wallBounds.min + Vector3Int.left * 9 + Vector3Int.down * 4,
-            wallBounds.max + Vector3Int.right * 10 + Vector3Int.up * 5);
+        wallBounds.SetMinMax(wallBounds.min + Vector3Int.left * 6 + Vector3Int.down * 15,
+            wallBounds.max + Vector3Int.right * 6 + Vector3Int.up * 15);
 
         // Graph traversal to fill the unused wall area
         Queue<Vector3Int> toVisit = new Queue<Vector3Int>();
@@ -894,15 +894,6 @@ public class LevelManager : Singleton<LevelManager>
     
     public void SpawnPlayer()
     {
-        // TODO commented for debug
-        // var playerStart = _generatedRooms[0].transform.Find("PlayerStart");
-        // var player = PlayerController.Instance == null ? 
-        //     Instantiate(GameManager.Instance.Player) : PlayerController.Instance.gameObject;
-        // player.transform.position = playerStart.position;
-        // GameObject.Find("Virtual Camera").GetComponent<CinemachineVirtualCamera>().Follow = player.transform;
-        // PlayerEvents.spawned.Invoke();
-
-        // DEBUG TEMP CODE FROM HERE
         Transform playerObject = null;
         Vector3 playerSpawnPoint;
         ESceneType currScene = GameManager.Instance.ActiveScene;

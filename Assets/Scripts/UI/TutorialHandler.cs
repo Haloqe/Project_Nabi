@@ -4,6 +4,7 @@ using UnityEngine.Playables;
 
 public class TutorialHandler : MonoBehaviour
 {
+        [SerializeField] private Camera tutorialCamera;
         public GameObject guideUI;
         public PlayableDirector cutSceneToPlay;
         private bool isTutorialCombatStarted;
@@ -25,6 +26,7 @@ public class TutorialHandler : MonoBehaviour
                 if (isTutorialCombatStarted) return;
                 
                 // Tutorial Setup
+                UIManager.Instance.InGameCombatUI.GetComponent<Canvas>().worldCamera = tutorialCamera;
                 AudioManager.Instance.PlayUIConfirmSound();
                 isTutorialCombatStarted = true;
                 guideUI.SetActive(false);
@@ -48,6 +50,7 @@ public class TutorialHandler : MonoBehaviour
                 yield return new WaitForSeconds(2.5f);
                 UIManager.Instance.PlayerIAMap.Disable();
                 UIManager.Instance.UIIAMap.Enable();
+                UIManager.Instance.InGameCombatUI.GetComponent<Canvas>().worldCamera = CameraManager.Instance.uiCamera;
                 UIManager.Instance.HideAllInGameUI();
                 PlayerController.Instance.gameObject.SetActive(false);
                 GameManager.Instance.isRunningTutorial = false;

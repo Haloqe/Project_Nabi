@@ -41,8 +41,8 @@ public class UIManager : Singleton<UIManager>
     private GameObject _creditsUIPrefab;
 
     // UI Instantiated Objects
+    public GameObject InGameCombatUI { get; private set; }
     private GameObject _mainMenuUI;
-    private GameObject _inGameCombatUI;
     private GameObject _defeatedUI;
     private GameObject _warriorUIObject;
     private GameObject _focusedOverlay;
@@ -79,7 +79,6 @@ public class UIManager : Singleton<UIManager>
     // UI Navigation
     private GameObject _activeFocusedUI;
     private UIControllerBase _activeFocusedUIController;
-    private Camera _uiCamera;
     
     // References
     private PlayerController _playerController;
@@ -141,13 +140,11 @@ public class UIManager : Singleton<UIManager>
 
     private void OnInGameFirstLoad()
     {
-        //_uiCamera = GameObject.Find("UI Camera").GetComponent<Camera>();
-        _uiCamera = CameraManager.Instance.uiCamera;
         _activeFocusedUI = null;
         
         _focusedOverlay     = Instantiate(_focusedOverlayPrefab, Vector3.zero, Quaternion.identity).GameObject();
         _defeatedUI         = Instantiate(_defeatedUIPrefab, Vector3.zero, Quaternion.identity).GameObject();
-        _inGameCombatUI     = Instantiate(_inGameCombatPrefab, Vector3.zero, Quaternion.identity).GameObject();
+        InGameCombatUI     = Instantiate(_inGameCombatPrefab, Vector3.zero, Quaternion.identity).GameObject();
         _zoomedMap          = Instantiate(_zoomedMapPrefab, Vector3.zero, Quaternion.identity).GameObject();
         _bookUI             = Instantiate(_bookPrefab, Vector3.zero, Quaternion.identity).GameObject();
         _metaUpgradeUI      = Instantiate(_metaUpgradeUIPrefab, Vector3.zero, Quaternion.identity).GameObject();
@@ -157,32 +154,32 @@ public class UIManager : Singleton<UIManager>
         _defeatedUIController = _defeatedUI.GetComponent<DefeatedUIController>();
         _mapController      = _zoomedMap.GetComponent<MapController>();
         
-        _playerHPSlider     = _inGameCombatUI.GetComponentInChildren<Slider>();
-        _playerHPGlobe      = _inGameCombatUI.transform.Find("Globe").Find("HealthGlobe").Find("HealthGlobeMask").Find("Fill").GetComponent<Image>();
-        _hpText             = _inGameCombatUI.transform.Find("Globe").GetComponentInChildren<TextMeshProUGUI>();
-        _darkGaugeSlider    = _inGameCombatUI.transform.Find("DarkSlider").GetComponentInChildren<Slider>();
-        _darkGaugeText      = _inGameCombatUI.transform.Find("DarkSlider").GetComponentInChildren<TextMeshProUGUI>();
-        _bloodOverlayLowHP  = _inGameCombatUI.transform.Find("BloodOverlay_LowHP").GetComponent<Image>();
-        _bloodOverlayHit    = _inGameCombatUI.transform.Find("BloodOverlay_Hit").GetComponent<Image>();
-        _tensionOverlay     = _inGameCombatUI.transform.Find("TensionOverlay").GetComponent<Image>();
-        _minimap            = _inGameCombatUI.transform.Find("MinimapContainer").Find("Minimap").gameObject;
-        TensionController   = _inGameCombatUI.transform.Find("TensionSlider").GetComponent<PlayerTensionController>();
+        _playerHPSlider     = InGameCombatUI.GetComponentInChildren<Slider>();
+        _playerHPGlobe      = InGameCombatUI.transform.Find("Globe").Find("HealthGlobe").Find("HealthGlobeMask").Find("Fill").GetComponent<Image>();
+        _hpText             = InGameCombatUI.transform.Find("Globe").GetComponentInChildren<TextMeshProUGUI>();
+        _darkGaugeSlider    = InGameCombatUI.transform.Find("DarkSlider").GetComponentInChildren<Slider>();
+        _darkGaugeText      = InGameCombatUI.transform.Find("DarkSlider").GetComponentInChildren<TextMeshProUGUI>();
+        _bloodOverlayLowHP  = InGameCombatUI.transform.Find("BloodOverlay_LowHP").GetComponent<Image>();
+        _bloodOverlayHit    = InGameCombatUI.transform.Find("BloodOverlay_Hit").GetComponent<Image>();
+        _tensionOverlay     = InGameCombatUI.transform.Find("TensionOverlay").GetComponent<Image>();
+        _minimap            = InGameCombatUI.transform.Find("MinimapContainer").Find("Minimap").gameObject;
+        TensionController   = InGameCombatUI.transform.Find("TensionSlider").GetComponent<PlayerTensionController>();
 
         _combatKeyBindTMPs = new TextMeshProUGUI[5];
-        var activeLayoutGroup = _inGameCombatUI.transform.Find("ActiveLayoutGroup");
+        var activeLayoutGroup = InGameCombatUI.transform.Find("ActiveLayoutGroup");
         for (int i = 0; i < 4; i++)
         {
             _combatKeyBindTMPs[i] = activeLayoutGroup.Find("Slot_" + i).Find("KeyText").GetComponent<TextMeshProUGUI>();
         }
         
-        _inGameCombatUI.SetActive(true);
-        _inGameCombatUI.GetComponent<Canvas>().worldCamera = _uiCamera;
-        _inGameCombatUI.GetComponent<Canvas>().planeDistance = 20;
+        InGameCombatUI.SetActive(true);
+        InGameCombatUI.GetComponent<Canvas>().worldCamera = CameraManager.Instance.uiCamera;
+        InGameCombatUI.GetComponent<Canvas>().planeDistance = 20;
         _mapController.Initialise();
         
         DontDestroyOnLoad(_focusedOverlay);
         DontDestroyOnLoad(_defeatedUI);
-        DontDestroyOnLoad(_inGameCombatUI);
+        DontDestroyOnLoad(InGameCombatUI);
         DontDestroyOnLoad(_zoomedMap);
         DontDestroyOnLoad(_bookUI);
         DontDestroyOnLoad(_metaUpgradeUI);
@@ -204,10 +201,10 @@ public class UIManager : Singleton<UIManager>
 
     public void HideAllInGameUI()
     {
-        if (_inGameCombatUI == null) return;
+        if (InGameCombatUI == null) return;
         _focusedOverlay.SetActive(false);
         _defeatedUI.SetActive(false);
-        _inGameCombatUI.SetActive(false);
+        InGameCombatUI.SetActive(false);
         _zoomedMap.SetActive(false);
         _bookUI.SetActive(false);
         _metaUpgradeUI.SetActive(false);
@@ -215,10 +212,10 @@ public class UIManager : Singleton<UIManager>
 
     public void DestroyAllInGameUI()
     {
-        if (_inGameCombatUI == null) return;
+        if (InGameCombatUI == null) return;
         Destroy(_focusedOverlay);
         Destroy(_defeatedUI);
-        Destroy(_inGameCombatUI);
+        Destroy(InGameCombatUI);
         Destroy(_zoomedMap);
         Destroy(_bookUI);
         Destroy(_metaUpgradeUI);
@@ -230,7 +227,7 @@ public class UIManager : Singleton<UIManager>
         _tensionOverlay.gameObject.SetActive(false);
         _zoomedMap.SetActive(false);
         _loadingScreenUI.SetActive(false);
-        _inGameCombatUI.SetActive(true);
+        InGameCombatUI.SetActive(true);
         _flowerUIDisplayTime = 0;
         _bloodOverlayHitDisplayTime = 0;
 
@@ -271,8 +268,6 @@ public class UIManager : Singleton<UIManager>
         {
             DisableMap();
         }
-        _uiCamera = CameraManager.Instance.inGameMainCamera;
-        //_inGameCombatUI.GetComponent<Canvas>().worldCamera = _uiCamera;
         _activeFocusedUI = null;
         OnPlayerHPChanged(0,0,1);
     }
@@ -513,7 +508,7 @@ public class UIManager : Singleton<UIManager>
     {
         if (_activeFocusedUI) return false; 
         _warriorUIObject = Instantiate(_warriorUIPrefabs[(int)interactor.warrior], Vector3.zero, Quaternion.identity).GameObject();
-        _warriorUIObject.GetComponent<Canvas>().worldCamera = _uiCamera;
+        _warriorUIObject.GetComponent<Canvas>().worldCamera = CameraManager.Instance.uiCamera;
         _warriorUIController = _warriorUIObject.GetComponent<WarriorUIController>();
         _warriorUIController.Initialise(interactor.warrior, isPristineClockwork);
         OpenFocusedUI(_warriorUIObject);
@@ -744,7 +739,7 @@ public class UIManager : Singleton<UIManager>
         _playerController.IsMapEnabled = true;
     }
 
-    public GameObject GetInGameCombatUI() => _inGameCombatUI;
+    public GameObject GetInGameCombatUI() => InGameCombatUI;
     
     public void SaveActionRebinds()
     {
