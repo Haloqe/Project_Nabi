@@ -1,6 +1,7 @@
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Localization.Settings;
 
 public class MainMenuUIController : UIControllerBase
 {
@@ -13,7 +14,6 @@ public class MainMenuUIController : UIControllerBase
     
     // Confirm
     private TextMeshProUGUI[] _newGameConfirmTMPs; // 0: No, 1: Yes
-    private string[] _newGameConfirmTexts;
     private int _selectedConfirmOption;
     private Color _confirmSelectedColour;
     
@@ -26,7 +26,6 @@ public class MainMenuUIController : UIControllerBase
     
     // 0: New game, 1: Continue, 2: Settings, 3: Quit
     private TextMeshProUGUI[] _options;
-    private string[] _optionTexts;
     private int _selectedOptionIdx;
     private bool _hasSaveData;
     private bool _underTransition;
@@ -52,13 +51,12 @@ public class MainMenuUIController : UIControllerBase
         
         // Initialise
         _options = transform.Find("Options").GetComponentsInChildren<TextMeshProUGUI>();
-        _optionTexts = new string[_options.Length];
         for (int i = 0; i < _options.Length; i++)
         {
             _options[i].GetComponent<MainMenuButton>().Init(this, i);
             _options[i].color = _unselectedColour;
-            _optionTexts[i] = _options[i].text;
         }
+        
         _selectedOptionIdx = 0;
         _audioSource = GetComponent<AudioSource>();
         _animator = GetComponent<Animator>();
@@ -66,10 +64,17 @@ public class MainMenuUIController : UIControllerBase
         // Confirm panels
         _newGameConfirmPanel = gameObject.transform.Find("NewGameConfirmPanel").gameObject;
         _newGameConfirmTMPs = _newGameConfirmPanel.transform.Find("Options").GetComponentsInChildren<TextMeshProUGUI>();
-        _newGameConfirmTexts = new string[2]
-        {
-            _newGameConfirmTMPs[0].text, _newGameConfirmTMPs[1].text,
-        };
+        GameEvents.MainMenuLoaded += SelectInitialOption;
+    }
+
+    private void OnDestroy()
+    {
+        GameEvents.MainMenuLoaded -= SelectInitialOption;
+    }
+
+    private void SelectInitialOption()
+    {
+        SelectOption(_hasSaveData ? 1 : 0, false);
     }
 
     private void Start()
@@ -82,12 +87,10 @@ public class MainMenuUIController : UIControllerBase
         // Initialise ui
         _hasSaveData = _gameManager.PlayerMetaData.isDirty;
         _options[1].color = _hasSaveData ? _unselectedColour : _unavailableColour;
-        SelectOption(_hasSaveData ? 1 : 0, false);
         
         // Credits
         _creditsUI = _uiManager.DisplayCreditsUI();
         _creditsUI.BaseUIController = this;
-
     }
 
     private void SelectOption(int newOptionIdx, bool shouldPlaySound = true)
@@ -98,7 +101,8 @@ public class MainMenuUIController : UIControllerBase
         if (_selectedOptionIdx != newOptionIdx && shouldPlaySound) _audioSource.Play();
         UnselectCurrentOption();
         _options[newOptionIdx].color = _selectedColour;
-        _options[newOptionIdx].text = "> " + _optionTexts[newOptionIdx];
+        _options[newOptionIdx].text = "> " + LocalizationSettings.StringDatabase.GetLocalizedString("UIStringTable", 
+                "MainMenu_Option_" + newOptionIdx, LocalizationSettings.SelectedLocale);
         _selectedOptionIdx = newOptionIdx;
         _colourChangeCoroutine = StartCoroutine(ColourChangeCoroutine());
     }
@@ -106,7 +110,8 @@ public class MainMenuUIController : UIControllerBase
     private void UnselectCurrentOption()
     {
         if (_colourChangeCoroutine != null) StopCoroutine(_colourChangeCoroutine);
-        _options[_selectedOptionIdx].text = _optionTexts[_selectedOptionIdx];
+        _options[_selectedOptionIdx].text = LocalizationSettings.StringDatabase.GetLocalizedString("UIStringTable", 
+            "MainMenu_Option_" + _selectedOptionIdx, LocalizationSettings.SelectedLocale);
         _options[_selectedOptionIdx].color = _unselectedColour;
     }
     
@@ -327,14 +332,16 @@ public class MainMenuUIController : UIControllerBase
     private void SelectConfirmOption(int idx)
     {
         _newGameConfirmTMPs[idx].color = _confirmSelectedColour;
-        _newGameConfirmTMPs[idx].text = $"> {_newGameConfirmTexts[idx]} <";
+        _newGameConfirmTMPs[idx].text = "> " + LocalizationSettings.StringDatabase.GetLocalizedString("UIStringTable",
+            idx == 0 ? "Option_No" : "Option_Yes") + " <";
         _selectedConfirmOption = idx;
     }
     
     private void UnselectPreviousConfirmOption()
     {
         _newGameConfirmTMPs[_selectedConfirmOption].color = Color.white;
-        _newGameConfirmTMPs[_selectedConfirmOption].text = _newGameConfirmTexts[_selectedConfirmOption];
+        _newGameConfirmTMPs[_selectedConfirmOption].text = LocalizationSettings.StringDatabase.GetLocalizedString("UIStringTable",
+            _selectedConfirmOption == 0 ? "Option_No" : "Option_Yes");
     }
     
     public void OnReset()

@@ -1,8 +1,8 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem.UI;
+using UnityEngine.Localization.Settings;
 using UnityEngine.SceneManagement;
-using UnityEngine.Serialization;
 
 public class GameManager : Singleton<GameManager>
 {
@@ -10,6 +10,7 @@ public class GameManager : Singleton<GameManager>
     public PlayerMetaData PlayerMetaData { get; private set; }
     public GameObject PlayerPrefab;
     private bool _isInitialLoad = true;
+    public bool IsFullScreen { get; private set; }
     
     // Tutorial
     public bool isRunningTutorial;
@@ -18,8 +19,6 @@ public class GameManager : Singleton<GameManager>
 
     // References
     private PlayerController _player;
-    private UIManager _uiManager;
-    private AudioManager _audioManager;
 
     // DEBUG Only
     private int _ingameMapSceneIdx;       // 플레이어가 실행한 씬
@@ -41,21 +40,34 @@ public class GameManager : Singleton<GameManager>
         var inGameCameras = Instantiate(cameraPrefab, Vector3.zero, Quaternion.identity);
         inGameCameras.SetActive(false);
         
+        // todo runtime setting from saved data
+        SetLocale(ELocalisation.KOR);
+        
         SceneManager.sceneLoaded += OnSceneLoaded;
         PlayerEvents.Defeated += OnPlayerDefeated;
         GameEvents.Restarted += OnRestarted;
     }
 
-    private void Start()
+    public void SetFullscreen(bool isFullscreen)
     {
-        _uiManager = UIManager.Instance;
-        _audioManager = AudioManager.Instance;
+        
+    }
+    
+    public void SetLocale(ELocalisation locale)
+    {
+        Define.Localisation = locale;
+        LocalizationSettings.SelectedLocale = LocalizationSettings.AvailableLocales.Locales[(int)locale];
+    }
+
+    public void SetResolution(Vector2 resolution)
+    {
+        
     }
 
     public void OnMainMenuInitialLoad()
     {
         GetComponent<InputSystemUIInputModule>().enabled = true;
-        _uiManager.UIIAMap.Enable();
+        UIManager.Instance.UIIAMap.Enable();
         GameObject.Find("LogoUI").SetActive(false);
         GameEvents.MainMenuLoaded.Invoke();
         _isInitialLoad = false;
@@ -79,7 +91,7 @@ public class GameManager : Singleton<GameManager>
                 GameObject.Find("LogoUI").SetActive(false);
                 
                 // In the case of delayed load, hide loading screen
-                if (_uiManager) _uiManager.HideLoadingScreen();
+                if (UIManager.Instance) UIManager.Instance.HideLoadingScreen();
                 GameEvents.MainMenuLoaded.Invoke();
             }
         }
@@ -125,8 +137,8 @@ public class GameManager : Singleton<GameManager>
     private void LoadInGame(int idx)
     {
         // Loading screen
-        _uiManager.HideAllInGameUI();
-        _uiManager.DisplayLoadingScreen();
+        UIManager.Instance.HideAllInGameUI();
+        UIManager.Instance.DisplayLoadingScreen();
 
         // Load new in-game scene
         StartCoroutine(LoadSceneAsync(idx));
@@ -215,20 +227,20 @@ public class GameManager : Singleton<GameManager>
     
     public void LoadMainMenu()
     {
-        _uiManager.HideAllInGameUI();
+        UIManager.Instance.HideAllInGameUI();
         if (_player != null) _player.gameObject.SetActive(false);
         SceneManager.LoadScene("Scenes/MainMenu");
     }
 
     public void LoadMidBossMap()
     {
-        _uiManager.DisplayLoadingScreen();
+        UIManager.Instance.DisplayLoadingScreen();
         SceneManager.LoadScene("Scenes/RealMidBoss_InGame");
     }
     
     public void LoadBossMap()
     {
-        _uiManager.DisplayLoadingScreen();
+        UIManager.Instance.DisplayLoadingScreen();
         SceneManager.LoadScene("Scenes/Boss_InGame");
     }
 
@@ -264,7 +276,7 @@ public class GameManager : Singleton<GameManager>
     public void StartNewGame()
     {
         if (_player) Destroy(_player.gameObject);
-        _uiManager.DestroyAllInGameUI();
+        UIManager.Instance.DestroyAllInGameUI();
         isFirstRun = true;
         PlayerMetaData = new PlayerMetaData();
         SaveSystem.RemoveMetaData();
@@ -285,7 +297,7 @@ public class GameManager : Singleton<GameManager>
     public void LoadMainMenuDelayed() => StartCoroutine(LoadMainMenuDelayedCoroutine());
     private IEnumerator LoadMainMenuDelayedCoroutine()
     {
-        _uiManager.DisplayLoadingScreen();
+        UIManager.Instance.DisplayLoadingScreen();
         yield return new WaitForSecondsRealtime(0.5f);
         LoadMainMenu();
     }
@@ -298,8 +310,8 @@ public class GameManager : Singleton<GameManager>
     public void LoadBossCutScene()
     {
         SceneManager.LoadScene("CutScene_Boss");
-        _uiManager.PlayerIAMap.Disable();
-        _uiManager.HideAllInGameUI();
+        UIManager.Instance.PlayerIAMap.Disable();
+        UIManager.Instance.HideAllInGameUI();
         _player.gameObject.SetActive(false);
     }
 

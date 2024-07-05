@@ -1,8 +1,11 @@
 using System.Collections;
 using System.Linq;
+using FullscreenEditor;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 using UnityEngine.UI;
 
 public class SettingsUIController : UIControllerBase
@@ -23,6 +26,16 @@ public class SettingsUIController : UIControllerBase
     [SerializeField] private Image[] settingImagesSound;
     private Image[][] _settingDetailImages;
     
+    // 0 - General
+    private Color _unselectedDetailTextColor;
+    private Color _selectedDetailTextColor;
+    private int _selectedResolutionIdx;
+    private int _selectedLanguageIdx;
+    public Toggle fullscreenToggle;
+    public TextMeshProUGUI[] generalResolutionTMPs;
+    public TextMeshProUGUI[] generalLanguageTMPs;
+    private Vector2Int[] _resolutionOptions;
+    
     // 1 - Control
     private Color _dupRebindColour;
     private bool _isPointingLabel;
@@ -30,7 +43,6 @@ public class SettingsUIController : UIControllerBase
     private RebindActionUI[] _rebindActionUis;
     private TextMeshProUGUI[] _rebindTexts;
     private GameObject _dupWarningText;
-    //private AutoScrollRect _autoScrollRect;
     
     // 2 - Sound
     private Toggle _muteToggle;
@@ -50,6 +62,8 @@ public class SettingsUIController : UIControllerBase
         _selectedBgColour = new Color(0.6478f, 0.8775f, 1f, 0.0431f);
         _unselectedTextColour = Color.white;
         _selectedTextColour = new Color(0.4311f, 0.5934f, 0.7924f, 1);
+        _unselectedDetailTextColor = new Color(0.45f, 0.45f, 0.45f, 1);
+        _selectedDetailTextColor = new Color(0.476f, 0.774f, 0.8f, 1);
         
         // Get references from details
         _settingDetailImages = new Image[][]
@@ -57,8 +71,13 @@ public class SettingsUIController : UIControllerBase
             settingImagesGeneral, settingImagesControl, settingImagesSound,
         };
         
+        // 0 - General
+        _resolutionOptions = new Vector2Int[]
+        {
+            new Vector2Int(1280,720), new Vector2Int(1600,900), new Vector2Int(1920,1080),
+        };
+        
         // 1 - Control
-        //_autoScrollRect = settingDetails[1].GetComponentInChildren<AutoScrollRect>();
         _dupWarningText = settingDetails[1].transform.Find("DupWarningText").gameObject;
         _dupRebindColour = new Color(0.65f, 0f, 0f, 1f);
         _rebindActionUis = settingDetails[1].GetComponentsInChildren<RebindActionUI>();
@@ -89,6 +108,8 @@ public class SettingsUIController : UIControllerBase
         {
             rebindUI.UpdateBindingDisplay();
         }
+        SelectLanguage(LocalizationSettings.AvailableLocales.Locales.IndexOf(LocalizationSettings.SelectedLocale));
+        SelectFullscreen(GameManager.Instance.IsFullScreen);
     }
 
     private void LoadSoundSaveData()
@@ -141,13 +162,70 @@ public class SettingsUIController : UIControllerBase
         }
         else if (value.x != 0)
         {
-            if (_curSettingsGroup == 2 && !_isNavigatingSound)
+            if (_curSettingsGroup == 0)
+            {
+                switch (_curDetailSettingIdx)
+                {
+                    case 0: // Fullscreen toggle
+                        break; 
+            
+                    case 1: // Resolution
+                        if (!GameManager.Instance.IsFullScreen) 
+                            SelectResolution(_selectedResolutionIdx + (int)value.x);
+                        break;
+            
+                    case 2: // Language
+                        SelectLanguage(_selectedLanguageIdx + (int)value.x);
+                        break;
+                }
+            }
+            else if (_curSettingsGroup == 2 && !_isNavigatingSound)
             {
                 StartCoroutine(NavigateSoundCoroutine(_curDetailSettingIdx, value.x));
             }
         }
     }
 
+    private void SelectFullscreen(bool isFullscreen)
+    {
+        fullscreenToggle.isOn = isFullscreen;
+        GameManager.Instance.SetFullscreen(isFullscreen);
+        if (isFullscreen)
+        {
+            generalResolutionTMPs[_selectedResolutionIdx].color = _unselectedDetailTextColor;
+        }
+        else
+        {
+            SelectResolution(2);
+        }
+    }
+
+    private void SelectResolution(int resolutionIndex)
+    {
+        // Clamp index
+        if (resolutionIndex == -1) resolutionIndex = generalResolutionTMPs.Length - 1;
+        else if (resolutionIndex == generalResolutionTMPs.Length) resolutionIndex = 0; 
+        
+        // Select resolution
+        generalResolutionTMPs[_selectedResolutionIdx].color = _unselectedDetailTextColor;
+        _selectedResolutionIdx = resolutionIndex;
+        generalResolutionTMPs[_selectedResolutionIdx].color = _selectedDetailTextColor;
+        GameManager.Instance.SetResolution(_resolutionOptions[_selectedResolutionIdx]);
+    }
+
+    private void SelectLanguage(int localeIndex)
+    {
+        // Clamp index
+        if (localeIndex == -1) localeIndex = generalLanguageTMPs.Length - 1;
+        else if (localeIndex == generalLanguageTMPs.Length) localeIndex = 0; 
+        
+        // Select language
+        generalLanguageTMPs[_selectedLanguageIdx].color = _unselectedDetailTextColor;
+        _selectedLanguageIdx = localeIndex;
+        generalLanguageTMPs[_selectedLanguageIdx].color = _selectedDetailTextColor;
+        GameManager.Instance.SetLocale((ELocalisation)_selectedLanguageIdx);
+    }
+    
     public void OnRebindStop(RebindActionUI ui, InputActionRebindingExtensions.RebindingOperation op)
     {
         _isPointingLabel = true;
@@ -235,10 +313,14 @@ public class SettingsUIController : UIControllerBase
         switch (_curSettingsGroup)
         {
             case 0:
+                if (_curDetailSettingIdx == 0)
+                {
+                    
+                }
                 break;
             
             case 1:
-                if (_curSettingsGroup == 1 && _isPointingLabel)
+                if (_isPointingLabel)
                 {
                     _isPointingLabel = false;
                     _rebindActionUis[_curDetailSettingIdx].StartInteractiveRebind();
@@ -323,32 +405,26 @@ public class SettingsUIController : UIControllerBase
 
     private void UnselectSettingDetail()
     {
-        if (_curSettingsGroup == 0) return;
         _settingDetailImages[_curSettingsGroup][_curDetailSettingIdx].enabled = false;
     }
 
-    private bool _curFocusedBottom = false;
+    private bool _curFocusedBottom;
     private void SelectSettingDetail(int idx)
     {
-        if (_curSettingsGroup == 0) return;
-
         _curDetailSettingIdx = idx;
         _settingDetailImages[_curSettingsGroup][_curDetailSettingIdx].enabled = true;
-
-        if (_curSettingsGroup == 1)
+        if (_curSettingsGroup != 1) return;
+        
+        // Scroll for control settings
+        if (_curDetailSettingIdx > 7 && !_curFocusedBottom)
         {
-            if (_curDetailSettingIdx > 7 && !_curFocusedBottom)
-            {
-                _curFocusedBottom = true;
-                settingDetails[1].transform.Find("ScrollRect").GetComponent<ScrollRect>().verticalNormalizedPosition = 0f;
-            }
-            else if (_curDetailSettingIdx < 3 && _curFocusedBottom)
-            {
-                _curFocusedBottom = false;
-                settingDetails[1].transform.Find("ScrollRect").GetComponent<ScrollRect>().verticalNormalizedPosition = 1f;
-            }
-            // _autoScrollRect.SetSelectedGameObject(settingDetails[1].transform
-            //     .Find("ScrollRect").Find("Container").Find("Interact").gameObject);
+            _curFocusedBottom = true;
+            settingDetails[1].transform.Find("ScrollRect").GetComponent<ScrollRect>().verticalNormalizedPosition = 0f;
+        }
+        else if (_curDetailSettingIdx < 3 && _curFocusedBottom)
+        {
+            _curFocusedBottom = false;
+            settingDetails[1].transform.Find("ScrollRect").GetComponent<ScrollRect>().verticalNormalizedPosition = 1f;
         }
     }
 

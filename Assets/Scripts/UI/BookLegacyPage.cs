@@ -13,7 +13,6 @@ public class BookLegacyPage : BookPage
     // Left Page
     private int _newestSelectedIdx;
     private Color _unselectedColour;
-    private string[] _attackBaseDescriptions;
     private bool[] _hasActiveBounds;
     private string[] _activeNames;
     private string[] _activeDescs;
@@ -22,7 +21,7 @@ public class BookLegacyPage : BookPage
     
     [SerializeField] private Image[] activeIcons;
     [SerializeField] private GameObject activeNoBoundObj;
-    [SerializeField] private TextMeshProUGUI attackBaseDescription;
+    [SerializeField] private GameObject[] attackBaseDescriptions;
     [SerializeField] private GameObject activeBoundDescObj;
     [SerializeField] private TextMeshProUGUI activeBoundNameText;
     [SerializeField] private TextMeshProUGUI activeBoundDescText;
@@ -56,13 +55,6 @@ public class BookLegacyPage : BookPage
         {
             activeIcon.color = _unselectedColour;
         }
-        _attackBaseDescriptions = new string[]
-        {
-            "태엽 열쇠를 전방으로 가볍게 휘둘러 맞은 모든 적에게 데미지를 입힌다. 세번째 연속된 공격마다 열쇠를 바닥에 내려쳐 더 강한 데미지를 입힌다.",
-            "전방으로 총알을 발사해 처음으로 맞은 적에게 데미지를 입힌다. 총알은 벽이나 몹에 맞으면 사라진다.",
-            "전방으로 짧은 거리를 빠르게 이동한다. 바인딩된 유산이 없을 시 아무런 데미지를 입히지 않는다.",
-            "전방으로 폭탄꽃을 던져 맞은 모든 적에게 피해를 입힌다.",
-        };
         _passiveHighlights = new GameObject[24];
         var passivesRoot = transform.Find("Page_R").Find("Passives");
         _passiveIcons = passivesRoot.GetComponentsInChildren<Image>();
@@ -149,14 +141,17 @@ public class BookLegacyPage : BookPage
         // Change previous
         if (_newestSelectedIdx > 3) 
             _passiveHighlights[0].SetActive(false);
-        else 
+        else
+        {
+            attackBaseDescriptions[_newestSelectedIdx].SetActive(false);
             activeIcons[_newestSelectedIdx].color = _unselectedColour;
+        }
         
         // Change new
         activeIcons[slotIdx].color = Color.white;
         
         // Base description
-        attackBaseDescription.text = _attackBaseDescriptions[slotIdx];
+        attackBaseDescriptions[slotIdx].SetActive(true);
         
         // Has bound legacy
         if (_hasActiveBounds[slotIdx])

@@ -94,12 +94,12 @@ public static class  Define
     // META Upgrades
     public static float[][] MetaLegacyAppearanceByPreservation = new float[][]
     {
-        new [] { 0.6f, 0.6f + 0.2f, 0.8f + 0.15f, 0.95f + 0.05f },
-        new [] { 0.6f, 0.6f + 0.2f, 0.8f + 0.15f, 0.95f + 0.05f },
-        new [] { 0.6f, 0.6f + 0.2f, 0.8f + 0.15f, 0.95f + 0.05f },
+        new [] { 0.4f, 0.4f + 0.35f, 0.75f + 0.2f, 0.95f + 0.05f },
+        new [] { 0.3f, 0.3f + 0.3f, 0.6f + 0.3f, 0.9f + 0.1f },
+        new [] { 0.1f, 0.1f + 0.2f, 0.3f + 0.4f, 0.7f + 0.3f },
     };
     public static int[] MetaHealthAdditions = new int[]{20,30,40};
-    public static float[] MetaCriticalRateAdditions = new float[]{0.05f,0.07f,0.3f};
+    public static float[] MetaCriticalRateAdditions = new float[]{0.15f,0.20f,0.3f};
     public static float[] MetaResurrectionHealthRatio = new float[]{0.3f,0.5f,1.0f};
     public static float[] MetaAttackDamageAdditions = new float[]{5,10,18};
 }
