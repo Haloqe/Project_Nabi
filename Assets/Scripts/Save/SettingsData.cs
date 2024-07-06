@@ -13,3 +13,15 @@ public class SettingsData_Sound
         return (SettingsData_Sound)MemberwiseClone();
     }
 }
+
+public class SettingsData_General
+{
+    public bool IsFullscreen;
+    public int ResolutionIndex;
+    public ELocalisation Localisation;
+    
+    public SettingsData_General Clone()
+    {
+        return (SettingsData_General)MemberwiseClone();
+    }
+}

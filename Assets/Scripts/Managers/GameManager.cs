@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem.UI;
@@ -27,11 +28,22 @@ public class GameManager : Singleton<GameManager>
 
     // todo temp
     public bool isFirstRun = true;
+    
+    // Settings
+    public SettingsData_General GeneralSettingsData { get; private set; }
+    private SettingsData_General _defaultGeneralSettingsData;
+    private Vector2Int[] _resolutionOptions;
+    private int _resolutionIndex;
 
     protected override void Awake()
     {
         base.Awake();
         if (IsToBeDestroyed) return;
+        
+        _resolutionOptions = new Vector2Int[]
+        {
+            new Vector2Int(1280,720), new Vector2Int(1600,900), new Vector2Int(1920,1080),
+        };
         
         PlayerMetaData = SaveSystem.LoadMetaData();
         _ingameMapSceneIdx = _releaseMapSceneIdx;
@@ -40,17 +52,62 @@ public class GameManager : Singleton<GameManager>
         var inGameCameras = Instantiate(cameraPrefab, Vector3.zero, Quaternion.identity);
         inGameCameras.SetActive(false);
         
-        // todo runtime setting from saved data
-        SetLocale(ELocalisation.KOR);
-        
         SceneManager.sceneLoaded += OnSceneLoaded;
         PlayerEvents.Defeated += OnPlayerDefeated;
         GameEvents.Restarted += OnRestarted;
     }
 
+    private void Start()
+    {
+        GetSavedGeneralData();
+    }
+
+    public void SaveGeneralSettings()
+    {
+        GeneralSettingsData.IsFullscreen = IsFullScreen;
+        GeneralSettingsData.ResolutionIndex = _resolutionIndex;
+        GeneralSettingsData.Localisation = Define.Localisation;
+        SaveSystem.SaveGeneralSettingsData();
+    }
+    
+    private void GetSavedGeneralData()
+    {
+        // Get default settings first
+        _defaultGeneralSettingsData = new SettingsData_General();
+        _defaultGeneralSettingsData.IsFullscreen = true;
+        _defaultGeneralSettingsData.ResolutionIndex = 0;
+        _defaultGeneralSettingsData.Localisation = ELocalisation.KOR;
+        
+        // Get saved settings
+        GeneralSettingsData = SaveSystem.LoadGeneralSettingsData();
+        if (GeneralSettingsData == null)
+        {
+            // If no save data exists, use default settings
+            ResetGeneralSettingsToDefault();
+        }
+        else
+        {
+            // If save data exists, apply the saved settings
+            SetFullscreen(GeneralSettingsData.IsFullscreen);
+            SetResolution(GeneralSettingsData.ResolutionIndex);
+            SetLocale(GeneralSettingsData.Localisation);
+        }
+    }
+    
+    public void ResetGeneralSettingsToDefault()
+    {
+        GeneralSettingsData = _defaultGeneralSettingsData.Clone();
+        SetLocale(ELocalisation.KOR);
+    }
+    
     public void SetFullscreen(bool isFullscreen)
     {
         
+    }
+    
+    public void SetResolution(int resolutionIndex)
+    {
+        if (GeneralSettingsData.IsFullscreen) return;
     }
     
     public void SetLocale(ELocalisation locale)
@@ -58,12 +115,7 @@ public class GameManager : Singleton<GameManager>
         Define.Localisation = locale;
         LocalizationSettings.SelectedLocale = LocalizationSettings.AvailableLocales.Locales[(int)locale];
     }
-
-    public void SetResolution(Vector2 resolution)
-    {
-        
-    }
-
+    
     public void OnMainMenuInitialLoad()
     {
         GetComponent<InputSystemUIInputModule>().enabled = true;

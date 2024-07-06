@@ -61,4 +61,30 @@ public static class SaveSystem
                         return null;
                 }
         }
+
+        public static void SaveGeneralSettingsData()
+        {
+                BinaryFormatter formatter = new BinaryFormatter();
+                string path = Application.persistentDataPath + "/general";
+                FileStream stream = new FileStream(path, FileMode.Create);
+                formatter.Serialize(stream, GameManager.Instance.GeneralSettingsData);
+                stream.Close();
+        }
+        
+        public static SettingsData_General LoadGeneralSettingsData()
+        {
+                string path = Application.persistentDataPath + "/general";
+                if (File.Exists(path))
+                {
+                        BinaryFormatter formatter = new BinaryFormatter();
+                        FileStream stream = new FileStream(path, FileMode.Open);
+                        SettingsData_General data = formatter.Deserialize(stream) as SettingsData_General;
+                        stream.Close();
+                        return data;
+                }
+                else
+                {
+                        return null;
+                }
+        }
 }

@@ -19,8 +19,8 @@ public class Portal : Interactor
     { 
         //0.2f, 0.45f, 0.35f,
         0,1,0
-    }; 
-    
+    };
+
     protected override void OnInteract(InputAction.CallbackContext obj)
     {
         if (IsInteracting) return;

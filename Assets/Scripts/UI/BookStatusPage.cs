@@ -43,13 +43,13 @@ public class BookStatusPage : BookPage
         soulTMP.text = "SOULS: " + _playerController.playerInventory.SoulShard;
         
         // Right Page
-        healthTMP.text = "체력: " + _playerController.playerDamageReceiver.BaseHealth;
-        strengthTMP.text = "공격력: " + _playerController.BaseStrength;
-        criticalRateTMP.text = "치명타 확률: " + Utility.FormatPercentage(_playerController.BaseCriticalRate) + "%";
-        armourTMP.text = "방어력: " + _playerController.BaseArmour;
-        armourPenetrationTMP.text = "방어 관통력: " + _playerController.BaseArmourPenetration;
-        evasionRateTMP.text = "회피율: " + Utility.FormatPercentage(_playerController.BaseEvasionRate) + "%";
-        healEfficiencyTMP.text = "회복 효율: " + _playerController.BaseHealEfficiency;
+        healthTMP.text = Utility.FormatFloat(_playerController.playerDamageReceiver.BaseHealth);
+        strengthTMP.text = Utility.FormatFloat(_playerController.BaseStrength);
+        criticalRateTMP.text = Utility.FormatPercentage(_playerController.BaseCriticalRate) + "%";
+        armourTMP.text = Utility.FormatFloat(_playerController.BaseArmour);
+        armourPenetrationTMP.text = Utility.FormatFloat(_playerController.BaseArmourPenetration);
+        evasionRateTMP.text = Utility.FormatPercentage(_playerController.BaseEvasionRate) + "%";
+        healEfficiencyTMP.text = Utility.FormatFloat(_playerController.BaseHealEfficiency);
         
         // Additions
         float healthDiff = _playerController.playerDamageReceiver.MaxHealth - _playerController.playerDamageReceiver.BaseHealth;

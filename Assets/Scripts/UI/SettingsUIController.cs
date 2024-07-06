@@ -34,7 +34,7 @@ public class SettingsUIController : UIControllerBase
     public Toggle fullscreenToggle;
     public TextMeshProUGUI[] generalResolutionTMPs;
     public TextMeshProUGUI[] generalLanguageTMPs;
-    private Vector2Int[] _resolutionOptions;
+    [SerializeField] private GameObject coverCanvas;
     
     // 1 - Control
     private Color _dupRebindColour;
@@ -71,12 +71,6 @@ public class SettingsUIController : UIControllerBase
             settingImagesGeneral, settingImagesControl, settingImagesSound,
         };
         
-        // 0 - General
-        _resolutionOptions = new Vector2Int[]
-        {
-            new Vector2Int(1280,720), new Vector2Int(1600,900), new Vector2Int(1920,1080),
-        };
-        
         // 1 - Control
         _dupWarningText = settingDetails[1].transform.Find("DupWarningText").gameObject;
         _dupRebindColour = new Color(0.65f, 0f, 0f, 1f);
@@ -103,6 +97,7 @@ public class SettingsUIController : UIControllerBase
         // TODO
         // get data from savefile
         LoadSoundSaveData();
+        coverCanvas.SetActive(false);
         
         foreach (var rebindUI in _rebindActionUis)
         {
@@ -112,6 +107,11 @@ public class SettingsUIController : UIControllerBase
         SelectFullscreen(GameManager.Instance.IsFullScreen);
     }
 
+    private void LoadGeneralSaveData()
+    {
+        fullscreenToggle.isOn = GameManager.Instance.IsFullScreen;
+    }
+    
     private void LoadSoundSaveData()
     {
         _muteToggle.isOn = AudioManager.Instance.SoundSettingsData.isMuted;
@@ -175,7 +175,7 @@ public class SettingsUIController : UIControllerBase
                         break;
             
                     case 2: // Language
-                        SelectLanguage(_selectedLanguageIdx + (int)value.x);
+                        StartCoroutine(SelectLanguageCoroutine(_selectedLanguageIdx + (int)value.x));
                         break;
                 }
             }
@@ -186,9 +186,37 @@ public class SettingsUIController : UIControllerBase
         }
     }
 
+    private IEnumerator SelectLanguageCoroutine(int localeIndex)
+    {
+        UIManager.Instance.UIIAMap.Disable();
+        coverCanvas.SetActive(true);
+        var coverImage = coverCanvas.GetComponent<Image>();
+        
+        // Fade In
+        coverImage.color = new Color(coverImage.color.r, coverImage.color.g, coverImage.color.b, 0);
+        while (coverImage.color.a < 1.0f)
+        {
+            coverImage.color = new Color(coverImage.color.r, coverImage.color.g, coverImage.color.b, coverImage.color.a + Time.unscaledDeltaTime / 0.3f);
+            yield return null;
+        }
+        
+        // Change language
+        coverImage.color = new Color(coverImage.color.r, coverImage.color.g, coverImage.color.b, 1);
+        SelectLanguage(localeIndex);
+        yield return new WaitForSeconds(0.5f);
+
+        // Fade Out
+        while (coverImage.color.a > 0.0f)
+        {
+            coverImage.color = new Color(coverImage.color.r, coverImage.color.g, coverImage.color.b, coverImage.color.a - Time.unscaledDeltaTime / 0.3f);
+            yield return null;
+        }
+        coverImage.color = new Color(coverImage.color.r, coverImage.color.g, coverImage.color.b, 0);
+        UIManager.Instance.UIIAMap.Enable();
+    }
+
     private void SelectFullscreen(bool isFullscreen)
     {
-        fullscreenToggle.isOn = isFullscreen;
         GameManager.Instance.SetFullscreen(isFullscreen);
         if (isFullscreen)
         {
@@ -210,7 +238,7 @@ public class SettingsUIController : UIControllerBase
         generalResolutionTMPs[_selectedResolutionIdx].color = _unselectedDetailTextColor;
         _selectedResolutionIdx = resolutionIndex;
         generalResolutionTMPs[_selectedResolutionIdx].color = _selectedDetailTextColor;
-        GameManager.Instance.SetResolution(_resolutionOptions[_selectedResolutionIdx]);
+        GameManager.Instance.SetResolution(_selectedResolutionIdx);
     }
 
     private void SelectLanguage(int localeIndex)
@@ -308,6 +336,11 @@ public class SettingsUIController : UIControllerBase
         else AudioManager.Instance.Unmute();
     }
     
+    public void OnFullscreenToggleChanged()
+    {
+        SelectFullscreen(!fullscreenToggle.isOn);
+    }
+    
     public override void OnSubmit()
     {
         switch (_curSettingsGroup)
@@ -315,7 +348,7 @@ public class SettingsUIController : UIControllerBase
             case 0:
                 if (_curDetailSettingIdx == 0)
                 {
-                    
+                    fullscreenToggle.isOn = !fullscreenToggle.isOn;
                 }
                 break;
             
@@ -345,6 +378,7 @@ public class SettingsUIController : UIControllerBase
         _isNavigatingSound = false;
         
         // Save settings
+        GameManager.Instance.SaveGeneralSettings();
         AudioManager.Instance.SaveAudioSettings();
         UIManager.Instance.SaveActionRebinds();
         
@@ -367,6 +401,8 @@ public class SettingsUIController : UIControllerBase
         switch (_curSettingsGroup)
         {
             case 0:
+                LoadGeneralSaveData();
+                StartCoroutine(SelectLanguageCoroutine((int)ELocalisation.KOR));
                 break;
             
             case 1:
