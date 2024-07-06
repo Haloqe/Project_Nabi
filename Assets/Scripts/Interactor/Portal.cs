@@ -112,6 +112,9 @@ public class Portal : Interactor
             case EPortalType.MidBossToCombat:
                 _player.playerMovement.ResetEnteredGroundCount();
                 GameManager.Instance.LoadPostMidBossCombatMap();
+                CameraManager.Instance.SwapCamera(
+                    CameraManager.Instance.AllVirtualCameras[5],
+                    CameraManager.Instance.AllVirtualCameras[1]);
                 yield break;
                 
             case EPortalType.CombatToBoss:
