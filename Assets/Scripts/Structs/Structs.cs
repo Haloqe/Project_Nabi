@@ -126,8 +126,8 @@ public struct SRoomInfo
 #region Item
 public struct SFoodInfo
 {
-    public string Name;
-    public string Description;
+    public string[] Name;
+    public string[] Description;
     public float HealthPoint;
     public int Price;
     public int SpriteIndex;

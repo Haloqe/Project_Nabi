@@ -227,8 +227,7 @@ public class PlayerController : Singleton<PlayerController>
     //int count = 0;
     private void OnTestAction(InputValue value)
     {
-        playerInventory.ChangeGoldByAmount(100);
-        playerInventory.ChangeSoulShardByAmount(100);
+        //PlayerAttackManager.Instance.CollectLegacy(9, ELegacyPreservation.Tarnished);
     }
     
     private void OnSelectNextFlowerBomb(InputValue value)

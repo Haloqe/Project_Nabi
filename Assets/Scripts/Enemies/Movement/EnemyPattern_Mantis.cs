@@ -126,7 +126,7 @@ public class EnemyPattern_Mantis : EnemyPattern
     private IEnumerator DashAttack()
     {
         _audioSource.pitch = Random.Range(0.85f, 1.15f);
-        _audioSource.PlayOneShot(_dashAudio);
+        _audioSource.PlayOneShot(_dashAudio, 0.4f);
         float dashTimeCounter = 0;
         float direction = Math.Sign(transform.localScale.x);
         _dashVFX.flip = new Vector3(-direction, 0, 0);

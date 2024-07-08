@@ -9,9 +9,9 @@ using UnityEngine.UI;
 public class FoodStore : MonoBehaviour
 {
     private List<SFoodInfo> _foodsToSell = new List<SFoodInfo> 
-        {new SFoodInfo {Name = "음식 (소)", Description = "작은 음식이다.", HealthPoint = 25, Price = 100, SpriteIndex = 51}, 
-        new SFoodInfo {Name = "음식 (중)", Description = "중간 음식이다.", HealthPoint = 50, Price = 200, SpriteIndex = 53}, 
-        new SFoodInfo {Name = "음식 (대)", Description = "큰 음식이다.", HealthPoint = 75, Price = 300, SpriteIndex = 54}};
+        {new SFoodInfo {Name = new []{"Food (Small)","음식 (소)"}, Description = new []{"Instantly heals you by 20", "20의 체력을 즉시 회복한다"}, HealthPoint = 20, Price = 25, SpriteIndex = 51}, 
+        new SFoodInfo {Name = new []{"Food (Medium)","음식 (중)"}, Description = new []{"Instantly heals you by 50", "50의 체력을 즉시 회복한다"}, HealthPoint = 50, Price = 50, SpriteIndex = 53}, 
+        new SFoodInfo {Name = new []{"Food (Large)","음식 (대)"}, Description = new []{"Instantly heals you by 100", "100의 체력을 즉시 회복한다"}, HealthPoint = 100, Price = 90, SpriteIndex = 54}};
 
     private List<Object> _foodObjects;
 
@@ -46,7 +46,7 @@ public class FoodStore : MonoBehaviour
 
         for (int i = 0; i < _numberOfFoodsToSell; i++)
         {
-            var item = Object.Instantiate(
+            var item = Instantiate(
                 Utility.LoadObjectFromPath("Prefabs/Interact/Store_Food"),
                 new Vector3(left, bottom, 0), Quaternion.identity);
             item.GetComponent<Food>().Init(this, i, _foodsToSell[i]);
@@ -57,8 +57,8 @@ public class FoodStore : MonoBehaviour
 
     public void DisplayItemUI(int itemIdx)
     {
-        FoodNameText.text = _foodsToSell[itemIdx].Name;
-        FoodDescText.text = _foodsToSell[itemIdx].Description;
+        FoodNameText.text = _foodsToSell[itemIdx].Name[(int)Define.Localisation];
+        FoodDescText.text = _foodsToSell[itemIdx].Description[(int)Define.Localisation];;
         _activeItemImage = ItemBuyFill.GetComponent<Image>();
         _activeItemImage.fillAmount = 0.0f;
         _activeFoodIdx = itemIdx;

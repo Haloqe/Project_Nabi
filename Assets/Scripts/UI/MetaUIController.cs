@@ -94,19 +94,19 @@ public class MetaUIController : UIControllerBase
     public void DisplayAlreadyUnlockedWarning()
     {
         _animator.SetTrigger(Display);
-        warningObjTMP.text = Define.Localisation == ELocalisation.ENG ? "???" : "이미 보유한 업그레이드예요";
+        warningObjTMP.text = Define.Localisation == ELocalisation.ENG ? "You already have this upgrade" : "이미 보유한 업그레이드예요";
     }
     
     public void DisplayUnreachableLevelWarning()
     {
         _animator.SetTrigger(Display);
-        warningObjTMP.text = Define.Localisation == ELocalisation.ENG ? "???" : "더 낮은 등급의 업그레이드를 먼저 해주세요";
+        warningObjTMP.text = Define.Localisation == ELocalisation.ENG ? "Please upgrade the lower tier first" : "더 낮은 등급의 업그레이드를 먼저 해주세요";
     }
     
     public void DisplayNotEnoughShardsWarning()
     {
         _animator.SetTrigger(Display);
-        warningObjTMP.text = Define.Localisation == ELocalisation.ENG ? "???" : "영혼 조각이 부족해요";
+        warningObjTMP.text = Define.Localisation == ELocalisation.ENG ? "You don’t have enough Soul Shards" : "영혼 조각이 부족해요";
     }
 
     public void ApplyMetaUpgrade(int metaIndex, int unlockedLevel)

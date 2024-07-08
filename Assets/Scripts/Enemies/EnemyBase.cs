@@ -312,7 +312,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         if (_sommerTimeSinceStacked > _effectRemainingTimes[(int)EStatusEffect.Sommer])
             _sommerStackCount -= _sommerSubtractedStackPerSecond * Time.unscaledDeltaTime;
 
-        if (_sommerStackCount >= 10)
+        if (_sommerStackCount >= 4)
         {
             Pattern.ResetMoveSpeed();
             ResetAttackSpeed();

@@ -236,7 +236,7 @@ public class UIManager : Singleton<UIManager>
         {
             case ESceneType.CombatMap0:
                 OnPlayerHPChanged(0,0,1);
-                DisplayRoomGuideUI("잊혀진 회의터", "");
+                DisplayRoomGuideUI(Define.Localisation == ELocalisation.ENG ? "The bottommost floor\nof the Tower of Time" : "잊혀진 회의터", "");
                 DisableMap();
                 break;
             
@@ -556,6 +556,10 @@ public class UIManager : Singleton<UIManager>
     
     private void OnClose(InputAction.CallbackContext obj)
     {
+        if (_activeFocusedUI == _defeatedUI)
+        {
+            return;
+        }
         if (_gameManager.isRunningCutScene)
         {
             if (_gameManager.isRunningTutorial) return;

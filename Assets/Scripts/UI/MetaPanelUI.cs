@@ -8,10 +8,9 @@ public class MetaPanelUI : MonoBehaviour
     [SerializeField] private MetaUIController baseUI;
     [SerializeField] private GameObject selectedOutline;
     [FormerlySerializedAs("unSelectedOutline")] [SerializeField] private GameObject unselectedOutline;
-    [SerializeField] private TextMeshProUGUI descText;
     [SerializeField] private TextMeshProUGUI costText;
     [SerializeField] private Image[] levelSlots;
-    [SerializeField] private string[] levelDescriptions;
+    [SerializeField] private GameObject[] levelDescriptions;
     [SerializeField] private int[] levelUnlockCosts;
     public int metaIndex;
     public PlayerMetaData MetaData;
@@ -32,8 +31,8 @@ public class MetaPanelUI : MonoBehaviour
         }
         if (_unlockedLevel == -1)
         {
-            descText.text = "";
-            costText.text = "보유한 업그레이드 없음";
+            levelDescriptions[_selectedLevel].SetActive(false);
+            costText.text = Define.Localisation == ELocalisation.ENG ? "No upgrades" : "보유한 업그레이드 없음";
         }
         else
         {
@@ -55,8 +54,8 @@ public class MetaPanelUI : MonoBehaviour
         selectedOutline.SetActive(false);
         if (_unlockedLevel == -1)
         {
-            descText.text = "";
-            costText.text = "보유한 업그레이드 없음";
+            levelDescriptions[_selectedLevel].SetActive(false);
+            costText.text = Define.Localisation == ELocalisation.ENG ? "No upgrades" : "보유한 업그레이드 없음";
         }
         else
         {
@@ -69,12 +68,13 @@ public class MetaPanelUI : MonoBehaviour
     {
         // Deselect previous
         levelSlots[_selectedLevel].sprite = baseUI.unselectedLevelSlotSprite;
+        levelDescriptions[_selectedLevel].SetActive(false);
         _selectedLevel = level;
         
         // Select new
         levelSlots[_selectedLevel].sprite = baseUI.selectedLevelSlotSprite;
-        descText.text = _selectedLevel + 1 + "단계 | " + levelDescriptions[_selectedLevel];
-        costText.text = levelUnlockCosts[_selectedLevel] + " 영혼 조각";
+        levelDescriptions[_selectedLevel].SetActive(true);
+        costText.text = levelUnlockCosts[_selectedLevel] + Define.Localisation == ELocalisation.ENG ? " Soul Shards" : " 영혼 조각";
     }
 
     public void OnSubmit()

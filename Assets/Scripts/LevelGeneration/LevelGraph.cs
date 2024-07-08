@@ -88,13 +88,10 @@ public class LevelGraph
     {
         int prevRoomID = AddRoom(ERoomType.Entrance);
         SetStartRoom(prevRoomID);
-        ConnectNewRoomToPrev(ERoomType.Normal);
-        // ConnectNewRoomToPrev(ERoomType.Normal);
-        // ConnectNewRoomToPrev(ERoomType.Normal);
-        // int id = ConnectNewRoomToPrev(ERoomType.Normal);
-        // //ConnectNewRoomToAnother(ERoomType.Shop, id);
-        // ConnectNewRoomToAnother(ERoomType.Normal, id);
-        // ConnectNewRoomToPrev(ERoomType.Normal);
+        //ConnectNewRoomToPrev(ERoomType.Normal);
+        //int id = ConnectNewRoomToPrev(ERoomType.Normal);
+        //ConnectNewRoomToAnother(ERoomType.Shop, id);
+        //ConnectNewRoomToAnother(ERoomType.Normal, id);
         ConnectNewRoomToPrev(ERoomType.MidBoss);
     }
 
@@ -102,13 +99,11 @@ public class LevelGraph
     {
         int prevRoomID = AddRoom(ERoomType.Entrance);
         SetStartRoom(prevRoomID);
-        
-        ConnectNewRoomToPrev(ERoomType.Normal);
-        // ConnectNewRoomToPrev(ERoomType.Normal);
-        // ConnectNewRoomToPrev(ERoomType.Normal);
-        // ConnectNewRoomToPrev(ERoomType.Normal);
-        // ConnectNewRoomToPrev(ERoomType.Normal);
-        // ConnectNewRoomToPrev(ERoomType.Normal);
+        //ConnectNewRoomToPrev(ERoomType.Normal);
+        //int id = ConnectNewRoomToPrev(ERoomType.Normal);
+        //ConnectNewRoomToAnother(ERoomType.Shop, id);
+        //ConnectNewRoomToAnother(ERoomType.Normal, id);
+        //ConnectNewRoomToPrev(ERoomType.Normal);
         ConnectNewRoomToPrev(ERoomType.Boss);
     }
     

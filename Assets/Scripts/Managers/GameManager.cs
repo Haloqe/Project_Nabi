@@ -1,5 +1,6 @@
-using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.Localization.Settings;
@@ -11,7 +12,11 @@ public class GameManager : Singleton<GameManager>
     public PlayerMetaData PlayerMetaData { get; private set; }
     public GameObject PlayerPrefab;
     private bool _isInitialLoad = true;
-    public bool IsFullScreen { get; private set; }
+    
+    // Display
+    public Vector2Int[] ResolutionOptions { get; private set; }
+    public bool[] IsResolutionSupported { get; private set; }
+    public int ResolutionIndex { get; private set; }
     
     // Tutorial
     public bool isRunningTutorial;
@@ -32,15 +37,13 @@ public class GameManager : Singleton<GameManager>
     // Settings
     public SettingsData_General GeneralSettingsData { get; private set; }
     private SettingsData_General _defaultGeneralSettingsData;
-    private Vector2Int[] _resolutionOptions;
-    private int _resolutionIndex;
 
     protected override void Awake()
     {
         base.Awake();
         if (IsToBeDestroyed) return;
         
-        _resolutionOptions = new Vector2Int[]
+        ResolutionOptions = new Vector2Int[]
         {
             new Vector2Int(1280,720), new Vector2Int(1600,900), new Vector2Int(1920,1080),
         };
@@ -64,9 +67,9 @@ public class GameManager : Singleton<GameManager>
 
     public void SaveGeneralSettings()
     {
-        GeneralSettingsData.IsFullscreen = IsFullScreen;
-        GeneralSettingsData.ResolutionIndex = _resolutionIndex;
-        GeneralSettingsData.Localisation = Define.Localisation;
+        GeneralSettingsData.IsFullscreen = Screen.fullScreenMode == FullScreenMode.FullScreenWindow;
+        GeneralSettingsData.ResolutionIndex = ResolutionIndex;
+        GeneralSettingsData.Localisation = (int)Define.Localisation;
         SaveSystem.SaveGeneralSettingsData();
     }
     
@@ -75,8 +78,24 @@ public class GameManager : Singleton<GameManager>
         // Get default settings first
         _defaultGeneralSettingsData = new SettingsData_General();
         _defaultGeneralSettingsData.IsFullscreen = true;
-        _defaultGeneralSettingsData.ResolutionIndex = 0;
-        _defaultGeneralSettingsData.Localisation = ELocalisation.KOR;
+        _defaultGeneralSettingsData.Localisation = (int)ELocalisation.KOR;
+        // Get the highest supported resolution
+        IsResolutionSupported = new bool[ResolutionOptions.Length];
+        for (int i = 0; i < ResolutionOptions.Length; i++)
+        {
+            IsResolutionSupported[i] = false;
+            if (Screen.resolutions.Any(resolution => resolution.width == ResolutionOptions[i][0]
+                    && resolution.height == ResolutionOptions[i][1]))
+            {
+                IsResolutionSupported[i] = true;
+            }
+        }
+        ResolutionIndex = ResolutionOptions.Length - 1;
+        while (ResolutionIndex > 0 && !IsResolutionSupported[ResolutionIndex])
+        {
+            ResolutionIndex--;
+        }
+        _defaultGeneralSettingsData.ResolutionIndex = ResolutionIndex;
         
         // Get saved settings
         GeneralSettingsData = SaveSystem.LoadGeneralSettingsData();
@@ -90,28 +109,34 @@ public class GameManager : Singleton<GameManager>
             // If save data exists, apply the saved settings
             SetFullscreen(GeneralSettingsData.IsFullscreen);
             SetResolution(GeneralSettingsData.ResolutionIndex);
-            SetLocale(GeneralSettingsData.Localisation);
+            SetLocale((ELocalisation)GeneralSettingsData.Localisation);
         }
     }
     
     public void ResetGeneralSettingsToDefault()
     {
         GeneralSettingsData = _defaultGeneralSettingsData.Clone();
-        SetLocale(ELocalisation.KOR);
+        SetFullscreen(GeneralSettingsData.IsFullscreen);
+        SetResolution(GeneralSettingsData.ResolutionIndex);
+        SetLocale((ELocalisation)GeneralSettingsData.Localisation);
     }
     
     public void SetFullscreen(bool isFullscreen)
     {
-        
+        GeneralSettingsData.IsFullscreen = isFullscreen;
+        Screen.SetResolution(ResolutionOptions[GeneralSettingsData.ResolutionIndex][0], ResolutionOptions[GeneralSettingsData.ResolutionIndex][1],
+            isFullscreen ? FullScreenMode.FullScreenWindow : FullScreenMode.Windowed);
     }
     
     public void SetResolution(int resolutionIndex)
     {
-        if (GeneralSettingsData.IsFullscreen) return;
+        GeneralSettingsData.ResolutionIndex = resolutionIndex;
+        Screen.SetResolution(ResolutionOptions[resolutionIndex][0], ResolutionOptions[resolutionIndex][1], Screen.fullScreenMode);
     }
     
     public void SetLocale(ELocalisation locale)
     {
+        GeneralSettingsData.Localisation = (int)locale;
         Define.Localisation = locale;
         LocalizationSettings.SelectedLocale = LocalizationSettings.AvailableLocales.Locales[(int)locale];
     }
@@ -332,7 +357,7 @@ public class GameManager : Singleton<GameManager>
         isFirstRun = true;
         PlayerMetaData = new PlayerMetaData();
         SaveSystem.RemoveMetaData();
-        SceneManager.LoadScene("IntroPreTutorial");
+        SceneManager.LoadScene("IntroPreTutorial_" + (Define.Localisation == ELocalisation.ENG ? "ENG" : "KOR"));
         ActiveScene = ESceneType.Tutorial;
     }
 
@@ -356,12 +381,12 @@ public class GameManager : Singleton<GameManager>
 
     public void LoadTutorial()
     {
-        SceneManager.LoadScene("Tutorial");
+        SceneManager.LoadScene("Tutorial_" + (Define.Localisation == ELocalisation.ENG ? "ENG" : "KOR"));
     }
 
     public void LoadBossCutScene()
     {
-        SceneManager.LoadScene("CutScene_Boss");
+        SceneManager.LoadScene("CutScene_Boss_" + (Define.Localisation == ELocalisation.ENG ? "ENG" : "KOR"));
         UIManager.Instance.PlayerIAMap.Disable();
         UIManager.Instance.HideAllInGameUI();
         _player.gameObject.SetActive(false);

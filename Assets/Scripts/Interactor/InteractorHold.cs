@@ -3,12 +3,28 @@ using UnityEngine.InputSystem;
 
 public abstract class InteractorHold : MonoBehaviour
 {
+    private bool _isInteractionBound;
     private InputAction _interactAction;
     private int _playerInteractingPartsCount;
+    protected bool IsInteracting;
 
     protected virtual void Start()
     {
+        var player = PlayerController.Instance;
+        if (player != null) BindInteraction();
+        PlayerEvents.Spawned += BindInteraction;
+    }
+    
+    protected virtual void OnDestroy()
+    {
+        PlayerEvents.Spawned -= BindInteraction;
+    }
+
+    private void BindInteraction()
+    {
+        if (_isInteractionBound) return;
         _interactAction = FindObjectOfType<PlayerInput>().actions["Player/Interact_Hold"];
+        _isInteractionBound = true;
     }
 
     private void OnTriggerEnter2D(Collider2D other)

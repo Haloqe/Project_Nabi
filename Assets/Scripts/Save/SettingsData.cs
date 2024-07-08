@@ -14,11 +14,12 @@ public class SettingsData_Sound
     }
 }
 
+[System.Serializable]
 public class SettingsData_General
 {
     public bool IsFullscreen;
     public int ResolutionIndex;
-    public ELocalisation Localisation;
+    public int Localisation;
     
     public SettingsData_General Clone()
     {

@@ -1,6 +1,7 @@
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Localization.Settings;
 
 public class BookUIController : UIControllerBase
 {
@@ -15,7 +16,6 @@ public class BookUIController : UIControllerBase
     // Options
     private int curSelectedOption;
     private TextMeshProUGUI[] _optionTexts;
-    private string[] _optionTextDefaults;
     private bool _isSettingsOpen;
     
     // Confirm
@@ -74,11 +74,6 @@ public class BookUIController : UIControllerBase
         
         // Options
         _optionTexts = transform.Find("Options").GetComponentsInChildren<TextMeshProUGUI>();
-        _optionTextDefaults = new string[_optionTexts.Length];
-        for (int i = 0; i < _optionTexts.Length; i++)
-        {
-            _optionTextDefaults[i] = _optionTexts[i].text;
-        }
     }
 
     private void Start()
@@ -276,7 +271,9 @@ public class BookUIController : UIControllerBase
             case 1: // Main menu
                 _confirmPanel.SetActive(true);
                 _isConfirmPanelForMenu = true;
-                _confirmDetailTMP.text = "이번 회차의 플레이 기록이 삭제됩니다.\n메인 메뉴로 돌아갈까요?";
+                _confirmDetailTMP.text = Define.Localisation == ELocalisation.ENG ? 
+                    "The data for the current trial will be deleted.\nReturn to main menu?" : 
+                    "이번 회차의 플레이 기록이 삭제됩니다.\n메인 메뉴로 돌아갈까요?";
                 break;
             
             case 2: // Settings
@@ -289,7 +286,9 @@ public class BookUIController : UIControllerBase
             case 3: // Quit
                 _confirmPanel.SetActive(true);
                 _isConfirmPanelForMenu = false;
-                _confirmDetailTMP.text = "이번 회차의 플레이 기록이 삭제됩니다.\n게임을 종료할까요?";
+                _confirmDetailTMP.text = Define.Localisation == ELocalisation.ENG ? 
+                    "The data for the current trial will be deleted.\nQuit the game?" : 
+                    "이번 회차의 플레이 기록이 삭제됩니다.\n게임을 종료할까요?";
                 break;
         }
     }
@@ -302,7 +301,8 @@ public class BookUIController : UIControllerBase
     public void UnselectSelectedOption()
     {
         if (curSelectedOption == -1) return;
-        _optionTexts[curSelectedOption].text = _optionTextDefaults[curSelectedOption];
+        _optionTexts[curSelectedOption].text = LocalizationSettings.StringDatabase.GetLocalizedString("UIStringTable", 
+            "BookUI_Options_" + curSelectedOption, LocalizationSettings.SelectedLocale);
         _optionTexts[curSelectedOption].color = Color.white;
         curSelectedOption = -1;
     }
@@ -328,7 +328,8 @@ public class BookUIController : UIControllerBase
 
     public void SelectOption(int idx)
     {
-        _optionTexts[idx].text = $"> {_optionTextDefaults[idx]} <";
+        _optionTexts[idx].text = "> " + LocalizationSettings.StringDatabase.GetLocalizedString("UIStringTable", 
+            "BookUI_Options_" + idx, LocalizationSettings.SelectedLocale) + " <";
         _optionTexts[idx].color = new Color(1f, 0.7f, 0f, 1);
         curSelectedOption = idx;
     }

@@ -71,7 +71,7 @@ public class WarriorUIController : UIControllerBase
     private void InitialiseBaseUI(bool isPristineClockwork)
     {
         // Initialise variables
-        _legacyChangePrice = 600;
+        _legacyChangePrice = 300;
         _legacyPreservations = new ELegacyPreservation[3];
         _panelOutlines = new Outline[4];
         _legacyFullNames = new string[3];
@@ -156,11 +156,24 @@ public class WarriorUIController : UIControllerBase
         };
         _legacyUpgradeController.Init(null);
         _legacyUpgradeController.OnBookOpen();
-        _legacyUpgradeCanvas.transform.Find("Content").Find("Page_1").Find("Desc").GetComponentInChildren<TextMeshProUGUI>().text
-            = $"{Utility.GetColouredPreservationText(_highestAppearedPreserv)} 태엽을 제물로 바쳐 이미 보유한 유산의 보존도를 한 단계 높입니다." +
-            $"\n성공 확률: [닳은] {Utility.FormatPercentage(_upgradeSuccessChances[(int)_highestAppearedPreserv][0])}% " +
-            $"[빛바랜] {Utility.FormatPercentage(_upgradeSuccessChances[(int)_highestAppearedPreserv][1])}% " +
-            $"[온전한] {Utility.FormatPercentage(_upgradeSuccessChances[(int)_highestAppearedPreserv][2])}%";
+        var tmp = _legacyUpgradeCanvas.transform.Find("Content").Find("Page_1").Find("Desc").GetComponentInChildren<TextMeshProUGUI>();
+        switch (Define.Localisation)
+        {
+            case ELocalisation.ENG:
+                tmp.text = $"By offering the {Utility.GetColouredPreservationText(_highestAppearedPreserv)} Key as sacrifice, the Preservation of an existing Legacy is increased by one tier.";
+                tmp.text += "\nSuccess Rate: ";
+                break;
+            
+            case ELocalisation.KOR:
+                tmp.text = $"{Utility.GetColouredPreservationText(_highestAppearedPreserv)} 태엽을 제물로 바쳐 이미 보유한 유산의 보존도를 한 단계 높입니다.";
+                tmp.text += "\n성공 확률: ";
+                break;
+        }
+
+        tmp.text +=
+            $"[{Define.LegacyPreservationNames[(int)Define.Localisation, 0]}] {Utility.FormatPercentage(_upgradeSuccessChances[(int)_highestAppearedPreserv][0])}% " +
+            $"[{Define.LegacyPreservationNames[(int)Define.Localisation, 1]}] {Utility.FormatPercentage(_upgradeSuccessChances[(int)_highestAppearedPreserv][1])}% " +
+            $"[{Define.LegacyPreservationNames[(int)Define.Localisation, 2]}] {Utility.FormatPercentage(_upgradeSuccessChances[(int)_highestAppearedPreserv][2])}%";
     }
 
     private void InitialiseConfirmUI()
@@ -241,7 +254,8 @@ public class WarriorUIController : UIControllerBase
         
         // Header
         var headerTMP = _confirmContentPanel.Find("TitleText").GetComponent<TextMeshProUGUI>();
-        headerTMP.text = Define.AttackTypeNames[(int)Define.Localisation, (int)attackType] + "이 다음과 같이 변경됩니다.";
+        headerTMP.text = Define.AttackTypeNames[(int)Define.Localisation, (int)attackType] + 
+            (Define.Localisation == ELocalisation.ENG ? "will be replaced" : "이 다음과 같이 변경됩니다.");
         
         // Display UI
         _confirmPanelObject.SetActive(true);
@@ -315,7 +329,8 @@ public class WarriorUIController : UIControllerBase
             {
                 // Upgrade success
                 _upgradeSucceedCanvas.transform.Find("DetailText").GetComponent<TextMeshProUGUI>().text =
-                    $"{Utility.GetColouredPreservationText((ELegacyPreservation)targetPreserv + 1)} {_playerAttackManager.GetLegacyName(id)} 획득";
+                    $"{Utility.GetColouredPreservationText((ELegacyPreservation)targetPreserv + 1)} {_playerAttackManager.GetLegacyName(id)} " +
+                    (Define.Localisation == ELocalisation.ENG ? "Acquired" : "획득");
                 _upgradeSucceedCanvas.SetActive(true);
                 _playerAttackManager.UpdateLegacyPreservation(id);
             }

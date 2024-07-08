@@ -1,10 +1,8 @@
 using System.Collections;
 using System.Linq;
-using FullscreenEditor;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
 using UnityEngine.UI;
 
@@ -103,13 +101,27 @@ public class SettingsUIController : UIControllerBase
         {
             rebindUI.UpdateBindingDisplay();
         }
+        
+        // General
+        // 0 - General
+        for (int i = 0; i < GameManager.Instance.ResolutionOptions.Length; i++)
+        {
+            if (!GameManager.Instance.IsResolutionSupported[i])
+            {
+                generalResolutionTMPs[i].color = new Color(0.1132075f, 0.1132075f, 0.1132075f, 1);
+            }
+        }
         SelectLanguage(LocalizationSettings.AvailableLocales.Locales.IndexOf(LocalizationSettings.SelectedLocale));
-        SelectFullscreen(GameManager.Instance.IsFullScreen);
+        fullscreenToggle.isOn = Screen.fullScreenMode == FullScreenMode.FullScreenWindow;
+        SelectResolution(GameManager.Instance.ResolutionIndex);
     }
 
     private void LoadGeneralSaveData()
     {
-        fullscreenToggle.isOn = GameManager.Instance.IsFullScreen;
+        GameManager.Instance.ResetGeneralSettingsToDefault();
+        SelectLanguage(LocalizationSettings.AvailableLocales.Locales.IndexOf(LocalizationSettings.SelectedLocale));
+        fullscreenToggle.isOn = Screen.fullScreenMode == FullScreenMode.FullScreenWindow;
+        SelectResolution(GameManager.Instance.ResolutionIndex);
     }
     
     private void LoadSoundSaveData()
@@ -170,8 +182,30 @@ public class SettingsUIController : UIControllerBase
                         break; 
             
                     case 1: // Resolution
-                        if (!GameManager.Instance.IsFullScreen) 
-                            SelectResolution(_selectedResolutionIdx + (int)value.x);
+                        // Clamp index
+                        int resIndex = _selectedResolutionIdx;
+                        if (value.x < 0) // left
+                        {
+                            resIndex = _selectedResolutionIdx - 1;
+                            if (resIndex == -1) resIndex = generalResolutionTMPs.Length - 1;
+                            while (resIndex != -1 && !GameManager.Instance.IsResolutionSupported[resIndex])
+                            {
+                                resIndex--;
+                            }
+                        }
+                        else if (value.x > 0) // right
+                        {
+                            resIndex = _selectedResolutionIdx + 1;
+                            if (resIndex == generalResolutionTMPs.Length) resIndex = 0;
+                            while (resIndex != generalResolutionTMPs.Length && !GameManager.Instance.IsResolutionSupported[resIndex])
+                            {
+                                resIndex++;
+                            }
+                        }
+                        if (resIndex != -1 && resIndex != generalResolutionTMPs.Length)
+                        {
+                            SelectResolution(resIndex);
+                        }
                         break;
             
                     case 2: // Language
@@ -203,7 +237,7 @@ public class SettingsUIController : UIControllerBase
         // Change language
         coverImage.color = new Color(coverImage.color.r, coverImage.color.g, coverImage.color.b, 1);
         SelectLanguage(localeIndex);
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(0.7f);
 
         // Fade Out
         while (coverImage.color.a > 0.0f)
@@ -212,28 +246,10 @@ public class SettingsUIController : UIControllerBase
             yield return null;
         }
         coverImage.color = new Color(coverImage.color.r, coverImage.color.g, coverImage.color.b, 0);
-        UIManager.Instance.UIIAMap.Enable();
-    }
-
-    private void SelectFullscreen(bool isFullscreen)
-    {
-        GameManager.Instance.SetFullscreen(isFullscreen);
-        if (isFullscreen)
-        {
-            generalResolutionTMPs[_selectedResolutionIdx].color = _unselectedDetailTextColor;
-        }
-        else
-        {
-            SelectResolution(2);
-        }
     }
 
     private void SelectResolution(int resolutionIndex)
     {
-        // Clamp index
-        if (resolutionIndex == -1) resolutionIndex = generalResolutionTMPs.Length - 1;
-        else if (resolutionIndex == generalResolutionTMPs.Length) resolutionIndex = 0; 
-        
         // Select resolution
         generalResolutionTMPs[_selectedResolutionIdx].color = _unselectedDetailTextColor;
         _selectedResolutionIdx = resolutionIndex;
@@ -338,7 +354,7 @@ public class SettingsUIController : UIControllerBase
     
     public void OnFullscreenToggleChanged()
     {
-        SelectFullscreen(!fullscreenToggle.isOn);
+        GameManager.Instance.SetFullscreen(fullscreenToggle.isOn);
     }
     
     public override void OnSubmit()

@@ -1,10 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public static class  Define
+public static class Define
 {
-    // TODO 외부 파일로 뺄 것
-    public static ELocalisation Localisation = ELocalisation.KOR;
+    public static ELocalisation Localisation;
     
     public static float GameOverDelayTime = 2.5f;
     public static float HoldInteractionTime = 2.0f;
@@ -95,11 +94,11 @@ public static class  Define
     public static float[][] MetaLegacyAppearanceByPreservation = new float[][]
     {
         new [] { 0.4f, 0.4f + 0.35f, 0.75f + 0.2f, 0.95f + 0.05f },
-        new [] { 0.3f, 0.3f + 0.3f, 0.6f + 0.3f, 0.9f + 0.1f },
+        new [] { 0.2f, 0.2f + 0.35f, 0.55f + 0.35f, 0.9f + 0.1f },
         new [] { 0.1f, 0.1f + 0.2f, 0.3f + 0.4f, 0.7f + 0.3f },
     };
-    public static int[] MetaHealthAdditions = new int[]{20,30,40};
-    public static float[] MetaCriticalRateAdditions = new float[]{0.15f,0.20f,0.3f};
-    public static float[] MetaResurrectionHealthRatio = new float[]{0.3f,0.5f,1.0f};
-    public static float[] MetaAttackDamageAdditions = new float[]{5,10,18};
+    public static int[] MetaHealthAdditions = new int[]{50,85,100};
+    public static float[] MetaCriticalRateAdditions = new float[]{0.10f,0.15f,0.2f};
+    public static float[] MetaResurrectionHealthRatio = new float[]{0.3f,0.5f,0.7f};
+    public static float[] MetaAttackDamageAdditions = new float[]{5,10,15};
 }

@@ -5,13 +5,14 @@ using Cinemachine;
 using TMPro;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class HiddenRoom : MonoBehaviour
 {
     [SerializeField] public int virtualCameraIndex;
     private CinemachineVirtualCamera _roomCamera;
     private UIManager _uiManager;
-    public string roomName;
+    [NamedArray(typeof(ELocalisation))] public string[] roomNames;
     public int roomLevel; // 0 - Lowest, 1 - Medium, 2 - Highest
     public int enemyKillTimeLimit;
     public GameObject chestPrefab;
@@ -51,9 +52,14 @@ public class HiddenRoom : MonoBehaviour
         _exitDestination = previousPos;
         _returnPortal.SetDestination(previousPos);
         _chest.ResetReward(roomLevel);
-        
-        string desc = enemyKillTimeLimit > 0 ? $"시간 제한: {enemyKillTimeLimit}초" : string.Empty;
-        _uiManager.DisplayRoomGuideUI(roomName, desc);
+
+        string desc = string.Empty;
+        if (enemyKillTimeLimit > 0)
+        {
+            desc = Define.Localisation == ELocalisation.ENG ? "Time Limit: " : "시간 제한: ";
+            desc += enemyKillTimeLimit + Define.Localisation == ELocalisation.ENG ? "Seconds" : "초";
+        }
+        _uiManager.DisplayRoomGuideUI(roomNames[(int)Define.Localisation], desc);
         
         if (roomLevel is 0 or 1)
         {

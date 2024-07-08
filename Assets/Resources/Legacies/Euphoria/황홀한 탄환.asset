@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: 9
   warrior: 1
-  preservation: 0
+  preservation: 1
   damageMultipliers:
   - 1.05
   - 1.07
@@ -33,35 +33,35 @@ MonoBehaviour:
   - Effect: 3
     Strength: 0
     Duration: 1
-    Chance: 1
+    Chance: 0.2
   - Effect: 3
     Strength: 0
     Duration: 1
+    Chance: 0.3
+  - Effect: 3
+    Strength: 0
+    Duration: 2
     Chance: 0.5
   - Effect: 3
     Strength: 0
-    Duration: 1
-    Chance: 0.5
-  - Effect: 3
-    Strength: 0
-    Duration: 1
+    Duration: 2.5
     Chance: 1
   ExtraStatusEffects:
   - Effect: 16
     Strength: 1
     Duration: 2
-    Chance: 1
+    Chance: 0.3
   - Effect: 16
     Strength: 1
     Duration: 2
-    Chance: 1
+    Chance: 0.35
   - Effect: 16
     Strength: 1
     Duration: 2
-    Chance: 1
+    Chance: 0.6
   - Effect: 16
     Strength: 1
-    Duration: 2
+    Duration: 3
     Chance: 1
   AttackSpawnObject: {fileID: 0}
   BulletDestroySpawnObject: {fileID: 0}

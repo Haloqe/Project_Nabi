@@ -206,6 +206,8 @@ GameObject:
   - component: {fileID: 2927748841288764377}
   - component: {fileID: 832535152976063925}
   - component: {fileID: 3101838520135577032}
+  - component: {fileID: 3274267934055717912}
+  - component: {fileID: 818395017950199184}
   m_Layer: 5
   m_Name: RoomName
   m_TagString: Untagged
@@ -260,10 +262,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uB545\uC9C0\uAE30\uB4E4\uC758 \uC27C\uD130"
+  m_text: The Shelter of the Ground-Crawlers
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: df2fadd74e3f7ba4190f3da22e5455c7, type: 2}
-  m_sharedMaterial: {fileID: 5058629656715077582, guid: df2fadd74e3f7ba4190f3da22e5455c7, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: cdc469a0e5cec104eb0dbdb2cb875d67, type: 2}
+  m_sharedMaterial: {fileID: -2129522292729361151, guid: cdc469a0e5cec104eb0dbdb2cb875d67, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -303,7 +305,7 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_enableWordWrapping: 0
+  m_enableWordWrapping: 1
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
@@ -329,6 +331,77 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &3274267934055717912
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7865891852198287746}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69b919361f1618e499c7a021b15e6aba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_LocalizedAssetReference:
+    m_TableReference:
+      m_TableCollectionName: GUID:a5afc204e13a09e46af074966e42734f
+    m_TableEntryReference:
+      m_KeyId: 1141838965366784
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+  m_UpdateAsset:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 3101838520135577032}
+        m_TargetAssemblyTypeName: TMPro.TMP_Text, Unity.TextMeshPro
+        m_MethodName: set_font
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 1
+--- !u!114 &818395017950199184
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7865891852198287746}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69beb381e244f92449b8c4cf954630e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_TrackedObjects:
+  - rid: 8590409753300828422
+  references:
+    version: 2
+    RefIds:
+    - rid: 8590409753300828422
+      type: {class: TrackedUGuiGraphic, ns: UnityEngine.Localization.PropertyVariants.TrackedObjects, asm: Unity.Localization}
+      data:
+        m_Target: {fileID: 3101838520135577032}
+        m_TrackedProperties:
+          items:
+          - rid: 8590409753300828423
+        m_UpdateType: 0
+    - rid: 8590409753300828423
+      type: {class: FloatTrackedProperty, ns: UnityEngine.Localization.PropertyVariants.TrackedProperties, asm: Unity.Localization}
+      data:
+        m_PropertyPath: m_fontSize
+        m_VariantData:
+        - localeIdentifier:
+            m_Code: en
+          value: 16.5
+        - localeIdentifier:
+            m_Code: ko
+          value: 13
 --- !u!1 &8797062893821752893
 GameObject:
   m_ObjectHideFlags: 0

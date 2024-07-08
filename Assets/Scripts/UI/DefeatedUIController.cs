@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Localization.Settings;
 
 public class DefeatedUIController : UIControllerBase
 {
@@ -10,7 +12,7 @@ public class DefeatedUIController : UIControllerBase
     private Color _selectedColour;
     private bool _isCurrSelectedRestartBtn;
     private string _restartText;
-    private string _backToMainText;
+    private string _mainMenuText;
     private AudioSource _audioSource;
     
     private void Awake()
@@ -21,10 +23,16 @@ public class DefeatedUIController : UIControllerBase
         _backToMainTMP.GetComponentInParent<DefeatedButton>().Init(this, false);
         _unselectedColour = new Color(0.358f, 0.358f, 0.358f, 1f);
         _selectedColour = Color.white;
-        _restartText = _restartTMP.text;
-        _backToMainText = _backToMainTMP.text;
         _audioSource = GetComponents<AudioSource>()[1];
         OnButtonHovered(true, false);
+    }
+
+    private void OnEnable()
+    {
+        _restartText = LocalizationSettings.StringDatabase.GetLocalizedString("UIStringTable",
+            "Gameover_Retry", LocalizationSettings.SelectedLocale);
+        _mainMenuText = LocalizationSettings.StringDatabase.GetLocalizedString("UIStringTable",
+            "Gameover_MainMenu", LocalizationSettings.SelectedLocale);
     }
     
     private IEnumerator ColourChangeCoroutine()
@@ -57,12 +65,12 @@ public class DefeatedUIController : UIControllerBase
         OnButtonUnhovered(!isRestartBtn);
         if (isRestartBtn)
         {
-            _restartTMP.text = $"> {_restartText} <";
+            _restartTMP.text = "> " + _restartText + " <";
             _restartTMP.color = _selectedColour;
         }
         else
         {
-            _backToMainTMP.text = $"> {_backToMainText} <";
+            _backToMainTMP.text = "> " + _mainMenuText + " <";
             _backToMainTMP.color = _selectedColour;
         }
         _isCurrSelectedRestartBtn = isRestartBtn;
@@ -79,7 +87,7 @@ public class DefeatedUIController : UIControllerBase
         }
         else
         {
-            _backToMainTMP.text = _backToMainText;
+            _backToMainTMP.text = _mainMenuText;
             _backToMainTMP.color = _unselectedColour;
         }
     }
