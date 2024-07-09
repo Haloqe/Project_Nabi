@@ -117,7 +117,6 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
     private void OnRestarted()
     {
         // Reset attacks
-        if (_dashCooldownCoroutine != null) StopCoroutine(_dashCooldownCoroutine);
         for (int i = 0; i < (int)EWarrior.MAX; i++) BindingSkillPreservations[i] = ELegacyPreservation.MAX;
         
         // Initialise damage multipliers
@@ -131,6 +130,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
     {
         if (_dashCooldownCoroutine != null) StopCoroutine(_dashCooldownCoroutine);
         _dashUIOverlay = PlayerAttackManager.Instance.GetAttackOverlay(ELegacyType.Dash);
+        _dashCooldownCoroutine = null;
         
         // Empty the attack buffer
         _currAttackIdx = -1;

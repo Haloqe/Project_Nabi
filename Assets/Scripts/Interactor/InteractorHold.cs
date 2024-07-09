@@ -6,12 +6,10 @@ public abstract class InteractorHold : MonoBehaviour
     private bool _isInteractionBound;
     private InputAction _interactAction;
     private int _playerInteractingPartsCount;
-    protected bool IsInteracting;
 
     protected virtual void Start()
     {
-        var player = PlayerController.Instance;
-        if (player != null) BindInteraction();
+        if (PlayerController.Instance != null) BindInteraction();
         PlayerEvents.Spawned += BindInteraction;
     }
     
@@ -23,7 +21,7 @@ public abstract class InteractorHold : MonoBehaviour
     private void BindInteraction()
     {
         if (_isInteractionBound) return;
-        _interactAction = FindObjectOfType<PlayerInput>().actions["Player/Interact_Hold"];
+        _interactAction = PlayerController.Instance.playerInput.actions["Player/Interact_Hold"];
         _isInteractionBound = true;
     }
 

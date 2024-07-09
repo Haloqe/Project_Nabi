@@ -4,7 +4,6 @@ using UnityEngine.Playables;
 using UnityEngine.Rendering.Universal;
 using Random = UnityEngine.Random;
 
-
 public class EnemyPattern_QueenBee : EnemyPattern
 {
     [SerializeField] private GameObject _dustParticle;
@@ -86,6 +85,7 @@ public class EnemyPattern_QueenBee : EnemyPattern
         _encounterTimeline.Play();
         
         yield return new WaitForSeconds(10f);
+        
         playerRenderer.enabled = true;
         _defaultParticleObject.SetActive(true);
         _spriteRenderer.enabled = true;

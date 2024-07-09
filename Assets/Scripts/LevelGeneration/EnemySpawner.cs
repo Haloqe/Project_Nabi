@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
 {
+    public bool shouldInitiallyBeActive;
     public int spawnLimit;
     [NamedArray(typeof(EEnemyType))] public float[] spawnProbabilities;
     private float[] _spawnProbabilitiesAcc;
@@ -65,7 +66,7 @@ public class EnemySpawner : MonoBehaviour
             }
             
             // Spawn enemy
-            _spawnedEnemies.Add(enemyManager.SpawnEnemy(spawnID, transform.position));
+            _spawnedEnemies.Add(enemyManager.SpawnEnemy(spawnID, transform.position, shouldInitiallyBeActive));
         }
         return _spawnedEnemies;
     }

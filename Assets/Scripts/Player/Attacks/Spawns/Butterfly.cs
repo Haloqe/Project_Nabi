@@ -7,7 +7,7 @@ using Random = UnityEngine.Random;
 public class Butterfly : MonoBehaviour
 {
     // Variables
-    private readonly float _lifeTime = 30f;
+    private readonly float _lifeTime = 15f;
     private readonly float _detectInterval = 1f;    // Time interval to detect if enemy is in range
     private readonly float _attackSpeed = 1f;       // Speed of the butterfly while attacking
     private readonly float _flySpeed = 0.08f;       // Speed of the butterfly while traveling towards target
@@ -56,8 +56,8 @@ public class Butterfly : MonoBehaviour
         transform.position = _player.position + GetRandomOffsetNearPlayer();
         
         // Damage
-        baseDamage = 2.5f;
-        relativeDamage = 1; 
+        baseDamage = 2f;
+        relativeDamage = 0.5f; 
         _attackInfo = new AttackInfo();
         _attackInfo.Damage.TotalAmount = baseDamage + _playerController.Strength * (relativeDamage + extraRelativeDamage);
     }

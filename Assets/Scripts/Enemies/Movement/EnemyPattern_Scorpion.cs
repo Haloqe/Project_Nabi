@@ -608,7 +608,6 @@ public class EnemyPattern_Scorpion : EnemyPattern
         _isInCutscene = true;
         StopAllCoroutines();
         _isShootingBullets = false;
-        GameManager.Instance.OnBossSlayed();
         StartCoroutine(OnDeathCoroutine());
     }
 
@@ -635,6 +634,8 @@ public class EnemyPattern_Scorpion : EnemyPattern
         _rigidBody.gravityScale = 1f;
         
         yield return new WaitForSeconds(5f);
+        GameManager.Instance.OnBossSlayed();
+        yield return new WaitForSeconds(2f);
         GameManager.Instance.LoadBossCutScene();
     }
 

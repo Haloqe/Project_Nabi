@@ -208,6 +208,7 @@ public class UIManager : Singleton<UIManager>
         _zoomedMap.SetActive(false);
         _bookUI.SetActive(false);
         _metaUpgradeUI.SetActive(false);
+        _bloodOverlayHit.gameObject.SetActive(false);
     }
 
     public void DestroyAllInGameUI()
@@ -241,8 +242,6 @@ public class UIManager : Singleton<UIManager>
                 break;
             
             case ESceneType.Boss:
-                var hpRatio = _playerController.playerDamageReceiver.GetHPRatio();
-                OnPlayerHPChanged(0,hpRatio,hpRatio);
                 return;
             
             case ESceneType.Tutorial:
@@ -269,7 +268,8 @@ public class UIManager : Singleton<UIManager>
             DisableMap();
         }
         _activeFocusedUI = null;
-        OnPlayerHPChanged(0,0,1);
+        var hpRatio = _playerController.playerDamageReceiver.GetHPRatio();
+        OnPlayerHPChanged(0,hpRatio,hpRatio);
     }
     
     private void UseUIControl()
@@ -556,10 +556,6 @@ public class UIManager : Singleton<UIManager>
     
     private void OnClose(InputAction.CallbackContext obj)
     {
-        if (_activeFocusedUI == _defeatedUI)
-        {
-            return;
-        }
         if (_gameManager.isRunningCutScene)
         {
             if (_gameManager.isRunningTutorial) return;
@@ -567,7 +563,13 @@ public class UIManager : Singleton<UIManager>
             FindObjectOfType<SceneTransitionHandler>().StartSceneTransition();
             return;
         }
-        if (_activeFocusedUI == _warriorUIObject || _activeFocusedUI == _bookUI || _activeFocusedUI == _mainMenuUI)
+        if (_activeFocusedUI == null) return;
+        
+        if (_activeFocusedUI == _defeatedUI)
+        {
+            // Do nothing
+        }
+        else if (_activeFocusedUI == _warriorUIObject || _activeFocusedUI == _bookUI || _activeFocusedUI == _mainMenuUI)
         {
             _activeFocusedUIController.OnClose();
         }
@@ -592,6 +594,7 @@ public class UIManager : Singleton<UIManager>
 
     private void OnReset(InputAction.CallbackContext obj)
     {
+        if (_activeFocusedUI == null) return;
         if (_activeFocusedUI == _zoomedMap)
         {
             _mapController.ResetMapCamera(true);
@@ -610,7 +613,7 @@ public class UIManager : Singleton<UIManager>
     {
         if (GameManager.Instance.ActiveScene == ESceneType.Tutorial)
         {
-            FindObjectOfType<TutorialHandler>().OnEnter();
+            FindObjectOfType<TutorialHandler>()?.OnEnter();
             return;
         }
         if (_activeFocusedUIController) _activeFocusedUIController.OnSubmit();

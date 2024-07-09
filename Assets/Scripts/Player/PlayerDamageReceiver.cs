@@ -47,7 +47,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
 
     private void Awake()
     {
-        BaseHealth = 100;
+        BaseHealth = 200;
         _currHealth = MaxHealth;
     }
     

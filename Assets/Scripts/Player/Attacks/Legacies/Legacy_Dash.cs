@@ -28,15 +28,12 @@ public class Legacy_Dash : ActiveLegacySO
         var cc = StatusEffects[(int)preservation];
         if ((cc.Effect is EStatusEffect.Swarm or EStatusEffect.Cloud) && Random.value <= cc.Chance)
         {
-            if (Random.value <= cc.Chance)
+            _playerDamageDealer.TurbelaSpawnButterfly();
+                
+            // Spawn second butterfly?
+            if (Random.value <= Define.TurbelaDoubleSpawnStats[(int)PlayerController.Instance.TurbelaDoubleSpawnPreserv])
             {
                 _playerDamageDealer.TurbelaSpawnButterfly();
-                
-                // Spawn second butterfly?
-                if (Random.value <= Define.TurbelaDoubleSpawnStats[(int)PlayerController.Instance.TurbelaDoubleSpawnPreserv])
-                {
-                    _playerDamageDealer.TurbelaSpawnButterfly();
-                }
             }
         }
         
