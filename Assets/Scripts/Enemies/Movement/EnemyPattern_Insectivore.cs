@@ -42,7 +42,6 @@ public class EnemyPattern_Insectivore : EnemyPattern
         // if (!_isShooting) StartCoroutine(ShootBullet());
         _animator.SetTrigger("Shoot");
         FlipEnemyTowardsTarget();
-        _animator.SetBool(IsAttacking, false);
     }
 
     public override void Attack()
@@ -97,8 +96,14 @@ public class EnemyPattern_Insectivore : EnemyPattern
         _audioSource.PlayOneShot(_shootAudio);
     }
 
+    private void DisableIsAttacking()
+    {
+        _animator.SetBool(IsAttacking, false);
+    }
+
     public override bool PlayerIsInAttackRange()
     {
+        if (_animator.GetBool(IsAttacking)) return true;
         return Mathf.Abs(transform.position.x - _enemyBase.Target.transform.position.x) <= _enemyBase.EnemyData.AttackRangeX 
             && _enemyBase.Target.transform.position.y - transform.position.y <= _enemyBase.EnemyData.AttackRangeY;
     }
