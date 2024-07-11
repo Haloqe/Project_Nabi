@@ -7,7 +7,7 @@ public class Scorpion_Electricity : MonoBehaviour
 {
     private bool _playerIsInElectricity;
     
-    private static float _baseDamage = 1f;
+    private static float _baseDamage = 2f;
     private static DamageInfo _electricityDamageInfo = new(EDamageType.Base, _baseDamage);
     private AttackInfo _electricityAttackInfo = new(_electricityDamageInfo);
 
