@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -417,7 +416,7 @@ public class EnemyPattern_QueenBee : EnemyPattern
         {
             b.gameObject.GetComponent<EnemyBase>().Die();
         }
-        CameraManager.Instance.AllVirtualCameras[5].GetComponent<TestCameraShake>().OnMidBossDeath(10f);
+        CameraManager.Instance.AllVirtualCameras[5].GetComponent<TestCameraShake>().OnMidBossDeath(8f);
     }
 
     private IEnumerator OnDeathCoroutine()
