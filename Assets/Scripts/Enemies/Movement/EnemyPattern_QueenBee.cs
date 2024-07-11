@@ -1,7 +1,10 @@
+using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.Rendering.Universal;
+using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
 
 public class EnemyPattern_QueenBee : EnemyPattern
@@ -16,7 +19,7 @@ public class EnemyPattern_QueenBee : EnemyPattern
     private bool _beesAreCommanded;
     private bool _isInAttackSequence;
     private bool _justFinishedAttack = true;
-    private UnityEngine.Object _spawnVFXPrefab;
+    private Object _spawnVFXPrefab;
     private GameObject _bombObject;
     private EnemyManager _enemyManager;
     private Vector3[] _bombPositions = new Vector3[13];
@@ -34,7 +37,12 @@ public class EnemyPattern_QueenBee : EnemyPattern
     [SerializeField] private AudioClip _poisonExplosionAudio;
     [SerializeField] private AudioClip _dyingAudio;
     [SerializeField] private AudioClip _deathEnd;
+    
+    // Damage information
+    private AttackInfo _baseAttackInfo;
+    private AttackInfo _bodySlamAttackInfo;
 
+    // Cutscenes
     private PlayableDirector _encounterTimeline;
     private PlayableDirector _deathTimeline;
     private bool _isInCutscene = true;
@@ -71,6 +79,16 @@ public class EnemyPattern_QueenBee : EnemyPattern
         }
         
         StartCoroutine(StartEncounterTimeline());
+    }
+
+    private void Start()
+    {
+        _baseAttackInfo = _enemyBase.DamageInfo;
+        _bodySlamAttackInfo = new AttackInfo()
+        {
+            Damage = new DamageInfo(EDamageType.Base, 40, 0),
+            StatusEffects = new List<StatusEffectInfo>(),
+        };
     }
 
     private IEnumerator StartEncounterTimeline()
@@ -268,6 +286,9 @@ public class EnemyPattern_QueenBee : EnemyPattern
     {
         _isBouncing = false;
         
+        // TODO: 이거 정확하게 돌진 시작하는 부분에서 인포 업데이트 해주라! 끝날때도 마찬가지.
+        _enemyBase.UpdateAttackInfo(_bodySlamAttackInfo);
+        
         int directionFacing = 1;
         if (_player.transform.position.x > transform.position.x) directionFacing *= -1;
         Vector3 startPosition = _player.transform.position + new Vector3(directionFacing * 7f, 0, 0);
@@ -278,15 +299,19 @@ public class EnemyPattern_QueenBee : EnemyPattern
         PlayAudio(0, _bodySlamTelegraphAudio, 0.1f);
         _animator.SetBool(IsAttacking, true);
         _animator.SetInteger(AttackIndex, 2);
+        
+        _enemyBase.UpdateAttackInfo(_baseAttackInfo);
         yield return new WaitForSeconds(0.8f);
         
         float dashSpeed = MoveSpeed * 5f;
         _dustParticle.SetActive(true);
         _dustParticle.transform.localScale = new Vector3(-directionFacing, 1, 1);
         PlayAudio(1, _bodySlamSequence, 0.1f);
+        _enemyBase.UpdateAttackInfo(_bodySlamAttackInfo);
         yield return MoveToPosition(finalPosition, dashSpeed, false);
 
         _animator.SetBool(IsAttacking, false);
+        _enemyBase.UpdateAttackInfo(_baseAttackInfo);
         yield return new WaitForSeconds(2f);
 
         _isBouncing = true;

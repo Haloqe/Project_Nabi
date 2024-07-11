@@ -88,6 +88,11 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         _armour = EnemyData.DefaultArmour;
     }
 
+    public void UpdateAttackInfo(AttackInfo curAttackInfo)
+    {
+        DamageInfo = curAttackInfo;
+    }
+
     public void SetMaxHealth(float newMaxHealth)
     {
         maxHealth = newMaxHealth;
@@ -441,6 +446,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         
         if (_damageCooltimeCounter <= _damageCooltime) return;
         if (!other.CompareTag(Target.tag)) return;
+        
         // 황홀경 status effect
         if (_animator.GetBool(IsAttacking) && _effectRemainingTimes[(int)EStatusEffect.Ecstasy] > 0)
         {
