@@ -84,13 +84,13 @@ public class PlayerController : Singleton<PlayerController>
         if (IsToBeDestroyed) return;
         
         // Initialise values
-        BaseStrength = 3.0f;
+        BaseStrength = 2.0f;
         BaseArmour = 3.0f;
         BaseArmourPenetration = 0.0f;
         BaseEvasionRate = 0.0f;
         BaseCriticalRate = 0.0f;
         BaseHealEfficiency = 1.0f;
-        HpCriticalThreshold = 0.33f;
+        HpCriticalThreshold = 0.3f;
         DefaultGravityScale = 3.0f;
         nightShadeShadeBonusStats = new float[] { 0, 0, 0, 0, 0 };
 
@@ -527,18 +527,22 @@ public class PlayerController : Singleton<PlayerController>
     {
         DisablePlayerInput();
         var spriteRenderer = GetComponent<SpriteRenderer>();
-        
         var color = spriteRenderer.color;
+        
+        if (_gameManager.ActiveScene is not ESceneType.MidBoss and ESceneType.Boss)
+        {
+            color.a = 1;
+            spriteRenderer.color = color;
+            yield break;
+        }
+        
         while (spriteRenderer.color.a < 1)
         {
             color.a += 1f * Time.unscaledDeltaTime;
             spriteRenderer.color = color;
             yield return null;
         }
-
-        if (_gameManager.ActiveScene != ESceneType.MidBoss
-            && _gameManager.ActiveScene != ESceneType.Boss)
-            EnablePlayerInput();
+        EnablePlayerInput();
     }
     
     private void OnCombatSceneChanged()

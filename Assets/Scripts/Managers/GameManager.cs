@@ -283,6 +283,7 @@ public class GameManager : Singleton<GameManager>
         {
             GameObject followObject = new GameObject("CameraFollowingObject");
             _player.playerMovement.CameraFollowObject = followObject.AddComponent<CameraFollowObject>();
+            Debug.Log("Follow object added");
             CameraManager.Instance.CurrentCamera.Follow = followObject.transform;
         }
         GameEvents.MapLoaded.Invoke();

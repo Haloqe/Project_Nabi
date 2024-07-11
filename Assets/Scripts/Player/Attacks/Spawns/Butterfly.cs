@@ -57,7 +57,7 @@ public class Butterfly : MonoBehaviour
         
         // Damage
         baseDamage = 2f;
-        relativeDamage = 0.5f; 
+        relativeDamage = 0.3f; 
         _attackInfo = new AttackInfo();
         _attackInfo.Damage.TotalAmount = baseDamage + _playerController.Strength * (relativeDamage + extraRelativeDamage);
     }
@@ -291,8 +291,8 @@ public class Butterfly : MonoBehaviour
     {
         // Adjust for a critical damage
         var damageToSend = _attackInfo.Clone(cloneDamage:true, cloneStatusEffect:false);
-        var critChanceExtra = Define.TurbelaButterflyCritStats[(int)_playerController.TurbelaButterflyCritPreserv];
-        if (Random.value <= _playerController.CriticalRate + critChanceExtra)
+        var critChanceMultiplier = Define.TurbelaButterflyCritStats[(int)_playerController.TurbelaButterflyCritPreserv];
+        if (Random.value <= _playerController.CriticalRate * critChanceMultiplier)
         {
             damageToSend.Damage.TotalAmount *= 2.0f;
             critVFX.Play();
