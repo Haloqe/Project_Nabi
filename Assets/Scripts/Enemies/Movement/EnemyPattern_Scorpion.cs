@@ -50,10 +50,9 @@ public class EnemyPattern_Scorpion : EnemyPattern
     
     // Attack Infos
     private AttackInfo _contactAttackInfo;
-    private AttackInfo _groundPoundAttackInfo;  // 가능하다면 땅 내려찍는 순간이나 내려찍기 조금 전, 또는 내려오는 중에 설정했으면 함. 올라갈때 X
-    private AttackInfo _clawAttackAttackInfo;   // 손 모을 때
-    private AttackInfo _clawReturnAttackInfo;   // 모았다가 돌아갈 때. 이거 없애고 base로 해도 되고 base보다 살짝 높게 해도 되고.
-    private AttackInfo _laserAttackInfo;        //?? 이미 따로있는지 모르겠음 나머지 불렛이나 전기도 다 따로 해쥬
+    private AttackInfo _groundPoundAttackInfo;
+    private AttackInfo _clawAttackAttackInfo;
+    private AttackInfo _clawReturnAttackInfo;
     
     // sfx
     [SerializeField] private AudioSource[] _audioSources;
@@ -118,6 +117,29 @@ public class EnemyPattern_Scorpion : EnemyPattern
         base.Init();
         _encounterTimeline = GameObject.Find("Encounter Timeline").GetComponent<PlayableDirector>();
         StartCoroutine(StartEncounterTimeline());
+    }
+
+    private void Start()
+    {
+        _contactAttackInfo = _enemyBase.DamageInfo;
+        
+        _groundPoundAttackInfo = new AttackInfo()
+        {
+            Damage = new DamageInfo(EDamageType.Base, 35, 0),
+            StatusEffects = new List<StatusEffectInfo>(),
+        };
+        
+        _clawAttackAttackInfo = new AttackInfo()
+        {
+            Damage = new DamageInfo(EDamageType.Base, 30, 0),
+            StatusEffects = new List<StatusEffectInfo>(),
+        };
+        
+        _clawReturnAttackInfo = new AttackInfo()
+        {
+            Damage = new DamageInfo(EDamageType.Base, 20, 0),
+            StatusEffects = new List<StatusEffectInfo>(),
+        };
     }
 
     private IEnumerator StartEncounterTimeline()
@@ -425,48 +447,6 @@ public class EnemyPattern_Scorpion : EnemyPattern
         }
     }
     
-    #endregion claw movements
-    
-    private IEnumerator ClawAttack()
-    {
-        _isInAttackSequence = true;
-        
-        yield return MoveClaws(_defaultClawPositions, 2f);
-        yield return RotateByAmount(10f, 1, 50f);
-        
-        _animator.SetTrigger("GroundPound");
-        yield return new WaitForSeconds(1.8f);
-        PlayAudio(1, _clawAttackAudio, 0.1f);
-        yield return new WaitForSeconds(0.2f);
-        for (int i = -1; i <= 1; i += 2)
-        {
-            _dustParticles[Math.Sign(i + 1)].transform.localScale = 
-                new Vector3(-i, 1, 1);
-            _dustParticles[Math.Sign(i + 1)].transform.position =
-                new Vector3(_armObjects[Math.Sign(i + 1) * 3].transform.position.x + i * 3f, -7.5f, 0);
-            _dustParticles[Math.Sign(i + 1)].SetActive(true);
-        }
-        yield return MoveClaws(_clawAttackPositions, 5f);
-        
-        yield return RotateByAmount(10f, -1, 50f);
-        StartCoroutine(VibrateClaws());
-        yield return new WaitForSeconds(1.8f);
-        PlayAudio(1, _clawDragAudio, 0.25f);
-        yield return new WaitForSeconds(0.2f);
-        
-        for (int i = -1; i <= 1; i += 2)
-        {
-            _dustParticles[Math.Sign(i + 1)].transform.localScale = 
-                new Vector3(i, 1, 1);
-            _dustParticles[Math.Sign(i + 1)].transform.position =
-                new Vector3(_armObjects[Math.Sign(i + 1) * 3].transform.position.x - i * 4f, -7f, 0);
-            _dustParticles[Math.Sign(i + 1)].SetActive(true);
-        }
-        yield return MoveClaws(_defaultClawPositions, 2f);
-        
-        _isInAttackSequence = false;
-    }
-
     private IEnumerator VibrateClaws()
     {
         float timer = 0f;
@@ -488,6 +468,52 @@ public class EnemyPattern_Scorpion : EnemyPattern
 
         _armObjects[0].transform.position = initialPositions[0];
         _armObjects[3].transform.position = initialPositions[1];
+    }
+    
+    #endregion claw movements
+    
+    private IEnumerator ClawAttack()
+    {
+        _isInAttackSequence = true;
+        
+        yield return MoveClaws(_defaultClawPositions, 2f);
+        yield return RotateByAmount(10f, 1, 50f);
+        
+        _animator.SetTrigger("GroundPound");
+        yield return new WaitForSeconds(1.8f);
+        PlayAudio(1, _clawAttackAudio, 0.1f);
+        yield return new WaitForSeconds(0.2f);
+        for (int i = -1; i <= 1; i += 2)
+        {
+            _dustParticles[Math.Sign(i + 1)].transform.localScale = 
+                new Vector3(-i, 1, 1);
+            _dustParticles[Math.Sign(i + 1)].transform.position =
+                new Vector3(_armObjects[Math.Sign(i + 1) * 3].transform.position.x + i * 3f, -7.5f, 0);
+            _dustParticles[Math.Sign(i + 1)].SetActive(true);
+        }
+        _enemyBase.UpdateAttackInfo(_clawAttackAttackInfo);
+        yield return MoveClaws(_clawAttackPositions, 5f);
+        _enemyBase.UpdateAttackInfo(_contactAttackInfo);
+        
+        yield return RotateByAmount(10f, -1, 50f);
+        StartCoroutine(VibrateClaws());
+        yield return new WaitForSeconds(1.8f);
+        PlayAudio(1, _clawDragAudio, 0.25f);
+        yield return new WaitForSeconds(0.2f);
+        
+        for (int i = -1; i <= 1; i += 2)
+        {
+            _dustParticles[Math.Sign(i + 1)].transform.localScale = 
+                new Vector3(i, 1, 1);
+            _dustParticles[Math.Sign(i + 1)].transform.position =
+                new Vector3(_armObjects[Math.Sign(i + 1) * 3].transform.position.x - i * 4f, -7f, 0);
+            _dustParticles[Math.Sign(i + 1)].SetActive(true);
+        }
+        _enemyBase.UpdateAttackInfo(_clawReturnAttackInfo);
+        yield return MoveClaws(_defaultClawPositions, 2f);
+        _enemyBase.UpdateAttackInfo(_contactAttackInfo);
+        
+        _isInAttackSequence = false;
     }
 
     private IEnumerator ElectricityAttack()
@@ -557,10 +583,12 @@ public class EnemyPattern_Scorpion : EnemyPattern
             new Vector3(playerXPosition + 0.5f, yLevel, 0)
         };
         
+        _enemyBase.UpdateAttackInfo(_groundPoundAttackInfo);
         yield return MoveClaws(attackPosition, 3f);
         PlayAudio(1, _groundPoundAudio[Random.Range(0, 3)], 0.2f);
         PlayAudio(1, _groundPoundAudio[3], 0.2f);
         yield return new WaitForSeconds(0.5f);
+        _enemyBase.UpdateAttackInfo(_contactAttackInfo);
         
         yield return VibrateClaws();
         for (int i = -1; i <= 1; i += 2)
@@ -573,7 +601,9 @@ public class EnemyPattern_Scorpion : EnemyPattern
         }
         
         PlayAudio(1, _clawDragAudio, 0.25f);
+        _enemyBase.UpdateAttackInfo(_clawReturnAttackInfo);
         yield return MoveClaws(_defaultClawPositions, 2f);
+        _enemyBase.UpdateAttackInfo(_contactAttackInfo);
         yield return RotateByAmount(30f, 1, 90f);
 
         _isInAttackSequence = false;
