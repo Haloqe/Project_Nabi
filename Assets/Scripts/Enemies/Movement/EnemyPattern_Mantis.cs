@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -16,15 +17,33 @@ public class EnemyPattern_Mantis : EnemyPattern
     private float _dashTime = 0.3f;
     [SerializeField] private ParticleSystemRenderer _dashVFX;
     
+    // Attack Information
+    private AttackInfo _contactAttackInfo;
+    private AttackInfo _baseAttackInfo;
+    
     // sfx
     [SerializeField] private AudioClip _dashAudio;
     
     private static readonly int IsAttacking = Animator.StringToHash("IsAttacking");
+    private readonly static int EndAttack = Animator.StringToHash("EndAttack");
+    private readonly static int SecondAttack = Animator.StringToHash("SecondAttack");
+    private readonly static int FirstAttack = Animator.StringToHash("FirstAttack");
+    private readonly static int Telegraph1 = Animator.StringToHash("Telegraph");
 
     private void Awake()
     {
         MoveType = EEnemyMoveType.LinearPath;
         Init();
+    }
+    
+    private void Start()
+    {
+        _contactAttackInfo = _enemyBase.DamageInfo;
+        _baseAttackInfo = new AttackInfo()
+        {
+            Damage = new DamageInfo(EDamageType.Base, 20, 0),
+            StatusEffects = new List<StatusEffectInfo>(),
+        };
     }
 
     private void WalkForward(bool isChasing = false)
@@ -104,7 +123,7 @@ public class EnemyPattern_Mantis : EnemyPattern
     private IEnumerator Telegraph()
     {
         IsAttackingPlayer = true;
-        _animator.SetTrigger("Telegraph");
+        _animator.SetTrigger(Telegraph1);
         _rigidBody.velocity = Vector2.zero;
         yield return new WaitForSeconds(1f);
         StartCoroutine(AttackSequence());
@@ -112,19 +131,20 @@ public class EnemyPattern_Mantis : EnemyPattern
 
     private IEnumerator AttackSequence()
     {
-        _animator.SetTrigger("FirstAttack");
+        _animator.SetTrigger(FirstAttack);
         yield return DashAttack();
         yield return new WaitForSeconds(0.5f);
-        _animator.SetTrigger("SecondAttack");
+        _animator.SetTrigger(SecondAttack);
         yield return DashAttack();
         yield return new WaitForSeconds(0.3f);
 
-        _animator.SetTrigger("EndAttack");
+        _animator.SetTrigger(EndAttack);
         IsAttackingPlayer = false;
     }
 
     private IEnumerator DashAttack()
     {
+        _enemyBase.UpdateAttackInfo(_baseAttackInfo);
         _audioSource.pitch = Random.Range(0.85f, 1.15f);
         _audioSource.PlayOneShot(_dashAudio, 0.4f);
         float dashTimeCounter = 0;
@@ -136,6 +156,7 @@ public class EnemyPattern_Mantis : EnemyPattern
             dashTimeCounter += Time.deltaTime;
             yield return null;
         }
+        _enemyBase.UpdateAttackInfo(_contactAttackInfo);
     }
 
     public override bool PlayerIsInAttackRange()

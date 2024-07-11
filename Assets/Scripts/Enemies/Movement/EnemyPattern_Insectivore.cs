@@ -1,5 +1,8 @@
+using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class EnemyPattern_Insectivore : EnemyPattern
 {
@@ -7,11 +10,17 @@ public class EnemyPattern_Insectivore : EnemyPattern
     private bool _isHidden = true;
     private GameObject _attackHitbox;
     [SerializeField] private GameObject _bulletObject;
-    private static readonly int IsAttacking = Animator.StringToHash("IsAttacking");
 
     [SerializeField] private AudioClip _shootAudio;
     [SerializeField] private AudioClip _snapAudio;
     [SerializeField] private AudioClip _revealAudio;
+    
+    // Attack Information
+    private AttackInfo _contactAttackInfo;
+    private AttackInfo _baseAttackInfo;
+    
+    private static readonly int IsAttacking = Animator.StringToHash("IsAttacking");
+    private readonly static int Shoot = Animator.StringToHash("Shoot");
 
     private void Awake()
     {
@@ -24,6 +33,16 @@ public class EnemyPattern_Insectivore : EnemyPattern
         
         _attackHitbox = transform.Find("AttackHitbox").transform.gameObject;
         Init();
+    }
+
+    private void Start()
+    {
+        _contactAttackInfo = _enemyBase.DamageInfo;
+        _baseAttackInfo = new AttackInfo()
+        {
+            Damage = new DamageInfo(EDamageType.Base, 15, 0),
+            StatusEffects = new List<StatusEffectInfo>(),
+        };
     }
     
     public override void Patrol()
@@ -40,7 +59,7 @@ public class EnemyPattern_Insectivore : EnemyPattern
     {
         if (_isHidden || !IsFlippable) return;
         // if (!_isShooting) StartCoroutine(ShootBullet());
-        _animator.SetTrigger("Shoot");
+        _animator.SetTrigger(Shoot);
         FlipEnemyTowardsTarget();
     }
 
@@ -54,6 +73,7 @@ public class EnemyPattern_Insectivore : EnemyPattern
 
         if (IsFlippable) FlipEnemyTowardsTarget();
         _animator.SetBool(IsAttacking, true);
+        _enemyBase.UpdateAttackInfo(_baseAttackInfo);
     }
 
     private void PlaySnapSound()
@@ -99,6 +119,7 @@ public class EnemyPattern_Insectivore : EnemyPattern
     private void DisableIsAttacking()
     {
         _animator.SetBool(IsAttacking, false);
+        _enemyBase.UpdateAttackInfo(_contactAttackInfo);
     }
 
     public override bool PlayerIsInAttackRange()

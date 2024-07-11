@@ -49,7 +49,7 @@ public class EnemyPattern_Scorpion : EnemyPattern
     private float _clawAttackGap = 3f;
     
     // Attack Infos
-    private AttackInfo _baseAttackInfo;
+    private AttackInfo _contactAttackInfo;
     private AttackInfo _groundPoundAttackInfo;  // 가능하다면 땅 내려찍는 순간이나 내려찍기 조금 전, 또는 내려오는 중에 설정했으면 함. 올라갈때 X
     private AttackInfo _clawAttackAttackInfo;   // 손 모을 때
     private AttackInfo _clawReturnAttackInfo;   // 모았다가 돌아갈 때. 이거 없애고 base로 해도 되고 base보다 살짝 높게 해도 되고.

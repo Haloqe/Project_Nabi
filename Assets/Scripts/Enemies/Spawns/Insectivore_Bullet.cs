@@ -9,6 +9,7 @@ public class Insectivore_Bullet : MonoBehaviour
     private float _speed = 15f;
     private static float _bulletDamage = 5f;
     private AttackInfo _bulletAttackInfo = new(new DamageInfo(EDamageType.Base, _bulletDamage));
+    private readonly static int TouchGround = Animator.StringToHash("touchGround");
 
     private void Start()
     {
@@ -32,7 +33,7 @@ public class Insectivore_Bullet : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D other)
     {
-        _animator.SetTrigger("touchGround");
+        _animator.SetTrigger(TouchGround);
     }
 
     private IEnumerator DestroySelfAfterSeconds()

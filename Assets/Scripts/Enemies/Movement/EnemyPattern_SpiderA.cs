@@ -20,7 +20,10 @@ public class EnemyPattern_SpiderA : EnemyPattern
     private float _jumpForce = 10f;
     private float _teethAttackRange = 4f;
     private float _webAttackRange = 5f;
-    private List<StatusEffectInfo> _poisonStatusEffect;
+    
+    // Attack Information
+    private AttackInfo _contactAttackInfo;
+    private AttackInfo _teethAttackInfo;
     
     // sfx
     [SerializeField] private AudioClip _jumpAudio;
@@ -41,11 +44,20 @@ public class EnemyPattern_SpiderA : EnemyPattern
         Init();
     }
     
+    private void Start()
+    {
+        _contactAttackInfo = _enemyBase.DamageInfo;
+        _teethAttackInfo = new AttackInfo()
+        {
+            Damage = new DamageInfo(EDamageType.Base, 15, 0),
+            StatusEffects = new List<StatusEffectInfo> { new StatusEffectInfo(EStatusEffect.Poison, 1f, 5f) },
+        };
+    }
+    
     public override void Init()
     {
         base.Init();
         _playerDamageReceiver = PlayerController.Instance.playerDamageReceiver;
-        _poisonStatusEffect = new List<StatusEffectInfo> { new(EStatusEffect.Poison, 1f, 5f) };
     }
 
     private void WalkForward()
@@ -209,7 +221,7 @@ public class EnemyPattern_SpiderA : EnemyPattern
         FlipEnemyTowardsTarget();
         _animator.SetBool(IsWalking, false);
         _animator.SetBool(IsTeethAttacking, true);
-        _enemyBase.DamageInfo.StatusEffects = _poisonStatusEffect;
+        _enemyBase.UpdateAttackInfo(_teethAttackInfo);
 
         _audioSource.pitch = Random.Range(0.5f, 1.5f);
         _audioSource.PlayOneShot(_poisonAudio);
@@ -217,9 +229,7 @@ public class EnemyPattern_SpiderA : EnemyPattern
         yield return new WaitForSeconds(1f);
         
         _animator.SetBool(IsTeethAttacking, false);
-        _enemyBase.DamageInfo.StatusEffects = new List<StatusEffectInfo> { };
-        // _enemyBase.DamageInfo.Damage = new DamageInfo((EDamageType)Enum.Parse(typeof(EDamageType),
-        //     _enemyBase.EnemyData.DamageType), _enemyBase.EnemyData.DefaultDamage);
+        _enemyBase.UpdateAttackInfo(_contactAttackInfo);
         
         _isInAttackState = false;
     }
@@ -269,11 +279,10 @@ public class EnemyPattern_SpiderA : EnemyPattern
                !_groundInFrontCollider.IsTouchingLayers(_groundLayer);
     }
     
-    private void OnDrawGizmos()
-    {
-        // Gizmos.DrawWireCube(transform.position, _groundColliderSize);
-        Gizmos.DrawWireCube(transform.position, new Vector3(_webAttackRange, _webAttackRange, 0));
-        Gizmos.DrawWireCube(transform.position, new Vector3(_teethAttackRange, _teethAttackRange, 0));
-    }
-    
+    // private void OnDrawGizmos()
+    // {
+    //     // Gizmos.DrawWireCube(transform.position, _groundColliderSize);
+    //     Gizmos.DrawWireCube(transform.position, new Vector3(_webAttackRange, _webAttackRange, 0));
+    //     Gizmos.DrawWireCube(transform.position, new Vector3(_teethAttackRange, _teethAttackRange, 0));
+    // }
 }

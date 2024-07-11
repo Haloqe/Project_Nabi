@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using Pathfinding;
 using Random = UnityEngine.Random;
@@ -22,6 +23,10 @@ public class EnemyPattern_Bee : EnemyPattern
     private static readonly int IsAttacking = Animator.StringToHash("IsAttacking");
     private static readonly int IsInAttackSequence = Animator.StringToHash("IsInAttackSequence");
 
+    // Attack info
+    private AttackInfo _contactAttackInfo;
+    private AttackInfo _baseAttackInfo;
+    
     [SerializeField] private AudioSource[] _audioSources;
     [SerializeField] private AudioClip _attackAudio;
     [SerializeField] private AudioClip _detectAudio;
@@ -34,6 +39,16 @@ public class EnemyPattern_Bee : EnemyPattern
         MoveType = EEnemyMoveType.Flight;
         _seeker = GetComponent<Seeker>();
         InvokeRepeating(nameof(UpdatePath), 0f, 0.5f);
+    }
+
+    private void Start()
+    {
+        _contactAttackInfo = _enemyBase.DamageInfo;
+        _baseAttackInfo = new AttackInfo()
+        {
+            Damage = new DamageInfo(EDamageType.Base, 15, 0),
+            StatusEffects = new List<StatusEffectInfo>(),
+        };
     }
 
     private void OnPathComplete(Path p)
@@ -189,7 +204,7 @@ public class EnemyPattern_Bee : EnemyPattern
     private IEnumerator AttackSequence()
     {
         // _isInAttackState = true;
-        
+        _enemyBase.UpdateAttackInfo(_baseAttackInfo);
         _rigidBody.velocity = new Vector3(0f, 0f, 0f);
         Vector3 position = _targetPosition + new Vector3(0f, 0.5f, 0);
 
@@ -198,6 +213,7 @@ public class EnemyPattern_Bee : EnemyPattern
         _audioSources[1].PlayOneShot(_attackAudio);
         yield return MoveToPosition(position, MoveSpeed * 3.5f, false);
         
+        _enemyBase.UpdateAttackInfo(_contactAttackInfo);
         _animator.SetBool(IsInAttackSequence, false);
         StartCoroutine(AttackEnd());
         // _isInAttackState = false;

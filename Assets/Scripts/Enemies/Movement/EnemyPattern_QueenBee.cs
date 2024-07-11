@@ -39,7 +39,7 @@ public class EnemyPattern_QueenBee : EnemyPattern
     [SerializeField] private AudioClip _deathEnd;
     
     // Damage information
-    private AttackInfo _baseAttackInfo;
+    private AttackInfo _contactAttackInfo;
     private AttackInfo _bodySlamAttackInfo;
 
     // Cutscenes
@@ -83,7 +83,7 @@ public class EnemyPattern_QueenBee : EnemyPattern
 
     private void Start()
     {
-        _baseAttackInfo = _enemyBase.DamageInfo;
+        _contactAttackInfo = _enemyBase.DamageInfo;
         _bodySlamAttackInfo = new AttackInfo()
         {
             Damage = new DamageInfo(EDamageType.Base, 40, 0),
@@ -300,7 +300,7 @@ public class EnemyPattern_QueenBee : EnemyPattern
         _animator.SetBool(IsAttacking, true);
         _animator.SetInteger(AttackIndex, 2);
         
-        _enemyBase.UpdateAttackInfo(_baseAttackInfo);
+        _enemyBase.UpdateAttackInfo(_contactAttackInfo);
         yield return new WaitForSeconds(0.8f);
         
         float dashSpeed = MoveSpeed * 5f;
@@ -311,7 +311,7 @@ public class EnemyPattern_QueenBee : EnemyPattern
         yield return MoveToPosition(finalPosition, dashSpeed, false);
 
         _animator.SetBool(IsAttacking, false);
-        _enemyBase.UpdateAttackInfo(_baseAttackInfo);
+        _enemyBase.UpdateAttackInfo(_contactAttackInfo);
         yield return new WaitForSeconds(2f);
 
         _isBouncing = true;
