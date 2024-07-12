@@ -678,6 +678,7 @@ public class EnemyPattern_Scorpion : EnemyPattern
         yield return new WaitForSeconds(5f);
         GameManager.Instance.OnBossSlayed();
         yield return new WaitForSeconds(2f);
+        CameraManager.Instance.SwapCamera(CameraManager.Instance.AllVirtualCameras[0]);
         GameManager.Instance.LoadBossCutScene();
     }
 
