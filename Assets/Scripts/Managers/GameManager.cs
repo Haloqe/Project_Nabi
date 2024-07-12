@@ -154,6 +154,7 @@ public class GameManager : Singleton<GameManager>
     {
         if (scene.name.Contains("MainMenu"))
         {
+            CameraManager.Instance.SwapCamera(CameraManager.Instance.AllVirtualCameras[0]);
             CameraManager.Instance.inGameAudioListener.enabled = false;
             CameraManager.Instance.gameObject.SetActive(false);
             ActiveScene = ESceneType.MainMenu;
@@ -336,7 +337,6 @@ public class GameManager : Singleton<GameManager>
     private void OnRestarted()
     {
         CameraManager.Instance.SwapCamera(
-            CameraManager.Instance.CurrentCamera,
             CameraManager.Instance.AllVirtualCameras[0]);
     }
     
