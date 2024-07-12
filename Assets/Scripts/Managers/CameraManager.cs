@@ -81,7 +81,6 @@ public class CameraManager : Singleton<CameraManager>
         }
 
         IsLerpingYDamping = false;
-        yield break;
     }
 
     private IEnumerator LerpYOffsetAction(bool isPlayerFalling)

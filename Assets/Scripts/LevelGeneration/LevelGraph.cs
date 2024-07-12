@@ -92,7 +92,7 @@ public class LevelGraph
         //int id = ConnectNewRoomToPrev(ERoomType.Normal);
         //ConnectNewRoomToAnother(ERoomType.Shop, id);
         //ConnectNewRoomToAnother(ERoomType.Normal, id);
-        ConnectNewRoomToPrev(ERoomType.MidBoss);
+        ConnectNewRoomToPrev(ERoomType.Boss);
     }
 
     public void GeneratePostMidBossGraph()

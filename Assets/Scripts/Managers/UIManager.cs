@@ -304,7 +304,6 @@ public class UIManager : Singleton<UIManager>
         float maxHp = _playerController.playerDamageReceiver.MaxHealth;
         float hp = newHpRatio * maxHp;
         _hpText.text = Utility.FormatFloat(hp) + "/" + Utility.FormatFloat(maxHp);
-        Debug.Log("OnPlayerHpChanged: " + _hpText.text);
         
         // Show hit blood overlay if damaged
         if (changeAmount < 0) StartCoroutine(nameof(BloodOverlayHitCoroutine));
