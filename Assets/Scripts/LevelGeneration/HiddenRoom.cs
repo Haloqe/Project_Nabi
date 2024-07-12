@@ -46,7 +46,7 @@ public class HiddenRoom : MonoBehaviour
     public void OnEnter(Vector3 previousPos)
     {
         CameraManager.Instance.SwapCamera(
-            CameraManager.Instance.AllVirtualCameras[1], _roomCamera);
+            _roomCamera);
         StartCoroutine(BGMFadeInCoroutine());
         _chest = Instantiate(chestPrefab, chestPosition.position, quaternion.identity).GetComponent<Chest>();
         _exitDestination = previousPos;
@@ -76,7 +76,7 @@ public class HiddenRoom : MonoBehaviour
 
     public void OnExit()
     {
-        CameraManager.Instance.SwapCamera(_roomCamera, CameraManager.Instance.AllVirtualCameras[1]);
+        CameraManager.Instance.SwapCamera(CameraManager.Instance.AllVirtualCameras[1]);
         Destroy(_countdownUI);
         StartCoroutine(BGMFadeOutCoroutine());
         InGameEvents.EnemySlayed -= CheckEnemiesAllKilled;

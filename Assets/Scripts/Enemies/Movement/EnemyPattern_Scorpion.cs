@@ -146,7 +146,6 @@ public class EnemyPattern_Scorpion : EnemyPattern
     {
         yield return new WaitForSeconds(2.5f);
         CameraManager.Instance.SwapCamera(
-            CameraManager.Instance.AllVirtualCameras[7],
             CameraManager.Instance.AllVirtualCameras[6]);
         yield return new WaitForSeconds(2f);
 
@@ -641,6 +640,12 @@ public class EnemyPattern_Scorpion : EnemyPattern
     public override void OnDeath()
     {
         if (_isInCutscene) return;
+        
+        _audioSources[0].loop = false;
+        _lineRenderer.enabled = false;
+        _laserObject.SetActive(false);
+        _laserVFXObject.SetActive(false);
+        
         _bossHealthBar.transform.root.gameObject.SetActive(false);
         _isInCutscene = true;
         StopAllCoroutines();

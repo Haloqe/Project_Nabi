@@ -40,7 +40,7 @@ public class CameraManager : Singleton<CameraManager>
         }
 
         // _normalYPanAmount = _framingTransposer.m_YDamping;
-        if (_framingTransposer == null) return; 
+        if (_framingTransposer == null) return;
         
         _normalYOffsetAmount = _framingTransposer.m_TrackedObjectOffset.y;
         _isFramingTransposed = true;
@@ -115,9 +115,11 @@ public class CameraManager : Singleton<CameraManager>
         IsLerpingYDamping = false;
     }
     
-    public void SwapCamera(CinemachineVirtualCamera camera1, CinemachineVirtualCamera camera2)
+    public void SwapCamera(CinemachineVirtualCamera camera2)
     {
         if (!isActiveAndEnabled) return;
+        CinemachineVirtualCamera camera1 = CurrentCamera;
+        Debug.Log(camera1 + " switched to " + camera2);
         camera1.enabled = false;
         camera2.enabled = true;
         StartCoroutine(AssignCollider(Array.IndexOf(AllVirtualCameras, camera2)));

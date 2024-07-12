@@ -95,7 +95,6 @@ public class Portal : Interactor
             case EPortalType.MetaToCombat:
                 _player.transform.position = _destination;
                 CameraManager.Instance.SwapCamera(
-                    CameraManager.Instance.AllVirtualCameras[0],
                     CameraManager.Instance.AllVirtualCameras[1]);
                 yield return null;
                 break;
@@ -104,7 +103,6 @@ public class Portal : Interactor
                 _player.playerMovement.ResetEnteredGroundCount();
                 GameManager.Instance.LoadMidBossMap();
                 CameraManager.Instance.SwapCamera(
-                    CameraManager.Instance.AllVirtualCameras[1],
                     CameraManager.Instance.AllVirtualCameras[5]);
                 yield break;
             
@@ -112,7 +110,6 @@ public class Portal : Interactor
                 _player.playerMovement.ResetEnteredGroundCount();
                 GameManager.Instance.LoadPostMidBossCombatMap();
                 CameraManager.Instance.SwapCamera(
-                    CameraManager.Instance.AllVirtualCameras[5],
                     CameraManager.Instance.AllVirtualCameras[1]);
                 yield break;
                 
@@ -120,7 +117,6 @@ public class Portal : Interactor
                 _player.playerMovement.ResetEnteredGroundCount();
                 GameManager.Instance.LoadBossMap();
                 CameraManager.Instance.SwapCamera(
-                    CameraManager.Instance.AllVirtualCameras[1],
                     CameraManager.Instance.AllVirtualCameras[7]);
                 yield break;
         }
