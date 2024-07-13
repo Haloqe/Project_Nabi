@@ -136,6 +136,7 @@ public class MainMenuUIController : UIControllerBase
 
     public override void OnNavigate(Vector2 value)
     {
+        if (UIManager.Instance.isRunningEndingCredits) return;
         if (_underTransition) return;
         
         // Confirm panel
@@ -179,6 +180,7 @@ public class MainMenuUIController : UIControllerBase
     
     public override void OnSubmit()
     {
+        if (_uiManager.isRunningEndingCredits) return;
         if (_underTransition) return;
 
         // Confirm Panel

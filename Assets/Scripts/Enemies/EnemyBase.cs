@@ -122,8 +122,9 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         if (_enemyManager != null) _enemyManager.RemoveEnemyFromSpawnedList(this);
     }
 
-    protected virtual void Update() 
+    protected virtual void Update()
     {
+        if (_isDead) return;
         UpdateRemainingStatusEffectTimes();
         UpdateEnemyPatternState();
         _damageCooltimeCounter += Time.unscaledDeltaTime;
@@ -546,9 +547,10 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
     private void ChangeHealthByAmount(float amount)
     {
-        Debug.Log("[" + gameObject.name + "] Health " + amount);
-        if (amount < 0) StartCoroutine(DamagedRoutine(amount));
+        if (_isDead) return;
+        
         Health = Mathf.Clamp(Health + amount, 0, maxHealth);
+        if (amount < 0) StartCoroutine(DamagedRoutine(amount));
         if (Health == 0) Die();
     }
 
@@ -597,21 +599,19 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
     public void Die(bool shouldDropReward = true)
     {
+        _isDead = true;
+        
         // Inform player
         InGameEvents.EnemySlayed.Invoke(this);
         switch (typeID)
         {
             case 4:
-                if (_isDead) return;
-                _isDead = true;
                 InGameEvents.MidBossSlayed?.Invoke();
                 AudioManager.Instance.StopBgm(1.5f);
                 StartCoroutine(OnMidBossDeath());
                 return;
             
             case 5:
-                if (_isDead) return;
-                _isDead = true;
                 StartCoroutine(OnBossDeath());
                 return;
         }

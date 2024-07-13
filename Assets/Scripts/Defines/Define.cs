@@ -97,8 +97,8 @@ public static class Define
         new [] { 0.2f, 0.2f + 0.35f, 0.55f + 0.35f, 0.9f + 0.1f },
         new [] { 0.1f, 0.1f + 0.2f, 0.3f + 0.4f, 0.7f + 0.3f },
     };
-    public static int[] MetaHealthAdditions = new int[]{50,85,100};
-    public static float[] MetaCriticalRateAdditions = new float[]{0.10f,0.15f,0.2f};
-    public static float[] MetaResurrectionHealthRatio = new float[]{0.3f,0.5f,0.7f};
-    public static float[] MetaAttackDamageAdditions = new float[]{5,10,15};
+    public static int[] MetaHealthAdditions = new int[]{50,35,15};
+    public static float[] MetaCriticalRateAdditions = new float[]{0.10f,0.05f,0.05f};
+    public static float[] MetaResurrectionHealthRatio = new float[]{0.3f,0.2f,0.2f};
+    public static float[] MetaAttackDamageAdditions = new float[]{5,5,5};
 }

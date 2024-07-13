@@ -246,7 +246,7 @@ public class BookUIController : UIControllerBase
                 _confirmPanel.SetActive(false);
                 if (_isConfirmPanelForMenu)
                 {
-                    PlayerEvents.Defeated.Invoke(false);
+                    PlayerEvents.Defeated.Invoke(false); // Do NOT save meta data
                     GameManager.Instance.LoadMainMenuDelayed();
                 }
                 else GameManager.Instance.QuitGame();

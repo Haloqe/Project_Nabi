@@ -145,8 +145,7 @@ public class EnemyPattern_Scorpion : EnemyPattern
     private IEnumerator StartEncounterTimeline()
     {
         yield return new WaitForSeconds(2.5f);
-        CameraManager.Instance.SwapCamera(
-            CameraManager.Instance.AllVirtualCameras[6]);
+        CameraManager.Instance.SwapCamera(CameraManager.Instance.AllVirtualCameras[6]);
         yield return new WaitForSeconds(2f);
 
         _encounterTimeline.Play();
@@ -634,12 +633,13 @@ public class EnemyPattern_Scorpion : EnemyPattern
     public override void OnTakeDamage(float damage, float maxHealth)
     {
         _bossHealthBar.OnBossHPChanged(damage / maxHealth);
-        if (_enemyBase.Health <= 0) OnDeath();
+        if (_enemyBase.Health == 0) OnDeath();
     }
 
     public override void OnDeath()
     {
         if (_isInCutscene) return;
+        _isInCutscene = true;
         
         _audioSources[0].loop = false;
         _lineRenderer.enabled = false;
@@ -647,9 +647,9 @@ public class EnemyPattern_Scorpion : EnemyPattern
         _laserVFXObject.SetActive(false);
         
         _bossHealthBar.transform.root.gameObject.SetActive(false);
-        _isInCutscene = true;
-        StopAllCoroutines();
         _isShootingBullets = false;
+        Debug.Log("Scorpion: Stop all coroutines");
+        StopAllCoroutines();
         StartCoroutine(OnDeathCoroutine());
     }
 

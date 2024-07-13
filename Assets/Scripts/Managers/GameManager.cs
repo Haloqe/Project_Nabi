@@ -154,7 +154,6 @@ public class GameManager : Singleton<GameManager>
     {
         if (scene.name.Contains("MainMenu"))
         {
-            CameraManager.Instance.SwapCamera(CameraManager.Instance.AllVirtualCameras[0]);
             CameraManager.Instance.inGameAudioListener.enabled = false;
             CameraManager.Instance.gameObject.SetActive(false);
             ActiveScene = ESceneType.MainMenu;
@@ -181,6 +180,7 @@ public class GameManager : Singleton<GameManager>
         {
             CameraManager.Instance.gameObject.SetActive(true);
             CameraManager.Instance.inGameAudioListener.enabled = true;
+            CameraManager.Instance.SwapCamera(CameraManager.Instance.AllVirtualCameras[0]);
             ActiveScene = ESceneType.CombatMap0;
             _ingameMapSceneIdx = scene.buildIndex;
             PostLoadInGame();
@@ -194,14 +194,14 @@ public class GameManager : Singleton<GameManager>
         {
             ActiveScene = ESceneType.MidBoss;
             GameObject.Find("MainBackground").GetComponent<Canvas>().worldCamera = Camera.main;
-            LevelManager.Instance.SpawnPlayer();
+            //LevelManager.Instance.SpawnPlayer();
             PostLoadInGame();
         }
         else if (scene.name.StartsWith("Boss"))
         {
             ActiveScene = ESceneType.Boss;
             GameObject.Find("MainBackground").GetComponent<Canvas>().worldCamera = Camera.main;
-            LevelManager.Instance.SpawnPlayer();
+            //LevelManager.Instance.SpawnPlayer();
             PostLoadInGame();
         }
         else if (scene.name.EndsWith("InGame"))
@@ -278,13 +278,12 @@ public class GameManager : Singleton<GameManager>
 
         // When all set, spawn player 
         LevelManager.Instance.SpawnPlayer();
-        
         _player = PlayerController.Instance;
+        
         if (ActiveScene is not ESceneType.Tutorial)
         {
             GameObject followObject = new GameObject("CameraFollowingObject");
             _player.playerMovement.CameraFollowObject = followObject.AddComponent<CameraFollowObject>();
-            Debug.Log("Follow object added");
             CameraManager.Instance.CurrentCamera.Follow = followObject.transform;
         }
         GameEvents.MapLoaded.Invoke();
@@ -320,30 +319,34 @@ public class GameManager : Singleton<GameManager>
     public void LoadBossMap()
     {
         UIManager.Instance.DisplayLoadingScreen();
+        CameraManager.Instance.SwapCamera(CameraManager.Instance.AllVirtualCameras[7]);
+        CameraManager.Instance.AllVirtualCameras[7].transform.position = new Vector3(-2.83f, 20.9f, 0);
         SceneManager.LoadScene("Scenes/Boss_InGame");
     }
 
+    //메인메뉴 돌아갈때, 죽었을때, 게임 클리어
     private void OnPlayerDefeated(bool isRealDeath)
     {
         isFirstRun = false;
-        if (isRealDeath)
-        {
-            PlayerMetaData.isDirty = true;
-            PlayerMetaData.numDeaths++;
-            PlayerMetaData.numSouls = _player.playerInventory.SoulShard;
-            SaveSystem.SaveMetaData();
-        }
+        if (isRealDeath) SavePlayerMetaData(true);
     }
 
+    private void SavePlayerMetaData(bool shouldAddDeath)
+    {
+        PlayerMetaData.isDirty = true;
+        PlayerMetaData.numSouls = _player.playerInventory.SoulShard;
+        PlayerMetaData.metaUpgradeLevels = PlayerMetaData.metaUpgradeLevelsTemporary;
+        if (shouldAddDeath) PlayerMetaData.numDeaths++;
+        SaveSystem.SaveMetaData();
+    }
+    
     private void OnRestarted()
     {
-        CameraManager.Instance.SwapCamera(
-            CameraManager.Instance.AllVirtualCameras[0]);
+        CameraManager.Instance.SwapCamera(CameraManager.Instance.AllVirtualCameras[0]);
     }
     
    public void QuitGame()
     {
-        // TODO Confirm panel
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #else
@@ -364,6 +367,7 @@ public class GameManager : Singleton<GameManager>
 
     public void ContinueGame()
     {
+        PlayerMetaData = SaveSystem.LoadMetaData();
         LoadInGame(0);
     }
 
@@ -389,15 +393,14 @@ public class GameManager : Singleton<GameManager>
     {
         SceneManager.LoadScene("CutScene_Boss_" + (Define.Localisation == ELocalisation.ENG ? "ENG" : "KOR"));
         UIManager.Instance.PlayerIAMap.Disable();
+        UIManager.Instance.UIIAMap.Enable();
         UIManager.Instance.HideAllInGameUI();
         _player.gameObject.SetActive(false);
     }
 
     public void OnBossSlayed()
     {
-        PlayerEvents.Defeated.Invoke(false);
-        PlayerMetaData.isDirty = true;
-        PlayerMetaData.numSouls = _player.playerInventory.SoulShard;
-        SaveSystem.SaveMetaData();
+        PlayerEvents.Defeated.Invoke(false); 
+        SavePlayerMetaData(false);
     }
 }

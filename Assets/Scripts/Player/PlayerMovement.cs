@@ -56,7 +56,7 @@ public class PlayerMovement : MonoBehaviour
     private readonly static int IsDoubleJumping = Animator.StringToHash("IsDoubleJumping");
     private readonly static int IsJumping = Animator.StringToHash("IsJumping");
     
-// SFX
+    // SFX
     [SerializeField] private AudioClip jumpSound;
     [SerializeField] private AudioClip[] jumpLandSounds;
 
@@ -64,7 +64,7 @@ public class PlayerMovement : MonoBehaviour
     {
         GameEvents.Restarted += OnRestarted;
         PlayerEvents.Defeated += OnDefeated;
-        // PlayerEvents.Spawned += OnSpawned;
+        GameEvents.CombatSceneChanged += OnCombatSceneChanged;
         InGameEvents.TimeSlowDown += OnTimeSlowDown;
         InGameEvents.TimeRevertNormal += OnTimeRevertNormal;
         
@@ -89,12 +89,24 @@ public class PlayerMovement : MonoBehaviour
         _defaultFriction = _mainCollider.sharedMaterial.friction;
     }
 
+    private void OnCombatSceneChanged()
+    {
+        _jumpCounter = 0;
+        _isJumping = true;
+        IsMoving = false;
+        _moveDirection = 0;
+        _additionalVelocity = Vector2.zero;
+        _isAttacking = false;
+        ResetEnteredGroundCount();
+    }
+    
     private void OnDestroy()
     {
         GameEvents.Restarted -= OnRestarted;
         PlayerEvents.Defeated -= OnDefeated;
         InGameEvents.TimeSlowDown -= OnTimeSlowDown;
         InGameEvents.TimeRevertNormal -= OnTimeRevertNormal;
+        GameEvents.CombatSceneChanged -= OnCombatSceneChanged;
     }
 
     private void OnDefeated(bool isRealDeath)
@@ -102,15 +114,6 @@ public class PlayerMovement : MonoBehaviour
         _moveDirection = 0;
         _additionalVelocity = Vector2.zero;
     }
-
-    // private void OnSpawned()
-    // {
-    //     Debug.Log("player spawning rnnnn");
-    //     GameObject followObject = new GameObject("CameraFollowingObject");
-    //     CameraFollowObject = followObject.AddComponent<CameraFollowObject>();
-    //     GameObject.Find("Virtual Camera").GetComponent<CinemachineVirtualCamera>().Follow = followObject.transform;
-    //     
-    // }
     
     private void OnRestarted()
     {

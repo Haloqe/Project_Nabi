@@ -6,4 +6,5 @@ public class PlayerMetaData
     public int numKills = 0;
     public int numSouls = 0;
     public int[] metaUpgradeLevels = new int[]{-1,-1,-1,-1,-1};
+    public int[] metaUpgradeLevelsTemporary = new int[]{-1,-1,-1,-1,-1};
 }

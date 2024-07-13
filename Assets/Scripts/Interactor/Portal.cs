@@ -94,30 +94,25 @@ public class Portal : Interactor
             
             case EPortalType.MetaToCombat:
                 _player.transform.position = _destination;
-                CameraManager.Instance.SwapCamera(
-                    CameraManager.Instance.AllVirtualCameras[1]);
+                CameraManager.Instance.SwapCamera(CameraManager.Instance.AllVirtualCameras[1]);
                 yield return null;
                 break;
             
             case EPortalType.CombatToMidBoss:
                 _player.playerMovement.ResetEnteredGroundCount();
                 GameManager.Instance.LoadMidBossMap();
-                CameraManager.Instance.SwapCamera(
-                    CameraManager.Instance.AllVirtualCameras[5]);
+                CameraManager.Instance.SwapCamera(CameraManager.Instance.AllVirtualCameras[5]);
                 yield break;
             
             case EPortalType.MidBossToCombat:
                 _player.playerMovement.ResetEnteredGroundCount();
                 GameManager.Instance.LoadPostMidBossCombatMap();
-                CameraManager.Instance.SwapCamera(
-                    CameraManager.Instance.AllVirtualCameras[1]);
+                CameraManager.Instance.SwapCamera(CameraManager.Instance.AllVirtualCameras[1]);
                 yield break;
                 
             case EPortalType.CombatToBoss:
                 _player.playerMovement.ResetEnteredGroundCount();
                 GameManager.Instance.LoadBossMap();
-                CameraManager.Instance.SwapCamera(
-                    CameraManager.Instance.AllVirtualCameras[7]);
                 yield break;
         }
         

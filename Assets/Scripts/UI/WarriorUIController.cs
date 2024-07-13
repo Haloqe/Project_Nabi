@@ -84,7 +84,7 @@ public class WarriorUIController : UIControllerBase
         // Select random legacies to display
         // Has meta upgrade?
         float[] legacyApperanceByPreserv = Define.LegacyAppearanceByPreservation;
-        int metaLev = GameManager.Instance.PlayerMetaData.metaUpgradeLevels[(int)EMetaUpgrade.BetterLegacyPreserv];
+        int metaLev = GameManager.Instance.PlayerMetaData.metaUpgradeLevelsTemporary[(int)EMetaUpgrade.BetterLegacyPreserv];
         if (metaLev != -1) legacyApperanceByPreserv = Define.MetaLegacyAppearanceByPreservation[metaLev];
 
         // Select legacies

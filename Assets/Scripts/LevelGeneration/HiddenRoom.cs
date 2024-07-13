@@ -45,8 +45,7 @@ public class HiddenRoom : MonoBehaviour
 
     public void OnEnter(Vector3 previousPos)
     {
-        CameraManager.Instance.SwapCamera(
-            _roomCamera);
+        CameraManager.Instance.SwapCamera(_roomCamera);
         StartCoroutine(BGMFadeInCoroutine());
         _chest = Instantiate(chestPrefab, chestPosition.position, quaternion.identity).GetComponent<Chest>();
         _exitDestination = previousPos;

@@ -24,6 +24,8 @@ public class PlayerInventory : MonoBehaviour
         _audioSource = GetComponent<AudioSource>();
         _uiManager = UIManager.Instance;
         _areaAttack = FindObjectOfType<AttackBase_Area>();
+        SoulShard = GameManager.Instance.PlayerMetaData.numSouls;
+        ChangeSoulShardByAmount(0);
         SelectFlower(1);
         GameEvents.Restarted += OnRestarted;
         GameEvents.CombatSceneChanged += OnCombatSceneChanged;
@@ -39,6 +41,8 @@ public class PlayerInventory : MonoBehaviour
     private void OnRestarted()
     {
         Gold = 0;
+        SoulShard = GameManager.Instance.PlayerMetaData.numSouls;
+        ChangeSoulShardByAmount(0);
         for (int i = 0; i < _numFlowers.Length; i++) _numFlowers[i] = 0;
         SelectFlower(1);
     }

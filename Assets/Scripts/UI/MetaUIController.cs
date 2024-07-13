@@ -1,3 +1,4 @@
+using System;
 using TMPro;
 using UnityEngine;
 
@@ -26,16 +27,22 @@ public class MetaUIController : UIControllerBase
         _metaPanels = GetComponentsInChildren<MetaPanelUI>();
         for (int i = 0; i < 5; i++)
         {
-            _metaPanels[i].MetaData = _metaData;
             _metaPanels[i].metaIndex = i;
         }
+        GameEvents.Restarted += ApplySavedUpgrades;
     }
 
+    private void OnDestroy()
+    {
+        GameEvents.Restarted -= ApplySavedUpgrades;
+    }
+    
     private void OnEnable()
     {
         _animator.Rebind();
         _animator.Update(0f);
         _selectedPanelIdx = -1;
+        for (int i = 0; i < 5; i++) _metaPanels[i].OnMetaUIOpen();
         SelectPanel(0);
         _readyToNavigate = true;
     }
@@ -47,6 +54,16 @@ public class MetaUIController : UIControllerBase
         _readyToNavigate = true;
     }
 
+    private void ApplySavedUpgrades()
+    {
+        int[] upgrades = GameManager.Instance.PlayerMetaData.metaUpgradeLevels;
+        for (int i = 0; i < 5; i++)
+        {
+            for (int lv = 0; lv <= upgrades[i]; lv++)
+                ApplyMetaUpgrade(i, lv);
+        }
+    }
+    
     private void OnDisable()
     {
         _metaPanels[_selectedPanelIdx].OnUnselectMetaPanel();

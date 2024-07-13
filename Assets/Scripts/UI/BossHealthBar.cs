@@ -10,6 +10,5 @@ public class BossHealthBar : MonoBehaviour
     public void OnBossHPChanged(float percentDamage)
     {
         _hpBarImage.fillAmount += percentDamage;
-        Debug.Log("took damage " + percentDamage);
     }
 }

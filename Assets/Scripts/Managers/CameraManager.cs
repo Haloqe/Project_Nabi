@@ -116,10 +116,9 @@ public class CameraManager : Singleton<CameraManager>
     
     public void SwapCamera(CinemachineVirtualCamera camera2)
     {
+        CinemachineVirtualCamera camera1 = CurrentCamera; ;
         if (!isActiveAndEnabled) return;
-        CinemachineVirtualCamera camera1 = CurrentCamera;
-        Debug.Log(camera1 + " switched to " + camera2);
-        camera1.enabled = false;
+        if (camera1) camera1.enabled = false;
         camera2.enabled = true;
         StartCoroutine(AssignCollider(Array.IndexOf(AllVirtualCameras, camera2)));
         CurrentCamera = camera2;
@@ -133,8 +132,13 @@ public class CameraManager : Singleton<CameraManager>
     {
         if (cameraIndex == 1) yield break;
         yield return null;
-        CompositeCollider2D collider = GameObject.Find(cameraIndex.ToString()).GetComponent<CompositeCollider2D>();
-        AllVirtualCameras[cameraIndex].GetComponent<CinemachineConfiner2D>().m_BoundingShape2D = collider;
+        var cam = GameObject.Find(cameraIndex.ToString());
+        if (cam)
+        {
+            var collider = cam.GetComponent<CompositeCollider2D>();
+            if (collider)
+                AllVirtualCameras[cameraIndex].GetComponent<CinemachineConfiner2D>().m_BoundingShape2D = collider;
+        }
         if (cameraIndex is 5 or 6)
             CurrentCamera.Follow = PlayerController.Instance.gameObject.transform;
     }

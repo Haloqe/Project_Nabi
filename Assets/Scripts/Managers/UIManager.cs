@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.Playables;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class UIManager : Singleton<UIManager>
@@ -93,6 +94,8 @@ public class UIManager : Singleton<UIManager>
     private TextMeshProUGUI _flowerCountText;
     private Animator _flowerPanelAnimator;
     private float _flowerUIDisplayTime;
+
+    public bool isRunningEndingCredits;
     
     protected override void Awake()
     {
@@ -221,13 +224,18 @@ public class UIManager : Singleton<UIManager>
         Destroy(_bookUI);
         Destroy(_metaUpgradeUI);
     }
+
+    private IEnumerator DelayedHideLoadingUICoroutine(float delayDuration = 0)
+    {
+        yield return new WaitForSecondsRealtime(delayDuration);
+        _loadingScreenUI.SetActive(false);
+    }
     
     private void OnGameLoadEnded()
     {
-        _bloodOverlayLowHP.gameObject.SetActive(false);
+        //_bloodOverlayLowHP.gameObject.SetActive(false);
         _tensionOverlay.gameObject.SetActive(false);
         _zoomedMap.SetActive(false);
-        _loadingScreenUI.SetActive(false);
         InGameCombatUI.SetActive(true);
         _flowerUIDisplayTime = 0;
         _bloodOverlayHitDisplayTime = 0;
@@ -242,7 +250,7 @@ public class UIManager : Singleton<UIManager>
                 break;
             
             case ESceneType.Boss:
-                return;
+                break;
             
             case ESceneType.Tutorial:
                 DisableMap();
@@ -258,6 +266,8 @@ public class UIManager : Singleton<UIManager>
         {
             UseUIControl();
         }
+
+        StartCoroutine(DelayedHideLoadingUICoroutine(currSceneType == ESceneType.Boss ? 0.1f : 0));
     }
 
     private void OnCombatSceneChanged()
@@ -555,8 +565,14 @@ public class UIManager : Singleton<UIManager>
     
     private void OnClose(InputAction.CallbackContext obj)
     {
+        if (isRunningEndingCredits)
+        {
+            FindObjectOfType<CreditsUI>().OnCancel();
+            return;
+        }
         if (_gameManager.isRunningCutScene)
         {
+            Debug.Log("RunningCutSceneOnClose");
             if (_gameManager.isRunningTutorial) return;
             FindObjectOfType<PlayableDirector>().Stop();
             FindObjectOfType<SceneTransitionHandler>().StartSceneTransition();
@@ -777,10 +793,11 @@ public class UIManager : Singleton<UIManager>
         var creditsUI = DisplayCreditsUI();
         DontDestroyOnLoad(creditsUI.gameObject);
         creditsUI.gameObject.SetActive(true);
+        isRunningEndingCredits = true;
         PlayerIAMap.Disable();
-        UIIAMap.Disable();
         yield return new WaitForSecondsRealtime(1.5f);
         
+        // For bgm
         _gameManager.LoadMainMenu();
     }
 

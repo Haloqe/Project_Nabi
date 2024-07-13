@@ -13,21 +13,21 @@ public class MetaPanelUI : MonoBehaviour
     [SerializeField] private GameObject[] levelDescriptions;
     [SerializeField] private int[] levelUnlockCosts;
     public int metaIndex;
-    public PlayerMetaData MetaData;
     private int _unlockedLevel;
     private int _selectedLevel;
     
-    public void Awake()
+    public void OnMetaUIOpen()
     {
-        _unlockedLevel = MetaData.metaUpgradeLevels[metaIndex];
+        _unlockedLevel = GameManager.Instance.PlayerMetaData.metaUpgradeLevelsTemporary[metaIndex];
         _selectedLevel = 0;
         
         unselectedOutline.SetActive(true);
         selectedOutline.SetActive(false);
-        
-        for (int i = 0; i <= _unlockedLevel; i++)
+
+        var lockedColour = new Color(0.85f, 0.83f, 0.8f, 1f);
+        for (int i = 0; i < 3; i++)
         {
-            levelSlots[i].color = Color.white;
+            levelSlots[i].color = i <= _unlockedLevel ? Color.white : lockedColour;
         }
         if (_unlockedLevel == -1)
         {
@@ -74,7 +74,7 @@ public class MetaPanelUI : MonoBehaviour
         // Select new
         levelSlots[_selectedLevel].sprite = baseUI.selectedLevelSlotSprite;
         levelDescriptions[_selectedLevel].SetActive(true);
-        costText.text = levelUnlockCosts[_selectedLevel] + Define.Localisation == ELocalisation.ENG ? " Soul Shards" : " 영혼 조각";
+        costText.text = levelUnlockCosts[_selectedLevel] + (Define.Localisation == ELocalisation.ENG ? " Soul Shards" : " 영혼 조각");
     }
 
     public void OnSubmit()
@@ -107,7 +107,7 @@ public class MetaPanelUI : MonoBehaviour
     private void UnlockUpgrade()
     {
         levelSlots[_selectedLevel].color = Color.white;
-        MetaData.metaUpgradeLevels[metaIndex] = ++_unlockedLevel;
+        GameManager.Instance.PlayerMetaData.metaUpgradeLevelsTemporary[metaIndex] = ++_unlockedLevel;
         baseUI.ApplyMetaUpgrade(metaIndex, _unlockedLevel);
     }
     

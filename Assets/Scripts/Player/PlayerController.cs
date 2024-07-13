@@ -110,7 +110,6 @@ public class PlayerController : Singleton<PlayerController>
 
         // Events binding
         GameEvents.Restarted += OnRestarted;
-        // PlayerEvents.ValueChanged += OnValueChanged;
         PlayerEvents.StartResurrect += OnPlayerStartResurrect;
         InGameEvents.EnemySlayed += OnEnemySlayed;
         GameEvents.CombatSceneChanged += OnCombatSceneChanged;
@@ -124,9 +123,9 @@ public class PlayerController : Singleton<PlayerController>
     {
         if (IsToBeDestroyed) return;
         GameEvents.Restarted -= OnRestarted;
-        // PlayerEvents.ValueChanged -= OnValueChanged;
         PlayerEvents.StartResurrect -= OnPlayerStartResurrect;
         InGameEvents.EnemySlayed -= OnEnemySlayed;
+        GameEvents.CombatSceneChanged -= OnCombatSceneChanged;
         playerInput.actions["Jump"].started -= OnStartJump;
         playerInput.actions["Jump"].canceled -= OnReleaseJump;
     }
@@ -154,10 +153,11 @@ public class PlayerController : Singleton<PlayerController>
         _strengthMultiplier = 1.0f;
         _armourMultiplier = 1.0f;
         _armourPenetrationMultiplier = 1.0f;
-        _evasionRateAddition = 0.0f;
         _healEfficiencyMultiplier = 1.0f;
+        _evasionRateAddition = 0.0f;
         evasionRateAdditionAtMax = 0.0f;
         strengthAddition = 0.0f;
+        _criticalRateAddition = 0.0f;
 
         // Initialise legacy preservations
         EuphoriaEnemyGoldDropBuffPreserv = ELegacyPreservation.MAX;
@@ -529,7 +529,7 @@ public class PlayerController : Singleton<PlayerController>
         var spriteRenderer = GetComponent<SpriteRenderer>();
         var color = spriteRenderer.color;
         
-        if (_gameManager.ActiveScene is not ESceneType.MidBoss and ESceneType.Boss)
+        if (_gameManager.ActiveScene is ESceneType.MidBoss or ESceneType.Boss)
         {
             color.a = 1;
             spriteRenderer.color = color;
@@ -547,7 +547,7 @@ public class PlayerController : Singleton<PlayerController>
     
     private void OnCombatSceneChanged()
     {
-        if (GameManager.Instance.ActiveScene != ESceneType.CombatMap0)
+        if (GameManager.Instance.ActiveScene is not ESceneType.CombatMap0)
             StartCoroutine(FadeInCoroutine());
     }
 }

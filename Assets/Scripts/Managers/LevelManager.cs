@@ -890,7 +890,6 @@ public class LevelManager : Singleton<LevelManager>
             }
         }
     }
-
     
     public void SpawnPlayer()
     {

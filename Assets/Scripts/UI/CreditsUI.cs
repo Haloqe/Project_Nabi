@@ -14,6 +14,7 @@ public class CreditsUI : MonoBehaviour
         {
                 if (IsClosing) return;
                 IsClosing = true;
+                UIManager.Instance.isRunningEndingCredits = false;
                 if (BaseUIController != null)
                 {
                         BaseUIController.OnCreditsClosed();

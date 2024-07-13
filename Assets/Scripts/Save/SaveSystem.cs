@@ -6,11 +6,13 @@ public static class SaveSystem
 {
         public static void SaveMetaData()
         {
+                var data = GameManager.Instance.PlayerMetaData;
                 BinaryFormatter formatter = new BinaryFormatter();
                 string path = Application.persistentDataPath + "/meta";
                 FileStream stream = new FileStream(path, FileMode.Create);
-                formatter.Serialize(stream, GameManager.Instance.PlayerMetaData);
+                formatter.Serialize(stream, data);
                 stream.Close();
+                Debug.Log("Save: kills " + data.numKills + " deaths " + data.numDeaths + " souls: " + data.numSouls);
         }
 
         public static PlayerMetaData LoadMetaData()
@@ -22,10 +24,13 @@ public static class SaveSystem
                         FileStream stream = new FileStream(path, FileMode.Open);
                         PlayerMetaData data = formatter.Deserialize(stream) as PlayerMetaData;
                         stream.Close();
+                        data.metaUpgradeLevelsTemporary = data.metaUpgradeLevels;
+                        Debug.Log("Load: kills " + data.numKills + " deaths " + data.numDeaths + " souls: " + data.numSouls);
                         return data;
                 }
                 else
                 {
+                        Debug.Log("Load: no data");
                         return new PlayerMetaData();
                 }
         }
