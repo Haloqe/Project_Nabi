@@ -41,7 +41,7 @@ public class EnemyPattern_Mantis : EnemyPattern
         _contactAttackInfo = _enemyBase.DamageInfo;
         _baseAttackInfo = new AttackInfo()
         {
-            Damage = new DamageInfo(EDamageType.Base, 20, 0),
+            Damage = new DamageInfo(EDamageType.Base, 15, 0),
             StatusEffects = new List<StatusEffectInfo>(),
         };
     }

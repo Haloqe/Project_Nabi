@@ -5,7 +5,6 @@ using UnityEngine;
 public class MetaUIController : UIControllerBase
 {
     private PlayerMetaData _metaData;
-    private PlayerController _playerController;
     public PlayerInventory PlayerInventory { get; private set; } 
     public Sprite selectedLevelSlotSprite;
     public Sprite unselectedLevelSlotSprite;
@@ -17,24 +16,30 @@ public class MetaUIController : UIControllerBase
     [SerializeField] private TextMeshProUGUI warningObjTMP;
     private readonly static int Display = Animator.StringToHash("Display");
 
-    private void Awake()
+    public void BindEvents()
+    {
+        GameEvents.Restarted += ApplySavedUpgrades;
+        PlayerEvents.SpawnedFirstTime += Initialise;
+    }
+
+    private void Initialise()
     {
         _readyToNavigate = false;
         _metaData = GameManager.Instance.PlayerMetaData;
-        _playerController = PlayerController.Instance;
-        PlayerInventory = _playerController.playerInventory;
+        PlayerInventory = PlayerController.Instance.playerInventory;
         _animator = GetComponentInChildren<Animator>();
         _metaPanels = GetComponentsInChildren<MetaPanelUI>();
         for (int i = 0; i < 5; i++)
         {
             _metaPanels[i].metaIndex = i;
         }
-        GameEvents.Restarted += ApplySavedUpgrades;
+        ApplySavedUpgrades();
     }
 
     private void OnDestroy()
     {
         GameEvents.Restarted -= ApplySavedUpgrades;
+        PlayerEvents.SpawnedFirstTime -= Initialise;
     }
     
     private void OnEnable()
@@ -56,6 +61,7 @@ public class MetaUIController : UIControllerBase
 
     private void ApplySavedUpgrades()
     {
+        Debug.Log("ApplySavedUpgrades");
         int[] upgrades = GameManager.Instance.PlayerMetaData.metaUpgradeLevels;
         for (int i = 0; i < 5; i++)
         {
@@ -135,20 +141,21 @@ public class MetaUIController : UIControllerBase
                 break;
             
             case EMetaUpgrade.Resurrection: // 사망시 더 낮은 체력으로 1회 부활한다
-                if (unlockedLevel == 0) _playerController.playerDamageReceiver.canResurrect = true;
+                if (unlockedLevel == 0) 
+                    PlayerController.Instance.playerDamageReceiver.canResurrect = true;
                 break;
             
             case EMetaUpgrade.HealthAddition: // 최대 체력이 증가한다
-                _playerController.playerDamageReceiver.additionalHealth += Define.MetaHealthAdditions[unlockedLevel];
-                _playerController.playerDamageReceiver.ChangeHealthByAmount(0);
+                PlayerController.Instance.playerDamageReceiver.additionalHealth += Define.MetaHealthAdditions[unlockedLevel];
+                PlayerController.Instance.playerDamageReceiver.ChangeHealthByAmount(0);
                 break;
             
             case EMetaUpgrade.CritRateAddition: // 크리티컬 확률이 증가한다
-                _playerController.AddCriticalRate(Define.MetaCriticalRateAdditions[unlockedLevel]);
+                PlayerController.Instance.AddCriticalRate(Define.MetaCriticalRateAdditions[unlockedLevel]);
                 break;
             
             case EMetaUpgrade.StrengthAddition: // 공격력이 증가한다
-                _playerController.strengthAddition += Define.MetaAttackDamageAdditions[unlockedLevel];
+                PlayerController.Instance.strengthAddition += Define.MetaAttackDamageAdditions[unlockedLevel];
                 PlayerEvents.StrengthChanged.Invoke();
                 break;
         }

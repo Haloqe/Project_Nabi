@@ -179,6 +179,7 @@ public class UIManager : Singleton<UIManager>
         InGameCombatUI.GetComponent<Canvas>().worldCamera = CameraManager.Instance.uiCamera;
         InGameCombatUI.GetComponent<Canvas>().planeDistance = 20;
         _mapController.Initialise();
+        _metaUIController.BindEvents();
         
         DontDestroyOnLoad(_focusedOverlay);
         DontDestroyOnLoad(_defeatedUI);

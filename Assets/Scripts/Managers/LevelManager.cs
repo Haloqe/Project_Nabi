@@ -903,6 +903,7 @@ public class LevelManager : Singleton<LevelManager>
         {
             playerObject = Instantiate(GameManager.Instance.PlayerPrefab).gameObject.transform;
             PlayerEvents.SpawnedFirstTime.Invoke();
+            Debug.Log("Invoke spawnedfirsttime");
         }
         // Player exists already
         else
