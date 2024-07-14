@@ -37,12 +37,12 @@ public class AttackBase_Ranged : AttackBase
     protected override void Reset()
     {
         base.Reset();
+        ResetBulletToDefault();
         OnCombatSceneChanged();
     }
     
     protected override void OnCombatSceneChanged()
     {
-        ResetBulletToDefault();
         _activeBullets.Clear();
     }
 

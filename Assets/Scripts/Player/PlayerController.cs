@@ -227,7 +227,9 @@ public class PlayerController : Singleton<PlayerController>
     //int count = 0;
     private void OnTestAction(InputValue value)
     {
-        //PlayerAttackManager.Instance.CollectLegacy(9, ELegacyPreservation.Pristine);
+        //PlayerAttackManager.Instance.CollectLegacy(9, ELegacyPreservation.Tarnished);
+        //PlayerAttackManager.Instance.CollectLegacy(9, ELegacyPreservation.Tarnished);
+        //PlayerAttackManager.Instance.CollectLegacy(2, ELegacyPreservation.Tarnished);
         //playerInventory.ChangeGoldByAmount(1000);
         //Heal(100);
     }
