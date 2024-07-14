@@ -313,6 +313,7 @@ public class GameManager : Singleton<GameManager>
     public void LoadMidBossMap()
     {
         UIManager.Instance.DisplayLoadingScreen();
+        CameraManager.Instance.SwapCamera(CameraManager.Instance.AllVirtualCameras[5]);
         SceneManager.LoadScene("Scenes/RealMidBoss_InGame");
     }
     

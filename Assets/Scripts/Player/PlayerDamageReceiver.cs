@@ -354,7 +354,6 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     
     private IEnumerator ResurrectCoroutine()
     {
-        Debug.Log("START RESURRECT");
         // Start resurrect
         PlayerEvents.StartResurrect.Invoke();
         _shouldNotTakeDamage = true;

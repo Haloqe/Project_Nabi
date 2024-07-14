@@ -88,22 +88,23 @@ public class LevelGraph
     {
         int prevRoomID = AddRoom(ERoomType.Entrance);
         SetStartRoom(prevRoomID);
-        //ConnectNewRoomToPrev(ERoomType.Normal);
-        //int id = ConnectNewRoomToPrev(ERoomType.Normal);
-        //ConnectNewRoomToAnother(ERoomType.Shop, id);
-        //ConnectNewRoomToAnother(ERoomType.Normal, id);
-        ConnectNewRoomToPrev(ERoomType.Boss);
+        ConnectNewRoomToPrev(ERoomType.Normal);
+        int id = ConnectNewRoomToPrev(ERoomType.Normal);
+        ConnectNewRoomToAnother(ERoomType.Shop, id);
+        ConnectNewRoomToAnother(ERoomType.Normal, id);
+        ConnectNewRoomToAnother(ERoomType.Normal, id);
+        ConnectNewRoomToPrev(ERoomType.MidBoss);
     }
 
     public void GeneratePostMidBossGraph()
     {
         int prevRoomID = AddRoom(ERoomType.Entrance);
         SetStartRoom(prevRoomID);
-        //ConnectNewRoomToPrev(ERoomType.Normal);
-        //int id = ConnectNewRoomToPrev(ERoomType.Normal);
-        //ConnectNewRoomToAnother(ERoomType.Shop, id);
-        //ConnectNewRoomToAnother(ERoomType.Normal, id);
-        //ConnectNewRoomToPrev(ERoomType.Normal);
+        ConnectNewRoomToPrev(ERoomType.Normal);
+        int id = ConnectNewRoomToPrev(ERoomType.Normal);
+        ConnectNewRoomToAnother(ERoomType.Shop, id);
+        ConnectNewRoomToAnother(ERoomType.Normal, id);
+        ConnectNewRoomToPrev(ERoomType.Normal);
         ConnectNewRoomToPrev(ERoomType.Boss);
     }
     
@@ -111,37 +112,6 @@ public class LevelGraph
     {
         int prevRoomID = AddRoom(ERoomType.Entrance);
         SetStartRoom(prevRoomID);
-        
-        ConnectNewRoomToPrev(ERoomType.MidBoss);
-        //ConnectNewRoomToPrev(ERoomType.Normal);
-        // ConnectNewRoomToPrev(ERoomType.Normal);
-        // ConnectNewRoomToPrev(ERoomType.Normal);
-        // ConnectNewRoomToPrev(ERoomType.Normal);
-        //
-        // ConnectNewRoomToPrev(ERoomType.Normal);
-        // ConnectNewRoomToPrev(ERoomType.Normal);
-        // ConnectNewRoomToPrev(ERoomType.Normal);
-        // ConnectNewRoomToPrev(ERoomType.Normal);
-        // ConnectNewRoomToPrev(ERoomType.Normal);
-        //
-        // ConnectNewRoomToPrev(ERoomType.Normal);
-        // ConnectNewRoomToPrev(ERoomType.Normal);
-        // ConnectNewRoomToPrev(ERoomType.Normal);
-        // ConnectNewRoomToPrev(ERoomType.Normal);
-        // ConnectNewRoomToPrev(ERoomType.Normal);
-        //
-        // ConnectNewRoomToPrev(ERoomType.Normal);
-        // ConnectNewRoomToPrev(ERoomType.Normal);
-        // ConnectNewRoomToPrev(ERoomType.Normal);
-        // ConnectNewRoomToPrev(ERoomType.Normal);
-        // ConnectNewRoomToPrev(ERoomType.Normal);
-        //
-        // ConnectNewRoomToPrev(ERoomType.Normal);
-        // ConnectNewRoomToPrev(ERoomType.Normal);
-        // ConnectNewRoomToPrev(ERoomType.Normal);
-        // ConnectNewRoomToPrev(ERoomType.Normal);
-        // ConnectNewRoomToPrev(ERoomType.Normal);
-        
         
         //ConnectNewRoomToPrev(ERoomType.Teleport);
         // ConnectNewRoomToPrev(ERoomType.Normal);

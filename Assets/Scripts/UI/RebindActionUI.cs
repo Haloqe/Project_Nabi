@@ -290,7 +290,7 @@ public class RebindActionUI : MonoBehaviour
 
         // Bring up rebind overlay, if we have one.
         m_RebindOverlay?.SetActive(true);
-        m_BindingText.text = "[입력 대기 중...]";
+        m_BindingText.text = Define.Localisation == ELocalisation.ENG ? "[Waiting...]" : "[입력 대기 중...]";
         m_BindingText.color = Color.white;
         // if (m_RebindText != null)
         // {

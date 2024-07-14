@@ -834,16 +834,20 @@ public class LevelManager : Singleton<LevelManager>
     //  Find all hidden rooms and classify by levels
     private void SetHiddenRooms()
     {
+        int d = 0;
         _hiddenRoomsByLevel = new [] { new List<HiddenRoom>(), new List<HiddenRoom>(), new List<HiddenRoom>() };
         var hiddenRooms = FindObjectsByType<HiddenRoom>(FindObjectsSortMode.None);
         foreach (var hiddenRoom in hiddenRooms)
         {
             _hiddenRoomsByLevel[hiddenRoom.roomLevel].Add(hiddenRoom);
+            d++;
         }
+        Debug.Log(d + " hidden rooms added");
     }
 
     public List<HiddenRoom> GetHiddenRooms(int roomLevel)
     {
+        Debug.Log("try get hidden room lv: " + roomLevel);
         Debug.AssertFormat(_hiddenRoomsByLevel != null, "Hidden room array is not set.");
         Debug.AssertFormat(_hiddenRoomsByLevel[roomLevel].Count > 0,
             $"No hidden room [level {roomLevel}] is found. Please add and try again.");

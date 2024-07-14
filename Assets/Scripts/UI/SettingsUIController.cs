@@ -41,6 +41,7 @@ public class SettingsUIController : UIControllerBase
     private RebindActionUI[] _rebindActionUis;
     private TextMeshProUGUI[] _rebindTexts;
     private GameObject _dupWarningText;
+    private bool _canSaveRebinds = true;
     
     // 2 - Sound
     private Toggle _muteToggle;
@@ -73,11 +74,9 @@ public class SettingsUIController : UIControllerBase
         _dupWarningText = settingDetails[1].transform.Find("DupWarningText").gameObject;
         _dupRebindColour = new Color(0.65f, 0f, 0f, 1f);
         _rebindActionUis = settingDetails[1].GetComponentsInChildren<RebindActionUI>();
-        _isUniqueBindings = new bool[_rebindActionUis.Length];
         _rebindTexts = new TextMeshProUGUI[_rebindActionUis.Length];
         for (int i = 0; i < _rebindActionUis.Length; i++)
         {
-            _isUniqueBindings[i] = true;
             _rebindTexts[i] = _rebindActionUis[i].bindingText;
         }
         
@@ -246,6 +245,8 @@ public class SettingsUIController : UIControllerBase
             yield return null;
         }
         coverImage.color = new Color(coverImage.color.r, coverImage.color.g, coverImage.color.b, 0);
+        
+        UIManager.Instance.UIIAMap.Enable();
     }
 
     private void SelectResolution(int resolutionIndex)
@@ -295,7 +296,7 @@ public class SettingsUIController : UIControllerBase
 
     private void IsBindingUniqueAll()
     {
-        bool allUnique = true;
+        _canSaveRebinds = true;
         for (int i = 0; i < _rebindActionUis.Length; i++)
         {
             if (IsBindingUnique(_rebindActionUis[i].actionReference))
@@ -306,10 +307,10 @@ public class SettingsUIController : UIControllerBase
             {
                 // Duplicate binding exists
                 _rebindTexts[i].color = _dupRebindColour;
-                allUnique = false;
+                _canSaveRebinds = false;
             }
         }
-        _dupWarningText.SetActive(!allUnique);
+        _dupWarningText.SetActive(!_canSaveRebinds);
     }
     
     private bool IsBindingUnique(InputAction actionToRebind)
@@ -387,7 +388,7 @@ public class SettingsUIController : UIControllerBase
     
     public override void OnClose()
     {
-        if (!CanSaveRebinds()) return; // Todo warning
+        if (!_canSaveRebinds) return; // Todo warning
         
         // Cleanup
         if (_isNavigatingSound) StopAllCoroutines();
@@ -406,7 +407,7 @@ public class SettingsUIController : UIControllerBase
 
     public override void OnTab()
     {
-        if (_curSettingsGroup == 1 && !CanSaveRebinds()) return; // Todo warning
+        if (_curSettingsGroup == 1 && !_canSaveRebinds) return;
         UnselectSettingsGroup();
         SelectSettingsGroup(_curSettingsGroup == 2 ? 0 : _curSettingsGroup + 1); 
         AudioManager.Instance.PlayUINavigateSound();
@@ -478,11 +479,6 @@ public class SettingsUIController : UIControllerBase
             _curFocusedBottom = false;
             settingDetails[1].transform.Find("ScrollRect").GetComponent<ScrollRect>().verticalNormalizedPosition = 1f;
         }
-    }
-
-    private bool CanSaveRebinds()
-    {
-        return _isUniqueBindings.All(isUnique => isUnique);
     }
 
     private void ResetAllRebinds()

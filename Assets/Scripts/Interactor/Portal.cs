@@ -17,7 +17,8 @@ public class Portal : Interactor
     private GameObject _cameras;
     private readonly static float[] HiddenRoomChanceByLevel = new float[]
     { 
-        0.2f, 0.45f, 0.35f,
+        //0.2f, 0.45f, 0.35f,
+        0.5f,0.5f,1
     };
 
     protected override void OnInteract(InputAction.CallbackContext obj)
@@ -101,7 +102,6 @@ public class Portal : Interactor
             case EPortalType.CombatToMidBoss:
                 _player.playerMovement.ResetEnteredGroundCount();
                 GameManager.Instance.LoadMidBossMap();
-                CameraManager.Instance.SwapCamera(CameraManager.Instance.AllVirtualCameras[5]);
                 yield break;
             
             case EPortalType.MidBossToCombat:

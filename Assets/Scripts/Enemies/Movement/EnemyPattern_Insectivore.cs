@@ -32,6 +32,7 @@ public class EnemyPattern_Insectivore : EnemyPattern
         _spriteRenderer.material.color = color;
         
         _attackHitbox = transform.Find("AttackHitbox").transform.gameObject;
+        _attackHitbox.SetActive(false);
         Init();
     }
 

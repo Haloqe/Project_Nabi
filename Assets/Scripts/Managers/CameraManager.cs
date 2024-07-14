@@ -116,7 +116,7 @@ public class CameraManager : Singleton<CameraManager>
     
     public void SwapCamera(CinemachineVirtualCamera camera2)
     {
-        CinemachineVirtualCamera camera1 = CurrentCamera; ;
+        CinemachineVirtualCamera camera1 = CurrentCamera;
         if (!isActiveAndEnabled) return;
         if (camera1) camera1.enabled = false;
         camera2.enabled = true;

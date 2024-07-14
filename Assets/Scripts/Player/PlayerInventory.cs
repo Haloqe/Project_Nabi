@@ -87,8 +87,7 @@ public class PlayerInventory : MonoBehaviour
     public void AddFlower(int flowerIndex)
     {
         ++_numFlowers[flowerIndex];
-        if (_currentSelectedFlower == flowerIndex)
-            _uiManager.UpdateFlowerUICount(flowerIndex, _numFlowers[flowerIndex]);
+        _uiManager.UpdateFlowerUICount(flowerIndex, _numFlowers[flowerIndex], _currentSelectedFlower == flowerIndex);
         _uiManager.DisplayFlowerBombUI();
     }
 
@@ -96,8 +95,7 @@ public class PlayerInventory : MonoBehaviour
     public void RemoveFlower(int flowerIndex)
     {
         --_numFlowers[flowerIndex];
-        if (_currentSelectedFlower == flowerIndex)
-            _uiManager.UpdateFlowerUICount(flowerIndex, _numFlowers[flowerIndex]);
+        _uiManager.UpdateFlowerUICount(flowerIndex, _numFlowers[flowerIndex], _currentSelectedFlower == flowerIndex);
         _uiManager.DisplayFlowerBombUI();
     }
 
@@ -112,7 +110,6 @@ public class PlayerInventory : MonoBehaviour
     {
         _currentSelectedFlower = flowerIndex;
         _areaAttack.UpdateVFX(flowerIndex);
-        Debug.Log("SelectFlower: " + (EFlowerType)flowerIndex + " " + _numFlowers[flowerIndex]);
         _uiManager.UpdateFlowerBombUI(flowerIndex, _numFlowers[flowerIndex]);
     }
 

@@ -241,6 +241,7 @@ public class UIManager : Singleton<UIManager>
         _flowerUIDisplayTime = 0;
         _bloodOverlayHitDisplayTime = 0;
 
+        float loadDelay = 0;
         ESceneType currSceneType = _gameManager.ActiveScene;
         switch (currSceneType)
         {
@@ -251,6 +252,11 @@ public class UIManager : Singleton<UIManager>
                 break;
             
             case ESceneType.Boss:
+                loadDelay = 0.1f;
+                break;
+            
+            case ESceneType.MidBoss:
+                loadDelay = 1f;
                 break;
             
             case ESceneType.Tutorial:
@@ -268,7 +274,8 @@ public class UIManager : Singleton<UIManager>
             UseUIControl();
         }
 
-        StartCoroutine(DelayedHideLoadingUICoroutine(currSceneType == ESceneType.Boss ? 0.1f : 0));
+        
+        StartCoroutine(DelayedHideLoadingUICoroutine(loadDelay));
     }
 
     private void OnCombatSceneChanged()
@@ -660,6 +667,7 @@ public class UIManager : Singleton<UIManager>
     // InGame popup - soul
     public void DisplaySoulPopUp(int value)
     {
+        if (value == 0) return;
         var valueText = value < 0 ? value.ToString() : "+" + value;
         var popup = Instantiate(_soulPopupPrefab);
         popup.GetComponent<RectTransform>().position = _playerController.transform.position + playerUpOffset;
@@ -708,9 +716,11 @@ public class UIManager : Singleton<UIManager>
         StartCoroutine(FlowerBombUICoroutine());
     }
 
-    public void UpdateFlowerUICount(int flowerIndex, int flowerCount)
+    public void UpdateFlowerUICount(int flowerIndex, int flowerCount, bool shouldUpdateCount)
     {
-        _flowerCountText.text = flowerCount.ToString();
+        if (shouldUpdateCount)
+            _flowerCountText.text = flowerCount.ToString();
+        
         for (int i = 0; i < 4; i++)
         {
             if (_flowerIndices[i] == flowerIndex)

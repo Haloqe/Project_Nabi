@@ -633,7 +633,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         Pattern.OnDeath();
         yield return new WaitForSeconds(6f);
         transform.position = new Vector3(-9f, -5.5f, 0);
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < 3; i++)
         {
             DropGold();
             DropSoulShard();
@@ -645,7 +645,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
 
     private IEnumerator OnBossDeath()
     {
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < 3; i++)
         {
             DropGold();
             DropSoulShard();
