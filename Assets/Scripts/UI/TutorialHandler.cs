@@ -36,7 +36,7 @@ public class TutorialHandler : MonoBehaviour
                 var mantis = EnemyManager.Instance.SpawnEnemy((int)EEnemyType.VoidMantis, new Vector3(4.33f, -8.34f, 0f), true);
                 mantis.transform.localScale = new Vector3(1.4f, 1.4f, 1);
                 var mantisEnemyBase = mantis.GetComponent<EnemyBase>();
-                mantisEnemyBase.SetMaxHealth(mantisEnemyBase.EnemyData.MaxHealth * 3);
+                mantisEnemyBase.SetMaxHealth(mantisEnemyBase.EnemyData.MaxHealth * 2);
         }
         
         private void OnEndTutorial(EnemyBase enemy)

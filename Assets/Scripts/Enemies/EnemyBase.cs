@@ -453,7 +453,7 @@ public class EnemyBase : MonoBehaviour, IDamageable, IDamageDealer
         {
             if (Random.Range(0.0f, 1.0f) <= 0.5f)
             {
-                Debug.Log(gameObject.name + " missed!");
+                Debug.Log("Ecstasy: Attacking other enemies");
                 Collider2D[] foesToDamage =
                     Physics2D.OverlapBoxAll(transform.position +new Vector3 (0, _neighboringEnemyColliderHeight, 0),
                         _neighboringEnemyColliderSize, 0, LayerMask.GetMask("Enemy"));

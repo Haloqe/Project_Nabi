@@ -48,8 +48,8 @@ public class AttackBase_Melee : AttackBase
         AudioSourceBase = baseEffector.GetComponent<AudioSource>();
 
         // Damage
-        _damageInfoInit = new SDamageInfo { BaseDamage = 3.0f, RelativeDamage = 1.0f, };
-        _damageInfoComboInit = new SDamageInfo { BaseDamage = 5.0f, RelativeDamage = 2.0f };
+        _damageInfoInit = new SDamageInfo { BaseDamage = 4.0f, RelativeDamage = 0.5f, };
+        _damageInfoComboInit = new SDamageInfo { BaseDamage = 5.0f, RelativeDamage = 1.0f };
         _attackInfoInit.Damage.TotalAmount = _damageInfoInit.BaseDamage + _playerController.Strength * _damageInfoInit.RelativeDamage;
         _attackComboInit.Damage.TotalAmount = _damageInfoComboInit.BaseDamage + _playerController.Strength * _damageInfoComboInit.RelativeDamage;
         _attackInfoInit.CanBeDarkAttack = true;
