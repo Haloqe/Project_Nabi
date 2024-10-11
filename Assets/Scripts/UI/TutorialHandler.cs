@@ -8,12 +8,14 @@ public class TutorialHandler : MonoBehaviour
         public GameObject guideUI;
         public PlayableDirector cutSceneToPlay;
         private bool isTutorialCombatStarted;
-
+        private float timer = 0.0f;
+        
         private void Start()
         {
                 guideUI.SetActive(true);
                 GameManager.Instance.isRunningTutorial = true;
                 InGameEvents.EnemySlayed += OnEndTutorial;
+                //StartCoroutine(nameof(Timer));
         }
 
         private void OnDestroy()
@@ -21,9 +23,24 @@ public class TutorialHandler : MonoBehaviour
                 InGameEvents.EnemySlayed -= OnEndTutorial;
         }
 
+        private IEnumerator Timer()
+        {
+                while (true)
+                {
+                        timer += Time.deltaTime;
+                        if (timer >= 5.0f)
+                        {
+                                break;
+                        }
+                        yield return null;
+                }
+                OnEnter();
+        }
+        
         public void OnEnter()
         {
                 if (isTutorialCombatStarted) return;
+                StopCoroutine(nameof(Timer));
                 
                 // Tutorial Setup
                 UIManager.Instance.InGameCombatUI.GetComponent<Canvas>().worldCamera = tutorialCamera;

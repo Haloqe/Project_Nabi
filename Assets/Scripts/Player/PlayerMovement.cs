@@ -121,9 +121,11 @@ public class PlayerMovement : MonoBehaviour
         isDashing = false; 
         isAreaAttacking = false;
         _isJumping = false;
+        _isRunningFirstJump = false;
         _jumpCounter = 0;
         _enteredGroundCount = 0;
         moveSpeedMultiplier = 1f;
+        _isMoveDisabled = false;
         
         RemoveDebuffs();
         ResetFriction();
@@ -276,7 +278,7 @@ public class PlayerMovement : MonoBehaviour
         {
             IsMoving = false;
         }
-        else if (_isAttacking || isDashing)
+        else if (isDashing || (_isAttacking && _playerController.playerDamageDealer.CurrAttackIdx != (int)ELegacyType.Ranged))
         {
             if (value != 0 && _playerController.playerDamageDealer.IsAttackBufferAvailable)
             {
@@ -286,9 +288,12 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             // Note: Player sprite default direction is left
-            IsMoving = true;
-            transform.localScale =
-                new Vector2(-Mathf.Sign(value) * Mathf.Abs(transform.localScale.x), transform.localScale.y);
+            transform.localScale = new Vector2(-Mathf.Sign(value) * Mathf.Abs(transform.localScale.x), transform.localScale.y);
+            if (_isAttacking)
+            {
+                _playerController.playerDamageDealer.FlipAttackVFX();
+            }
+            else IsMoving = true;
             
             if (CameraFollowObject != null) CameraFollowObject.TurnCamera();
         }

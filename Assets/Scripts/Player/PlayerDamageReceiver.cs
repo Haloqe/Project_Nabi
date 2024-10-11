@@ -18,7 +18,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
     private Material _originalMaterial;
     
     // Health attributes
-    private float _currHealth;
+    public float _currHealth;
     public float MaxHealth => BaseHealth + additionalHealth;
     public float BaseHealth { get; private set; }
     public float additionalHealth;
@@ -47,7 +47,7 @@ public class PlayerDamageReceiver : MonoBehaviour, IDamageable
 
     private void Awake()
     {
-        BaseHealth = 100;
+        BaseHealth = 100; //100;
         _currHealth = MaxHealth;
     }
     

@@ -12,12 +12,10 @@ public abstract class AttackBase : MonoBehaviour
     
     // Effectors
     public GameObject baseEffector;
-    public ParticleSystemRenderer basePSRenderer { get; private set; }
+    public ParticleSystemRenderer BasePSRenderer { get; private set; }
     
     // Variables
     protected ELegacyType _attackType;
-    private float _attackDelay;
-    private float _attackSpeedMultiplier;
     protected float _attackPostDelay;
     
     // Damage
@@ -35,15 +33,19 @@ public abstract class AttackBase : MonoBehaviour
     // Others
     protected readonly static int AttackIndex = Animator.StringToHash("AttackIndex");
     private Material _defaultVFXMaterial;
-    
+
+    public virtual void FlipVFX()
+    {
+        BasePSRenderer.flip = Mathf.Sign(_player.localScale.x) < 0 ? Vector3.right : Vector3.zero;
+    }
     
     public virtual void Start()
     {
         if (gameObject.GetComponentInParent<Singleton<PlayerController>>().IsToBeDestroyed) return;
         _player = transform.parent;
         _playerController = PlayerController.Instance;
-        basePSRenderer = baseEffector.GetComponent<ParticleSystemRenderer>();
-        _defaultVFXMaterial = basePSRenderer.sharedMaterial;
+        BasePSRenderer = baseEffector.GetComponent<ParticleSystemRenderer>();
+        _defaultVFXMaterial = BasePSRenderer.sharedMaterial;
         _animator = _player.GetComponent<Animator>();
         _damageDealer = _player.GetComponent<PlayerDamageDealer>();
         _playerMovement = _player.GetComponent<PlayerMovement>();
@@ -71,7 +73,7 @@ public abstract class AttackBase : MonoBehaviour
         
         // Reset VFX material
         if (_attackType == ELegacyType.Area) return;
-        basePSRenderer.sharedMaterial = _defaultVFXMaterial;
+        BasePSRenderer.sharedMaterial = _defaultVFXMaterial;
     }
 
     protected abstract void OnCombatSceneChanged();

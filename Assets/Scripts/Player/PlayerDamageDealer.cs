@@ -42,6 +42,11 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
     
     // SFX
     public AudioSource AudioSource { get; private set; }
+    public int CurrAttackIdx
+    {
+        get => _currAttackIdx;
+        private set => _currAttackIdx = value;
+    }
 
     private void Start()
     {
@@ -88,6 +93,12 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         _dashUIOverlay.fillAmount = 0;
     }
 
+    public void FlipAttackVFX()
+    {
+        if (_currAttackIdx <= 0) return;
+        AttackBases[_currAttackIdx].FlipVFX();    
+    }
+    
     private void OnDestroy()
     {
         if (GetComponent<PlayerController>().IsToBeDestroyed) return;
@@ -249,7 +260,7 @@ public class PlayerDamageDealer : MonoBehaviour, IDamageDealer
         if (attackType == ELegacyType.Melee) AttackBases[(int)attackType].baseEffector.SetActive(false);
         StartCoroutine(AttackBases[(int)attackType].AttackPostDelayCoroutine());
         _playerMovement.isDashing = false;
-        _playerMovement.UpdateLookDirectionOnAttackEnd();
+        if (attackType != ELegacyType.Ranged) _playerMovement.UpdateLookDirectionOnAttackEnd();
     }
 
     // Called when attack delay ends

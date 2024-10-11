@@ -127,13 +127,19 @@ public class AttackBase_Melee : AttackBase
         {
             _animator.SetBool(IsMeleeCombo, false);
             _attackPostDelay = _baseDelay;
-            basePSRenderer.flip = dir < 0 ? Vector3.right : Vector3.zero;
+            BasePSRenderer.flip = dir < 0 ? Vector3.right : Vector3.zero;
             baseEffector.SetActive(true);
             _damageDealer.AudioSource.PlayOneShot(meleeSounds[Random.Range(0, meleeSounds.Length)], volumeScale: 0.75f);
             if (ActiveLegacy) ((Legacy_Melee)ActiveLegacy).OnAttack_Base();
         }      
 
         _animator.SetInteger(AttackIndex, (int)_attackType);
+    }
+    
+    public override void FlipVFX()
+    {
+        BasePSRenderer.flip = Mathf.Sign(_player.localScale.x) < 0 ? Vector3.right : Vector3.zero;
+        comboPSRenderer.flip = Mathf.Sign(_player.localScale.x) < 0 ? Vector3.right : Vector3.zero;
     }
 
     public void OnComboHit()

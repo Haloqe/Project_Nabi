@@ -135,7 +135,6 @@ public class LevelManager : Singleton<LevelManager>
         }
     }
 
-    // TEMP
     private void GenerateLevelGraph()
     {
         // Populate Level Graph
@@ -377,38 +376,6 @@ public class LevelManager : Singleton<LevelManager>
                 else
                 {
                     if (blockedWorldPos.x > matchBlPosWorld.x) break;
-                }
-            }
-            
-            // Fix the prev door position from the prev door possible range
-            // Change the new door position instead
-            maxRange = newDoor.CandidateRange - doorSize + 1;
-            for (int offset = 0; offset < maxRange; offset++)
-            {
-                Vector3Int matchBlPosWorld = newDoorBlPosWorld - offset * _traverseDirections[(int)prevDoor.ConnectionType];
-                Vector3Int matchBlPosLocal = newDoor.RangeLocalBLPosition - offset * _traverseDirections[(int)prevDoor.ConnectionType];
-                var blockedWorldPos = GetOverlappingTile(newRoom, matchBlPosLocal, matchBlPosWorld);
-                
-                // Can room be placed?
-                if (blockedWorldPos == Vector3Int.back)
-                {
-                    newDoor.DoorLocalBLPosition = matchBlPosLocal;
-                    newDoor.DoorWorldBLPosition = matchBlPosWorld;
-                    newDoor.DoorSizeReal = doorSize;//newDoorSize;
-                    return true;
-                }
-                
-                // Optimisation if cannot be placed
-                if (prevDoor.ConnectionType == EConnectionType.Horizontal)
-                {
-                    // If the blocking tile is below the newDoorBLPos, no need to traverse.
-                    // Different prev door pos nor larger new door size will work 
-                    // Should go upwards instead, by trying different prev door pos
-                    if (blockedWorldPos.y < matchBlPosWorld.y) break;
-                }
-                else
-                {
-                    if (blockedWorldPos.x < matchBlPosWorld.x) break;
                 }
             }
         }
@@ -741,12 +708,13 @@ public class LevelManager : Singleton<LevelManager>
         int minPortalsCount = Math.Min(_hiddenPortalSpawners.Count, 3);
         int maxPortalsCount = 4;
         Debug.AssertFormat(_hiddenPortalSpawners.Count >= 3, "Not enough portal spawners added to the templates.");
+        portalSpawnersNotUsed.Sort((portal1, portal2) => portal1.SpawnChance.CompareTo(portal2.SpawnChance));
         
         // Exceeded the upper limit?
         while (portalSpawnersUsed.Count > maxPortalsCount)
         {
             // Remove a random portal based on spawn chance
-            HiddenPortal portalToRemove = WeightedRandomPortalSelection(portalSpawnersUsed);
+            HiddenPortal portalToRemove = WeightedRandomPortalSelectionForRemoval(portalSpawnersUsed);
             portalSpawnersUsed.Remove(portalToRemove);
             portalSpawnersNotUsed.Add(portalToRemove);
         }
@@ -755,7 +723,7 @@ public class LevelManager : Singleton<LevelManager>
         while (portalSpawnersUsed.Count < minPortalsCount)
         {
             // Add a random portal based on spawn chance
-            HiddenPortal portalToAdd = WeightedRandomPortalSelection(portalSpawnersNotUsed);
+            HiddenPortal portalToAdd = WeightedRandomPortalSelectionForAddition(portalSpawnersNotUsed);
             portalSpawnersNotUsed.Remove(portalToAdd);
             portalSpawnersUsed.Add(portalToAdd);
         }
@@ -767,8 +735,32 @@ public class LevelManager : Singleton<LevelManager>
         }
     }
 
-    // Weighted random selection function
-    private HiddenPortal WeightedRandomPortalSelection(List<HiddenPortal> portals)
+    // Weighted random selection function for removal (favoring lower spawn chances)
+    private HiddenPortal WeightedRandomPortalSelectionForRemoval(List<HiddenPortal> portals)
+    {
+        // Calculate total inverted spawn chance
+        float totalInvertedSpawnChance = portals.Sum(portal => 1 / portal.SpawnChance);
+
+        // Generate a random number between 0 and total inverted spawn chance
+        float randomNumber = Random.Range(0, totalInvertedSpawnChance);
+
+        // Determine which portal to select
+        float cumulative = 0;
+        foreach (var portal in portals)
+        {
+            cumulative += 1 / portal.SpawnChance;
+            if (randomNumber <= cumulative)
+            {
+                // Return the selected portal
+                return portal;
+            }
+        }
+
+        return null; // This should never happen if the spawn chances are set up correctly
+    }
+
+    // Weighted random selection function for addition (favoring higher spawn chances)
+    private HiddenPortal WeightedRandomPortalSelectionForAddition(List<HiddenPortal> portals)
     {
         // Calculate total spawn chance
         float totalSpawnChance = portals.Sum(portal => portal.SpawnChance);

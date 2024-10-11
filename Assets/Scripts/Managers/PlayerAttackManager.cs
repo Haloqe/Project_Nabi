@@ -245,7 +245,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                 LegacySO legacyAsset = null;
                 string assetPath = basePath + legacy.Names[(int)ELocalisation.KOR] + ".asset";
 #if UNITY_EDITOR
-                // Create scriptable object asset if file does not exist
+                // Create a scriptable object asset if the file does not exist
                 if (!File.Exists(assetPath))
                 {
                     string className = legacy.Type == ELegacyType.Passive ? "PassiveLegacySO" : "Legacy_" + legacy.Type;
@@ -591,7 +591,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                     var attackBase = (AttackBase_Melee)_playerDamageDealer.AttackBases[(int)attackType];
                     
                     // Base VFX
-                    attackBase.basePSRenderer.material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Melee_Base);
+                    attackBase.BasePSRenderer.material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Melee_Base);
                     
                     // Combo VFX
                     attackBase.comboPSRenderer.material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Melee_Combo);
@@ -604,7 +604,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                     var attackBase = (AttackBase_Ranged)_playerDamageDealer.AttackBases[(int)attackType];
                     
                     // Base VFX
-                    attackBase.basePSRenderer.material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Ranged);
+                    attackBase.BasePSRenderer.material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Ranged);
                     
                     // bullet
                     attackBase.SetBullet(GetBulletPrefab(warrior));
@@ -615,7 +615,7 @@ public class PlayerAttackManager : Singleton<PlayerAttackManager>
                     if (warrior == EWarrior.NightShade) return;
                     
                     // Base VFX
-                    _playerDamageDealer.AttackBases[(int)attackType].basePSRenderer.material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Dash);
+                    _playerDamageDealer.AttackBases[(int)attackType].BasePSRenderer.material.mainTexture = GetWarriorVFXTexture(warrior, EPlayerAttackType.Dash);
                 }
                 break;
         }

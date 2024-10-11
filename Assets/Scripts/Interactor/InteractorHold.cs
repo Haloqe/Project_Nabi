@@ -29,14 +29,14 @@ public abstract class InteractorHold : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            if (_playerInteractingPartsCount == 0)
+            _playerInteractingPartsCount++;
+            if (_playerInteractingPartsCount == 1)
             {
                 OnEnterArea();
                 _interactAction.started += OnInteractStarted;
                 _interactAction.performed += OnInteractPerformed;
                 _interactAction.canceled += OnInteractCanceled;
             }
-            _playerInteractingPartsCount++;
         }
     }
 

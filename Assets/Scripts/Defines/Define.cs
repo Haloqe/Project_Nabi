@@ -6,7 +6,7 @@ public static class Define
     public static ELocalisation Localisation;
     
     public static float GameOverDelayTime = 2.5f;
-    public static float HoldInteractionTime = 2.0f;
+    public static float HoldInteractionTime = 1.0f;
     public static float DefaultDamageTick = 0.5f;
     // Cumulative
     public static float[] LegacyAppearanceByPreservation = new float[]

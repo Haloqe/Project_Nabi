@@ -67,6 +67,7 @@ public class EnemyPattern_Scorpion : EnemyPattern
     
     private PlayableDirector _encounterTimeline;
     private bool _isInCutscene = true;
+    public GameObject groundPoundIndicator;
     
     private void Awake()
     {
@@ -384,44 +385,48 @@ public class EnemyPattern_Scorpion : EnemyPattern
     
     private void MoveClawIK(Vector3 finalPosition, bool isLeftClaw)
     {
-        int rightClaw = 3;
-        if (isLeftClaw) rightClaw = 0;
+        // Determine the starting index for the claw objects
+        int clawIdx = isLeftClaw ? 0 : 3;
         
-        for (int j = 0; j <= 5; j++) // iterations
+        // Perform 3 iterations to adjust the claw's position
+        for (int j = 0; j <= 2; j++)
         {
+            // Adjust each segment of the claw
             for (int i = 1; i <= 2; i++)
             {
-                Vector3 a = _armObjects[0 + rightClaw].transform.position -
-                            _armObjects[i + rightClaw].transform.position;
-                Vector3 b = finalPosition - _armObjects[i + rightClaw].transform.position;
+                // Calculate vectors for current segment
+                Vector3 a = _armObjects[0 + clawIdx].transform.position - _armObjects[i + clawIdx].transform.position;
+                Vector3 b = finalPosition - _armObjects[i + clawIdx].transform.position;
+                
+                // Calculate cross product and rotation angle
                 Vector3 cross = Vector3.Cross(b, a).normalized;
                 float rotationAngle = Vector3.Angle(b, a);
-                int direction = -1;
-                if ((int)Mathf.Round(cross.z) == -1) direction *= -1;
-                _armObjects[i + rightClaw].transform.Rotate(0f,0f, direction * rotationAngle);
-                _armObjects[0 + rightClaw].transform.Rotate(0f, 0f, -direction * rotationAngle);
+                
+                // Determine rotation direction and apply rotation
+                int direction = (int)Mathf.Round(cross.z) == -1 ? 1 : -1;
+                _armObjects[i + clawIdx].transform.Rotate(0f, 0f, direction * rotationAngle);
+                _armObjects[0 + clawIdx].transform.Rotate(0f, 0f, -direction * rotationAngle);
             }
         }
         
-        Vector3 c = _armObjects[0 + rightClaw].transform.position -
-                    _armObjects[1 + rightClaw].transform.position;
-        Vector3 d = _armObjects[1 + rightClaw].transform.position -
-                    _armObjects[2 + rightClaw].transform.position;
+        // Calculate vectors for final adjustments
+        Vector3 c = _armObjects[0 + clawIdx].transform.position - _armObjects[1 + clawIdx].transform.position;
+        Vector3 d = _armObjects[1 + clawIdx].transform.position - _armObjects[2 + clawIdx].transform.position;
+        
+        // Check if the claw is moving in the wrong direction
         Vector3 crossP = Vector3.Cross(c, d).normalized;
-
-        Vector3 clawAngle = _armObjects[0 + rightClaw].transform.eulerAngles;
-        
-        int isWrongDirection = (int)Mathf.Round(crossP.z) * (int)Mathf.Pow(-1, rightClaw);
+        int isWrongDirection = (int)Mathf.Round(crossP.z) * (int)Mathf.Pow(-1, clawIdx);
         if (isWrongDirection != -1) return;
-        if (_armObjects[1 + rightClaw].transform.position.y < transform.position.y) return;
-
-        _armObjects[1 + rightClaw].transform.Rotate(0f, 0f,
-            -_armObjects[1 + rightClaw].transform.rotation.z);
-        float flipAngle = Vector3.Angle(c, d);
-        _armObjects[2 + rightClaw].transform.Rotate(0f, 0f, 
-            Mathf.Pow(-1, rightClaw + 1) * (360f - 2 * flipAngle));
         
-        _armObjects[0 + rightClaw].transform.eulerAngles = clawAngle;
+        // Check if the first segment is below the base
+        if (_armObjects[1 + clawIdx].transform.position.y < transform.position.y) return;
+
+        // Correct the rotation of the first and second segments
+        _armObjects[1 + clawIdx].transform.Rotate(0f, 0f, -_armObjects[1 + clawIdx].transform.rotation.z);
+        _armObjects[2 + clawIdx].transform.Rotate(0f, 0f, Mathf.Pow(-1, clawIdx + 1) * (360f - 2 * Vector3.Angle(c, d)));
+        
+        // Restore the base segment's rotation
+        _armObjects[0 + clawIdx].transform.eulerAngles = _armObjects[0 + clawIdx].transform.eulerAngles;
     }
     
     private IEnumerator RotateByAmount(float angle, int direction, float speed)
@@ -573,16 +578,17 @@ public class EnemyPattern_Scorpion : EnemyPattern
         float xLevel = transform.position.x;
         float yLevel = transform.position.y + 3f;
         
-        yield return new WaitForSeconds(0.5f);
-        Vector3[] attackPosition = new Vector3[2];
-        
-        attackPosition = new [] {
+        Vector3[] attackPosition = new [] {
             new Vector3(playerXPosition - 0.5f, yLevel, 0),
             new Vector3(playerXPosition + 0.5f, yLevel, 0)
         };
+        var indicator = Instantiate(groundPoundIndicator, new Vector3(playerXPosition, -7.34f, 0), Quaternion.identity);
+        Destroy(indicator, 2f);
         
+        yield return new WaitForSeconds(0.7f);
         _enemyBase.UpdateAttackInfo(_groundPoundAttackInfo);
-        yield return MoveClaws(attackPosition, 3f);
+        yield return MoveClaws(attackPosition, 2.8f);
+        
         PlayAudio(1, _groundPoundAudio[Random.Range(0, 3)], 0.2f);
         PlayAudio(1, _groundPoundAudio[3], 0.2f);
         yield return new WaitForSeconds(0.5f);

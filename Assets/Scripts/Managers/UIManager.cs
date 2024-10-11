@@ -243,6 +243,7 @@ public class UIManager : Singleton<UIManager>
 
         float loadDelay = 0;
         ESceneType currSceneType = _gameManager.ActiveScene;
+        Debug.Log("UIManager current scene: " + currSceneType);
         switch (currSceneType)
         {
             case ESceneType.CombatMap0:
@@ -273,7 +274,6 @@ public class UIManager : Singleton<UIManager>
         {
             UseUIControl();
         }
-
         
         StartCoroutine(DelayedHideLoadingUICoroutine(loadDelay));
     }
@@ -378,7 +378,7 @@ public class UIManager : Singleton<UIManager>
 
     private IEnumerator BloodOverlayHitCoroutine()
     {
-        float duration = 0.2f;
+        float duration = 0.3f;
         _bloodOverlayHitDisplayTime += duration; 
         _bloodOverlayHit.gameObject.SetActive(true);
         yield return new WaitForSecondsRealtime(duration);
@@ -466,10 +466,21 @@ public class UIManager : Singleton<UIManager>
         
         for (int i = 0; i < 5; i++)
         {
-            _combatKeyBindTMPs[i].text = inputBindings[i].ToDisplayString();
+            _combatKeyBindTMPs[i].text = ShortenKeyBinding(inputBindings[i].ToDisplayString());
         }
     }
 
+    string ShortenKeyBinding(string keyBinding)
+    {
+        // Add more replacements as needed
+        return keyBinding.Replace("Left Shift", "LShift")
+            .Replace("Right Shift", "RShift")
+            .Replace("Left Control", "LCtrl")
+            .Replace("Right Control", "RCtrl")
+            .Replace("Left Alt", "LAlt")
+            .Replace("Right Alt", "RAlt");
+    }
+    
     public void DisplayLoadingScreen()
     {
         _loadingScreenUI.SetActive(true);

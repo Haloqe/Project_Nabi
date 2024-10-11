@@ -44,17 +44,17 @@ public class FogOfWar : MonoBehaviour
 
         private IEnumerator RevealFogCoroutine()
         {
-                var wait = new WaitForSecondsRealtime(0.2f);
+                var wait = new WaitForSecondsRealtime(0.3f);
                 while (true)
                 {
-                        PaintSquare(_playerTransform.position + new Vector3(0,1,0));
+                        PaintCircle(_playerTransform.position + new Vector3(0,1,0));
                         yield return wait;
                 }
         }
 
-        private void PaintSquare(Vector3 worldCenter)
+        private void PaintCircle(Vector3 worldCenter)
         {
-                // Get the local position of the center of the square
+                // Get the local position of the center of the circle
                 Vector3 localCenter = transform.InverseTransformPoint(worldCenter) + new Vector3(_renderTexture.width / 2, _renderTexture.height / 2, 0);
                 
                 // Convert the local position of the center to pixel coordinates
@@ -66,7 +66,7 @@ public class FogOfWar : MonoBehaviour
                 int startX = centerX - brushTexture.width / 2;
                 int startY = centerY - brushTexture.height / 2;
 
-                // Create an array to hold the colors for the pixels in the square
+                // Create an array to hold the colors for the pixels in the circle
                 Color[] renderColours = _renderTexture.GetPixels(startX, startY, brushTexture.width, brushTexture.height);
                 
                 // Apply the brush to the render texture
@@ -80,7 +80,7 @@ public class FogOfWar : MonoBehaviour
 
                                 // Make sure the index is within the bounds of the renderColours array
                                 if (renderIndex >= 0 && renderIndex < renderColours.Length)
-                                {
+                                { 
                                         renderColours[renderIndex] = new Color(0,0,0, Mathf.Min(_brushColours[brushIndex].a, renderColours[renderIndex].a));
                                 }
                         }

@@ -354,7 +354,7 @@ public class GameManager : Singleton<GameManager>
         Application.Quit();
 #endif
     }
-    
+   
     public void StartNewGame()
     {
         if (_player) Destroy(_player.gameObject);

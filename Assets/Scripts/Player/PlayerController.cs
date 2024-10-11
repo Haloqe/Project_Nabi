@@ -232,6 +232,19 @@ public class PlayerController : Singleton<PlayerController>
         //PlayerAttackManager.Instance.CollectLegacy(2, ELegacyPreservation.Tarnished);
         //playerInventory.ChangeGoldByAmount(1000);
         //Heal(100);
+
+        if (_gameManager.ActiveScene == ESceneType.MidBoss)
+        {
+            FindObjectOfType<Portal>(true).gameObject.SetActive(true);
+            return;
+        }
+        
+        int healAmount = Mathf.Min(playerInventory.Gold, (int)(playerDamageReceiver.MaxHealth - playerDamageReceiver._currHealth));
+        if (healAmount > 0)
+        {
+            Heal(healAmount);
+            playerInventory.ChangeGoldByAmount(healAmount);
+        }
     }
     
     private void OnSelectNextFlowerBomb(InputValue value)

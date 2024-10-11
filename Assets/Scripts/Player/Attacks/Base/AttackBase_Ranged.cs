@@ -16,7 +16,7 @@ public class AttackBase_Ranged : AttackBase
     {
         base.Start();
         _attackType = ELegacyType.Ranged;
-        _damageInfoInit.BaseDamage = 5f;
+        _damageInfoInit.BaseDamage = 7f;
         _attackInfoInit.Damage.TotalAmount = _damageInfoInit.BaseDamage + _playerController.Strength * _damageInfoInit.RelativeDamage;
         _attackInfoInit.CanBeDarkAttack = true;
         _attackInfoInit.ShouldUpdateTension = true;
@@ -69,7 +69,7 @@ public class AttackBase_Ranged : AttackBase
     {
         _damageDealer.AudioSource.PlayOneShot(fireSound, 0.5f);
         _animator.SetInteger(AttackIndex, (int)ELegacyType.Ranged);
-        basePSRenderer.flip = Mathf.Sign(_player.localScale.x) < 0 ? Vector3.right : Vector3.zero;
+        BasePSRenderer.flip = Mathf.Sign(_player.localScale.x) < 0 ? Vector3.right : Vector3.zero;
         //baseEffector.SetActive(true);
         baseEffector.GetComponent<ParticleSystem>().Play();
     }
